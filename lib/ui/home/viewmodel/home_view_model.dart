@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/data/dummy/dummy_tasks.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -13,6 +14,9 @@ class HomeViewModel extends _$HomeViewModel {
 
   Future<void> _init() async {
     await Future.delayed(const Duration(seconds: 1));
-    state = state.copyWith(isLoading: false);
+    state = state.copyWith(
+      isLoading: false,
+      tasks: dummyTasks,
+    );
   }
 }

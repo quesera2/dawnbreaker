@@ -1,20 +1,8 @@
+import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'task_item.freezed.dart';
-
-enum TaskType {
-  period,
-  scheduled,
-}
-
-enum TaskColor {
-  none,
-  red,
-  blue,
-  yellow,
-  green,
-  orange,
-}
 
 @freezed
 abstract class TaskItem with _$TaskItem {
