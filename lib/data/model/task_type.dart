@@ -1,0 +1,4 @@
+enum TaskType {
+  period,
+  scheduled,
+}

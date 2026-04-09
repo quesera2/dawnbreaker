@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dawnbreaker/features/home/presentation/pages/home_page.dart';
+import 'package:dawnbreaker/ui/home/widgets/home_screen.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -11,7 +11,7 @@ class App extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const HomePage(),
+      home: const HomeScreen(),
     );
   }
 }
