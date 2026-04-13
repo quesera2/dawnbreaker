@@ -9,6 +9,7 @@ abstract class TaskItem with _$TaskItem {
   const factory TaskItem({
     required TaskType taskType,
     required String name,
+    String? furigana,
     required TaskColor color,
     required DateTime registeredAt,
     DateTime? scheduledAt,

@@ -19,6 +19,10 @@ abstract class HomeUiState with _$HomeUiState {
   List<TaskItem> get filteredTasks {
     if (searchQuery.isEmpty) return tasks;
     final query = searchQuery.toLowerCase();
-    return tasks.where((t) => t.name.toLowerCase().contains(query)).toList();
+    return tasks.where((t) {
+      if (t.name.toLowerCase().contains(query)) return true;
+      final furigana = t.furigana;
+      return furigana != null && furigana.contains(query);
+    }).toList();
   }
 }

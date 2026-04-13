@@ -6,6 +6,9 @@ plugins {
 }
 
 android {
+    packaging {
+        resources.excludes += "META-INF/*.md"
+    }
     namespace = "que.sera.sera.dqnbreaker.dawnbreaker"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
@@ -41,4 +44,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation("com.atilika.kuromoji:kuromoji-ipadic:0.9.0")
 }
