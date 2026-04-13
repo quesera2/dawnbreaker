@@ -39,13 +39,13 @@ final dummyTasks = [
     name: 'エアコンフィルタ掃除',
     color: TaskColor.red,
     registeredAt: DateTime(2026, 2, 1),
-    scheduledAt: DateTime(2026, 4, 1),
+    scheduledAt: DateTime(2026, 5, 1),
   ),
   TaskItem(
     taskType: TaskType.scheduled,
     name: '給水フィルタ交換',
     color: TaskColor.blue,
     registeredAt: DateTime(2026, 1, 15),
-    scheduledAt: DateTime(2026, 4, 15),
+    scheduledAt: DateTime(2026, 7, 15),
   ),
 ];

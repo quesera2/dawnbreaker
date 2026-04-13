@@ -8,15 +8,18 @@ part 'home_view_model.g.dart';
 class HomeViewModel extends _$HomeViewModel {
   @override
   HomeUiState build() {
-    _init();
+    _loadItem();
     return const HomeUiState(isLoading: true);
   }
 
-  Future<void> _init() async {
+  void updateSearchQuery(String query) {
+    if (query == state.searchQuery) return;
+    state = state.copyWith(searchQuery: query);
+  }
+
+  Future<void> _loadItem() async {
     await Future.delayed(const Duration(seconds: 1));
-    state = state.copyWith(
-      isLoading: false,
-      tasks: dummyTasks,
-    );
+    if (!ref.mounted) return;
+    state = state.copyWith(isLoading: false, tasks: dummyTasks);
   }
 }
