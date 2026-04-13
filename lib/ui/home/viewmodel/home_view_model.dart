@@ -1,7 +1,6 @@
 import 'package:dawnbreaker/core/util/furigana_translate.dart';
 import 'package:dawnbreaker/data/dummy/dummy_tasks.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
-import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'home_view_model.g.dart';
@@ -26,7 +25,6 @@ class HomeViewModel extends _$HomeViewModel {
     final tasks = await Future.wait(
       dummyTasks.map((task) async {
         final furigana = await translator.translateToFurigana(task.name);
-        debugPrint(furigana);
         return task.copyWith(furigana: furigana);
       }),
     );
