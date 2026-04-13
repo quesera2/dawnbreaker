@@ -14,9 +14,11 @@ class HomeViewModel extends _$HomeViewModel {
 
   Future<void> _init() async {
     await Future.delayed(const Duration(seconds: 1));
-    state = state.copyWith(
-      isLoading: false,
-      tasks: dummyTasks,
-    );
+    state = state.copyWith(isLoading: false, tasks: dummyTasks);
+  }
+
+  void updateSearchQuery(String query) {
+    if (query == state.searchQuery) return;
+    state = state.copyWith(searchQuery: query);
   }
 }
