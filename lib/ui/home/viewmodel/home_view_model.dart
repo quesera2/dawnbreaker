@@ -21,10 +21,9 @@ class HomeViewModel extends _$HomeViewModel {
   Future<void> _loadItem() async {
     await Future.delayed(const Duration(seconds: 1));
     if (!ref.mounted) return;
-    final translator = FuriganaTranslate();
     final tasks = await Future.wait(
       dummyTasks.map((task) async {
-        final furigana = await translator.translateToFurigana(task.name);
+        final furigana = await FuriganaTranslate.translateToFurigana(task.name);
         return task.copyWith(furigana: furigana);
       }),
     );
