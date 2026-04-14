@@ -6,6 +6,7 @@ import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
+import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:drift/drift.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -125,82 +126,95 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> addPeriodTask({
+  Future<int> addPeriodTask({
     required String name,
     required TaskColor color,
   }) async {
-    final furigana = await _furiganaTranslate.translate(name) ?? name;
-
-    await _db.transaction(() async {
-      final id = await _db.into(_db.taskDefinitions).insert(
-            TaskDefinitionsCompanion.insert(
-              taskType: TaskType.period,
-              name: name,
-              furigana: furigana,
-              color: color,
-            ),
-          );
-
-      await _db.into(_db.taskExecutions).insert(
-            TaskExecutionsCompanion.insert(
-              taskDefinitionId: id,
-              executedAt: DateTime.now(),
-            ),
-          );
-    });
+    try {
+      final furigana = await _furiganaTranslate.translate(name) ?? name;
+      return _db.transaction(() async {
+        final id = await _db.into(_db.taskDefinitions).insert(
+              TaskDefinitionsCompanion.insert(
+                taskType: TaskType.period,
+                name: name,
+                furigana: furigana,
+                color: color,
+              ),
+            );
+        await _db.into(_db.taskExecutions).insert(
+              TaskExecutionsCompanion.insert(
+                taskDefinitionId: id,
+                executedAt: DateTime.now(),
+              ),
+            );
+        return id;
+      });
+    } catch (e) {
+      throw TaskRepositoryException('タスクの追加に失敗しました', cause: e);
+    }
   }
 
   @override
-  Future<void> addScheduledTask({
+  Future<int> addScheduledTask({
     required String name,
     required TaskColor color,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
   }) async {
-    final furigana = await _furiganaTranslate.translate(name) ?? name;
-
-    await _db.transaction(() async {
-      final id = await _db.into(_db.taskDefinitions).insert(
-            TaskDefinitionsCompanion.insert(
-              taskType: TaskType.scheduled,
-              name: name,
-              furigana: furigana,
-              color: color,
-            ),
-          );
-
-      await _db.into(_db.taskScheduledConfigs).insert(
-            TaskScheduledConfigsCompanion.insert(
-              taskDefinitionId: Value(id),
-              scheduleValue: scheduleValue,
-              scheduleUnit: scheduleUnit,
-            ),
-          );
-
-      await _db.into(_db.taskExecutions).insert(
-            TaskExecutionsCompanion.insert(
-              taskDefinitionId: id,
-              executedAt: DateTime.now(),
-            ),
-          );
-    });
+    try {
+      final furigana = await _furiganaTranslate.translate(name) ?? name;
+      return _db.transaction(() async {
+        final id = await _db.into(_db.taskDefinitions).insert(
+              TaskDefinitionsCompanion.insert(
+                taskType: TaskType.scheduled,
+                name: name,
+                furigana: furigana,
+                color: color,
+              ),
+            );
+        await _db.into(_db.taskScheduledConfigs).insert(
+              TaskScheduledConfigsCompanion.insert(
+                taskDefinitionId: Value(id),
+                scheduleValue: scheduleValue,
+                scheduleUnit: scheduleUnit,
+              ),
+            );
+        await _db.into(_db.taskExecutions).insert(
+              TaskExecutionsCompanion.insert(
+                taskDefinitionId: id,
+                executedAt: DateTime.now(),
+              ),
+            );
+        return id;
+      });
+    } catch (e) {
+      throw TaskRepositoryException('タスクの追加に失敗しました', cause: e);
+    }
   }
 
   @override
-  Future<void> recordExecution(int taskId) async {
-    await _db.into(_db.taskExecutions).insert(
-          TaskExecutionsCompanion.insert(
-            taskDefinitionId: taskId,
-            executedAt: DateTime.now(),
-          ),
-        );
+  Future<void> recordExecution(int taskId, {DateTime? executedAt}) async {
+    try {
+      await _db.into(_db.taskExecutions).insert(
+            TaskExecutionsCompanion.insert(
+              taskDefinitionId: taskId,
+              executedAt: executedAt ?? DateTime.now(),
+            ),
+          );
+    } catch (e) {
+      throw TaskRepositoryException('実行記録の追加に失敗しました', cause: e);
+    }
   }
 
   @override
   Future<void> deleteTask(int taskId) async {
-    await (_db.delete(_db.taskDefinitions)
-          ..where((t) => t.id.equals(taskId)))
-        .go();
-    // task_executions / task_scheduled_configs はカスケード削除
+    try {
+      await (_db.delete(_db.taskDefinitions)
+            ..where((t) => t.id.equals(taskId)))
+          .go();
+      // task_executions / task_scheduled_configs はカスケード削除
+    } catch (e) {
+      throw TaskRepositoryException('タスクの削除に失敗しました', cause: e);
+    }
   }
 }

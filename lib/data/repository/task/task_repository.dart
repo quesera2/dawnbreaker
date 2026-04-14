@@ -5,19 +5,19 @@ import 'package:dawnbreaker/data/model/task_item.dart';
 abstract class TaskRepository {
   Stream<List<TaskItem>> watchAllTasks();
 
-  Future<void> addPeriodTask({
+  Future<int> addPeriodTask({
     required String name,
     required TaskColor color,
   });
 
-  Future<void> addScheduledTask({
+  Future<int> addScheduledTask({
     required String name,
     required TaskColor color,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
   });
 
-  Future<void> recordExecution(int taskId);
+  Future<void> recordExecution(int taskId, {DateTime? executedAt});
 
   Future<void> deleteTask(int taskId);
 }
