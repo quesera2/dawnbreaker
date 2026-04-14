@@ -21,8 +21,7 @@ abstract class HomeUiState with _$HomeUiState {
     final query = searchQuery.toLowerCase();
     return tasks.where((t) {
       if (t.name.toLowerCase().contains(query)) return true;
-      final furigana = t.furigana;
-      return furigana != null && furigana.contains(query);
+      return t.furigana.contains(query);
     }).toList();
   }
 }
