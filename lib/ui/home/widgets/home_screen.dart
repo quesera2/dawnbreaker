@@ -25,41 +25,80 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final uiState = ref.watch(homeViewModelProvider);
     final viewModel = ref.read(homeViewModelProvider.notifier);
     return Scaffold(
-      appBar: AppBar(title: const Text('タスク')),
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.translucent,
-        child: Column(
-          children: [
-            if (uiState.hasTasks)
-              _SearchBar(
-                controller: _searchController,
-                showClear: uiState.searchQuery.isNotEmpty,
-                onChanged: viewModel.updateSearchQuery,
-                onClear: () {
-                  _searchController.clear();
-                  viewModel.updateSearchQuery('');
-                },
-              ),
-            Expanded(child: _bodyWidget(uiState)),
-          ],
-        ),
+        child: _bodyWidget(context, uiState, viewModel),
       ),
     );
   }
 
-  Widget _bodyWidget(HomeUiState uiState) {
+  Widget _bodyWidget(
+    BuildContext context,
+    HomeUiState uiState,
+    HomeViewModel viewModel,
+  ) {
+    final searchAppBar = SliverAppBar(
+      pinned: true,
+      toolbarHeight: 0,
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: _SearchBar(
+          controller: _searchController,
+          showClear: uiState.searchQuery.isNotEmpty,
+          onChanged: viewModel.updateSearchQuery,
+          onClear: () {
+            _searchController.clear();
+            viewModel.updateSearchQuery('');
+          },
+        ),
+      ),
+    );
+
     if (uiState.isLoading) {
-      return const _LoadingView();
+      return CustomScrollView(
+        slivers: [searchAppBar, const SliverFillRemaining(child: _LoadingView())],
+      );
     }
+
     if (!uiState.hasTasks) {
-      return const _EmptyView(message: 'タスクがまだありません');
+      return CustomScrollView(
+        slivers: [
+          searchAppBar,
+          const SliverFillRemaining(child: _EmptyView(message: 'タスクがまだありません')),
+        ],
+      );
     }
+
     final filtered = uiState.filteredTasks;
+
     if (filtered.isEmpty) {
-      return const _EmptyView(message: '一致するタスクが見つかりません');
+      return CustomScrollView(
+        slivers: [
+          searchAppBar,
+          const SliverFillRemaining(
+            child: _EmptyView(message: '一致するタスクが見つかりません'),
+          ),
+        ],
+      );
     }
-    return _TaskListView(tasks: filtered);
+
+    return CustomScrollView(
+      slivers: [
+        searchAppBar,
+        SliverPadding(
+          padding: EdgeInsets.only(
+            top: 8,
+            bottom: 16 + MediaQuery.paddingOf(context).bottom,
+          ),
+          sliver: SliverList.builder(
+            itemCount: filtered.length,
+            itemBuilder: (context, index) =>
+                _TaskListItem(task: filtered[index]),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -135,20 +174,6 @@ class _SearchBar extends StatelessWidget {
   }
 }
 
-class _TaskListView extends StatelessWidget {
-  const _TaskListView({required this.tasks});
-
-  final List<TaskItem> tasks;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: tasks.length,
-      itemBuilder: (context, index) => _TaskListItem(task: tasks[index]),
-    );
-  }
-}
 
 class _TaskListItem extends StatelessWidget {
   const _TaskListItem({required this.task});
