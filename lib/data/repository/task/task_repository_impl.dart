@@ -24,58 +24,57 @@ class TaskRepositoryImpl implements TaskRepository {
   TaskRepositoryImpl({
     required AppDatabase db,
     required FuriganaTranslate furiganaTranslate,
-  })  : _db = db,
-        _furiganaTranslate = furiganaTranslate;
+  }) : _db = db,
+       _furiganaTranslate = furiganaTranslate;
 
   final AppDatabase _db;
   final FuriganaTranslate _furiganaTranslate;
 
   @override
   Stream<List<TaskItem>> watchAllTasks() {
-    // 3テーブルいずれかの変更で再計算
-    return _db
-        .customSelect(
-          'SELECT 1',
-          readsFrom: {
-            _db.taskDefinitions,
-            _db.taskScheduledConfigs,
-            _db.taskExecutions,
-          },
-        )
-        .watch()
-        .asyncMap((_) => _buildAllTaskItems());
-  }
-
-  Future<List<TaskItem>> _buildAllTaskItems() async {
-    final rows = await (_db.select(_db.taskDefinitions).join([
+    return (_db.select(_db.taskDefinitions).join([
       leftOuterJoin(
         _db.taskScheduledConfigs,
-        _db.taskScheduledConfigs.taskDefinitionId
-            .equalsExp(_db.taskDefinitions.id),
+        _db.taskScheduledConfigs.taskDefinitionId.equalsExp(
+          _db.taskDefinitions.id,
+        ),
       ),
-    ])).get();
-
-    final items = await Future.wait(
-      rows.map((row) async {
-        final def = row.readTable(_db.taskDefinitions);
-        final config = row.readTableOrNull(_db.taskScheduledConfigs);
-
-        final executions = await (_db.select(_db.taskExecutions)
-              ..where((t) => t.taskDefinitionId.equals(def.id))
-              ..orderBy([(t) => OrderingTerm.asc(t.executedAt)]))
-            .get();
-
-        return TaskItem(
-          id: def.id,
-          taskType: def.taskType,
-          name: def.name,
-          furigana: def.furigana,
-          color: def.color,
-          registeredAt: executions.first.executedAt,
-          scheduledAt: _computeScheduledAt(def.taskType, executions, config),
-        );
-      }),
+      leftOuterJoin(
+        _db.taskExecutions,
+        _db.taskExecutions.taskDefinitionId.equalsExp(_db.taskDefinitions.id),
+      ),
+    ])..orderBy([OrderingTerm.asc(_db.taskExecutions.executedAt)])).watch().map(
+      _buildAllTaskItemsFromRows,
     );
+  }
+
+  List<TaskItem> _buildAllTaskItemsFromRows(List<TypedResult> rows) {
+    final grouped = <int, List<TypedResult>>{};
+    for (final row in rows) {
+      final id = row.readTable(_db.taskDefinitions).id;
+      grouped.putIfAbsent(id, () => []).add(row);
+    }
+
+    final items = grouped.values.map((group) {
+      final def = group.first.readTable(_db.taskDefinitions);
+      final config = group.first.readTableOrNull(_db.taskScheduledConfigs);
+      final executions = group
+          .map((r) => r.readTableOrNull(_db.taskExecutions))
+          .nonNulls
+          .toList();
+
+      return TaskItem(
+        id: def.id,
+        taskType: def.taskType,
+        name: def.name,
+        furigana: def.furigana,
+        color: def.color,
+        registeredAt: executions.isNotEmpty
+            ? executions.first.executedAt
+            : DateTime.now(),
+        scheduledAt: _computeScheduledAt(def.taskType, executions, config),
+      );
+    }).toList();
 
     // scheduledAt が近い順、null は末尾
     items.sort((a, b) {
@@ -95,13 +94,13 @@ class TaskRepositoryImpl implements TaskRepository {
     if (executions.isEmpty) return null;
 
     return switch (taskType) {
-      TaskType.period => _computePeriodScheduledAt(executions),
-      TaskType.scheduled => _computeScheduledScheduledAt(executions, config),
+      TaskType.period => _computePeriodNextAt(executions),
+      TaskType.scheduled => _computeScheduledNextAt(executions, config),
     };
   }
 
   /// 実行間隔の平均から次回予定日を算出。履歴が2件未満なら null。
-  DateTime? _computePeriodScheduledAt(List<TaskExecution> executions) {
+  DateTime? _computePeriodNextAt(List<TaskExecution> executions) {
     if (executions.length < 2) return null;
 
     final intervals = [
@@ -116,13 +115,15 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   /// 最終実行日 + 指定オフセットで次回予定日を算出。
-  DateTime? _computeScheduledScheduledAt(
+  DateTime? _computeScheduledNextAt(
     List<TaskExecution> executions,
     TaskScheduledConfig? config,
   ) {
     if (config == null) return null;
-    return config.scheduleUnit
-        .addTo(executions.last.executedAt, config.scheduleValue);
+    return config.scheduleUnit.addTo(
+      executions.last.executedAt,
+      config.scheduleValue,
+    );
   }
 
   @override
@@ -131,9 +132,11 @@ class TaskRepositoryImpl implements TaskRepository {
     required TaskColor color,
   }) async {
     try {
-      final furigana = await _furiganaTranslate.translate(name) ?? name;
+      final furigana = await _furiganaTranslate.translate(name) ?? '';
       return _db.transaction(() async {
-        final id = await _db.into(_db.taskDefinitions).insert(
+        final id = await _db
+            .into(_db.taskDefinitions)
+            .insert(
               TaskDefinitionsCompanion.insert(
                 taskType: TaskType.period,
                 name: name,
@@ -141,7 +144,9 @@ class TaskRepositoryImpl implements TaskRepository {
                 color: color,
               ),
             );
-        await _db.into(_db.taskExecutions).insert(
+        await _db
+            .into(_db.taskExecutions)
+            .insert(
               TaskExecutionsCompanion.insert(
                 taskDefinitionId: id,
                 executedAt: DateTime.now(),
@@ -162,9 +167,11 @@ class TaskRepositoryImpl implements TaskRepository {
     required ScheduleUnit scheduleUnit,
   }) async {
     try {
-      final furigana = await _furiganaTranslate.translate(name) ?? name;
+      final furigana = await _furiganaTranslate.translate(name) ?? '';
       return _db.transaction(() async {
-        final id = await _db.into(_db.taskDefinitions).insert(
+        final id = await _db
+            .into(_db.taskDefinitions)
+            .insert(
               TaskDefinitionsCompanion.insert(
                 taskType: TaskType.scheduled,
                 name: name,
@@ -172,14 +179,18 @@ class TaskRepositoryImpl implements TaskRepository {
                 color: color,
               ),
             );
-        await _db.into(_db.taskScheduledConfigs).insert(
+        await _db
+            .into(_db.taskScheduledConfigs)
+            .insert(
               TaskScheduledConfigsCompanion.insert(
                 taskDefinitionId: Value(id),
                 scheduleValue: scheduleValue,
                 scheduleUnit: scheduleUnit,
               ),
             );
-        await _db.into(_db.taskExecutions).insert(
+        await _db
+            .into(_db.taskExecutions)
+            .insert(
               TaskExecutionsCompanion.insert(
                 taskDefinitionId: id,
                 executedAt: DateTime.now(),
@@ -195,7 +206,9 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<void> recordExecution(int taskId, {DateTime? executedAt}) async {
     try {
-      await _db.into(_db.taskExecutions).insert(
+      await _db
+          .into(_db.taskExecutions)
+          .insert(
             TaskExecutionsCompanion.insert(
               taskDefinitionId: taskId,
               executedAt: executedAt ?? DateTime.now(),
@@ -209,9 +222,9 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<void> deleteTask(int taskId) async {
     try {
-      await (_db.delete(_db.taskDefinitions)
-            ..where((t) => t.id.equals(taskId)))
-          .go();
+      await (_db.delete(
+        _db.taskDefinitions,
+      )..where((t) => t.id.equals(taskId))).go();
       // task_executions / task_scheduled_configs はカスケード削除
     } catch (e) {
       throw TaskRepositoryException('タスクの削除に失敗しました', cause: e);
