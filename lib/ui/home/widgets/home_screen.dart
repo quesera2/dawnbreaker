@@ -143,8 +143,9 @@ class _TaskListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.only(top: 8, bottom: 8 + bottomPadding),
       itemCount: tasks.length,
       itemBuilder: (context, index) => TaskListItem(task: tasks[index]),
     );
