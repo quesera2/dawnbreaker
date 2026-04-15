@@ -30,7 +30,7 @@ void main() {
   group('addPeriodTask', () {
     test('タスクが追加され PeriodTaskItem として取得できる', () async {
       await repository.addPeriodTask(name: '散髪', color: TaskColor.none);
-      final tasks = await repository.watchAllTasks().first;
+      final tasks = await repository.allTaskItems().first;
 
       expect(tasks, hasLength(1));
       final task = tasks.first;
@@ -50,7 +50,7 @@ void main() {
         scheduleValue: 2,
         scheduleUnit: ScheduleUnit.week,
       );
-      final tasks = await repository.watchAllTasks().first;
+      final tasks = await repository.allTaskItems().first;
 
       expect(tasks, hasLength(1));
       final task = tasks.first as ScheduledTaskItem;
@@ -70,7 +70,7 @@ void main() {
       );
       await repository.recordExecution(id, executedAt: DateTime(2025, 6, 1));
 
-      final tasks = await repository.watchAllTasks().first;
+      final tasks = await repository.allTaskItems().first;
       expect(tasks.first.taskHistory, hasLength(2)); // 初回 + 追加分
     });
 
@@ -81,7 +81,7 @@ void main() {
       );
       await repository.recordExecution(id, executedAt: DateTime(2025, 2, 1));
 
-      final tasks = await repository.watchAllTasks().first;
+      final tasks = await repository.allTaskItems().first;
       expect(tasks.first.scheduledAt, isNotNull);
     });
   });
@@ -94,7 +94,7 @@ void main() {
       );
       await repository.deleteTask(id);
 
-      final tasks = await repository.watchAllTasks().first;
+      final tasks = await repository.allTaskItems().first;
       expect(tasks, isEmpty);
     });
 
@@ -109,7 +109,7 @@ void main() {
       );
       await repository.deleteTask(id1);
 
-      final tasks = await repository.watchAllTasks().first;
+      final tasks = await repository.allTaskItems().first;
       expect(tasks, hasLength(1));
       expect(tasks.first.name, '歯ブラシ交換');
     });

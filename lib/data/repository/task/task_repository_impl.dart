@@ -32,7 +32,7 @@ class TaskRepositoryImpl implements TaskRepository {
   final FuriganaTranslate _furiganaTranslate;
 
   @override
-  Stream<List<TaskItem>> watchAllTasks() {
+  Stream<List<TaskItem>> allTaskItems() {
     return (_db.select(_db.taskDefinitions).join([
       leftOuterJoin(
         _db.taskScheduledConfigs,

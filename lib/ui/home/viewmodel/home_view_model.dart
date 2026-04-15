@@ -29,14 +29,14 @@ class HomeViewModel extends _$HomeViewModel {
     }
     if (!ref.mounted) return;
 
-    final subscription = _repository.watchAllTasks().listen((tasks) {
+    final subscription = _repository.allTaskItems().listen((tasks) {
       state = state.copyWith(isLoading: false, tasks: tasks);
     });
     ref.onDispose(subscription.cancel);
   }
 
   Future<void> _seedIfNeeded() async {
-    final tasks = await _repository.watchAllTasks().first;
+    final tasks = await _repository.allTaskItems().first;
     if (tasks.isNotEmpty || !ref.mounted) return;
 
     final toothbrushId = await _repository.addPeriodTask(

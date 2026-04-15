@@ -7,14 +7,14 @@ import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 
 class FakeTaskRepository implements TaskRepository {
   FakeTaskRepository({List<TaskItem> initialTasks = const []})
-      : _tasks = List.of(initialTasks);
+    : _tasks = List.of(initialTasks);
 
   final List<TaskItem> _tasks;
   final _controller = StreamController<List<TaskItem>>.broadcast();
   int _nextId = 100;
 
   @override
-  Stream<List<TaskItem>> watchAllTasks() {
+  Stream<List<TaskItem>> allTaskItems() {
     Future.microtask(() {
       if (!_controller.isClosed) _controller.add(List.of(_tasks));
     });
@@ -25,8 +25,7 @@ class FakeTaskRepository implements TaskRepository {
   Future<int> addPeriodTask({
     required String name,
     required TaskColor color,
-  }) async =>
-      _nextId++;
+  }) async => _nextId++;
 
   @override
   Future<int> addScheduledTask({
@@ -34,8 +33,7 @@ class FakeTaskRepository implements TaskRepository {
     required TaskColor color,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
-  }) async =>
-      _nextId++;
+  }) async => _nextId++;
 
   @override
   Future<void> recordExecution(int taskId, {DateTime? executedAt}) async {}
