@@ -2,16 +2,39 @@
 
 定期的なタスクを管理するアプリ
 
-## Getting Started
+## アプリ説明
 
-This project is a starting point for a Flutter application.
+TODOアプリ的なものではなく、以下のような定期的にやらなければならないものを可視化して、忘れないようにするためのツール。
 
-A few resources to get you started if this is your first Flutter project:
+### 定期的に実行するタスクを登録
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- 屋外の虫除けの期限
+- 浴室のカビ取り剤の交換
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+**いつやらないといけないんだっけ？** の可視化。
+
+### 定期的に行っていることを記録
+
+- 備品のストックの買い出し
+- 理髪店の利用
+
+**どのくらいの頻度でやってるんだっけ？** を可視化。
+
+## スクショ
+
+<img src="./doc/image/screenshot.png" width="350" />
+
+## 技術的狙い
+
+- [ ] `Flatter` / `dart` の学習と実践（以前学んだ内容から結構変わっている部分が多いのでそのキャッチアップ）。
+- [x] `MethodChannel` を使ったネイティブ実装とのブリッジ。
+
+### 技術スタック
+
+| カテゴリ | ライブラリ / ツール |
+|---|---|
+| UI フレームワーク | Flutter |
+| 状態管理 | Riverpod |
+| モデル | Freezed |
+| ルーティング | go_router |
+| データ永続化 | drift |
