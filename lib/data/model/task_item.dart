@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
+import 'package:dawnbreaker/data/model/task_progress.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'task_item.freezed.dart';
@@ -40,6 +41,12 @@ sealed class TaskItem with _$TaskItem {
           ? null
           : scheduleUnit.addTo(taskHistory.last.executedAt, scheduleValue),
   };
+
+  TaskProgress computeProgress([DateTime? now]) => TaskProgress.from(
+    lastExecutedAt: lastExecutedAt,
+    scheduledAt: scheduledAt,
+    now: now ?? DateTime.now(),
+  );
 
   static DateTime? _computePeriodNextAt(List<TaskHistory> taskHistory) {
     if (taskHistory.length < 2) return null;

@@ -2,6 +2,7 @@ import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/data/model/task_progress.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -77,6 +78,60 @@ void main() {
       expect(task.scheduledAt, DateTime(2025, 4, 10));
     });
   });
+
+  group('TaskItem.computeProgress', () {
+    test('履歴が空のとき NoDueDate を返す', () {
+      expect(_periodTask().computeProgress(DateTime(2025, 2, 1)), isA<NoDueDate>());
+    });
+
+    test('scheduledAt が null のとき NoDueDate を返す', () {
+      // PeriodTask で履歴1件 → scheduledAt が null
+      final task = _periodTask(
+        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1))],
+      );
+      expect(task.computeProgress(DateTime(2025, 2, 1)), isA<NoDueDate>());
+    });
+
+    test('期限前: DueDate で isOverdue=false, daysRemaining が正', () {
+      // lastExecutedAt=1/1, scheduledAt=3/4(+62日), now=2/1(+31日) → progress=0.5
+      final task = _periodTask(taskHistory: [
+        TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1)),
+        TaskHistory(id: 2, executedAt: DateTime(2025, 3, 4)),
+      ]);
+      // scheduledAt = 3/4 + 62日 = 5/5
+      final progress = task.computeProgress(DateTime(2025, 4, 4));
+      expect(progress, isA<DueDate>());
+      final dueDate = progress as DueDate;
+      expect(dueDate.isOverdue, false);
+      expect(dueDate.daysRemaining, greaterThan(0));
+    });
+
+    test('期限超過: DueDate で isOverdue=true, daysRemaining が負', () {
+      final task = _scheduledTask(
+        scheduleValue: 30,
+        scheduleUnit: ScheduleUnit.day,
+        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1))],
+      );
+      // scheduledAt = 1/31, now = 2/15 → 超過
+      final progress = task.computeProgress(DateTime(2025, 2, 15));
+      expect(progress, isA<DueDate>());
+      final dueDate = progress as DueDate;
+      expect(dueDate.isOverdue, true);
+      expect(dueDate.daysRemaining, lessThan(0));
+    });
+
+    test('totalDays が 0 のとき DueDate で progress は 0.0', () {
+      // lastExecutedAt と scheduledAt が同じ日
+      final task = _scheduledTask(
+        scheduleValue: 0,
+        scheduleUnit: ScheduleUnit.day,
+        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1))],
+      );
+      final progress = task.computeProgress(DateTime(2025, 1, 1));
+      expect(progress, isA<DueDate>());
+      expect((progress as DueDate).progress, 0.0);
+    });
+  });
 }
 
 TaskItem _periodTask({List<TaskHistory> taskHistory = const []}) =>
@@ -101,3 +156,4 @@ TaskItem _scheduledTask({
   scheduleUnit: scheduleUnit,
   taskHistory: taskHistory,
 );
+
