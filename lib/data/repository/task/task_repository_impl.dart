@@ -3,6 +3,7 @@ import 'package:dawnbreaker/data/database/app_database.dart';
 import 'package:dawnbreaker/data/database/app_database_provider.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
@@ -31,7 +32,7 @@ class TaskRepositoryImpl implements TaskRepository {
   final FuriganaTranslate _furiganaTranslate;
 
   @override
-  Stream<List<TaskItem>> watchAllTasks() {
+  Stream<List<TaskItem>> allTaskItems() {
     return (_db.select(_db.taskDefinitions).join([
       leftOuterJoin(
         _db.taskScheduledConfigs,
@@ -62,74 +63,46 @@ class TaskRepositoryImpl implements TaskRepository {
           .map((r) => r.readTableOrNull(_db.taskExecutions))
           .nonNulls
           .toList();
+      final taskHistory = executions
+          .map((e) => TaskHistory(id: e.id, executedAt: e.executedAt))
+          .toList();
 
-      return TaskItem(
-        id: def.id,
-        taskType: def.taskType,
-        name: def.name,
-        furigana: def.furigana,
-        color: def.color,
-        registeredAt: executions.isNotEmpty
-            ? executions.first.executedAt
-            : DateTime.now(),
-        scheduledAt: _computeScheduledAt(def.taskType, executions, config),
-      );
+      return switch (def.taskType) {
+        TaskType.period => TaskItem.period(
+          id: def.id,
+          name: def.name,
+          furigana: def.furigana,
+          color: def.color,
+          taskHistory: taskHistory,
+        ),
+        TaskType.scheduled => TaskItem.scheduled(
+          id: def.id,
+          name: def.name,
+          furigana: def.furigana,
+          color: def.color,
+          scheduleValue: config!.scheduleValue,
+          scheduleUnit: config.scheduleUnit,
+          taskHistory: taskHistory,
+        ),
+      };
     }).toList();
 
-    // scheduledAt が近い順、null は末尾
     items.sort((a, b) {
-      if (a.scheduledAt == null) return 1;
-      if (b.scheduledAt == null) return -1;
-      return a.scheduledAt!.compareTo(b.scheduledAt!);
+      final aDate = a.scheduledAt;
+      final bDate = b.scheduledAt;
+      if (aDate == null) return 1;
+      if (bDate == null) return -1;
+      return aDate.compareTo(bDate);
     });
 
     return items;
-  }
-
-  DateTime? _computeScheduledAt(
-    TaskType taskType,
-    List<TaskExecution> executions,
-    TaskScheduledConfig? config,
-  ) {
-    if (executions.isEmpty) return null;
-
-    return switch (taskType) {
-      TaskType.period => _computePeriodNextAt(executions),
-      TaskType.scheduled => _computeScheduledNextAt(executions, config),
-    };
-  }
-
-  /// 実行間隔の平均から次回予定日を算出。履歴が2件未満なら null。
-  DateTime? _computePeriodNextAt(List<TaskExecution> executions) {
-    if (executions.length < 2) return null;
-
-    final intervals = [
-      for (var i = 1; i < executions.length; i++)
-        executions[i].executedAt
-            .difference(executions[i - 1].executedAt)
-            .inDays,
-    ];
-
-    final avgDays = intervals.reduce((a, b) => a + b) / intervals.length;
-    return executions.last.executedAt.add(Duration(days: avgDays.round()));
-  }
-
-  /// 最終実行日 + 指定オフセットで次回予定日を算出。
-  DateTime? _computeScheduledNextAt(
-    List<TaskExecution> executions,
-    TaskScheduledConfig? config,
-  ) {
-    if (config == null) return null;
-    return config.scheduleUnit.addTo(
-      executions.last.executedAt,
-      config.scheduleValue,
-    );
   }
 
   @override
   Future<int> addPeriodTask({
     required String name,
     required TaskColor color,
+    required DateTime executedAt,
   }) async {
     try {
       final furigana = await _furiganaTranslate.translate(name) ?? '';
@@ -149,7 +122,7 @@ class TaskRepositoryImpl implements TaskRepository {
             .insert(
               TaskExecutionsCompanion.insert(
                 taskDefinitionId: id,
-                executedAt: DateTime.now(),
+                executedAt: executedAt,
               ),
             );
         return id;
@@ -165,6 +138,7 @@ class TaskRepositoryImpl implements TaskRepository {
     required TaskColor color,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
+    required DateTime executedAt,
   }) async {
     try {
       final furigana = await _furiganaTranslate.translate(name) ?? '';
@@ -193,7 +167,7 @@ class TaskRepositoryImpl implements TaskRepository {
             .insert(
               TaskExecutionsCompanion.insert(
                 taskDefinitionId: id,
-                executedAt: DateTime.now(),
+                executedAt: executedAt,
               ),
             );
         return id;
@@ -204,14 +178,14 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> recordExecution(int taskId, {DateTime? executedAt}) async {
+  Future<void> recordExecution(int taskId, {required DateTime executedAt}) async {
     try {
       await _db
           .into(_db.taskExecutions)
           .insert(
             TaskExecutionsCompanion.insert(
               taskDefinitionId: taskId,
-              executedAt: executedAt ?? DateTime.now(),
+              executedAt: executedAt,
             ),
           );
     } catch (e) {
