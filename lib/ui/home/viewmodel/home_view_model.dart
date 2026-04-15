@@ -36,7 +36,7 @@ class HomeViewModel extends _$HomeViewModel {
   }
 
   Future<void> _seedIfNeeded() async {
-    final tasks = await _repository.allTaskItems().first;　
+    final tasks = await _repository.allTaskItems().first;
     if (tasks.isNotEmpty || !ref.mounted) return;
 
     final now = DateTime.now();
@@ -47,8 +47,14 @@ class HomeViewModel extends _$HomeViewModel {
       color: TaskColor.blue,
       executedAt: now.subtract(const Duration(days: 33)),
     );
-    await _repository.recordExecution(toothbrushId, executedAt: now.subtract(const Duration(days: 93)));
-    await _repository.recordExecution(toothbrushId, executedAt: now.subtract(const Duration(days: 63)));
+    await _repository.recordExecution(
+      toothbrushId,
+      executedAt: now.subtract(const Duration(days: 93)),
+    );
+    await _repository.recordExecution(
+      toothbrushId,
+      executedAt: now.subtract(const Duration(days: 63)),
+    );
 
     // 超過: 3ヶ月スケジュール, 約5日超過
     await _repository.addScheduledTask(
@@ -74,8 +80,14 @@ class HomeViewModel extends _$HomeViewModel {
       color: TaskColor.yellow,
       executedAt: now.subtract(const Duration(days: 72)),
     );
-    await _repository.recordExecution(futonId, executedAt: now.subtract(const Duration(days: 252)));
-    await _repository.recordExecution(futonId, executedAt: now.subtract(const Duration(days: 162)));
+    await _repository.recordExecution(
+      futonId,
+      executedAt: now.subtract(const Duration(days: 252)),
+    );
+    await _repository.recordExecution(
+      futonId,
+      executedAt: now.subtract(const Duration(days: 162)),
+    );
 
     // ~55%: avg 150日サイクル, 82/150日
     final washId = await _repository.addPeriodTask(
@@ -83,7 +95,10 @@ class HomeViewModel extends _$HomeViewModel {
       color: TaskColor.green,
       executedAt: now.subtract(const Duration(days: 82)),
     );
-    await _repository.recordExecution(washId, executedAt: now.subtract(const Duration(days: 232)));
+    await _repository.recordExecution(
+      washId,
+      executedAt: now.subtract(const Duration(days: 232)),
+    );
 
     // ~40%: avg 80日サイクル, 32/80日
     final hairId = await _repository.addPeriodTask(
@@ -91,8 +106,14 @@ class HomeViewModel extends _$HomeViewModel {
       color: TaskColor.none,
       executedAt: now.subtract(const Duration(days: 32)),
     );
-    await _repository.recordExecution(hairId, executedAt: now.subtract(const Duration(days: 192)));
-    await _repository.recordExecution(hairId, executedAt: now.subtract(const Duration(days: 112)));
+    await _repository.recordExecution(
+      hairId,
+      executedAt: now.subtract(const Duration(days: 192)),
+    );
+    await _repository.recordExecution(
+      hairId,
+      executedAt: now.subtract(const Duration(days: 112)),
+    );
 
     // ~29%: 2週間スケジュール, 4/14日
     await _repository.addScheduledTask(
