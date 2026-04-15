@@ -3,6 +3,7 @@ import 'package:dawnbreaker/data/database/app_database.dart';
 import 'package:dawnbreaker/data/database/app_database_provider.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
@@ -62,18 +63,32 @@ class TaskRepositoryImpl implements TaskRepository {
           .map((r) => r.readTableOrNull(_db.taskExecutions))
           .nonNulls
           .toList();
+      final taskHistory = executions
+          .map((e) => TaskHistory(id: e.id, executedAt: e.executedAt))
+          .toList();
+      final registeredAt =
+          executions.isNotEmpty ? executions.first.executedAt : DateTime.now();
 
-      return TaskItem(
-        id: def.id,
-        taskType: def.taskType,
-        name: def.name,
-        furigana: def.furigana,
-        color: def.color,
-        registeredAt: executions.isNotEmpty
-            ? executions.first.executedAt
-            : DateTime.now(),
-        scheduledAt: _computeScheduledAt(def.taskType, executions, config),
-      );
+      return switch (def.taskType) {
+        TaskType.period => TaskItem.period(
+          id: def.id,
+          name: def.name,
+          furigana: def.furigana,
+          color: def.color,
+          registeredAt: registeredAt,
+          taskHistory: taskHistory,
+        ),
+        TaskType.scheduled => TaskItem.scheduled(
+          id: def.id,
+          name: def.name,
+          furigana: def.furigana,
+          color: def.color,
+          registeredAt: registeredAt,
+          scheduleValue: config!.scheduleValue,
+          scheduleUnit: config.scheduleUnit,
+          taskHistory: taskHistory,
+        ),
+      };
     }).toList();
 
     // scheduledAt が近い順、null は末尾
@@ -84,46 +99,6 @@ class TaskRepositoryImpl implements TaskRepository {
     });
 
     return items;
-  }
-
-  DateTime? _computeScheduledAt(
-    TaskType taskType,
-    List<TaskExecution> executions,
-    TaskScheduledConfig? config,
-  ) {
-    if (executions.isEmpty) return null;
-
-    return switch (taskType) {
-      TaskType.period => _computePeriodNextAt(executions),
-      TaskType.scheduled => _computeScheduledNextAt(executions, config),
-    };
-  }
-
-  /// 実行間隔の平均から次回予定日を算出。履歴が2件未満なら null。
-  DateTime? _computePeriodNextAt(List<TaskExecution> executions) {
-    if (executions.length < 2) return null;
-
-    final intervals = [
-      for (var i = 1; i < executions.length; i++)
-        executions[i].executedAt
-            .difference(executions[i - 1].executedAt)
-            .inDays,
-    ];
-
-    final avgDays = intervals.reduce((a, b) => a + b) / intervals.length;
-    return executions.last.executedAt.add(Duration(days: avgDays.round()));
-  }
-
-  /// 最終実行日 + 指定オフセットで次回予定日を算出。
-  DateTime? _computeScheduledNextAt(
-    List<TaskExecution> executions,
-    TaskScheduledConfig? config,
-  ) {
-    if (config == null) return null;
-    return config.scheduleUnit.addTo(
-      executions.last.executedAt,
-      config.scheduleValue,
-    );
   }
 
   @override
