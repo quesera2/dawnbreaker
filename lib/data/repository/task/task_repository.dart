@@ -2,7 +2,7 @@ import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 
-abstract class TaskRepository {
+abstract interface class TaskRepository {
   Stream<List<TaskItem>> allTaskItems();
 
   Future<int> addPeriodTask({

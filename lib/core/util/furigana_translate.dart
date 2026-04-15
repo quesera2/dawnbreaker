@@ -7,7 +7,7 @@ part 'furigana_translate.g.dart';
 @riverpod
 FuriganaTranslate furiganaTranslate(Ref ref) => const FuriganaTranslateImpl();
 
-abstract class FuriganaTranslate {
+abstract interface class FuriganaTranslate {
   Future<String?> translate(String text);
 }
 
