@@ -146,6 +146,7 @@ class TaskListItem extends StatelessWidget {
     );
   }
 
+
   String _formatDate(BuildContext context, DateTime date) {
     return MaterialLocalizations.of(context).formatShortDate(date);
   }

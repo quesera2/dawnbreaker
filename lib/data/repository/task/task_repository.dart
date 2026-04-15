@@ -8,6 +8,7 @@ abstract interface class TaskRepository {
   Future<int> addPeriodTask({
     required String name,
     required TaskColor color,
+    required DateTime executedAt,
   });
 
   Future<int> addScheduledTask({
@@ -15,9 +16,10 @@ abstract interface class TaskRepository {
     required TaskColor color,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
+    required DateTime executedAt,
   });
 
-  Future<void> recordExecution(int taskId, {DateTime? executedAt});
+  Future<void> recordExecution(int taskId, {required DateTime executedAt});
 
   Future<void> deleteTask(int taskId);
 }

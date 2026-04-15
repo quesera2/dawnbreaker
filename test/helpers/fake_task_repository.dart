@@ -25,6 +25,7 @@ class FakeTaskRepository implements TaskRepository {
   Future<int> addPeriodTask({
     required String name,
     required TaskColor color,
+    required DateTime executedAt,
   }) async => _nextId++;
 
   @override
@@ -33,13 +34,15 @@ class FakeTaskRepository implements TaskRepository {
     required TaskColor color,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
+    required DateTime executedAt,
   }) async => _nextId++;
 
   @override
-  Future<void> recordExecution(int taskId, {DateTime? executedAt}) async {}
+  Future<void> recordExecution(int taskId, {required DateTime executedAt}) async {}
 
   @override
   Future<void> deleteTask(int taskId) async {}
 
   void dispose() => _controller.close();
 }
+

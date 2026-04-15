@@ -29,7 +29,7 @@ void main() {
 
   group('addPeriodTask', () {
     test('タスクが追加され PeriodTaskItem として取得できる', () async {
-      await repository.addPeriodTask(name: '散髪', color: TaskColor.none);
+      await repository.addPeriodTask(name: '散髪', color: TaskColor.none, executedAt: DateTime.now());
       final tasks = await repository.allTaskItems().first;
 
       expect(tasks, hasLength(1));
@@ -49,6 +49,7 @@ void main() {
         color: TaskColor.orange,
         scheduleValue: 2,
         scheduleUnit: ScheduleUnit.week,
+        executedAt: DateTime.now(),
       );
       final tasks = await repository.allTaskItems().first;
 
@@ -67,6 +68,7 @@ void main() {
       final id = await repository.addPeriodTask(
         name: '散髪',
         color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
       );
       await repository.recordExecution(id, executedAt: DateTime(2025, 6, 1));
 
@@ -78,6 +80,7 @@ void main() {
       final id = await repository.addPeriodTask(
         name: '散髪',
         color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
       );
       await repository.recordExecution(id, executedAt: DateTime(2025, 2, 1));
 
@@ -91,6 +94,7 @@ void main() {
       final id = await repository.addPeriodTask(
         name: '散髪',
         color: TaskColor.none,
+        executedAt: DateTime.now(),
       );
       await repository.deleteTask(id);
 
@@ -102,10 +106,12 @@ void main() {
       final id1 = await repository.addPeriodTask(
         name: '散髪',
         color: TaskColor.none,
+        executedAt: DateTime.now(),
       );
       await repository.addPeriodTask(
         name: '歯ブラシ交換',
         color: TaskColor.blue,
+        executedAt: DateTime.now(),
       );
       await repository.deleteTask(id1);
 

@@ -102,6 +102,7 @@ class TaskRepositoryImpl implements TaskRepository {
   Future<int> addPeriodTask({
     required String name,
     required TaskColor color,
+    required DateTime executedAt,
   }) async {
     try {
       final furigana = await _furiganaTranslate.translate(name) ?? '';
@@ -121,7 +122,7 @@ class TaskRepositoryImpl implements TaskRepository {
             .insert(
               TaskExecutionsCompanion.insert(
                 taskDefinitionId: id,
-                executedAt: DateTime.now(),
+                executedAt: executedAt,
               ),
             );
         return id;
@@ -137,6 +138,7 @@ class TaskRepositoryImpl implements TaskRepository {
     required TaskColor color,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
+    required DateTime executedAt,
   }) async {
     try {
       final furigana = await _furiganaTranslate.translate(name) ?? '';
@@ -165,7 +167,7 @@ class TaskRepositoryImpl implements TaskRepository {
             .insert(
               TaskExecutionsCompanion.insert(
                 taskDefinitionId: id,
-                executedAt: DateTime.now(),
+                executedAt: executedAt,
               ),
             );
         return id;
@@ -176,14 +178,14 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> recordExecution(int taskId, {DateTime? executedAt}) async {
+  Future<void> recordExecution(int taskId, {required DateTime executedAt}) async {
     try {
       await _db
           .into(_db.taskExecutions)
           .insert(
             TaskExecutionsCompanion.insert(
               taskDefinitionId: taskId,
-              executedAt: executedAt ?? DateTime.now(),
+              executedAt: executedAt,
             ),
           );
     } catch (e) {
