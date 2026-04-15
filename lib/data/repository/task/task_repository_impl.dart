@@ -66,8 +66,6 @@ class TaskRepositoryImpl implements TaskRepository {
       final taskHistory = executions
           .map((e) => TaskHistory(id: e.id, executedAt: e.executedAt))
           .toList();
-      final registeredAt =
-          executions.isNotEmpty ? executions.first.executedAt : DateTime.now();
 
       return switch (def.taskType) {
         TaskType.period => TaskItem.period(
@@ -75,7 +73,6 @@ class TaskRepositoryImpl implements TaskRepository {
           name: def.name,
           furigana: def.furigana,
           color: def.color,
-          registeredAt: registeredAt,
           taskHistory: taskHistory,
         ),
         TaskType.scheduled => TaskItem.scheduled(
@@ -83,7 +80,6 @@ class TaskRepositoryImpl implements TaskRepository {
           name: def.name,
           furigana: def.furigana,
           color: def.color,
-          registeredAt: registeredAt,
           scheduleValue: config!.scheduleValue,
           scheduleUnit: config.scheduleUnit,
           taskHistory: taskHistory,

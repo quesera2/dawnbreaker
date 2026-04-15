@@ -85,7 +85,6 @@ TaskItem _periodTask({List<TaskHistory> taskHistory = const []}) =>
       name: 'テスト',
       furigana: 'てすと',
       color: TaskColor.none,
-      registeredAt: DateTime(2025),
       taskHistory: taskHistory,
     );
 
@@ -98,7 +97,6 @@ TaskItem _scheduledTask({
   name: 'テスト',
   furigana: 'てすと',
   color: TaskColor.none,
-  registeredAt: DateTime(2025),
   scheduleValue: scheduleValue,
   scheduleUnit: scheduleUnit,
   taskHistory: taskHistory,

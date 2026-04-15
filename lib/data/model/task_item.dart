@@ -14,7 +14,6 @@ sealed class TaskItem with _$TaskItem {
     required String name,
     required String furigana,
     required TaskColor color,
-    required DateTime registeredAt,
     required List<TaskHistory> taskHistory,
   }) = PeriodTaskItem;
 
@@ -23,11 +22,12 @@ sealed class TaskItem with _$TaskItem {
     required String name,
     required String furigana,
     required TaskColor color,
-    required DateTime registeredAt,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
     required List<TaskHistory> taskHistory,
   }) = ScheduledTaskItem;
+
+  DateTime? get lastExecutedAt => taskHistory.isEmpty ? null : taskHistory.last.executedAt;
 
   DateTime? get scheduledAt => switch (this) {
     PeriodTaskItem(:final taskHistory) => _computePeriodNextAt(taskHistory),

@@ -166,9 +166,10 @@ class _TaskListItem extends StatelessWidget {
     int? daysRemaining;
     bool isOverdue = false;
 
-    if (scheduledAt != null) {
-      final totalDays = scheduledAt.difference(task.registeredAt).inDays;
-      final elapsedDays = now.difference(task.registeredAt).inDays;
+    final lastExecutedAt = task.lastExecutedAt;
+    if (scheduledAt != null && lastExecutedAt != null) {
+      final totalDays = scheduledAt.difference(lastExecutedAt).inDays;
+      final elapsedDays = now.difference(lastExecutedAt).inDays;
       daysRemaining = scheduledAt.difference(now).inDays;
       isOverdue = now.isAfter(scheduledAt);
       if (totalDays > 0) {
@@ -240,8 +241,9 @@ class _TaskListItem extends StatelessWidget {
                     color: colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 4),
+                  if (lastExecutedAt != null)
                   Text(
-                    _formatDate(context, task.registeredAt),
+                    _formatDate(context, lastExecutedAt),
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),

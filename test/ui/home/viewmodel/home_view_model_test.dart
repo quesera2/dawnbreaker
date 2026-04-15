@@ -100,7 +100,6 @@ final _testTasks = [
     name: '歯ブラシ交換',
     furigana: 'はぶらしこうかん',
     color: TaskColor.blue,
-    registeredAt: DateTime(2026, 1, 1),
     taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1))],
   ),
   TaskItem.period(
@@ -108,7 +107,6 @@ final _testTasks = [
     name: '散髪',
     furigana: 'さんぱつ',
     color: TaskColor.none,
-    registeredAt: DateTime(2026, 1, 1),
     taskHistory: [TaskHistory(id: 2, executedAt: DateTime(2026, 1, 1))],
   ),
 ];
