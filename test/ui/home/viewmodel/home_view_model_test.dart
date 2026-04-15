@@ -1,22 +1,34 @@
 import 'dart:async';
 
-import 'package:dawnbreaker/data/dummy/dummy_tasks.dart';
+import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_history.dart';
+import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../helpers/fake_task_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('HomeViewModel', () {
     late ProviderContainer container;
+    late FakeTaskRepository fakeRepository;
 
     setUp(() {
-      container = ProviderContainer();
+      fakeRepository = FakeTaskRepository(initialTasks: _testTasks);
+      container = ProviderContainer(
+        overrides: [
+          taskRepositoryProvider.overrideWith((_) => fakeRepository),
+        ],
+      );
     });
-    tearDown(() async {
-      await _waitUntilLoaded(container);
+
+    tearDown(() {
       container.dispose();
+      fakeRepository.dispose();
     });
 
     group('初期状態', () {
@@ -37,10 +49,10 @@ void main() {
         await _waitUntilLoaded(container);
       });
 
-      test('isLoading: false になりダミータスクが読み込まれる', () {
+      test('isLoading: false になりタスクが読み込まれる', () {
         final state = container.read(homeViewModelProvider);
         expect(state.isLoading, false);
-        expect(state.tasks, dummyTasks);
+        expect(state.tasks, _testTasks);
       });
 
       test('hasTasks は true', () {
@@ -49,7 +61,7 @@ void main() {
 
       test('searchQuery が空のとき filteredTasks は全タスクを返す', () {
         final state = container.read(homeViewModelProvider);
-        expect(state.filteredTasks, dummyTasks);
+        expect(state.filteredTasks, _testTasks);
       });
 
       test('updateSearchQuery で filteredTasks が絞り込まれる', () {
@@ -82,7 +94,25 @@ void main() {
   });
 }
 
-/// isLoading が false になるまで待機するヘルパー
+final _testTasks = [
+  TaskItem.period(
+    id: 1,
+    name: '歯ブラシ交換',
+    furigana: 'はぶらしこうかん',
+    color: TaskColor.blue,
+    registeredAt: DateTime(2026, 1, 1),
+    taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1))],
+  ),
+  TaskItem.period(
+    id: 2,
+    name: '散髪',
+    furigana: 'さんぱつ',
+    color: TaskColor.none,
+    registeredAt: DateTime(2026, 1, 1),
+    taskHistory: [TaskHistory(id: 2, executedAt: DateTime(2026, 1, 1))],
+  ),
+];
+
 Future<void> _waitUntilLoaded(ProviderContainer container) async {
   final completer = Completer<void>();
   final sub = container.listen(homeViewModelProvider, (_, next) {

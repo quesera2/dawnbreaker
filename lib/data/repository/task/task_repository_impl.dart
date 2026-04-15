@@ -91,11 +91,12 @@ class TaskRepositoryImpl implements TaskRepository {
       };
     }).toList();
 
-    // scheduledAt が近い順、null は末尾
     items.sort((a, b) {
-      if (a.scheduledAt == null) return 1;
-      if (b.scheduledAt == null) return -1;
-      return a.scheduledAt!.compareTo(b.scheduledAt!);
+      final aDate = a.scheduledAt;
+      final bDate = b.scheduledAt;
+      if (aDate == null) return 1;
+      if (bDate == null) return -1;
+      return aDate.compareTo(bDate);
     });
 
     return items;
