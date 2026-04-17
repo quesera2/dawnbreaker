@@ -5,7 +5,6 @@ import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
-import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,9 +26,7 @@ void main() {
 
     group('新規作成モード (taskId: null)', () {
       late ProviderSubscription<EditorViewModel> sub;
-
-      EditorViewModel notifier() =>
-          container.read(editorViewModelProvider().notifier);
+      late EditorViewModel viewModel;
 
       setUp(() {
         fakeRepository = FakeTaskRepository(initialTasks: _testTasks);
@@ -39,6 +36,7 @@ void main() {
           ],
         );
         sub = container.listen(editorViewModelProvider().notifier, (_, __) {});
+        viewModel = container.read(editorViewModelProvider().notifier);
       });
 
       tearDown(() => sub.close());
@@ -59,34 +57,34 @@ void main() {
       });
 
       test('updateName で name が更新され canSave が true になる', () {
-        notifier().updateName('散髪');
+        viewModel.updateName('散髪');
         final state = container.read(editorViewModelProvider());
         expect(state.name, '散髪');
         expect(state.canSave, true);
       });
 
       test('updateIcon で icon が更新される', () {
-        notifier().updateIcon('✂️');
+        viewModel.updateIcon('✂️');
         expect(container.read(editorViewModelProvider()).icon, '✂️');
       });
 
       test('updateType で type が更新される', () {
-        notifier().updateType(TaskType.scheduled);
+        viewModel.updateType(TaskType.scheduled);
         expect(container.read(editorViewModelProvider()).type, TaskType.scheduled);
       });
 
       test('updateColor で color が更新される', () {
-        notifier().updateColor(TaskColor.blue);
+        viewModel.updateColor(TaskColor.blue);
         expect(container.read(editorViewModelProvider()).color, TaskColor.blue);
       });
 
       test('updateScheduleValue で scheduleValue が更新される', () {
-        notifier().updateScheduleValue(3);
+        viewModel.updateScheduleValue(3);
         expect(container.read(editorViewModelProvider()).scheduleValue, 3);
       });
 
       test('updateScheduleUnit で scheduleUnit が更新される', () {
-        notifier().updateScheduleUnit(ScheduleUnit.week);
+        viewModel.updateScheduleUnit(ScheduleUnit.week);
         expect(
           container.read(editorViewModelProvider()).scheduleUnit,
           ScheduleUnit.week,
@@ -94,28 +92,28 @@ void main() {
       });
 
       test('name が空のとき save() は何もしない', () async {
-        await notifier().save();
+        await viewModel.save();
         final state = container.read(editorViewModelProvider());
         expect(state.isSaved, false);
         expect(state.isLoading, false);
       });
 
       test('period タスクを save() すると isSaved: true になる', () async {
-        notifier().updateName('散髪');
-        await notifier().save();
+        viewModel.updateName('散髪');
+        await viewModel.save();
         expect(container.read(editorViewModelProvider()).isSaved, true);
       });
 
       test('scheduled タスクを save() すると isSaved: true になる', () async {
-        notifier()
+        viewModel
           ..updateName('虫避け交換')
           ..updateType(TaskType.scheduled);
-        await notifier().save();
+        await viewModel.save();
         expect(container.read(editorViewModelProvider()).isSaved, true);
       });
 
       test('save() でリポジトリがエラーを返すと errorMessage が設定される', () async {
-        final throwingRepo = _ThrowingFakeTaskRepository();
+        final throwingRepo = FakeTaskRepository(shouldThrow: true);
         final c = ProviderContainer(
           overrides: [
             taskRepositoryProvider.overrideWith((_) => throwingRepo),
@@ -230,26 +228,4 @@ Future<void> _waitUntilLoaded(
   );
   await completer.future;
   sub.close();
-}
-
-class _ThrowingFakeTaskRepository extends FakeTaskRepository {
-  @override
-  Future<int> addPeriodTask({
-    required String name,
-    required String icon,
-    required TaskColor color,
-    required DateTime executedAt,
-  }) async =>
-      throw TaskRepositoryException('テストエラー');
-
-  @override
-  Future<int> addScheduledTask({
-    required String name,
-    required String icon,
-    required TaskColor color,
-    required int scheduleValue,
-    required ScheduleUnit scheduleUnit,
-    required DateTime executedAt,
-  }) async =>
-      throw TaskRepositoryException('テストエラー');
 }

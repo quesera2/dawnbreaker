@@ -5,11 +5,15 @@ import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
+import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 
 class FakeTaskRepository implements TaskRepository {
-  FakeTaskRepository({List<TaskItem> initialTasks = const []})
-    : _tasks = List.of(initialTasks);
+  FakeTaskRepository({
+    List<TaskItem> initialTasks = const [],
+    this.shouldThrow = false,
+  }) : _tasks = List.of(initialTasks);
 
+  final bool shouldThrow;
   final List<TaskItem> _tasks;
   final _controller = StreamController<List<TaskItem>>.broadcast();
   int _nextId = 100;
@@ -24,6 +28,7 @@ class FakeTaskRepository implements TaskRepository {
 
   @override
   Future<TaskItem> findTaskById(int taskId) async {
+    if (shouldThrow) throw TaskRepositoryException('テストエラー');
     return _tasks.firstWhere((t) => t.id == taskId);
   }
 
@@ -33,7 +38,10 @@ class FakeTaskRepository implements TaskRepository {
     required String icon,
     required TaskColor color,
     required DateTime executedAt,
-  }) async => _nextId++;
+  }) async {
+    if (shouldThrow) throw TaskRepositoryException('テストエラー');
+    return _nextId++;
+  }
 
   @override
   Future<int> addScheduledTask({
@@ -43,7 +51,10 @@ class FakeTaskRepository implements TaskRepository {
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
     required DateTime executedAt,
-  }) async => _nextId++;
+  }) async {
+    if (shouldThrow) throw TaskRepositoryException('テストエラー');
+    return _nextId++;
+  }
 
   @override
   Future<void> updateTask({
@@ -54,16 +65,22 @@ class FakeTaskRepository implements TaskRepository {
     required TaskColor color,
     int? scheduleValue,
     ScheduleUnit? scheduleUnit,
-  }) async {}
+  }) async {
+    if (shouldThrow) throw TaskRepositoryException('テストエラー');
+  }
 
   @override
   Future<void> recordExecution(
     int taskId, {
     required DateTime executedAt,
-  }) async {}
+  }) async {
+    if (shouldThrow) throw TaskRepositoryException('テストエラー');
+  }
 
   @override
-  Future<void> deleteTask(int taskId) async {}
+  Future<void> deleteTask(int taskId) async {
+    if (shouldThrow) throw TaskRepositoryException('テストエラー');
+  }
 
   void dispose() => _controller.close();
 }
