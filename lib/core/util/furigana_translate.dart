@@ -8,7 +8,7 @@ part 'furigana_translate.g.dart';
 FuriganaTranslate furiganaTranslate(Ref ref) => const FuriganaTranslateImpl();
 
 abstract interface class FuriganaTranslate {
-  Future<String?> translate(String text);
+  Future<String> translate(String text);
 }
 
 class FuriganaTranslateImpl implements FuriganaTranslate {
@@ -19,14 +19,15 @@ class FuriganaTranslateImpl implements FuriganaTranslate {
   static const _platform = MethodChannel(_channelName);
 
   @override
-  Future<String?> translate(String text) async {
+  Future<String> translate(String text) async {
     try {
-      return await _platform.invokeMethod(_methodTranslateToFurigana, text);
+      return await _platform.invokeMethod(_methodTranslateToFurigana, text) ??
+          '';
     } on PlatformException catch (e) {
       debugPrint(e.message);
-      return null;
+      return '';
     } on MissingPluginException {
-      return null;
+      return '';
     }
   }
 }

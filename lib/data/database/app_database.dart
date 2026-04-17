@@ -8,15 +8,9 @@ import 'package:drift/drift.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(
-  tables: [
-    TaskDefinitions,
-    TaskScheduledConfigs,
-    TaskExecutions,
-  ],
-)
+@DriftDatabase(tables: [TaskDefinitions, TaskScheduledConfigs, TaskExecutions])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase(QueryExecutor executor) : super(executor);
+  AppDatabase(super.executor);
 
   @override
   int get schemaVersion => 1;

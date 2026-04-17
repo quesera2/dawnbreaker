@@ -29,7 +29,11 @@ void main() {
 
   group('addPeriodTask', () {
     test('タスクが追加され PeriodTaskItem として取得できる', () async {
-      await repository.addPeriodTask(name: '散髪', color: TaskColor.none, executedAt: DateTime.now());
+      await repository.addPeriodTask(
+        name: '散髪',
+        color: TaskColor.none,
+        executedAt: DateTime.now(),
+      );
       final tasks = await repository.allTaskItems().first;
 
       expect(tasks, hasLength(1));

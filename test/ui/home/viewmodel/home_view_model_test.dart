@@ -20,9 +20,7 @@ void main() {
     setUp(() {
       fakeRepository = FakeTaskRepository(initialTasks: _testTasks);
       container = ProviderContainer(
-        overrides: [
-          taskRepositoryProvider.overrideWith((_) => fakeRepository),
-        ],
+        overrides: [taskRepositoryProvider.overrideWith((_) => fakeRepository)],
       );
     });
 

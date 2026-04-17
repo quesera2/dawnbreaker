@@ -81,7 +81,10 @@ void main() {
 
   group('TaskItem.computeProgress', () {
     test('履歴が空のとき NoDueDate を返す', () {
-      expect(_periodTask().computeProgress(DateTime(2025, 2, 1)), isA<NoDueDate>());
+      expect(
+        _periodTask().computeProgress(DateTime(2025, 2, 1)),
+        isA<NoDueDate>(),
+      );
     });
 
     test('scheduledAt が null のとき NoDueDate を返す', () {
@@ -94,10 +97,12 @@ void main() {
 
     test('期限前: DueDate で isOverdue=false, daysRemaining が正', () {
       // lastExecutedAt=1/1, scheduledAt=3/4(+62日), now=2/1(+31日) → progress=0.5
-      final task = _periodTask(taskHistory: [
-        TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1)),
-        TaskHistory(id: 2, executedAt: DateTime(2025, 3, 4)),
-      ]);
+      final task = _periodTask(
+        taskHistory: [
+          TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1)),
+          TaskHistory(id: 2, executedAt: DateTime(2025, 3, 4)),
+        ],
+      );
       // scheduledAt = 3/4 + 62日 = 5/5
       final progress = task.computeProgress(DateTime(2025, 4, 4));
       expect(progress, isA<DueDate>());
@@ -156,4 +161,3 @@ TaskItem _scheduledTask({
   scheduleUnit: scheduleUnit,
   taskHistory: taskHistory,
 );
-

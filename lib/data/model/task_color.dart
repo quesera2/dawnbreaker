@@ -9,5 +9,6 @@ enum TaskColor {
   orange(Colors.orange);
 
   const TaskColor(this.color);
+
   final Color color;
 }
