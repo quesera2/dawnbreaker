@@ -32,6 +32,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: const Icon(Icons.add),
+      ),
       extendBodyBehindAppBar: true,
       appBar: GlassAppBar(
         title: _SearchBarField(
@@ -147,7 +151,10 @@ class _TaskListView extends StatelessWidget {
     final topPadding = MediaQuery.paddingOf(context).top;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
     return ListView.builder(
-      padding: EdgeInsets.only(top: 8 + topPadding, bottom: 8 + bottomPadding),
+      padding: EdgeInsets.only(
+        top: 8 + topPadding,
+        bottom: 80 + 8 + bottomPadding,
+      ),
       itemCount: tasks.length,
       itemBuilder: (context, index) => TaskListItem(task: tasks[index]),
     );
