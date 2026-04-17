@@ -58,7 +58,11 @@ class TaskListItem extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(child: Text(task.name, style: theme.textTheme.titleMedium)),
         const SizedBox(width: 4),
-        Icon(Icons.replay_rounded, size: 18, color: colorScheme.onSurfaceVariant),
+        Icon(
+          Icons.replay_rounded,
+          size: 18,
+          color: colorScheme.onSurfaceVariant,
+        ),
         const SizedBox(width: 2),
         Text(
           '再登録',
@@ -93,7 +97,11 @@ class TaskListItem extends StatelessWidget {
           ),
         if (taskProgress case DueDate(:final scheduledAt)) ...[
           const SizedBox(width: 8),
-          Icon(Icons.arrow_forward, size: 13, color: colorScheme.onSurfaceVariant),
+          Icon(
+            Icons.arrow_forward,
+            size: 13,
+            color: colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(width: 8),
           Icon(
             Icons.event_outlined,
@@ -145,7 +153,6 @@ class TaskListItem extends StatelessWidget {
       ],
     );
   }
-
 
   String _formatDate(BuildContext context, DateTime date) {
     return MaterialLocalizations.of(context).formatShortDate(date);

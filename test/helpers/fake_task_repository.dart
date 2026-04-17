@@ -38,11 +38,13 @@ class FakeTaskRepository implements TaskRepository {
   }) async => _nextId++;
 
   @override
-  Future<void> recordExecution(int taskId, {required DateTime executedAt}) async {}
+  Future<void> recordExecution(
+    int taskId, {
+    required DateTime executedAt,
+  }) async {}
 
   @override
   Future<void> deleteTask(int taskId) async {}
 
   void dispose() => _controller.close();
 }
-

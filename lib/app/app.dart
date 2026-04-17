@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:dawnbreaker/ui/home/widgets/home_screen.dart';
+import 'package:flutter/material.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -18,9 +18,7 @@ class App extends StatelessWidget {
     cardTheme: CardThemeData(
       color: _colorScheme.surface,
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
   );
 

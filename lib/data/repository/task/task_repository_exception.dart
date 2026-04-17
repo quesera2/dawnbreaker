@@ -5,6 +5,5 @@ class TaskRepositoryException implements Exception {
   final Object? cause;
 
   @override
-  String toString() =>
-      cause != null ? '$message (cause: $cause)' : message;
+  String toString() => cause != null ? '$message (cause: $cause)' : message;
 }

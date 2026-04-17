@@ -21,7 +21,8 @@ class FuriganaTranslateImpl implements FuriganaTranslate {
   @override
   Future<String> translate(String text) async {
     try {
-      return await _platform.invokeMethod(_methodTranslateToFurigana, text) ?? '';
+      return await _platform.invokeMethod(_methodTranslateToFurigana, text) ??
+          '';
     } on PlatformException catch (e) {
       debugPrint(e.message);
       return '';

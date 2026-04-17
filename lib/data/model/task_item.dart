@@ -28,7 +28,8 @@ sealed class TaskItem with _$TaskItem {
     required List<TaskHistory> taskHistory,
   }) = ScheduledTaskItem;
 
-  DateTime? get lastExecutedAt => taskHistory.isEmpty ? null : taskHistory.last.executedAt;
+  DateTime? get lastExecutedAt =>
+      taskHistory.isEmpty ? null : taskHistory.last.executedAt;
 
   DateTime? get scheduledAt => switch (this) {
     PeriodTaskItem(:final taskHistory) => _computePeriodNextAt(taskHistory),
