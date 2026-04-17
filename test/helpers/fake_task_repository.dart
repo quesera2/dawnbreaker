@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 
 class FakeTaskRepository implements TaskRepository {
@@ -22,8 +23,14 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
+  Future<TaskItem> findTaskById(int taskId) async {
+    return _tasks.firstWhere((t) => t.id == taskId);
+  }
+
+  @override
   Future<int> addPeriodTask({
     required String name,
+    required String icon,
     required TaskColor color,
     required DateTime executedAt,
   }) async => _nextId++;
@@ -31,11 +38,23 @@ class FakeTaskRepository implements TaskRepository {
   @override
   Future<int> addScheduledTask({
     required String name,
+    required String icon,
     required TaskColor color,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
     required DateTime executedAt,
   }) async => _nextId++;
+
+  @override
+  Future<void> updateTask({
+    required int taskId,
+    required TaskType taskType,
+    required String name,
+    required String icon,
+    required TaskColor color,
+    int? scheduleValue,
+    ScheduleUnit? scheduleUnit,
+  }) async {}
 
   @override
   Future<void> recordExecution(
