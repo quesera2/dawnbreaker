@@ -1,3 +1,4 @@
+import "package:collection/collection.dart";
 import 'package:dawnbreaker/core/util/furigana_translate.dart';
 import 'package:dawnbreaker/data/database/app_database.dart';
 import 'package:dawnbreaker/data/database/app_database_provider.dart';
@@ -50,20 +51,16 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   List<TaskItem> _buildAllTaskItemsFromRows(List<TypedResult> rows) {
-    final grouped = <int, List<TypedResult>>{};
-    for (final row in rows) {
-      final id = row.readTable(_db.taskDefinitions).id;
-      grouped.putIfAbsent(id, () => []).add(row);
-    }
+    final grouped = rows.groupListsBy(
+      (row) => row.readTable(_db.taskDefinitions).id,
+    );
 
     final items = grouped.values.map((group) {
       final def = group.first.readTable(_db.taskDefinitions);
       final config = group.first.readTableOrNull(_db.taskScheduledConfigs);
-      final executions = group
+      final taskHistory = group
           .map((r) => r.readTableOrNull(_db.taskExecutions))
           .nonNulls
-          .toList();
-      final taskHistory = executions
           .map((e) => TaskHistory(id: e.id, executedAt: e.executedAt))
           .toList();
 
@@ -178,7 +175,10 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> recordExecution(int taskId, {required DateTime executedAt}) async {
+  Future<void> recordExecution(
+    int taskId, {
+    required DateTime executedAt,
+  }) async {
     try {
       await _db
           .into(_db.taskExecutions)
