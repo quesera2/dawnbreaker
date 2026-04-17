@@ -17,7 +17,7 @@ abstract class EditorUiState with _$EditorUiState {
     @Default(TaskType.period) TaskType type,
     @Default(TaskColor.none) TaskColor color,
     @Default(1) int scheduleValue,
-    @Default(ScheduleUnit.month) ScheduleUnit scheduleUnit,
+    @Default(ScheduleUnit.week) ScheduleUnit scheduleUnit,
     @Default([]) List<TaskHistory> taskHistory,
     String? errorMessage,
     @Default(false) bool isSaved,
