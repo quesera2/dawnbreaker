@@ -130,6 +130,112 @@ class HomeViewModel extends _$HomeViewModel {
       scheduleUnit: ScheduleUnit.week,
       executedAt: now.subtract(const Duration(days: 4)),
     );
+
+    // 超過: 1ヶ月スケジュール, 10日超過
+    await _repository.addScheduledTask(
+      icon: '🚗',
+      name: '洗車',
+      color: TaskColor.blue,
+      scheduleValue: 1,
+      scheduleUnit: ScheduleUnit.month,
+      executedAt: now.subtract(const Duration(days: 40)),
+    );
+
+    // ~90%: 1週間スケジュール, 6/7日
+    await _repository.addScheduledTask(
+      icon: '🪴',
+      name: '観葉植物の水やり',
+      color: TaskColor.green,
+      scheduleValue: 1,
+      scheduleUnit: ScheduleUnit.week,
+      executedAt: now.subtract(const Duration(days: 6)),
+    );
+
+    // ~70%: 12ヶ月スケジュール, 255/365日
+    await _repository.addScheduledTask(
+      icon: '🔥',
+      name: '火災報知器の電池交換',
+      color: TaskColor.red,
+      scheduleValue: 12,
+      scheduleUnit: ScheduleUnit.month,
+      executedAt: now.subtract(const Duration(days: 255)),
+    );
+
+    // ~60%: avg 60日サイクル, 36/60日
+    final bathId = await _repository.addPeriodTask(
+      icon: '🛁',
+      name: 'バスルーム大掃除',
+      color: TaskColor.orange,
+      executedAt: now.subtract(const Duration(days: 36)),
+    );
+    await _repository.recordExecution(
+      bathId,
+      executedAt: now.subtract(const Duration(days: 96)),
+    );
+
+    // ~50%: 2ヶ月スケジュール, 30/60日
+    await _repository.addScheduledTask(
+      icon: '💊',
+      name: 'サプリ補充',
+      color: TaskColor.yellow,
+      scheduleValue: 2,
+      scheduleUnit: ScheduleUnit.month,
+      executedAt: now.subtract(const Duration(days: 30)),
+    );
+
+    // ~20%: 12ヶ月スケジュール, 73/365日
+    await _repository.addScheduledTask(
+      icon: '🧯',
+      name: '消火器の点検',
+      color: TaskColor.red,
+      scheduleValue: 12,
+      scheduleUnit: ScheduleUnit.month,
+      executedAt: now.subtract(const Duration(days: 73)),
+    );
+
+    // ~10%: avg 200日サイクル, 20/200日
+    final pcId = await _repository.addPeriodTask(
+      icon: '🖥️',
+      name: 'PCのホコリ掃除',
+      color: TaskColor.none,
+      executedAt: now.subtract(const Duration(days: 20)),
+    );
+    await _repository.recordExecution(
+      pcId,
+      executedAt: now.subtract(const Duration(days: 220)),
+    );
+
+    // 超過: avg 14日サイクル, 2日超過
+    final plantId = await _repository.addPeriodTask(
+      icon: '🌿',
+      name: 'ベランダの草むしり',
+      color: TaskColor.green,
+      executedAt: now.subtract(const Duration(days: 16)),
+    );
+    await _repository.recordExecution(
+      plantId,
+      executedAt: now.subtract(const Duration(days: 30)),
+    );
+
+    // ~35%: 3ヶ月スケジュール, 32/90日
+    await _repository.addScheduledTask(
+      icon: '👟',
+      name: 'スニーカーの洗濯',
+      color: TaskColor.blue,
+      scheduleValue: 3,
+      scheduleUnit: ScheduleUnit.month,
+      executedAt: now.subtract(const Duration(days: 32)),
+    );
+
+    // ~75%: 1ヶ月スケジュール, 22/30日
+    await _repository.addScheduledTask(
+      icon: '🧹',
+      name: '排水口の掃除',
+      color: TaskColor.orange,
+      scheduleValue: 1,
+      scheduleUnit: ScheduleUnit.month,
+      executedAt: now.subtract(const Duration(days: 22)),
+    );
   }
 
   void updateSearchQuery(String query) {

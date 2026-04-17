@@ -1,9 +1,10 @@
 import 'package:dawnbreaker/data/model/task_item.dart';
-import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_view_model.dart';
 import 'package:dawnbreaker/ui/home/widgets/task_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../common/GlassAppBar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -25,34 +26,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final uiState = ref.watch(homeViewModelProvider);
     final viewModel = ref.read(homeViewModelProvider.notifier);
+
+    if (uiState.isLoading) {
+      return const Scaffold(body: _LoadingView());
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('タスク')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: const Icon(Icons.add),
+      ),
+      extendBodyBehindAppBar: true,
+      appBar: GlassAppBar(
+        title: _SearchBarField(
+          controller: _searchController,
+          showClear: uiState.searchQuery.isNotEmpty,
+          onChanged: viewModel.updateSearchQuery,
+          onClear: () {
+            _searchController.clear();
+            viewModel.updateSearchQuery('');
+          },
+        ),
+        opacity: 0.20,
+      ),
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.translucent,
-        child: Column(
-          children: [
-            if (uiState.hasTasks)
-              _SearchBar(
-                controller: _searchController,
-                showClear: uiState.searchQuery.isNotEmpty,
-                onChanged: viewModel.updateSearchQuery,
-                onClear: () {
-                  _searchController.clear();
-                  viewModel.updateSearchQuery('');
-                },
-              ),
-            Expanded(child: _bodyWidget(uiState)),
-          ],
-        ),
+        child: _bodyWidget(context, uiState),
       ),
     );
   }
 
-  Widget _bodyWidget(HomeUiState uiState) {
-    if (uiState.isLoading) {
-      return const _LoadingView();
-    }
+  Widget _bodyWidget(BuildContext context, dynamic uiState) {
     if (!uiState.hasTasks) {
       return const _EmptyView(message: 'タスクがまだありません');
     }
@@ -89,8 +94,8 @@ class _EmptyView extends StatelessWidget {
   }
 }
 
-class _SearchBar extends StatelessWidget {
-  const _SearchBar({
+class _SearchBarField extends StatelessWidget {
+  const _SearchBarField({
     required this.controller,
     required this.showClear,
     required this.onChanged,
@@ -111,7 +116,7 @@ class _SearchBar extends StatelessWidget {
       borderSide: BorderSide.none,
     );
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: TextField(
         controller: controller,
         onChanged: onChanged,
@@ -143,9 +148,13 @@ class _TaskListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.paddingOf(context).top;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
     return ListView.builder(
-      padding: EdgeInsets.only(top: 8, bottom: 8 + bottomPadding),
+      padding: EdgeInsets.only(
+        top: 8 + topPadding,
+        bottom: 80 + 8 + bottomPadding,
+      ),
       itemCount: tasks.length,
       itemBuilder: (context, index) => TaskListItem(task: tasks[index]),
     );

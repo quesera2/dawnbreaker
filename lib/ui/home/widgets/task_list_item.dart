@@ -16,27 +16,46 @@ class TaskListItem extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      color: colorScheme.surface,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: cardRadius,
-        side: BorderSide(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
+        side: BorderSide(color: colorScheme.outlineVariant),
       ),
       child: InkWell(
         onTap: () {},
         borderRadius: cardRadius,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildTitleRow(theme, colorScheme),
-              const SizedBox(height: 8),
-              _buildDateRow(context, theme, colorScheme, taskProgress),
-              if (taskProgress case DueDate()) ...[
-                const SizedBox(height: 10),
-                _buildProgressRow(theme, colorScheme, taskProgress),
-              ],
+              Container(width: 6, color: task.color.color),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _EmojiCircle(icon: task.icon, colorScheme: colorScheme),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildTitleRow(theme, colorScheme),
+                            if (taskProgress is DueDate) ...[
+                              const SizedBox(height: 4),
+                              _buildDateInfo(theme, colorScheme, taskProgress),
+                              const SizedBox(height: 8),
+                              _buildProgressBar(colorScheme, taskProgress),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -47,22 +66,9 @@ class TaskListItem extends StatelessWidget {
   Widget _buildTitleRow(ThemeData theme, ColorScheme colorScheme) {
     return Row(
       children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(
-            color: task.color.color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 8),
         Expanded(child: Text(task.name, style: theme.textTheme.titleMedium)),
         const SizedBox(width: 4),
-        Icon(
-          Icons.replay_rounded,
-          size: 18,
-          color: colorScheme.onSurfaceVariant,
-        ),
+        Icon(Icons.replay_rounded, size: 18, color: colorScheme.onSurfaceVariant),
         const SizedBox(width: 2),
         Text(
           '再登録',
@@ -74,98 +80,68 @@ class TaskListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildDateRow(
-    BuildContext context,
-    ThemeData theme,
-    ColorScheme colorScheme,
-    TaskProgress taskProgress,
-  ) {
-    return Row(
-      children: [
-        Icon(
-          Icons.calendar_today_outlined,
-          size: 13,
-          color: colorScheme.onSurfaceVariant,
-        ),
-        const SizedBox(width: 4),
-        if (task.lastExecutedAt != null)
-          Text(
-            _formatDate(context, task.lastExecutedAt!),
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-        if (taskProgress case DueDate(:final scheduledAt)) ...[
-          const SizedBox(width: 8),
-          Icon(
-            Icons.arrow_forward,
-            size: 13,
-            color: colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: 8),
-          Icon(
-            Icons.event_outlined,
-            size: 13,
-            color: taskProgress.dueDateColor(colorScheme),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            _formatDate(context, scheduledAt),
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: taskProgress.dueDateColor(colorScheme),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildProgressRow(
+  Widget _buildDateInfo(
     ThemeData theme,
     ColorScheme colorScheme,
     DueDate taskProgress,
   ) {
-    final progressColor = taskProgress.progressColor(colorScheme);
+    final date = taskProgress.scheduledAt;
+    final dateStr = '${date.year}/${date.month}/${date.day}';
+    final remainStr = taskProgress.isOverdue
+        ? '${taskProgress.daysRemaining.abs()}日超過'
+        : '残り${taskProgress.daysRemaining}日';
+    final color =
+        taskProgress.isOverdue ? colorScheme.error : colorScheme.onSurfaceVariant;
 
     return Row(
       children: [
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: taskProgress.progress,
-              minHeight: 6,
-              backgroundColor: colorScheme.surfaceContainerHighest,
-              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
+        Icon(Icons.event_outlined, size: 13, color: color),
+        const SizedBox(width: 4),
         Text(
-          taskProgress.isOverdue
-              ? '${taskProgress.daysRemaining.abs()}日超過'
-              : '残り${taskProgress.daysRemaining}日',
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: progressColor,
-            fontWeight: FontWeight.w600,
-          ),
+          '$dateStr（$remainStr）',
+          style: theme.textTheme.labelMedium?.copyWith(color: color),
         ),
       ],
     );
   }
 
-  String _formatDate(BuildContext context, DateTime date) {
-    return MaterialLocalizations.of(context).formatShortDate(date);
+  Widget _buildProgressBar(ColorScheme colorScheme, DueDate taskProgress) {
+    final progressColor = taskProgress.isOverdue
+        ? colorScheme.error
+        : taskProgress.progress > 0.5
+        ? colorScheme.tertiary
+        : colorScheme.primary;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: LinearProgressIndicator(
+        value: taskProgress.progress,
+        minHeight: 6,
+        backgroundColor: colorScheme.surfaceContainerHighest,
+        valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+      ),
+    );
   }
 }
 
-extension _DueDateColors on DueDate {
-  Color progressColor(ColorScheme colorScheme) => isOverdue
-      ? colorScheme.error
-      : progress > 0.5
-      ? colorScheme.tertiary
-      : colorScheme.primary;
+class _EmojiCircle extends StatelessWidget {
+  const _EmojiCircle({required this.icon, required this.colorScheme});
 
-  Color dueDateColor(ColorScheme colorScheme) =>
-      isOverdue ? colorScheme.error : colorScheme.onSurfaceVariant;
+  final String icon;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(icon, style: const TextStyle(fontSize: 22)),
+      ),
+    );
+  }
 }
