@@ -144,6 +144,7 @@ TaskItem _periodTask({List<TaskHistory> taskHistory = const []}) =>
       id: 1,
       name: 'テスト',
       furigana: 'てすと',
+      icon: '📝',
       color: TaskColor.none,
       taskHistory: taskHistory,
     );
@@ -156,6 +157,7 @@ TaskItem _scheduledTask({
   id: 1,
   name: 'テスト',
   furigana: 'てすと',
+  icon: '📝',
   color: TaskColor.none,
   scheduleValue: scheduleValue,
   scheduleUnit: scheduleUnit,

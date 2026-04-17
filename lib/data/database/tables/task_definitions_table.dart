@@ -7,6 +7,8 @@ class TaskDefinitions extends Table {
 
   TextColumn get taskType => text().map(EnumNameConverter(TaskType.values))();
 
+  TextColumn get icon => text()();
+
   TextColumn get name => text()();
 
   TextColumn get furigana => text()();

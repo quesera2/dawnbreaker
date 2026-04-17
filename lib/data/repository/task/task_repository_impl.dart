@@ -34,20 +34,28 @@ class TaskRepositoryImpl implements TaskRepository {
 
   @override
   Stream<List<TaskItem>> allTaskItems() {
-    return (_db.select(_db.taskDefinitions).join([
-      leftOuterJoin(
-        _db.taskScheduledConfigs,
-        _db.taskScheduledConfigs.taskDefinitionId.equalsExp(
-          _db.taskDefinitions.id,
-        ),
-      ),
-      leftOuterJoin(
-        _db.taskExecutions,
-        _db.taskExecutions.taskDefinitionId.equalsExp(_db.taskDefinitions.id),
-      ),
-    ])..orderBy([OrderingTerm.asc(_db.taskExecutions.executedAt)])).watch().map(
-      _buildAllTaskItemsFromRows,
-    );
+    return (_db.select(_db.taskDefinitions).join(_taskJoins())
+          ..orderBy([OrderingTerm.asc(_db.taskExecutions.executedAt)]))
+        .watch()
+        .map(_buildAllTaskItemsFromRows);
+  }
+
+  @override
+  Future<TaskItem> findTaskById(int taskId) async {
+    try {
+      final rows = await (_db.select(_db.taskDefinitions)
+            ..where((t) => t.id.equals(taskId)))
+          .join(_taskJoins())
+          .get();
+      if (rows.isEmpty) {
+        throw TaskRepositoryException('タスクが見つかりません (id: $taskId)');
+      }
+      return _buildTaskItemFromRows(rows);
+    } on TaskRepositoryException {
+      rethrow;
+    } catch (e) {
+      throw TaskRepositoryException('タスクの取得に失敗しました', cause: e);
+    }
   }
 
   List<TaskItem> _buildAllTaskItemsFromRows(List<TypedResult> rows) {
@@ -55,34 +63,7 @@ class TaskRepositoryImpl implements TaskRepository {
       (row) => row.readTable(_db.taskDefinitions).id,
     );
 
-    final items = grouped.values.map((group) {
-      final def = group.first.readTable(_db.taskDefinitions);
-      final config = group.first.readTableOrNull(_db.taskScheduledConfigs);
-      final taskHistory = group
-          .map((r) => r.readTableOrNull(_db.taskExecutions))
-          .nonNulls
-          .map((e) => TaskHistory(id: e.id, executedAt: e.executedAt))
-          .toList();
-
-      return switch (def.taskType) {
-        TaskType.period => TaskItem.period(
-          id: def.id,
-          name: def.name,
-          furigana: def.furigana,
-          color: def.color,
-          taskHistory: taskHistory,
-        ),
-        TaskType.scheduled => TaskItem.scheduled(
-          id: def.id,
-          name: def.name,
-          furigana: def.furigana,
-          color: def.color,
-          scheduleValue: config!.scheduleValue,
-          scheduleUnit: config.scheduleUnit,
-          taskHistory: taskHistory,
-        ),
-      };
-    }).toList();
+    final items = grouped.values.map(_buildTaskItemFromRows).toList();
 
     items.sort((a, b) {
       final aDate = a.scheduledAt;
@@ -95,9 +76,58 @@ class TaskRepositoryImpl implements TaskRepository {
     return items;
   }
 
+  List<Join> _taskJoins() => [
+    leftOuterJoin(
+      _db.taskScheduledConfigs,
+      _db.taskScheduledConfigs.taskDefinitionId.equalsExp(
+        _db.taskDefinitions.id,
+      ),
+    ),
+    leftOuterJoin(
+      _db.taskExecutions,
+      _db.taskExecutions.taskDefinitionId.equalsExp(_db.taskDefinitions.id),
+    ),
+  ];
+
+  TaskItem _buildTaskItemFromRows(List<TypedResult> rows) {
+    final def = rows.first.readTable(_db.taskDefinitions);
+    final config = rows.first.readTableOrNull(_db.taskScheduledConfigs);
+    final taskHistory = rows
+        .map((r) => r.readTableOrNull(_db.taskExecutions))
+        .nonNulls
+        .map((e) => TaskHistory(id: e.id, executedAt: e.executedAt))
+        .toList();
+
+    return switch (def.taskType) {
+      TaskType.period => TaskItem.period(
+        id: def.id,
+        name: def.name,
+        furigana: def.furigana,
+        icon: def.icon,
+        color: def.color,
+        taskHistory: taskHistory,
+      ),
+      TaskType.scheduled => config != null
+          ? TaskItem.scheduled(
+              id: def.id,
+              name: def.name,
+              furigana: def.furigana,
+              icon: def.icon,
+              color: def.color,
+              scheduleValue: config.scheduleValue,
+              scheduleUnit: config.scheduleUnit,
+              taskHistory: taskHistory,
+            )
+          : throw TaskRepositoryException(
+              'scheduled タスクの設定が見つかりません (id: ${def.id})',
+            ),
+    };
+  }
+
   @override
   Future<int> addPeriodTask({
     required String name,
+    required String icon,
     required TaskColor color,
     required DateTime executedAt,
   }) async {
@@ -111,6 +141,7 @@ class TaskRepositoryImpl implements TaskRepository {
                 taskType: TaskType.period,
                 name: name,
                 furigana: furigana,
+                icon: icon,
                 color: color,
               ),
             );
@@ -132,6 +163,7 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<int> addScheduledTask({
     required String name,
+    required String icon,
     required TaskColor color,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
@@ -147,6 +179,7 @@ class TaskRepositoryImpl implements TaskRepository {
                 taskType: TaskType.scheduled,
                 name: name,
                 furigana: furigana,
+                icon: icon,
                 color: color,
               ),
             );
@@ -190,6 +223,59 @@ class TaskRepositoryImpl implements TaskRepository {
           );
     } catch (e) {
       throw TaskRepositoryException('実行記録の追加に失敗しました', cause: e);
+    }
+  }
+
+  @override
+  Future<void> updateTask({
+    required int taskId,
+    required TaskType taskType,
+    required String name,
+    required String icon,
+    required TaskColor color,
+    int? scheduleValue,
+    ScheduleUnit? scheduleUnit,
+  }) async {
+    try {
+      final furigana = await _furiganaTranslate.translate(name);
+      await _db.transaction(() async {
+        await (_db.update(_db.taskDefinitions)
+              ..where((t) => t.id.equals(taskId)))
+            .write(
+              TaskDefinitionsCompanion(
+                taskType: Value(taskType),
+                name: Value(name),
+                furigana: Value(furigana),
+                icon: Value(icon),
+                color: Value(color),
+              ),
+            );
+        switch (taskType) {
+          case TaskType.period:
+            await (_db.delete(_db.taskScheduledConfigs)
+                  ..where((t) => t.taskDefinitionId.equals(taskId)))
+                .go();
+          case TaskType.scheduled:
+            if (scheduleValue == null || scheduleUnit == null) {
+              throw TaskRepositoryException(
+                'scheduled タスクの更新には scheduleValue と scheduleUnit が必要です',
+              );
+            }
+            await _db
+                .into(_db.taskScheduledConfigs)
+                .insertOnConflictUpdate(
+                  TaskScheduledConfigsCompanion.insert(
+                    taskDefinitionId: Value(taskId),
+                    scheduleValue: scheduleValue,
+                    scheduleUnit: scheduleUnit,
+                  ),
+                );
+        }
+      });
+    } on TaskRepositoryException {
+      rethrow;
+    } catch (e) {
+      throw TaskRepositoryException('タスクの更新に失敗しました', cause: e);
     }
   }
 

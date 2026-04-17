@@ -14,6 +14,7 @@ sealed class TaskItem with _$TaskItem {
     required int id,
     required String name,
     required String furigana,
+    required String icon,
     required TaskColor color,
     required List<TaskHistory> taskHistory,
   }) = PeriodTaskItem;
@@ -22,6 +23,7 @@ sealed class TaskItem with _$TaskItem {
     required int id,
     required String name,
     required String furigana,
+    required String icon,
     required TaskColor color,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
