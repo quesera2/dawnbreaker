@@ -8,12 +8,10 @@ class App extends StatelessWidget {
   static final _theme = ThemeData(
     useMaterial3: true,
     colorScheme: _colorScheme,
-    scaffoldBackgroundColor: _colorScheme.surfaceContainerHigh,
+    scaffoldBackgroundColor: _colorScheme.surface,
     appBarTheme: AppBarTheme(
-      backgroundColor: _colorScheme.surfaceContainerHigh,
-      surfaceTintColor: Colors.transparent,
+      backgroundColor: _colorScheme.surface,
       elevation: 0,
-      scrolledUnderElevation: 0,
     ),
     cardTheme: CardThemeData(
       color: _colorScheme.surface,
