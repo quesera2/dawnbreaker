@@ -6,5 +6,5 @@ class FakeFuriganaTranslate implements FuriganaTranslate {
   final Map<String, String> _map;
 
   @override
-  Future<String?> translate(String text) async => _map[text];
+  Future<String> translate(String text) async => _map[text] ?? '';
 }
