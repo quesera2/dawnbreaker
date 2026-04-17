@@ -109,15 +109,14 @@ class EditorViewModel extends _$EditorViewModel {
   }
 
   Future<void> _update(int id) async {
-    final isScheduled = state.type == TaskType.scheduled;
     await _repository.updateTask(
       taskId: id,
       taskType: state.type,
       name: state.name,
       icon: state.icon,
       color: state.color,
-      scheduleValue: isScheduled ? state.scheduleValue : null,
-      scheduleUnit: isScheduled ? state.scheduleUnit : null,
+      scheduleValue: state.scheduleValue,
+      scheduleUnit: state.scheduleUnit,
     );
   }
 }
