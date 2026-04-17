@@ -7,12 +7,14 @@ abstract interface class TaskRepository {
 
   Future<int> addPeriodTask({
     required String name,
+    required String icon,
     required TaskColor color,
     required DateTime executedAt,
   });
 
   Future<int> addScheduledTask({
     required String name,
+    required String icon,
     required TaskColor color,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,

@@ -98,6 +98,7 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<int> addPeriodTask({
     required String name,
+    required String icon,
     required TaskColor color,
     required DateTime executedAt,
   }) async {
@@ -111,6 +112,7 @@ class TaskRepositoryImpl implements TaskRepository {
                 taskType: TaskType.period,
                 name: name,
                 furigana: furigana,
+                icon: icon,
                 color: color,
               ),
             );
@@ -132,6 +134,7 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<int> addScheduledTask({
     required String name,
+    required String icon,
     required TaskColor color,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
@@ -147,6 +150,7 @@ class TaskRepositoryImpl implements TaskRepository {
                 taskType: TaskType.scheduled,
                 name: name,
                 furigana: furigana,
+                icon: icon,
                 color: color,
               ),
             );
