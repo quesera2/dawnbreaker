@@ -30,9 +30,10 @@ void main() {
 
   tearDown(() => db.close());
 
-  group('addPeriodTask', () {
-    test('タスクが追加され PeriodTaskItem として取得できる', () async {
-      await repository.addPeriodTask(
+  group('addTask', () {
+    test('period タスクが追加され PeriodTaskItem として取得できる', () async {
+      await repository.addTask(
+        taskType: TaskType.period,
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
@@ -46,13 +47,12 @@ void main() {
       expect(task.name, '散髪');
       expect(task.furigana, 'さんぱつ');
       expect(task.color, TaskColor.none);
-      expect(task.taskHistory, hasLength(1)); // 登録時の初回実行
+      expect(task.taskHistory, hasLength(1));
     });
-  });
 
-  group('addScheduledTask', () {
-    test('タスクが追加され ScheduledTaskItem として取得できる', () async {
-      await repository.addScheduledTask(
+    test('scheduled タスクが追加され ScheduledTaskItem として取得できる', () async {
+      await repository.addTask(
+        taskType: TaskType.scheduled,
         name: '虫避け交換',
         icon: '📝',
         color: TaskColor.orange,
@@ -70,11 +70,45 @@ void main() {
       expect(task.scheduleUnit, ScheduleUnit.week);
       expect(task.taskHistory, hasLength(1));
     });
+
+    test('irregular タスクが追加され IrregularTaskItem として取得できる', () async {
+      await repository.addTask(
+        taskType: TaskType.irregular,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime.now(),
+      );
+      final tasks = await repository.allTaskItems().first;
+
+      expect(tasks, hasLength(1));
+      final task = tasks.first;
+      expect(task, isA<IrregularTaskItem>());
+      expect(task.name, '散髪');
+      expect(task.scheduledAt, isNull);
+    });
+
+    test(
+      'scheduled タイプで scheduleValue/scheduleUnit が null のとき例外を投げる',
+      () async {
+        expect(
+          () => repository.addTask(
+            taskType: TaskType.scheduled,
+            name: '虫避け交換',
+            icon: '📝',
+            color: TaskColor.orange,
+            executedAt: DateTime.now(),
+          ),
+          throwsA(isA<TaskRepositoryException>()),
+        );
+      },
+    );
   });
 
   group('findTaskById', () {
     test('指定した ID の PeriodTaskItem を取得できる', () async {
-      final id = await repository.addPeriodTask(
+      final id = await repository.addTask(
+        taskType: TaskType.period,
         name: '散髪',
         icon: '✂️',
         color: TaskColor.none,
@@ -89,7 +123,8 @@ void main() {
     });
 
     test('指定した ID の ScheduledTaskItem を取得できる', () async {
-      final id = await repository.addScheduledTask(
+      final id = await repository.addTask(
+        taskType: TaskType.scheduled,
         name: '虫避け交換',
         icon: '📝',
         color: TaskColor.orange,
@@ -114,7 +149,8 @@ void main() {
 
   group('recordExecution', () {
     test('実行履歴が追加される', () async {
-      final id = await repository.addPeriodTask(
+      final id = await repository.addTask(
+        taskType: TaskType.period,
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
@@ -123,11 +159,12 @@ void main() {
       await repository.recordExecution(id, executedAt: DateTime(2025, 6, 1));
 
       final tasks = await repository.allTaskItems().first;
-      expect(tasks.first.taskHistory, hasLength(2)); // 初回 + 追加分
+      expect(tasks.first.taskHistory, hasLength(2));
     });
 
     test('履歴が2件以上になると scheduledAt が算出される', () async {
-      final id = await repository.addPeriodTask(
+      final id = await repository.addTask(
+        taskType: TaskType.period,
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
@@ -142,7 +179,8 @@ void main() {
 
   group('updateTask', () {
     test('period タスクの name/icon/color を更新できる', () async {
-      final id = await repository.addPeriodTask(
+      final id = await repository.addTask(
+        taskType: TaskType.period,
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
@@ -165,7 +203,8 @@ void main() {
     });
 
     test('scheduled タスクの scheduleValue/scheduleUnit を更新できる', () async {
-      final id = await repository.addScheduledTask(
+      final id = await repository.addTask(
+        taskType: TaskType.scheduled,
         name: '虫避け交換',
         icon: '📝',
         color: TaskColor.orange,
@@ -189,7 +228,8 @@ void main() {
     });
 
     test('scheduled から period に変更すると taskScheduledConfigs が削除される', () async {
-      final id = await repository.addScheduledTask(
+      final id = await repository.addTask(
+        taskType: TaskType.scheduled,
         name: '虫避け交換',
         icon: '📝',
         color: TaskColor.orange,
@@ -210,7 +250,8 @@ void main() {
     });
 
     test('period から scheduled に変更すると taskScheduledConfigs が追加される', () async {
-      final id = await repository.addPeriodTask(
+      final id = await repository.addTask(
+        taskType: TaskType.period,
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
@@ -235,7 +276,8 @@ void main() {
     test(
       'scheduled タイプで scheduleValue/scheduleUnit が null のとき例外を投げる',
       () async {
-        final id = await repository.addScheduledTask(
+        final id = await repository.addTask(
+          taskType: TaskType.scheduled,
           name: '虫避け交換',
           icon: '📝',
           color: TaskColor.orange,
@@ -260,7 +302,8 @@ void main() {
 
   group('deleteTask', () {
     test('指定したタスクが削除される', () async {
-      final id = await repository.addPeriodTask(
+      final id = await repository.addTask(
+        taskType: TaskType.period,
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
@@ -273,13 +316,15 @@ void main() {
     });
 
     test('複数タスクのうち指定したものだけ削除される', () async {
-      final id1 = await repository.addPeriodTask(
+      final id1 = await repository.addTask(
+        taskType: TaskType.period,
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
         executedAt: DateTime.now(),
       );
-      await repository.addPeriodTask(
+      await repository.addTask(
+        taskType: TaskType.period,
         name: '歯ブラシ交換',
         icon: '📝',
         color: TaskColor.blue,

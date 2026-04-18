@@ -31,24 +31,15 @@ class EditorViewModel extends _$EditorViewModel {
     try {
       final task = await _repository.findTaskById(taskId);
       if (!ref.mounted) return;
-      state = switch (task) {
-        PeriodTaskItem() => EditorUiState(
-          icon: task.icon,
-          name: task.name,
-          type: TaskType.period,
-          color: task.color,
-          taskHistory: task.taskHistory,
-        ),
-        ScheduledTaskItem() => EditorUiState(
-          icon: task.icon,
-          name: task.name,
-          type: TaskType.scheduled,
-          color: task.color,
-          scheduleValue: task.scheduleValue,
-          scheduleUnit: task.scheduleUnit,
-          taskHistory: task.taskHistory,
-        ),
-      };
+      state = EditorUiState(
+        icon: task.icon,
+        name: task.name,
+        color: task.color,
+        taskHistory: task.taskHistory,
+        type: task._taskType,
+        scheduleValue: task._scheduleValueOrDefault,
+        scheduleUnit: task._scheduleUnitOrDefault,
+      );
     } on TaskRepositoryException {
       if (!ref.mounted) return;
       state = state.copyWith(
@@ -94,25 +85,15 @@ class EditorViewModel extends _$EditorViewModel {
   }
 
   Future<void> _create() async {
-    final now = DateTime.now();
-    switch (state.type) {
-      case TaskType.period:
-        await _repository.addPeriodTask(
-          name: state.name,
-          icon: state.icon,
-          color: state.color,
-          executedAt: now,
-        );
-      case TaskType.scheduled:
-        await _repository.addScheduledTask(
-          name: state.name,
-          icon: state.icon,
-          color: state.color,
-          scheduleValue: state.scheduleValue,
-          scheduleUnit: state.scheduleUnit,
-          executedAt: now,
-        );
-    }
+    await _repository.addTask(
+      taskType: state.type,
+      name: state.name,
+      icon: state.icon,
+      color: state.color,
+      scheduleValue: state.scheduleValue,
+      scheduleUnit: state.scheduleUnit,
+      executedAt: DateTime.now(),
+    );
   }
 
   Future<void> _update(int id) async {
@@ -126,4 +107,24 @@ class EditorViewModel extends _$EditorViewModel {
       scheduleUnit: state.scheduleUnit,
     );
   }
+}
+
+extension _TaskItemEditorExtension on TaskItem {
+  TaskType get _taskType => switch (this) {
+    IrregularTaskItem() => TaskType.irregular,
+    PeriodTaskItem() => TaskType.period,
+    ScheduledTaskItem() => TaskType.scheduled,
+  };
+
+  int get _scheduleValueOrDefault => switch (this) {
+    IrregularTaskItem() => 1,
+    PeriodTaskItem() => 1,
+    ScheduledTaskItem(:final scheduleValue) => scheduleValue,
+  };
+
+  ScheduleUnit get _scheduleUnitOrDefault => switch (this) {
+    IrregularTaskItem() => ScheduleUnit.week,
+    PeriodTaskItem() => ScheduleUnit.week,
+    ScheduledTaskItem(:final scheduleUnit) => scheduleUnit,
+  };
 }
