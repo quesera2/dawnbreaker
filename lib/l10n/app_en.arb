@@ -1,0 +1,20 @@
+{
+  "@@locale": "en",
+  "title": "Dawnbreaker",
+  "homeSearchHint": "Search tasks",
+  "homeNoTasksYet": "No tasks yet",
+  "homeNoTasksFound": "No matching tasks found",
+  "homeReRegister": "Re-register",
+  "homeDaysOverdue": "{days}d overdue",
+  "@daysOverdue": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "homeDaysRemaining": "{days}d remaining",
+  "@homeDaysRemaining": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  }
+}
