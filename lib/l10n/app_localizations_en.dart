@@ -52,5 +52,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taskErrorInvalidArgument => 'Invalid input';
 
   @override
+  String get errorTitle => 'Error';
+
+  @override
   String get errorUnknown => 'An unexpected error occurred';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get retry => 'Retry';
 }

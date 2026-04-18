@@ -256,8 +256,8 @@ class TaskRepositoryImpl implements TaskRepository {
           case TaskType.scheduled:
             if (scheduleValue == null || scheduleUnit == null) {
               throw const TaskInvalidArgumentException(
-              'scheduled タスクの更新には scheduleValue と scheduleUnit が必要です',
-            );
+                'scheduled タスクの更新には scheduleValue と scheduleUnit が必要です',
+              );
             }
             await _db
                 .into(_db.taskScheduledConfigs)

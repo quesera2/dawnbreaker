@@ -23,5 +23,9 @@
   "taskErrorUpdateFailed": "更新に失敗しました",
   "taskErrorDeleteFailed": "削除に失敗しました",
   "taskErrorInvalidArgument": "入力内容が正しくありません",
-  "errorUnknown": "予期しないエラーが発生しました"
+  "errorTitle": "エラー",
+  "errorUnknown": "予期しないエラーが発生しました",
+  "ok": "OK",
+  "cancel": "キャンセル",
+  "retry": "再試行"
 }

@@ -176,11 +176,35 @@ abstract class AppLocalizations {
   /// **'入力内容が正しくありません'**
   String get taskErrorInvalidArgument;
 
+  /// No description provided for @errorTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラー'**
+  String get errorTitle;
+
   /// No description provided for @errorUnknown.
   ///
   /// In ja, this message translates to:
   /// **'予期しないエラーが発生しました'**
   String get errorUnknown;
+
+  /// No description provided for @ok.
+  ///
+  /// In ja, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @cancel.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンセル'**
+  String get cancel;
+
+  /// No description provided for @retry.
+  ///
+  /// In ja, this message translates to:
+  /// **'再試行'**
+  String get retry;
 }
 
 class _AppLocalizationsDelegate

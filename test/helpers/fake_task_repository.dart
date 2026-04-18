@@ -28,7 +28,7 @@ class FakeTaskRepository implements TaskRepository {
 
   @override
   Future<TaskItem> findTaskById(int taskId) async {
-    if (shouldThrow) throw TaskRepositoryException('テストエラー');
+    if (shouldThrow) throw const TaskLoadException('テストエラー');
     return _tasks.firstWhere((t) => t.id == taskId);
   }
 
@@ -39,7 +39,7 @@ class FakeTaskRepository implements TaskRepository {
     required TaskColor color,
     required DateTime executedAt,
   }) async {
-    if (shouldThrow) throw TaskRepositoryException('テストエラー');
+    if (shouldThrow) throw const TaskSaveException('テストエラー');
     return _nextId++;
   }
 
@@ -52,7 +52,7 @@ class FakeTaskRepository implements TaskRepository {
     required ScheduleUnit scheduleUnit,
     required DateTime executedAt,
   }) async {
-    if (shouldThrow) throw TaskRepositoryException('テストエラー');
+    if (shouldThrow) throw const TaskSaveException('テストエラー');
     return _nextId++;
   }
 
@@ -66,7 +66,7 @@ class FakeTaskRepository implements TaskRepository {
     int? scheduleValue,
     ScheduleUnit? scheduleUnit,
   }) async {
-    if (shouldThrow) throw TaskRepositoryException('テストエラー');
+    if (shouldThrow) throw const TaskUpdateException('テストエラー');
   }
 
   @override
@@ -74,12 +74,12 @@ class FakeTaskRepository implements TaskRepository {
     int taskId, {
     required DateTime executedAt,
   }) async {
-    if (shouldThrow) throw TaskRepositoryException('テストエラー');
+    if (shouldThrow) throw const TaskSaveException('テストエラー');
   }
 
   @override
   Future<void> deleteTask(int taskId) async {
-    if (shouldThrow) throw TaskRepositoryException('テストエラー');
+    if (shouldThrow) throw const TaskDeleteException('テストエラー');
   }
 
   void dispose() => _controller.close();

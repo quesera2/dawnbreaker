@@ -1,5 +1,6 @@
 sealed class TaskRepositoryException implements Exception {
   const TaskRepositoryException([this.message]);
+
   final String? message;
 
   @override

@@ -52,5 +52,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get taskErrorInvalidArgument => '入力内容が正しくありません';
 
   @override
+  String get errorTitle => 'エラー';
+
+  @override
   String get errorUnknown => '予期しないエラーが発生しました';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get cancel => 'キャンセル';
+
+  @override
+  String get retry => '再試行';
 }

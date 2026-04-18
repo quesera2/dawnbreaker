@@ -3,6 +3,7 @@ import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
+import 'package:dawnbreaker/ui/common/error_message.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -22,9 +23,12 @@ class HomeViewModel extends _$HomeViewModel {
   Future<void> _initialize() async {
     try {
       await _seedIfNeeded();
-    } on TaskRepositoryException catch (e) {
+    } on TaskRepositoryException {
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: TaskLoadErrorMessage(handler: _initialize),
+      );
       return;
     }
     if (!ref.mounted) return;
