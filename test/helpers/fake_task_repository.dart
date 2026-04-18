@@ -35,24 +35,14 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Future<int> addPeriodTask({
+  Future<int> addTask({
+    required TaskType taskType,
     required String name,
     required String icon,
     required TaskColor color,
     required DateTime executedAt,
-  }) async {
-    if (shouldThrow) throw const TaskSaveException('テストエラー');
-    return _nextId++;
-  }
-
-  @override
-  Future<int> addScheduledTask({
-    required String name,
-    required String icon,
-    required TaskColor color,
-    required int scheduleValue,
-    required ScheduleUnit scheduleUnit,
-    required DateTime executedAt,
+    int? scheduleValue,
+    ScheduleUnit? scheduleUnit,
   }) async {
     if (shouldThrow) throw const TaskSaveException('テストエラー');
     return _nextId++;

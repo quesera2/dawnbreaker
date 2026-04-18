@@ -1,5 +1,6 @@
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
@@ -46,7 +47,8 @@ class HomeViewModel extends _$HomeViewModel {
     final now = DateTime.now();
 
     // 超過: avg 30日サイクル, 3日超過
-    final toothbrushId = await _repository.addPeriodTask(
+    final toothbrushId = await _repository.addTask(
+      taskType: TaskType.period,
       icon: '🪥',
       name: '歯ブラシ交換',
       color: TaskColor.blue,
@@ -62,7 +64,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // 超過: 3ヶ月スケジュール, 約5日超過
-    await _repository.addScheduledTask(
+    await _repository.addTask(
+      taskType: TaskType.scheduled,
       icon: '🧊',
       name: 'エアコンフィルタ掃除',
       color: TaskColor.red,
@@ -72,7 +75,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // ~85%: 6ヶ月スケジュール, 153/180日
-    await _repository.addScheduledTask(
+    await _repository.addTask(
+      taskType: TaskType.scheduled,
       icon: '💧',
       name: '給水フィルタ交換',
       color: TaskColor.blue,
@@ -82,7 +86,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // ~80%: avg 90日サイクル, 72/90日
-    final futonId = await _repository.addPeriodTask(
+    final futonId = await _repository.addTask(
+      taskType: TaskType.period,
       icon: '🛏️',
       name: '布団干し',
       color: TaskColor.yellow,
@@ -98,7 +103,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // ~55%: avg 150日サイクル, 82/150日
-    final washId = await _repository.addPeriodTask(
+    final washId = await _repository.addTask(
+      taskType: TaskType.period,
       icon: '🧺',
       name: '洗濯槽クリーニング',
       color: TaskColor.green,
@@ -110,7 +116,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // ~40%: avg 80日サイクル, 32/80日
-    final hairId = await _repository.addPeriodTask(
+    final hairId = await _repository.addTask(
+      taskType: TaskType.period,
       icon: '✂️',
       name: '散髪',
       color: TaskColor.none,
@@ -126,7 +133,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // ~29%: 2週間スケジュール, 4/14日
-    await _repository.addScheduledTask(
+    await _repository.addTask(
+      taskType: TaskType.scheduled,
       icon: '🐝',
       name: '虫避け交換',
       color: TaskColor.orange,
@@ -136,7 +144,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // 超過: 1ヶ月スケジュール, 10日超過
-    await _repository.addScheduledTask(
+    await _repository.addTask(
+      taskType: TaskType.scheduled,
       icon: '🚗',
       name: '洗車',
       color: TaskColor.blue,
@@ -146,7 +155,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // ~90%: 1週間スケジュール, 6/7日
-    await _repository.addScheduledTask(
+    await _repository.addTask(
+      taskType: TaskType.scheduled,
       icon: '🪴',
       name: '観葉植物の水やり',
       color: TaskColor.green,
@@ -156,7 +166,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // ~70%: 12ヶ月スケジュール, 255/365日
-    await _repository.addScheduledTask(
+    await _repository.addTask(
+      taskType: TaskType.scheduled,
       icon: '🔥',
       name: '火災報知器の電池交換',
       color: TaskColor.red,
@@ -166,7 +177,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // ~60%: avg 60日サイクル, 36/60日
-    final bathId = await _repository.addPeriodTask(
+    final bathId = await _repository.addTask(
+      taskType: TaskType.period,
       icon: '🛁',
       name: 'バスルーム大掃除',
       color: TaskColor.orange,
@@ -178,7 +190,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // ~50%: 2ヶ月スケジュール, 30/60日
-    await _repository.addScheduledTask(
+    await _repository.addTask(
+      taskType: TaskType.scheduled,
       icon: '💊',
       name: 'サプリ補充',
       color: TaskColor.yellow,
@@ -188,7 +201,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // ~20%: 12ヶ月スケジュール, 73/365日
-    await _repository.addScheduledTask(
+    await _repository.addTask(
+      taskType: TaskType.scheduled,
       icon: '🧯',
       name: '消火器の点検',
       color: TaskColor.red,
@@ -198,7 +212,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // ~10%: avg 200日サイクル, 20/200日
-    final pcId = await _repository.addPeriodTask(
+    final pcId = await _repository.addTask(
+      taskType: TaskType.period,
       icon: '🖥️',
       name: 'PCのホコリ掃除',
       color: TaskColor.none,
@@ -210,7 +225,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // 超過: avg 14日サイクル, 2日超過
-    final plantId = await _repository.addPeriodTask(
+    final plantId = await _repository.addTask(
+      taskType: TaskType.period,
       icon: '🌿',
       name: 'ベランダの草むしり',
       color: TaskColor.green,
@@ -222,7 +238,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // ~35%: 3ヶ月スケジュール, 32/90日
-    await _repository.addScheduledTask(
+    await _repository.addTask(
+      taskType: TaskType.scheduled,
       icon: '👟',
       name: 'スニーカーの洗濯',
       color: TaskColor.blue,
@@ -232,7 +249,8 @@ class HomeViewModel extends _$HomeViewModel {
     );
 
     // ~75%: 1ヶ月スケジュール, 22/30日
-    await _repository.addScheduledTask(
+    await _repository.addTask(
+      taskType: TaskType.scheduled,
       icon: '🧹',
       name: '排水口の掃除',
       color: TaskColor.orange,

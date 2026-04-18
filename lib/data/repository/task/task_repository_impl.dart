@@ -98,6 +98,14 @@ class TaskRepositoryImpl implements TaskRepository {
         .toList();
 
     return switch (def.taskType) {
+      TaskType.irregular => TaskItem.irregular(
+        id: def.id,
+        name: def.name,
+        furigana: def.furigana,
+        icon: def.icon,
+        color: def.color,
+        taskHistory: taskHistory,
+      ),
       TaskType.period => TaskItem.period(
         id: def.id,
         name: def.name,
@@ -123,50 +131,21 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<int> addPeriodTask({
+  Future<int> addTask({
+    required TaskType taskType,
     required String name,
     required String icon,
     required TaskColor color,
     required DateTime executedAt,
+    int? scheduleValue,
+    ScheduleUnit? scheduleUnit,
   }) async {
-    try {
-      final furigana = await _furiganaTranslate.translate(name);
-      return _db.transaction(() async {
-        final id = await _db
-            .into(_db.taskDefinitions)
-            .insert(
-              TaskDefinitionsCompanion.insert(
-                taskType: TaskType.period,
-                name: name,
-                furigana: furigana,
-                icon: icon,
-                color: color,
-              ),
-            );
-        await _db
-            .into(_db.taskExecutions)
-            .insert(
-              TaskExecutionsCompanion.insert(
-                taskDefinitionId: id,
-                executedAt: executedAt,
-              ),
-            );
-        return id;
-      });
-    } catch (e) {
-      throw TaskSaveException(e.toString());
+    if (taskType == TaskType.scheduled &&
+        (scheduleValue == null || scheduleUnit == null)) {
+      throw const TaskInvalidArgumentException(
+        'scheduled タスクの追加には scheduleValue と scheduleUnit が必要です',
+      );
     }
-  }
-
-  @override
-  Future<int> addScheduledTask({
-    required String name,
-    required String icon,
-    required TaskColor color,
-    required int scheduleValue,
-    required ScheduleUnit scheduleUnit,
-    required DateTime executedAt,
-  }) async {
     try {
       final furigana = await _furiganaTranslate.translate(name);
       return _db.transaction(() async {
@@ -174,22 +153,24 @@ class TaskRepositoryImpl implements TaskRepository {
             .into(_db.taskDefinitions)
             .insert(
               TaskDefinitionsCompanion.insert(
-                taskType: TaskType.scheduled,
+                taskType: taskType,
                 name: name,
                 furigana: furigana,
                 icon: icon,
                 color: color,
               ),
             );
-        await _db
-            .into(_db.taskScheduledConfigs)
-            .insert(
-              TaskScheduledConfigsCompanion.insert(
-                taskDefinitionId: Value(id),
-                scheduleValue: scheduleValue,
-                scheduleUnit: scheduleUnit,
-              ),
-            );
+        if (taskType == TaskType.scheduled) {
+          await _db
+              .into(_db.taskScheduledConfigs)
+              .insert(
+                TaskScheduledConfigsCompanion.insert(
+                  taskDefinitionId: Value(id),
+                  scheduleValue: scheduleValue!,
+                  scheduleUnit: scheduleUnit!,
+                ),
+              );
+        }
         await _db
             .into(_db.taskExecutions)
             .insert(
@@ -249,6 +230,7 @@ class TaskRepositoryImpl implements TaskRepository {
           ),
         );
         switch (taskType) {
+          case TaskType.irregular:
           case TaskType.period:
             await (_db.delete(
               _db.taskScheduledConfigs,

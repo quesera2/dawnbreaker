@@ -10,6 +10,15 @@ part 'task_item.freezed.dart';
 sealed class TaskItem with _$TaskItem {
   const TaskItem._();
 
+  const factory TaskItem.irregular({
+    required int id,
+    required String name,
+    required String furigana,
+    required String icon,
+    required TaskColor color,
+    required List<TaskHistory> taskHistory,
+  }) = IrregularTaskItem;
+
   const factory TaskItem.period({
     required int id,
     required String name,
@@ -34,6 +43,7 @@ sealed class TaskItem with _$TaskItem {
       taskHistory.isEmpty ? null : taskHistory.last.executedAt;
 
   DateTime? get scheduledAt => switch (this) {
+    IrregularTaskItem() => null,
     PeriodTaskItem(:final taskHistory) => _computePeriodNextAt(taskHistory),
     ScheduledTaskItem(
       :final taskHistory,

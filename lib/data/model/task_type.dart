@@ -1,1 +1,1 @@
-enum TaskType { period, scheduled }
+enum TaskType { irregular, period, scheduled }
