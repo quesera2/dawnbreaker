@@ -31,10 +31,27 @@ class TaskListItem extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(width: 6, color: task.color.color),
+              Stack(
+                children: [
+                  Container(width: 16, color: task.color.color),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Container(
+                      width: 8,
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          bottomLeft: Radius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                  padding: const EdgeInsets.fromLTRB(4, 12, 12, 12),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -141,6 +158,7 @@ class TaskListItem extends StatelessWidget {
     );
   }
 }
+
 
 class _EmojiCircle extends StatelessWidget {
   const _EmojiCircle({required this.icon, required this.colorScheme});
