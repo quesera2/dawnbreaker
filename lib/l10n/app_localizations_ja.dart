@@ -32,4 +32,25 @@ class AppLocalizationsJa extends AppLocalizations {
   String homeDaysRemaining(int days) {
     return '残り$days日';
   }
+
+  @override
+  String get taskErrorLoadFailed => '読み込みに失敗しました';
+
+  @override
+  String get taskErrorNotFound => 'タスクが見つかりません';
+
+  @override
+  String get taskErrorSaveFailed => '保存に失敗しました';
+
+  @override
+  String get taskErrorUpdateFailed => '更新に失敗しました';
+
+  @override
+  String get taskErrorDeleteFailed => '削除に失敗しました';
+
+  @override
+  String get taskErrorInvalidArgument => '入力内容が正しくありません';
+
+  @override
+  String get errorUnknown => '予期しないエラーが発生しました';
 }

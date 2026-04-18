@@ -47,13 +47,13 @@ class TaskRepositoryImpl implements TaskRepository {
         _db.taskDefinitions,
       )..where((t) => t.id.equals(taskId))).join(_taskJoins()).get();
       if (rows.isEmpty) {
-        throw TaskRepositoryException('タスクが見つかりません (id: $taskId)');
+        throw TaskNotFoundException(taskId: taskId);
       }
       return _buildTaskItemFromRows(rows);
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
-      throw TaskRepositoryException('タスクの取得に失敗しました', cause: e);
+      throw TaskLoadException(e.toString());
     }
   }
 
@@ -118,9 +118,7 @@ class TaskRepositoryImpl implements TaskRepository {
                 scheduleUnit: config.scheduleUnit,
                 taskHistory: taskHistory,
               )
-            : throw TaskRepositoryException(
-                'scheduled タスクの設定が見つかりません (id: ${def.id})',
-              ),
+            : throw TaskNotFoundException(taskId: def.id),
     };
   }
 
@@ -156,7 +154,7 @@ class TaskRepositoryImpl implements TaskRepository {
         return id;
       });
     } catch (e) {
-      throw TaskRepositoryException('タスクの追加に失敗しました', cause: e);
+      throw TaskSaveException(e.toString());
     }
   }
 
@@ -203,7 +201,7 @@ class TaskRepositoryImpl implements TaskRepository {
         return id;
       });
     } catch (e) {
-      throw TaskRepositoryException('タスクの追加に失敗しました', cause: e);
+      throw TaskSaveException(e.toString());
     }
   }
 
@@ -222,7 +220,7 @@ class TaskRepositoryImpl implements TaskRepository {
             ),
           );
     } catch (e) {
-      throw TaskRepositoryException('実行記録の追加に失敗しました', cause: e);
+      throw TaskSaveException(e.toString());
     }
   }
 
@@ -257,9 +255,9 @@ class TaskRepositoryImpl implements TaskRepository {
             )..where((t) => t.taskDefinitionId.equals(taskId))).go();
           case TaskType.scheduled:
             if (scheduleValue == null || scheduleUnit == null) {
-              throw TaskRepositoryException(
-                'scheduled タスクの更新には scheduleValue と scheduleUnit が必要です',
-              );
+              throw const TaskInvalidArgumentException(
+              'scheduled タスクの更新には scheduleValue と scheduleUnit が必要です',
+            );
             }
             await _db
                 .into(_db.taskScheduledConfigs)
@@ -275,7 +273,7 @@ class TaskRepositoryImpl implements TaskRepository {
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
-      throw TaskRepositoryException('タスクの更新に失敗しました', cause: e);
+      throw TaskUpdateException(e.toString());
     }
   }
 
@@ -287,7 +285,7 @@ class TaskRepositoryImpl implements TaskRepository {
       )..where((t) => t.id.equals(taskId))).go();
       // task_executions / task_scheduled_configs はカスケード削除
     } catch (e) {
-      throw TaskRepositoryException('タスクの削除に失敗しました', cause: e);
+      throw TaskDeleteException(e.toString());
     }
   }
 }

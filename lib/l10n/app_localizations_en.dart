@@ -32,4 +32,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String homeDaysRemaining(int days) {
     return '${days}d remaining';
   }
+
+  @override
+  String get taskErrorLoadFailed => 'Failed to load';
+
+  @override
+  String get taskErrorNotFound => 'Task not found';
+
+  @override
+  String get taskErrorSaveFailed => 'Failed to save';
+
+  @override
+  String get taskErrorUpdateFailed => 'Failed to update';
+
+  @override
+  String get taskErrorDeleteFailed => 'Failed to delete';
+
+  @override
+  String get taskErrorInvalidArgument => 'Invalid input';
+
+  @override
+  String get errorUnknown => 'An unexpected error occurred';
 }

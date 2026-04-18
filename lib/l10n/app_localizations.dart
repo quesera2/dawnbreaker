@@ -139,6 +139,48 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'残り{days}日'**
   String homeDaysRemaining(int days);
+
+  /// No description provided for @taskErrorLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込みに失敗しました'**
+  String get taskErrorLoadFailed;
+
+  /// No description provided for @taskErrorNotFound.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスクが見つかりません'**
+  String get taskErrorNotFound;
+
+  /// No description provided for @taskErrorSaveFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存に失敗しました'**
+  String get taskErrorSaveFailed;
+
+  /// No description provided for @taskErrorUpdateFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'更新に失敗しました'**
+  String get taskErrorUpdateFailed;
+
+  /// No description provided for @taskErrorDeleteFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除に失敗しました'**
+  String get taskErrorDeleteFailed;
+
+  /// No description provided for @taskErrorInvalidArgument.
+  ///
+  /// In ja, this message translates to:
+  /// **'入力内容が正しくありません'**
+  String get taskErrorInvalidArgument;
+
+  /// No description provided for @errorUnknown.
+  ///
+  /// In ja, this message translates to:
+  /// **'予期しないエラーが発生しました'**
+  String get errorUnknown;
 }
 
 class _AppLocalizationsDelegate

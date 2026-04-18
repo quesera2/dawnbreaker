@@ -16,5 +16,12 @@
     "placeholders": {
       "days": { "type": "int" }
     }
-  }
+  },
+  "taskErrorLoadFailed": "読み込みに失敗しました",
+  "taskErrorNotFound": "タスクが見つかりません",
+  "taskErrorSaveFailed": "保存に失敗しました",
+  "taskErrorUpdateFailed": "更新に失敗しました",
+  "taskErrorDeleteFailed": "削除に失敗しました",
+  "taskErrorInvalidArgument": "入力内容が正しくありません",
+  "errorUnknown": "予期しないエラーが発生しました"
 }
