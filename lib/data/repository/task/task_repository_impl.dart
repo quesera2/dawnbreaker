@@ -43,10 +43,9 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<TaskItem> findTaskById(int taskId) async {
     try {
-      final rows = await (_db.select(_db.taskDefinitions)
-            ..where((t) => t.id.equals(taskId)))
-          .join(_taskJoins())
-          .get();
+      final rows = await (_db.select(
+        _db.taskDefinitions,
+      )..where((t) => t.id.equals(taskId))).join(_taskJoins()).get();
       if (rows.isEmpty) {
         throw TaskRepositoryException('タスクが見つかりません (id: $taskId)');
       }
@@ -107,20 +106,21 @@ class TaskRepositoryImpl implements TaskRepository {
         color: def.color,
         taskHistory: taskHistory,
       ),
-      TaskType.scheduled => config != null
-          ? TaskItem.scheduled(
-              id: def.id,
-              name: def.name,
-              furigana: def.furigana,
-              icon: def.icon,
-              color: def.color,
-              scheduleValue: config.scheduleValue,
-              scheduleUnit: config.scheduleUnit,
-              taskHistory: taskHistory,
-            )
-          : throw TaskRepositoryException(
-              'scheduled タスクの設定が見つかりません (id: ${def.id})',
-            ),
+      TaskType.scheduled =>
+        config != null
+            ? TaskItem.scheduled(
+                id: def.id,
+                name: def.name,
+                furigana: def.furigana,
+                icon: def.icon,
+                color: def.color,
+                scheduleValue: config.scheduleValue,
+                scheduleUnit: config.scheduleUnit,
+                taskHistory: taskHistory,
+              )
+            : throw TaskRepositoryException(
+                'scheduled タスクの設定が見つかりません (id: ${def.id})',
+              ),
     };
   }
 
@@ -239,22 +239,22 @@ class TaskRepositoryImpl implements TaskRepository {
     try {
       final furigana = await _furiganaTranslate.translate(name);
       await _db.transaction(() async {
-        await (_db.update(_db.taskDefinitions)
-              ..where((t) => t.id.equals(taskId)))
-            .write(
-              TaskDefinitionsCompanion(
-                taskType: Value(taskType),
-                name: Value(name),
-                furigana: Value(furigana),
-                icon: Value(icon),
-                color: Value(color),
-              ),
-            );
+        await (_db.update(
+          _db.taskDefinitions,
+        )..where((t) => t.id.equals(taskId))).write(
+          TaskDefinitionsCompanion(
+            taskType: Value(taskType),
+            name: Value(name),
+            furigana: Value(furigana),
+            icon: Value(icon),
+            color: Value(color),
+          ),
+        );
         switch (taskType) {
           case TaskType.period:
-            await (_db.delete(_db.taskScheduledConfigs)
-                  ..where((t) => t.taskDefinitionId.equals(taskId)))
-                .go();
+            await (_db.delete(
+              _db.taskScheduledConfigs,
+            )..where((t) => t.taskDefinitionId.equals(taskId))).go();
           case TaskType.scheduled:
             if (scheduleValue == null || scheduleUnit == null) {
               throw TaskRepositoryException(
