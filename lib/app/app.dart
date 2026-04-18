@@ -1,7 +1,6 @@
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/l10n/app_localizations.dart';
 import 'package:dawnbreaker/ui/home/widgets/home_screen.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
