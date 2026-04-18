@@ -29,7 +29,9 @@ class FakeTaskRepository implements TaskRepository {
   @override
   Future<TaskItem> findTaskById(int taskId) async {
     if (shouldThrow) throw const TaskLoadException('テストエラー');
-    return _tasks.firstWhere((t) => t.id == taskId);
+    final task = _tasks.where((t) => t.id == taskId).firstOrNull;
+    if (task == null) throw TaskNotFoundException(taskId: taskId);
+    return task;
   }
 
   @override
