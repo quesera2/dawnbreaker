@@ -1,10 +1,11 @@
+import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/ui/common/GlassAppBar.dart';
+import 'package:dawnbreaker/ui/common/error_dialog_mixin.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_view_model.dart';
 import 'package:dawnbreaker/ui/home/widgets/task_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../common/GlassAppBar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -13,7 +14,8 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with ErrorDialogMixin<HomeScreen> {
   final _searchController = TextEditingController();
 
   @override
@@ -24,6 +26,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    listenError(homeViewModelProvider);
     final uiState = ref.watch(homeViewModelProvider);
     final viewModel = ref.read(homeViewModelProvider.notifier);
 
@@ -59,11 +62,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _bodyWidget(BuildContext context, dynamic uiState) {
     if (!uiState.hasTasks) {
-      return const _EmptyView(message: 'タスクがまだありません');
+      return _EmptyView(message: context.l10n.homeNoTasksYet);
     }
     final filtered = uiState.filteredTasks;
     if (filtered.isEmpty) {
-      return const _EmptyView(message: '一致するタスクが見つかりません');
+      return _EmptyView(message: context.l10n.homeNoTasksFound);
     }
     return _TaskListView(tasks: filtered);
   }
@@ -121,7 +124,7 @@ class _SearchBarField extends StatelessWidget {
         controller: controller,
         onChanged: onChanged,
         decoration: InputDecoration(
-          hintText: 'タスクを検索',
+          hintText: context.l10n.homeSearchHint,
           prefixIcon: const Icon(Icons.search),
           suffixIcon: showClear
               ? IconButton(icon: const Icon(Icons.clear), onPressed: onClear)

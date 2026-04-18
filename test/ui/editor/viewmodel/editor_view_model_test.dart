@@ -70,7 +70,10 @@ void main() {
 
       test('updateType で type が更新される', () {
         viewModel.updateType(TaskType.scheduled);
-        expect(container.read(editorViewModelProvider()).type, TaskType.scheduled);
+        expect(
+          container.read(editorViewModelProvider()).type,
+          TaskType.scheduled,
+        );
       });
 
       test('updateColor で color が更新される', () {
@@ -115,9 +118,7 @@ void main() {
       test('save() でリポジトリがエラーを返すと errorMessage が設定される', () async {
         final throwingRepo = FakeTaskRepository(shouldThrow: true);
         final c = ProviderContainer(
-          overrides: [
-            taskRepositoryProvider.overrideWith((_) => throwingRepo),
-          ],
+          overrides: [taskRepositoryProvider.overrideWith((_) => throwingRepo)],
         );
         final s = c.listen(editorViewModelProvider().notifier, (_, __) {});
         addTearDown(() {
@@ -161,8 +162,7 @@ void main() {
         expect(state.taskHistory, hasLength(1));
       });
 
-      test('scheduled タスクのロード後: scheduleValue/scheduleUnit が反映される',
-          () async {
+      test('scheduled タスクのロード後: scheduleValue/scheduleUnit が反映される', () async {
         await _waitUntilLoaded(container, taskId: 2);
         final state = container.read(editorViewModelProvider(taskId: 2));
         expect(state.isLoading, false);
@@ -180,8 +180,9 @@ void main() {
 
       test('編集して save() すると isSaved: true になる', () async {
         await _waitUntilLoaded(container, taskId: 1);
-        final notifier =
-            container.read(editorViewModelProvider(taskId: 1).notifier);
+        final notifier = container.read(
+          editorViewModelProvider(taskId: 1).notifier,
+        );
         notifier.updateColor(TaskColor.green);
         await notifier.save();
         expect(
@@ -219,13 +220,12 @@ Future<void> _waitUntilLoaded(
   required int taskId,
 }) async {
   final completer = Completer<void>();
-  final sub = container.listen(
-    editorViewModelProvider(taskId: taskId),
-    (_, next) {
-      if (!next.isLoading && !completer.isCompleted) completer.complete();
-    },
-    fireImmediately: true,
-  );
+  final sub = container.listen(editorViewModelProvider(taskId: taskId), (
+    _,
+    next,
+  ) {
+    if (!next.isLoading && !completer.isCompleted) completer.complete();
+  }, fireImmediately: true);
   await completer.future;
   sub.close();
 }

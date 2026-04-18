@@ -1,6 +1,8 @@
+import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_progress.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class TaskListItem extends StatelessWidget {
   const TaskListItem({super.key, required this.task});
@@ -42,10 +44,15 @@ class TaskListItem extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildTitleRow(theme, colorScheme),
+                            _buildTitleRow(context, theme, colorScheme),
                             if (taskProgress is DueDate) ...[
                               const SizedBox(height: 4),
-                              _buildDateInfo(theme, colorScheme, taskProgress),
+                              _buildDateInfo(
+                                context,
+                                theme,
+                                colorScheme,
+                                taskProgress,
+                              ),
                               const SizedBox(height: 8),
                               _buildProgressBar(colorScheme, taskProgress),
                             ],
@@ -63,15 +70,23 @@ class TaskListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildTitleRow(ThemeData theme, ColorScheme colorScheme) {
+  Widget _buildTitleRow(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
     return Row(
       children: [
         Expanded(child: Text(task.name, style: theme.textTheme.titleMedium)),
         const SizedBox(width: 4),
-        Icon(Icons.replay_rounded, size: 18, color: colorScheme.onSurfaceVariant),
+        Icon(
+          Icons.replay_rounded,
+          size: 18,
+          color: colorScheme.onSurfaceVariant,
+        ),
         const SizedBox(width: 2),
         Text(
-          '再登録',
+          context.l10n.homeReRegister,
           style: theme.textTheme.labelSmall?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),
@@ -81,17 +96,20 @@ class TaskListItem extends StatelessWidget {
   }
 
   Widget _buildDateInfo(
+    BuildContext context,
     ThemeData theme,
     ColorScheme colorScheme,
     DueDate taskProgress,
   ) {
     final date = taskProgress.scheduledAt;
-    final dateStr = '${date.year}/${date.month}/${date.day}';
+    final locale = Localizations.localeOf(context).toString();
+    final dateStr = DateFormat.yMd(locale).format(date);
     final remainStr = taskProgress.isOverdue
-        ? '${taskProgress.daysRemaining.abs()}日超過'
-        : '残り${taskProgress.daysRemaining}日';
-    final color =
-        taskProgress.isOverdue ? colorScheme.error : colorScheme.onSurfaceVariant;
+        ? context.l10n.homeDaysOverdue(taskProgress.daysRemaining.abs())
+        : context.l10n.homeDaysRemaining(taskProgress.daysRemaining);
+    final color = taskProgress.isOverdue
+        ? colorScheme.error
+        : colorScheme.onSurfaceVariant;
 
     return Row(
       children: [
@@ -139,9 +157,7 @@ class _EmojiCircle extends StatelessWidget {
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
         shape: BoxShape.circle,
       ),
-      child: Center(
-        child: Text(icon, style: const TextStyle(fontSize: 22)),
-      ),
+      child: Center(child: Text(icon, style: const TextStyle(fontSize: 22))),
     );
   }
 }

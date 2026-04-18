@@ -1,0 +1,31 @@
+{
+  "@@locale": "ja",
+  "title": "Dawnbreaker",
+  "homeSearchHint": "タスクを検索",
+  "homeNoTasksYet": "タスクがまだありません",
+  "homeNoTasksFound": "一致するタスクが見つかりません",
+  "homeReRegister": "再登録",
+  "homeDaysOverdue": "{days}日超過",
+  "@homeDaysOverdue": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "homeDaysRemaining": "残り{days}日",
+  "@homeDaysRemaining": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "taskErrorLoadFailed": "読み込みに失敗しました",
+  "taskErrorNotFound": "タスクが見つかりません",
+  "taskErrorSaveFailed": "保存に失敗しました",
+  "taskErrorUpdateFailed": "更新に失敗しました",
+  "taskErrorDeleteFailed": "削除に失敗しました",
+  "taskErrorInvalidArgument": "入力内容が正しくありません",
+  "errorTitle": "エラー",
+  "errorUnknown": "予期しないエラーが発生しました",
+  "ok": "OK",
+  "cancel": "キャンセル",
+  "retry": "再試行"
+}

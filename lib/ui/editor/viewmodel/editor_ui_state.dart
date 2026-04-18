@@ -2,12 +2,14 @@ import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
+import 'package:dawnbreaker/ui/common/base_ui_state.dart';
+import 'package:dawnbreaker/ui/common/error_message.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'editor_ui_state.freezed.dart';
 
 @freezed
-abstract class EditorUiState with _$EditorUiState {
+abstract class EditorUiState with _$EditorUiState implements BaseUiState {
   const EditorUiState._();
 
   const factory EditorUiState({
@@ -19,7 +21,7 @@ abstract class EditorUiState with _$EditorUiState {
     @Default(1) int scheduleValue,
     @Default(ScheduleUnit.week) ScheduleUnit scheduleUnit,
     @Default([]) List<TaskHistory> taskHistory,
-    String? errorMessage,
+    ErrorMessage? errorMessage,
     @Default(false) bool isSaved,
   }) = _EditorUiState;
 

@@ -1,15 +1,17 @@
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/ui/common/base_ui_state.dart';
+import 'package:dawnbreaker/ui/common/error_message.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'home_ui_state.freezed.dart';
 
 @freezed
-abstract class HomeUiState with _$HomeUiState {
+abstract class HomeUiState with _$HomeUiState implements BaseUiState {
   const HomeUiState._();
 
   const factory HomeUiState({
     @Default(false) bool isLoading,
-    String? errorMessage,
+    ErrorMessage? errorMessage,
     @Default([]) List<TaskItem> tasks,
     @Default('') String searchQuery,
   }) = _HomeUiState;

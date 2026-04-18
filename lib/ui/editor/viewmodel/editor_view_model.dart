@@ -7,6 +7,7 @@ import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
+import 'package:dawnbreaker/ui/common/error_message.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_ui_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -48,9 +49,12 @@ class EditorViewModel extends _$EditorViewModel {
           taskHistory: task.taskHistory,
         ),
       };
-    } catch (e) {
+    } on TaskRepositoryException {
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: TaskLoadErrorMessage(handler: () => _loadTask(taskId)),
+      );
     }
   }
 
@@ -80,9 +84,12 @@ class EditorViewModel extends _$EditorViewModel {
       }
       if (!ref.mounted) return;
       state = state.copyWith(isLoading: false, isSaved: true);
-    } on TaskRepositoryException catch (e) {
+    } on TaskRepositoryException {
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: TaskSaveErrorMessage(handler: save),
+      );
     }
   }
 

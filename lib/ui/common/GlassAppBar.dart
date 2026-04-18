@@ -20,7 +20,9 @@ class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = Theme.of(context).colorScheme.surface.withValues(alpha: opacity);
+    final backgroundColor = Theme.of(
+      context,
+    ).colorScheme.surface.withValues(alpha: opacity);
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),

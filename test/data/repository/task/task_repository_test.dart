@@ -232,27 +232,30 @@ void main() {
       expect(configs.first.scheduleUnit, ScheduleUnit.month);
     });
 
-    test('scheduled タイプで scheduleValue/scheduleUnit が null のとき例外を投げる', () async {
-      final id = await repository.addScheduledTask(
-        name: '虫避け交換',
-        icon: '📝',
-        color: TaskColor.orange,
-        scheduleValue: 2,
-        scheduleUnit: ScheduleUnit.week,
-        executedAt: DateTime.now(),
-      );
-
-      expect(
-        () => repository.updateTask(
-          taskId: id,
-          taskType: TaskType.scheduled,
+    test(
+      'scheduled タイプで scheduleValue/scheduleUnit が null のとき例外を投げる',
+      () async {
+        final id = await repository.addScheduledTask(
           name: '虫避け交換',
           icon: '📝',
           color: TaskColor.orange,
-        ),
-        throwsA(isA<TaskRepositoryException>()),
-      );
-    });
+          scheduleValue: 2,
+          scheduleUnit: ScheduleUnit.week,
+          executedAt: DateTime.now(),
+        );
+
+        expect(
+          () => repository.updateTask(
+            taskId: id,
+            taskType: TaskType.scheduled,
+            name: '虫避け交換',
+            icon: '📝',
+            color: TaskColor.orange,
+          ),
+          throwsA(isA<TaskRepositoryException>()),
+        );
+      },
+    );
   });
 
   group('deleteTask', () {

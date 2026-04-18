@@ -1,0 +1,31 @@
+{
+  "@@locale": "en",
+  "title": "Dawnbreaker",
+  "homeSearchHint": "Search tasks",
+  "homeNoTasksYet": "No tasks yet",
+  "homeNoTasksFound": "No matching tasks found",
+  "homeReRegister": "Re-register",
+  "homeDaysOverdue": "{days}d overdue",
+  "@daysOverdue": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "homeDaysRemaining": "{days}d remaining",
+  "@homeDaysRemaining": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "taskErrorLoadFailed": "Failed to load",
+  "taskErrorNotFound": "Task not found",
+  "taskErrorSaveFailed": "Failed to save",
+  "taskErrorUpdateFailed": "Failed to update",
+  "taskErrorDeleteFailed": "Failed to delete",
+  "taskErrorInvalidArgument": "Invalid input",
+  "errorTitle": "Error",
+  "errorUnknown": "An unexpected error occurred",
+  "ok": "OK",
+  "cancel": "Cancel",
+  "retry": "Retry"
+}
