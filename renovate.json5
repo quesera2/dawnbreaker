@@ -12,5 +12,11 @@
   ],
   "prHourlyLimit": 3,
   "prConcurrentLimit": 10,
-  "minimumReleaseAge": "3 days"
+  "minimumReleaseAge": "3 days",
+  "packageRules": [
+    {
+      "matchPackageNames": ["dev.flutter.flutter-plugin-loader.gradle.plugin"],
+      "enabled": false
+    }
+  ],
 }
