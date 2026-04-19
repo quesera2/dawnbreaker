@@ -9,8 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-void _unfocus() => FocusManager.instance.primaryFocus?.unfocus();
-
 extension _ScheduleUnitLabel on ScheduleUnit {
   String label(BuildContext context) => switch (this) {
     ScheduleUnit.day => context.l10n.editorSpanDay,
@@ -100,50 +98,50 @@ class _EditorBody extends StatelessWidget {
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(16, 8, 16, padding.bottom + 16),
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SectionHeader(context.l10n.editorSectionBasic),
-            const SizedBox(height: 8),
-            _SectionCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _IconSection(
-                    icon: uiState.icon,
-                    onChanged: viewModel.updateIcon,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionHeader(context.l10n.editorSectionBasic),
+          const SizedBox(height: 8),
+          _SectionCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _IconSection(
+                  icon: uiState.icon,
+                  onChanged: viewModel.updateIcon,
+                ),
+                const SizedBox(height: 16),
+                _NameField(
+                  controller: nameController,
+                  onChanged: viewModel.updateName,
+                ),
+                const SizedBox(height: 16),
+                _ColorPicker(
+                  selected: uiState.color,
+                  onChanged: viewModel.updateColor,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  context.l10n.editorColorNote,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(height: 16),
-                  _NameField(
-                    controller: nameController,
-                    onChanged: viewModel.updateName,
-                  ),
-                  const SizedBox(height: 16),
-                  _ColorPicker(
-                    selected: uiState.color,
-                    onChanged: viewModel.updateColor,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    context.l10n.editorColorNote,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            _SectionHeader(context.l10n.editorLabelType),
-            const SizedBox(height: 8),
-            _TypeSelector(
-              selected: uiState.type,
-              onChanged: viewModel.updateType,
-              scheduleValue: uiState.scheduleValue,
-              scheduleUnit: uiState.scheduleUnit,
-              onScheduleValueChanged: viewModel.updateScheduleValue,
-              onScheduleUnitChanged: viewModel.updateScheduleUnit,
-            ),
-          ],
+          ),
+          const SizedBox(height: 24),
+          _SectionHeader(context.l10n.editorLabelType),
+          const SizedBox(height: 8),
+          _TypeSelector(
+            selected: uiState.type,
+            onChanged: viewModel.updateType,
+            scheduleValue: uiState.scheduleValue,
+            scheduleUnit: uiState.scheduleUnit,
+            onScheduleValueChanged: viewModel.updateScheduleValue,
+            onScheduleUnitChanged: viewModel.updateScheduleUnit,
+          ),
+        ],
       ),
     );
   }
@@ -243,10 +241,7 @@ class _IconSection extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         FilledButton(
-          onPressed: () {
-            _unfocus();
-            _showIconDialog(context);
-          },
+          onPressed: () => _showIconDialog(context),
           style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -360,6 +355,7 @@ class _NameField extends StatelessWidget {
         filled: true,
         fillColor: Theme.of(context).colorScheme.surface,
       ),
+      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
     );
   }
 }
@@ -462,10 +458,7 @@ class _TypeCard extends StatelessWidget {
       ),
       child: InkWell(
         // 選択済みのカードは再タップ不要なのでnullにして内部ウィジェットのタップと競合させない
-        onTap: isSelected ? null : () {
-          _unfocus();
-          onTap();
-        },
+        onTap: isSelected ? null : onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -576,10 +569,7 @@ class _ColorChip extends StatelessWidget {
         : taskColor.color;
 
     return GestureDetector(
-      onTap: () {
-        _unfocus();
-        onTap();
-      },
+      onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         width: 40,
@@ -631,10 +621,7 @@ class _SpanPickerButton extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final label = context.l10n.editorSpanLabel('$value', unit.label(context));
     return InkWell(
-      onTap: () {
-        _unfocus();
-        _showPicker(context);
-      },
+      onTap: () => _showPicker(context),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -876,10 +863,7 @@ class _SaveBar extends StatelessWidget {
         ),
       ),
       child: FilledButton(
-        onPressed: enabled ? () {
-            _unfocus();
-            onSave();
-          } : null,
+        onPressed: enabled ? onSave : null,
         style: FilledButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
