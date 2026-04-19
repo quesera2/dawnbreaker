@@ -458,7 +458,7 @@ class _TypeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor, width: isSelected ? 2 : 1),
+        border: Border.all(color: borderColor, width: 2),
       ),
       child: InkWell(
         // 選択済みのカードは再タップ不要なのでnullにして内部ウィジェットのタップと競合させない
@@ -511,15 +511,21 @@ class _TypeCard extends StatelessWidget {
                 ],
               ),
               if (expandedChild != null)
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 280),
-                  curve: Curves.easeInOut,
-                  child: isSelected
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: expandedChild!,
-                        )
-                      : const SizedBox.shrink(),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AnimatedSize(
+                        duration: const Duration(milliseconds: 280),
+                        curve: Curves.easeInOut,
+                        child: isSelected
+                            ? Padding(
+                                padding: const EdgeInsets.only(top: 16),
+                                child: expandedChild!,
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ),
+                  ],
                 ),
             ],
           ),
