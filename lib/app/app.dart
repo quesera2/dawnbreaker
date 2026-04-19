@@ -1,6 +1,6 @@
+import 'package:dawnbreaker/app/router.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/l10n/app_localizations.dart';
-import 'package:dawnbreaker/ui/home/widgets/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -25,7 +25,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       onGenerateTitle: (context) => context.l10n.title,
       theme: _theme,
       localizationsDelegates: const [
@@ -35,7 +35,7 @@ class App extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const HomeScreen(),
+      routerConfig: appRouter,
     );
   }
 }

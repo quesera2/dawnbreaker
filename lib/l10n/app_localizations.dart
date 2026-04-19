@@ -205,6 +205,156 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'再試行'**
   String get retry;
+
+  /// No description provided for @editorTitleNew.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規タスクを追加'**
+  String get editorTitleNew;
+
+  /// No description provided for @editorTitleEdit.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスクを編集'**
+  String get editorTitleEdit;
+
+  /// No description provided for @editorSectionBasic.
+  ///
+  /// In ja, this message translates to:
+  /// **'基本情報'**
+  String get editorSectionBasic;
+
+  /// No description provided for @editorLabelName.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスク名'**
+  String get editorLabelName;
+
+  /// No description provided for @editorLabelType.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスク種別'**
+  String get editorLabelType;
+
+  /// No description provided for @editorLabelColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラー'**
+  String get editorLabelColor;
+
+  /// No description provided for @editorLabelSpan.
+  ///
+  /// In ja, this message translates to:
+  /// **'実行スパン'**
+  String get editorLabelSpan;
+
+  /// No description provided for @editorLabelIcon.
+  ///
+  /// In ja, this message translates to:
+  /// **'アイコン'**
+  String get editorLabelIcon;
+
+  /// No description provided for @editorChangeIcon.
+  ///
+  /// In ja, this message translates to:
+  /// **'アイコンを変更する'**
+  String get editorChangeIcon;
+
+  /// No description provided for @editorTypeIrregular.
+  ///
+  /// In ja, this message translates to:
+  /// **'予定日を表示しない'**
+  String get editorTypeIrregular;
+
+  /// No description provided for @editorTypeIrregularDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'不定期に実行するタスクで予定日を表示しません'**
+  String get editorTypeIrregularDesc;
+
+  /// No description provided for @editorTypePeriod.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動的に周期を判定'**
+  String get editorTypePeriod;
+
+  /// No description provided for @editorTypePeriodDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスクの実行履歴から次の予定日を表示します'**
+  String get editorTypePeriodDesc;
+
+  /// No description provided for @editorTypeScheduled.
+  ///
+  /// In ja, this message translates to:
+  /// **'周期を指定'**
+  String get editorTypeScheduled;
+
+  /// No description provided for @editorTypeScheduledDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'次の予定日までの間隔を手動で設定します'**
+  String get editorTypeScheduledDesc;
+
+  /// No description provided for @editorSpanDay.
+  ///
+  /// In ja, this message translates to:
+  /// **'日'**
+  String get editorSpanDay;
+
+  /// No description provided for @editorSpanWeek.
+  ///
+  /// In ja, this message translates to:
+  /// **'週'**
+  String get editorSpanWeek;
+
+  /// No description provided for @editorSpanMonth.
+  ///
+  /// In ja, this message translates to:
+  /// **'ヶ月'**
+  String get editorSpanMonth;
+
+  /// No description provided for @editorSpanLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'{value}{unit}ごと'**
+  String editorSpanLabel(String value, String unit);
+
+  /// No description provided for @editorSaveNew.
+  ///
+  /// In ja, this message translates to:
+  /// **'登録'**
+  String get editorSaveNew;
+
+  /// No description provided for @editorSaveEdit.
+  ///
+  /// In ja, this message translates to:
+  /// **'更新'**
+  String get editorSaveEdit;
+
+  /// No description provided for @editorIconDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'アイコンを選択'**
+  String get editorIconDialogTitle;
+
+  /// No description provided for @editorColorNone.
+  ///
+  /// In ja, this message translates to:
+  /// **'なし'**
+  String get editorColorNone;
+
+  /// No description provided for @editorColorNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'色を選択することでタスクのグループ分けに使えます'**
+  String get editorColorNote;
+
+  /// No description provided for @editorNameHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'例：歯医者の予約'**
+  String get editorNameHint;
 }
 
 class _AppLocalizationsDelegate

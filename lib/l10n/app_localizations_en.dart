@@ -65,4 +65,83 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get editorTitleNew => 'Add Task';
+
+  @override
+  String get editorTitleEdit => 'Edit Task';
+
+  @override
+  String get editorSectionBasic => 'Basic info';
+
+  @override
+  String get editorLabelName => 'Task name';
+
+  @override
+  String get editorLabelType => 'Task type';
+
+  @override
+  String get editorLabelColor => 'Color';
+
+  @override
+  String get editorLabelSpan => 'Interval';
+
+  @override
+  String get editorLabelIcon => 'Icon';
+
+  @override
+  String get editorChangeIcon => 'Change icon';
+
+  @override
+  String get editorTypeIrregular => 'No due date';
+
+  @override
+  String get editorTypeIrregularDesc =>
+      'For irregular tasks — no due date shown';
+
+  @override
+  String get editorTypePeriod => 'Auto-detect interval';
+
+  @override
+  String get editorTypePeriodDesc => 'Next due date inferred from task history';
+
+  @override
+  String get editorTypeScheduled => 'Set interval';
+
+  @override
+  String get editorTypeScheduledDesc =>
+      'Manually set the interval to the next due date';
+
+  @override
+  String get editorSpanDay => 'days';
+
+  @override
+  String get editorSpanWeek => 'weeks';
+
+  @override
+  String get editorSpanMonth => 'months';
+
+  @override
+  String editorSpanLabel(String value, String unit) {
+    return 'Every $value $unit';
+  }
+
+  @override
+  String get editorSaveNew => 'Add';
+
+  @override
+  String get editorSaveEdit => 'Update';
+
+  @override
+  String get editorIconDialogTitle => 'Select icon';
+
+  @override
+  String get editorColorNone => 'None';
+
+  @override
+  String get editorColorNote => 'Select a color to group your tasks';
+
+  @override
+  String get editorNameHint => 'e.g. Dentist appointment';
 }

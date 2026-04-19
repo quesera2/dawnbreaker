@@ -65,4 +65,81 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get retry => '再試行';
+
+  @override
+  String get editorTitleNew => '新規タスクを追加';
+
+  @override
+  String get editorTitleEdit => 'タスクを編集';
+
+  @override
+  String get editorSectionBasic => '基本情報';
+
+  @override
+  String get editorLabelName => 'タスク名';
+
+  @override
+  String get editorLabelType => 'タスク種別';
+
+  @override
+  String get editorLabelColor => 'カラー';
+
+  @override
+  String get editorLabelSpan => '実行スパン';
+
+  @override
+  String get editorLabelIcon => 'アイコン';
+
+  @override
+  String get editorChangeIcon => 'アイコンを変更する';
+
+  @override
+  String get editorTypeIrregular => '予定日を表示しない';
+
+  @override
+  String get editorTypeIrregularDesc => '不定期に実行するタスクで予定日を表示しません';
+
+  @override
+  String get editorTypePeriod => '自動的に周期を判定';
+
+  @override
+  String get editorTypePeriodDesc => 'タスクの実行履歴から次の予定日を表示します';
+
+  @override
+  String get editorTypeScheduled => '周期を指定';
+
+  @override
+  String get editorTypeScheduledDesc => '次の予定日までの間隔を手動で設定します';
+
+  @override
+  String get editorSpanDay => '日';
+
+  @override
+  String get editorSpanWeek => '週';
+
+  @override
+  String get editorSpanMonth => 'ヶ月';
+
+  @override
+  String editorSpanLabel(String value, String unit) {
+    return '$value$unitごと';
+  }
+
+  @override
+  String get editorSaveNew => '登録';
+
+  @override
+  String get editorSaveEdit => '更新';
+
+  @override
+  String get editorIconDialogTitle => 'アイコンを選択';
+
+  @override
+  String get editorColorNone => 'なし';
+
+  @override
+  String get editorColorNote => '色を選択することでタスクのグループ分けに使えます';
+
+  @override
+  String get editorNameHint => '例：歯医者の予約';
 }
