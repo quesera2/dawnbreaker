@@ -229,36 +229,33 @@ class _IconSection extends StatelessWidget {
       isScrollControlled: true,
       useSafeArea: true,
       builder: (ctx) => EmojiPicker(
-          onEmojiSelected: (_, emoji) {
-            onChanged(emoji.emoji);
-            Navigator.of(ctx).pop();
-          },
-          config: Config(
-            height: 256,
-            checkPlatformCompatibility: true,
-            emojiViewConfig: EmojiViewConfig(
-              backgroundColor: colorScheme.surfaceContainerLow,
-              columns: 8,
-              emojiSizeMax: 40,
-              gridPadding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
-            ),
-            categoryViewConfig: CategoryViewConfig(
-              backgroundColor: colorScheme.surfaceContainerLow,
-              iconColor: colorScheme.onSurfaceVariant,
-              iconColorSelected: colorScheme.primary,
-              indicatorColor: colorScheme.primary,
-              backspaceColor: colorScheme.onSurfaceVariant,
-              dividerColor: colorScheme.outlineVariant,
-            ),
-            bottomActionBarConfig: const BottomActionBarConfig(
-              enabled: false,
-            ),
+        onEmojiSelected: (_, emoji) {
+          onChanged(emoji.emoji);
+          Navigator.of(ctx).pop();
+        },
+        config: Config(
+          height: 256,
+          checkPlatformCompatibility: true,
+          emojiViewConfig: EmojiViewConfig(
+            backgroundColor: colorScheme.surfaceContainerLow,
+            columns: 8,
+            emojiSizeMax: 40,
+            gridPadding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
           ),
+          categoryViewConfig: CategoryViewConfig(
+            backgroundColor: colorScheme.surfaceContainerLow,
+            iconColor: colorScheme.onSurfaceVariant,
+            iconColorSelected: colorScheme.primary,
+            indicatorColor: colorScheme.primary,
+            backspaceColor: colorScheme.onSurfaceVariant,
+            dividerColor: colorScheme.outlineVariant,
+          ),
+          bottomActionBarConfig: const BottomActionBarConfig(enabled: false),
         ),
+      ),
     );
   }
 }
-
 
 class _NameField extends StatelessWidget {
   const _NameField({required this.controller, required this.onChanged});
@@ -372,79 +369,84 @@ class _TypeCard extends StatelessWidget {
         ? colorScheme.onPrimaryContainer.withAlpha(180)
         : colorScheme.onSurfaceVariant;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor, width: 2),
-      ),
-      child: InkWell(
-        // 選択済みのカードは再タップ不要なのでnullにして内部ウィジェットのタップと競合させない
-        onTap: isSelected ? null : onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(icon, size: 24, color: titleColor),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(
-                                color: titleColor,
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          description,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall?.copyWith(color: descColor),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 200),
-                    opacity: isSelected ? 1 : 0,
-                    child: Icon(
-                      Icons.check_circle,
-                      size: 22,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ),
-              if (expandedChild != null)
+    return Semantics(
+      inMutuallyExclusiveGroup: true,
+      checked: isSelected,
+      label: title,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor, width: 2),
+        ),
+        child: InkWell(
+          // 選択済みのカードは再タップ不要なのでnullにして内部ウィジェットのタップと競合させない
+          onTap: isSelected ? null : onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Row(
                   children: [
+                    Icon(icon, size: 24, color: titleColor),
+                    const SizedBox(width: 16),
                     Expanded(
-                      child: AnimatedSize(
-                        duration: const Duration(milliseconds: 280),
-                        curve: Curves.easeInOut,
-                        child: isSelected
-                            ? Padding(
-                                padding: const EdgeInsets.only(top: 16),
-                                child: expandedChild!,
-                              )
-                            : const SizedBox.shrink(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
+                                  color: titleColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            description,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(color: descColor),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: isSelected ? 1 : 0,
+                      child: Icon(
+                        Icons.check_circle,
+                        size: 22,
+                        color: colorScheme.primary,
                       ),
                     ),
                   ],
                 ),
-            ],
+                if (expandedChild != null)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AnimatedSize(
+                          duration: const Duration(milliseconds: 280),
+                          curve: Curves.easeInOut,
+                          child: isSelected
+                              ? Padding(
+                                  padding: const EdgeInsets.only(top: 16),
+                                  child: expandedChild!,
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
         ),
       ),
