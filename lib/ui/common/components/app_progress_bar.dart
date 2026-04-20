@@ -7,7 +7,6 @@ class AppProgressBar extends StatelessWidget {
   const AppProgressBar({
     super.key,
     required this.value,
-    this.color,
     this.isOverdue = false,
     this.thickness = 3,
   });
@@ -15,18 +14,22 @@ class AppProgressBar extends StatelessWidget {
   /// 進捗 (0.0 〜 1.0)
   final double value;
 
-  /// バーの色。null の場合は primary を使用。isOverdue=true のときは danger で上書き。
-  final Color? color;
-
   final bool isOverdue;
 
   /// バーの太さ (dp)
   final double thickness;
 
+  Color _barColor(AppColorScheme c) {
+    if (isOverdue) return c.danger;
+    if (value >= 0.75) return c.warning;
+    if (value >= 0.5) return c.success;
+    return c.info;
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = AppColorScheme.of(context);
-    final barColor = isOverdue ? c.danger : (color ?? c.primary);
+    final barColor = _barColor(c);
     final clamped = value.clamp(0.0, 1.0);
 
     return ClipRRect(
@@ -64,9 +67,9 @@ final class ProgressBarShowCase extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           spacing: 16,
           children: [
-            AppProgressBar(value: 0.2, color: c.primary),
-            AppProgressBar(value: 0.55, color: c.success),
-            AppProgressBar(value: 0.85, color: c.warning),
+            const AppProgressBar(value: 0.2),
+            const AppProgressBar(value: 0.55),
+            const AppProgressBar(value: 0.85),
             const AppProgressBar(value: 1.0, isOverdue: true),
           ],
         ),
