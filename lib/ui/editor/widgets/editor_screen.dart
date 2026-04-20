@@ -5,6 +5,7 @@ import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/ui/common/error_dialog_mixin.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_ui_state.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_view_model.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -189,39 +190,6 @@ class _IconSection extends StatelessWidget {
   final String icon;
   final ValueChanged<String> onChanged;
 
-  static const _presets = [
-    '📝',
-    '🏥',
-    '🦷',
-    '💊',
-    '🏋️',
-    '🧹',
-    '🛒',
-    '🚗',
-    '📚',
-    '💼',
-    '🏦',
-    '💈',
-    '🧺',
-    '🐕',
-    '🌿',
-    '🔧',
-    '📦',
-    '🎓',
-    '✈️',
-    '🏠',
-    '💡',
-    '🧪',
-    '🎯',
-    '🏃',
-    '🍳',
-    '🧘',
-    '🧴',
-    '🗓️',
-    '📞',
-    '💻',
-  ];
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -241,7 +209,7 @@ class _IconSection extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         FilledButton(
-          onPressed: () => _showIconDialog(context),
+          onPressed: () => _showEmojiPicker(context),
           style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -254,87 +222,43 @@ class _IconSection extends StatelessWidget {
     );
   }
 
-  Future<void> _showIconDialog(BuildContext context) async {
-    final selected = await showDialog<String>(
-      context: context,
-      builder: (ctx) => _IconPickerDialog(currentIcon: icon, presets: _presets),
-    );
-    if (selected != null) onChanged(selected);
-  }
-}
-
-class _IconPickerDialog extends StatefulWidget {
-  const _IconPickerDialog({required this.currentIcon, required this.presets});
-
-  final String currentIcon;
-  final List<String> presets;
-
-  @override
-  State<_IconPickerDialog> createState() => _IconPickerDialogState();
-}
-
-class _IconPickerDialogState extends State<_IconPickerDialog> {
-  late String _selected;
-
-  @override
-  void initState() {
-    super.initState();
-    _selected = widget.currentIcon;
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Future<void> _showEmojiPicker(BuildContext context) async {
     final colorScheme = Theme.of(context).colorScheme;
-    return AlertDialog(
-      title: Text(context.l10n.editorIconDialogTitle),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: GridView.builder(
-          shrinkWrap: true,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 5,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-          ),
-          itemCount: widget.presets.length,
-          itemBuilder: (_, i) {
-            final emoji = widget.presets[i];
-            final isSelected = emoji == _selected;
-            return InkWell(
-              onTap: () => setState(() => _selected = emoji),
-              borderRadius: BorderRadius.circular(12),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? colorScheme.primaryContainer
-                      : colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
-                  border: isSelected
-                      ? Border.all(color: colorScheme.primary, width: 2)
-                      : null,
-                ),
-                child: Center(
-                  child: Text(emoji, style: const TextStyle(fontSize: 24)),
-                ),
-              ),
-            );
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (ctx) => EmojiPicker(
+          onEmojiSelected: (_, emoji) {
+            onChanged(emoji.emoji);
+            Navigator.of(ctx).pop();
           },
+          config: Config(
+            height: 256,
+            checkPlatformCompatibility: true,
+            emojiViewConfig: EmojiViewConfig(
+              backgroundColor: colorScheme.surfaceContainerLow,
+              columns: 8,
+              emojiSizeMax: 40,
+              gridPadding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+            ),
+            categoryViewConfig: CategoryViewConfig(
+              backgroundColor: colorScheme.surfaceContainerLow,
+              iconColor: colorScheme.onSurfaceVariant,
+              iconColorSelected: colorScheme.primary,
+              indicatorColor: colorScheme.primary,
+              backspaceColor: colorScheme.onSurfaceVariant,
+              dividerColor: colorScheme.outlineVariant,
+            ),
+            bottomActionBarConfig: const BottomActionBarConfig(
+              enabled: false,
+            ),
+          ),
         ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(context.l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(_selected),
-          child: Text(context.l10n.ok),
-        ),
-      ],
     );
   }
 }
+
 
 class _NameField extends StatelessWidget {
   const _NameField({required this.controller, required this.onChanged});
