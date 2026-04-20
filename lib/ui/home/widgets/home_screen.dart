@@ -3,6 +3,7 @@ import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/components/app_filter_chip.dart';
+import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_search_input.dart';
 import 'package:dawnbreaker/ui/common/error_dialog_mixin.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
@@ -39,22 +40,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    final colorScheme = AppColorScheme.of(context);
+
     return Scaffold(
-      appBar: const _HomeAppBar(),
       body: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-              child: AppSearchInput(
-                placeholder: context.l10n.homeSearchHint,
-                controller: _searchController,
-                showClear: uiState.searchQuery.isNotEmpty,
-                onChanged: viewModel.updateSearchQuery,
-                onClear: () {
-                  _searchController.clear();
-                  viewModel.updateSearchQuery('');
-                },
+          SliverAppBar(
+            pinned: true,
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 3.0,
+            shadowColor: colorScheme.shadow.withValues(alpha: 0.2),
+            title: const _HomeAppBar(),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(50),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                    child: AppSearchInput(
+                      placeholder: context.l10n.homeSearchHint,
+                      controller: _searchController,
+                      showClear: uiState.searchQuery.isNotEmpty,
+                      onChanged: viewModel.updateSearchQuery,
+                      onClear: () {
+                        _searchController.clear();
+                        viewModel.updateSearchQuery('');
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -135,40 +149,16 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       toolbarHeight: 44,
       actions: [
-        _AppIconButton(icon: Icons.add, onTap: () => context.push('/editor')),
-        const SizedBox(width: 8),
-        _AppIconButton(icon: Icons.settings_outlined, onTap: () {}),
-        const SizedBox(width: 16),
+        AppIconButton(onTap: () => context.push('/editor'), icon: Icons.add),
+        const SizedBox(width: 4),
+        AppIconButton(onTap: (){}, icon: Icons.settings_outlined),
+        const SizedBox(width: 4),
       ],
     );
   }
 }
 
-class _AppIconButton extends StatelessWidget {
-  const _AppIconButton({required this.icon, required this.onTap});
 
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppColorScheme.of(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: colors.surface,
-          border: Border.all(color: colors.border),
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-        alignment: Alignment.center,
-        child: Icon(icon, size: 18, color: colors.text),
-      ),
-    );
-  }
-}
 
 class _FilterChipRow extends StatelessWidget {
   const _FilterChipRow({required this.uiState, required this.onFilterChanged});
@@ -263,10 +253,10 @@ class _TaskSliver extends StatelessWidget {
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) => TaskListItem(
-              task: tasks[index],
-              onTap: () => onTap(tasks[index]),
-              onComplete: () {},
-            ),
+            task: tasks[index],
+            onTap: () => onTap(tasks[index]),
+            onComplete: () {},
+          ),
           childCount: tasks.length,
         ),
       ),
