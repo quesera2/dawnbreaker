@@ -27,5 +27,36 @@
   "errorUnknown": "予期しないエラーが発生しました",
   "ok": "OK",
   "cancel": "キャンセル",
-  "retry": "再試行"
+  "retry": "再試行",
+  "editorTitleNew": "新規タスクを追加",
+  "editorTitleEdit": "タスクを編集",
+  "editorSectionBasic": "基本情報",
+  "editorLabelName": "タスク名",
+  "editorLabelType": "タスク種別",
+  "editorLabelColor": "カラー",
+  "editorLabelSpan": "実行スパン",
+  "editorLabelIcon": "アイコン",
+  "editorChangeIcon": "アイコンを変更する",
+  "editorTypeIrregular": "予定日を表示しない",
+  "editorTypeIrregularDesc": "不定期に実行するタスクで予定日を表示しません",
+  "editorTypePeriod": "自動的に周期を判定",
+  "editorTypePeriodDesc": "タスクの実行履歴から次の予定日を表示します",
+  "editorTypeScheduled": "周期を指定",
+  "editorTypeScheduledDesc": "次の予定日までの間隔を手動で設定します",
+  "editorSpanDay": "日",
+  "editorSpanWeek": "週",
+  "editorSpanMonth": "ヶ月",
+  "editorSpanLabel": "{value}{unit}ごと",
+  "@editorSpanLabel": {
+    "placeholders": {
+      "value": { "type": "String" },
+      "unit": { "type": "String" }
+    }
+  },
+  "editorSaveNew": "登録",
+  "editorSaveEdit": "更新",
+  "editorIconDialogTitle": "アイコンを選択",
+  "editorColorNone": "なし",
+  "editorColorNote": "色を選択することでタスクのグループ分けに使えます",
+  "editorNameHint": "例：歯医者の予約"
 }

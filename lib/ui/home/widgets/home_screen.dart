@@ -6,6 +6,7 @@ import 'package:dawnbreaker/ui/home/viewmodel/home_view_model.dart';
 import 'package:dawnbreaker/ui/home/widgets/task_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -36,7 +37,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () => context.push('/editor'),
         child: const Icon(Icons.add),
       ),
       extendBodyBehindAppBar: true,
@@ -52,11 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ),
         opacity: 0.20,
       ),
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        behavior: HitTestBehavior.translucent,
-        child: _bodyWidget(context, uiState),
-      ),
+      body: _bodyWidget(context, uiState),
     );
   }
 
@@ -123,6 +120,7 @@ class _SearchBarField extends StatelessWidget {
       child: TextField(
         controller: controller,
         onChanged: onChanged,
+        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         decoration: InputDecoration(
           hintText: context.l10n.homeSearchHint,
           prefixIcon: const Icon(Icons.search),
@@ -159,7 +157,10 @@ class _TaskListView extends StatelessWidget {
         bottom: 80 + 8 + bottomPadding,
       ),
       itemCount: tasks.length,
-      itemBuilder: (context, index) => TaskListItem(task: tasks[index]),
+      itemBuilder: (context, index) => TaskListItem(
+        task: tasks[index],
+        onTap: () => context.push('/editor', extra: tasks[index].id),
+      ),
     );
   }
 }

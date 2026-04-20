@@ -27,5 +27,36 @@
   "errorUnknown": "An unexpected error occurred",
   "ok": "OK",
   "cancel": "Cancel",
-  "retry": "Retry"
+  "retry": "Retry",
+  "editorTitleNew": "Add Task",
+  "editorTitleEdit": "Edit Task",
+  "editorSectionBasic": "Basic info",
+  "editorLabelName": "Task name",
+  "editorLabelType": "Task type",
+  "editorLabelColor": "Color",
+  "editorLabelSpan": "Interval",
+  "editorLabelIcon": "Icon",
+  "editorChangeIcon": "Change icon",
+  "editorTypeIrregular": "No due date",
+  "editorTypeIrregularDesc": "For irregular tasks — no due date shown",
+  "editorTypePeriod": "Auto-detect interval",
+  "editorTypePeriodDesc": "Next due date inferred from task history",
+  "editorTypeScheduled": "Set interval",
+  "editorTypeScheduledDesc": "Manually set the interval to the next due date",
+  "editorSpanDay": "days",
+  "editorSpanWeek": "weeks",
+  "editorSpanMonth": "months",
+  "editorSpanLabel": "Every {value} {unit}",
+  "@editorSpanLabel": {
+    "placeholders": {
+      "value": { "type": "String" },
+      "unit": { "type": "String" }
+    }
+  },
+  "editorSaveNew": "Add",
+  "editorSaveEdit": "Update",
+  "editorIconDialogTitle": "Select icon",
+  "editorColorNone": "None",
+  "editorColorNote": "Select a color to group your tasks",
+  "editorNameHint": "e.g. Dentist appointment"
 }
