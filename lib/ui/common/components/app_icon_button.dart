@@ -23,6 +23,7 @@ class AppIconButton extends StatelessWidget {
         ),
         padding: EdgeInsetsGeometry.all(0),
         fixedSize: Size(32, 32),
+        iconSize: 20,
       ),
     );
   }
