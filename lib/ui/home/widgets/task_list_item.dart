@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class TaskListItem extends StatelessWidget {
-  const TaskListItem({super.key, required this.task});
+  const TaskListItem({super.key, required this.task, required this.onTap});
 
   final TaskItem task;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class TaskListItem extends StatelessWidget {
         side: BorderSide(color: colorScheme.outlineVariant),
       ),
       child: InkWell(
-        onTap: () {},
+        onTap: onTap,
         borderRadius: cardRadius,
         child: IntrinsicHeight(
           child: Row(

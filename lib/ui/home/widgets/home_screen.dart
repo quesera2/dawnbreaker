@@ -53,11 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ),
         opacity: 0.20,
       ),
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        behavior: HitTestBehavior.translucent,
-        child: _bodyWidget(context, uiState),
-      ),
+      body: _bodyWidget(context, uiState),
     );
   }
 
@@ -124,6 +120,7 @@ class _SearchBarField extends StatelessWidget {
       child: TextField(
         controller: controller,
         onChanged: onChanged,
+        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         decoration: InputDecoration(
           hintText: context.l10n.homeSearchHint,
           prefixIcon: const Icon(Icons.search),
@@ -160,7 +157,10 @@ class _TaskListView extends StatelessWidget {
         bottom: 80 + 8 + bottomPadding,
       ),
       itemCount: tasks.length,
-      itemBuilder: (context, index) => TaskListItem(task: tasks[index]),
+      itemBuilder: (context, index) => TaskListItem(
+        task: tasks[index],
+        onTap: () => context.push('/editor', extra: tasks[index].id),
+      ),
     );
   }
 }
