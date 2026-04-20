@@ -5,6 +5,16 @@
   "homeNoTasksYet": "No tasks yet",
   "homeNoTasksFound": "No matching tasks found",
   "homeReRegister": "Re-register",
+  "homeFilterAll": "All",
+  "homeFilterOverdue": "Overdue",
+  "homeFilterToday": "Today",
+  "homeFilterWeek": "Next 7 days",
+  "homeSectionOverdue": "Overdue",
+  "homeSectionUpcoming": "Upcoming",
+  "homeComplete": "Done",
+  "homeDueToday": "Today",
+  "homeAddTask": "Add task",
+  "homeSettings": "Settings",
   "homeDaysOverdue": "{days}d overdue",
   "@daysOverdue": {
     "placeholders": {

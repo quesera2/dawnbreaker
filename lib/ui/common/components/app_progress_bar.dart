@@ -29,41 +29,18 @@ class AppProgressBar extends StatelessWidget {
     final barColor = isOverdue ? c.danger : (color ?? c.primary);
     final clamped = value.clamp(0.0, 1.0);
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final totalWidth = constraints.maxWidth;
-
-        return Container(
-          height: thickness,
-          width: totalWidth,
-          decoration: BoxDecoration(
-            color: c.trackBg,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-          ),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              width: totalWidth * clamped,
-              height: thickness,
-              decoration: BoxDecoration(
-                color: barColor,
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-                boxShadow: isOverdue
-                    ? [
-                        BoxShadow(
-                          color: c.danger.withValues(alpha: 0.35),
-                          blurRadius: 6,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                    : null,
-              ),
-            ),
-          ),
-        );
-      },
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.pill),
+      child: Container(
+        height: thickness,
+        color: c.trackBg,
+        alignment: Alignment.centerLeft,
+        child: FractionallySizedBox(
+          widthFactor: clamped,
+          heightFactor: 1.0,
+          child: ColoredBox(color: barColor),
+        ),
+      ),
     );
   }
 }

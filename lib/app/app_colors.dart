@@ -16,6 +16,7 @@ class AppColorsLight {
   static const divider = Color(0x0F1E1914);
   static const overlay = Color(0x731E1914);
   static const trackBg = Color(0x121E1914);
+  static const shadow = Color(0x0A1E1914);
 
   // Text
   static const text = Color(0xFF1B1A17);
@@ -53,6 +54,7 @@ class AppColorsDark {
   static const divider = Color(0x0FFFFAF0);
   static const overlay = Color(0x99000000);
   static const trackBg = Color(0x17FFFAF0);
+  static const shadow = Color(0x40000000);
 
   static const text = Color(0xFFF2EFE8);
   static const textMuted = Color(0x9EF2EFE8);
@@ -140,6 +142,7 @@ class AppColorScheme {
     required this.divider,
     required this.overlay,
     required this.trackBg,
+    required this.shadow,
     required this.text,
     required this.textMuted,
     required this.textSubtle,
@@ -166,6 +169,7 @@ class AppColorScheme {
   final Color divider;
   final Color overlay;
   final Color trackBg;
+  final Color shadow;
   final Color text;
   final Color textMuted;
   final Color textSubtle;
@@ -192,6 +196,7 @@ class AppColorScheme {
     divider: AppColorsLight.divider,
     overlay: AppColorsLight.overlay,
     trackBg: AppColorsLight.trackBg,
+    shadow: AppColorsLight.shadow,
     text: AppColorsLight.text,
     textMuted: AppColorsLight.textMuted,
     textSubtle: AppColorsLight.textSubtle,
@@ -219,6 +224,7 @@ class AppColorScheme {
     divider: AppColorsDark.divider,
     overlay: AppColorsDark.overlay,
     trackBg: AppColorsDark.trackBg,
+    shadow: AppColorsDark.shadow,
     text: AppColorsDark.text,
     textMuted: AppColorsDark.textMuted,
     textSubtle: AppColorsDark.textSubtle,

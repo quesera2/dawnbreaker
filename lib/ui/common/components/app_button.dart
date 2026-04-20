@@ -8,7 +8,7 @@ enum AppButtonVariant { primary, secondary, ghost, danger }
 
 enum AppButtonSize { small, medium, large }
 
-class AppButton extends StatefulWidget {
+class AppButton extends StatelessWidget {
   const AppButton({
     super.key,
     required this.label,
@@ -26,127 +26,94 @@ class AppButton extends StatefulWidget {
   final Widget? leading;
   final bool fullWidth;
 
-  @override
-  State<AppButton> createState() => _AppButtonState();
-}
-
-class _AppButtonState extends State<AppButton> {
-  bool _isPressed = false;
-
-  bool get _isDisabled => widget.onPressed == null;
-
-  (double, EdgeInsets, TextStyle) get _sizeConfig => switch (widget.size) {
+  (double, EdgeInsets, TextStyle) get _sizeConfig => switch (size) {
     AppButtonSize.small => (
       32.0,
-      const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+      const EdgeInsets.symmetric(horizontal: 12),
       AppTextStyle.caption,
     ),
     AppButtonSize.medium => (
       40.0,
-      const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      const EdgeInsets.symmetric(horizontal: 16),
       AppTextStyle.body,
     ),
     AppButtonSize.large => (
       52.0,
-      const EdgeInsets.symmetric(horizontal: 22, vertical: 0),
+      const EdgeInsets.symmetric(horizontal: 22),
       AppTextStyle.headline,
     ),
   };
-
-  void _onTapDown(TapDownDetails _) {
-    if (!_isDisabled) setState(() => _isPressed = true);
-  }
-
-  void _onTapUp(TapUpDetails _) {
-    if (!_isDisabled) {
-      setState(() => _isPressed = false);
-      widget.onPressed?.call();
-    }
-  }
-
-  void _onTapCancel() {
-    if (!_isDisabled) setState(() => _isPressed = false);
-  }
 
   @override
   Widget build(BuildContext context) {
     final c = AppColorScheme.of(context);
     final (height, padding, textStyle) = _sizeConfig;
-
-    final backgroundColor = switch (widget.variant) {
-      AppButtonVariant.primary => c.primary,
-      AppButtonVariant.secondary => c.surface,
-      AppButtonVariant.ghost => Colors.transparent,
-      AppButtonVariant.danger => c.danger,
-    };
-    final textColor = switch (widget.variant) {
-      AppButtonVariant.primary => c.primaryOn,
-      AppButtonVariant.secondary => c.text,
-      AppButtonVariant.ghost => c.text,
-      AppButtonVariant.danger => c.primaryOn,
-    };
-    final border = switch (widget.variant) {
-      AppButtonVariant.secondary => Border.all(color: c.borderStrong, width: 1),
-      _ => null,
-    };
-    final shadows = switch (widget.variant) {
-      AppButtonVariant.primary || AppButtonVariant.secondary => const [
-        BoxShadow(
-          color: Color(0x0A1E1914),
-          offset: Offset(0, 1),
-          blurRadius: 2,
-        ),
-      ],
-      _ => null,
-    };
-
-    return GestureDetector(
-      onTapDown: _onTapDown,
-      onTapUp: _onTapUp,
-      onTapCancel: _onTapCancel,
-      child: AnimatedOpacity(
-        opacity: _isDisabled ? 0.4 : 1.0,
-        duration: const Duration(milliseconds: 120),
-        child: AnimatedContainer(
-          duration: _isPressed
-              ? const Duration(milliseconds: 80)
-              : const Duration(milliseconds: 120),
-          transform: Matrix4.translationValues(0, _isPressed ? 0.5 : 0, 0),
-          height: height,
-          width: widget.fullWidth ? double.infinity : null,
-          padding: padding,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            border: border,
-            boxShadow: shadows,
-          ),
-          child: Row(
-            mainAxisSize: widget.fullWidth
-                ? MainAxisSize.max
-                : MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (widget.leading != null) ...[
-                IconTheme(
-                  data: IconThemeData(color: textColor),
-                  child: widget.leading!,
-                ),
-                const SizedBox(width: 6),
-              ],
-              Text(
-                widget.label,
-                style: textStyle.copyWith(
-                  color: textColor,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.1,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    final minSize = Size(fullWidth ? double.infinity : 0, height);
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadius.md),
     );
+    final ts = textStyle.copyWith(fontWeight: FontWeight.w600, letterSpacing: 0.1);
+
+    final child = leading != null
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [leading!, const SizedBox(width: 6), Text(label)],
+          )
+        : Text(label);
+
+    return switch (variant) {
+      AppButtonVariant.primary => FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: c.primary,
+          foregroundColor: c.primaryOn,
+          minimumSize: minSize,
+          padding: padding,
+          shape: shape,
+          textStyle: ts,
+          elevation: 1,
+          shadowColor: c.shadow,
+        ),
+        child: child,
+      ),
+      AppButtonVariant.secondary => OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: c.text,
+          minimumSize: minSize,
+          padding: padding,
+          shape: shape,
+          side: BorderSide(color: c.borderStrong),
+          textStyle: ts,
+        ),
+        child: child,
+      ),
+      AppButtonVariant.ghost => TextButton(
+        onPressed: onPressed,
+        style: TextButton.styleFrom(
+          foregroundColor: c.text,
+          minimumSize: minSize,
+          padding: padding,
+          shape: shape,
+          textStyle: ts,
+        ),
+        child: child,
+      ),
+      AppButtonVariant.danger => FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: c.danger,
+          foregroundColor: c.primaryOn,
+          minimumSize: minSize,
+          padding: padding,
+          shape: shape,
+          textStyle: ts,
+          elevation: 1,
+          shadowColor: c.shadow,
+        ),
+        child: child,
+      ),
+    };
   }
 }
 
@@ -212,10 +179,7 @@ final class ButtonShowCase extends StatelessWidget {
             spacing: 8,
             children: [
               AppButton(label: 'Primary'),
-              AppButton(
-                label: 'Secondary',
-                variant: AppButtonVariant.secondary,
-              ),
+              AppButton(label: 'Secondary', variant: AppButtonVariant.secondary),
               AppButton(label: 'Danger', variant: AppButtonVariant.danger),
             ],
           ),

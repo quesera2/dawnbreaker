@@ -1,182 +1,142 @@
+import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_progress.dart';
+import 'package:dawnbreaker/ui/common/components/app_badge.dart';
+import 'package:dawnbreaker/ui/common/components/app_pill_button.dart';
+import 'package:dawnbreaker/ui/common/components/app_progress_bar.dart';
+import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class TaskListItem extends StatelessWidget {
-  const TaskListItem({super.key, required this.task, required this.onTap});
+  const TaskListItem({
+    super.key,
+    required this.task,
+    required this.onTap,
+    required this.onComplete,
+  });
 
   final TaskItem task;
   final VoidCallback onTap;
+  final VoidCallback onComplete;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colors = AppColorScheme.of(context);
+    final taskColors = AppTaskColorScheme.of(context);
     final taskProgress = task.computeProgress();
-    final cardRadius = BorderRadius.circular(12);
-
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      color: colorScheme.surface,
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: cardRadius,
-        side: BorderSide(color: colorScheme.outlineVariant),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: cardRadius,
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Stack(
-                children: [
-                  Container(width: 16, color: task.color.color),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Container(
-                      width: 8,
-                      decoration: BoxDecoration(
-                        color: colorScheme.surface,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          bottomLeft: Radius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: 4, color: taskColors.base(task.color)),
+            Expanded(
+              child: InkWell(
+                onTap: onTap,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 12, 12, 12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      _EmojiCircle(icon: task.icon, colorScheme: colorScheme),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildTitleRow(context, theme, colorScheme),
-                            if (taskProgress is DueDate) ...[
-                              const SizedBox(height: 4),
-                              _buildDateInfo(
-                                context,
-                                theme,
-                                colorScheme,
-                                taskProgress,
-                              ),
-                              const SizedBox(height: 8),
-                              _buildProgressBar(colorScheme, taskProgress),
-                            ],
-                          ],
+                    padding: const EdgeInsets.fromLTRB(14, 10, 12, 10),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        AppTaskIconTile(
+                          emoji: task.icon,
+                          color: task.color,
+                          size: 32,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                task.name,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: colors.text,
+                                  letterSpacing: -0.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (taskProgress is DueDate) ...[
+                                const SizedBox(height: 4),
+                                _DateRow(
+                                  taskProgress: taskProgress,
+                                  colors: colors,
+                                ),
+                                const SizedBox(height: 6),
+                                AppProgressBar(
+                                  value: taskProgress.isOverdue
+                                      ? 1.0
+                                      : taskProgress.progress,
+                                  color: taskColors.base(task.color),
+                                  isOverdue: taskProgress.isOverdue,
+                                  thickness: 2,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        AppPillButton(
+                          label: context.l10n.homeComplete,
+                          onPressed: onComplete,
+                          leading: const Icon(Icons.check),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );
-  }
 
-  Widget _buildTitleRow(
-    BuildContext context,
-    ThemeData theme,
-    ColorScheme colorScheme,
-  ) {
-    return Row(
-      children: [
-        Expanded(child: Text(task.name, style: theme.textTheme.titleMedium)),
-        const SizedBox(width: 4),
-        Icon(
-          Icons.replay_rounded,
-          size: 18,
-          color: colorScheme.onSurfaceVariant,
-        ),
-        const SizedBox(width: 2),
-        Text(
-          context.l10n.homeReRegister,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDateInfo(
-    BuildContext context,
-    ThemeData theme,
-    ColorScheme colorScheme,
-    DueDate taskProgress,
-  ) {
-    final date = taskProgress.scheduledAt;
-    final locale = Localizations.localeOf(context).toString();
-    final dateStr = DateFormat.yMd(locale).format(date);
-    final remainStr = taskProgress.isOverdue
-        ? context.l10n.homeDaysOverdue(taskProgress.daysRemaining.abs())
-        : context.l10n.homeDaysRemaining(taskProgress.daysRemaining);
-    final color = taskProgress.isOverdue
-        ? colorScheme.error
-        : colorScheme.onSurfaceVariant;
-
-    return Row(
-      children: [
-        Icon(Icons.event_outlined, size: 13, color: color),
-        const SizedBox(width: 4),
-        Text(
-          '$dateStr（$remainStr）',
-          style: theme.textTheme.labelMedium?.copyWith(color: color),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProgressBar(ColorScheme colorScheme, DueDate taskProgress) {
-    final progressColor = taskProgress.isOverdue
-        ? colorScheme.error
-        : taskProgress.progress > 0.5
-        ? colorScheme.tertiary
-        : colorScheme.primary;
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: LinearProgressIndicator(
-        value: taskProgress.progress,
-        minHeight: 6,
-        backgroundColor: colorScheme.surfaceContainerHighest,
-        valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-      ),
-    );
   }
 }
 
+class _DateRow extends StatelessWidget {
+  const _DateRow({required this.taskProgress, required this.colors});
 
-class _EmojiCircle extends StatelessWidget {
-  const _EmojiCircle({required this.icon, required this.colorScheme});
-
-  final String icon;
-  final ColorScheme colorScheme;
+  final DueDate taskProgress;
+  final AppColorScheme colors;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
-        shape: BoxShape.circle,
-      ),
-      child: Center(child: Text(icon, style: const TextStyle(fontSize: 22))),
+    final locale = Localizations.localeOf(context).toString();
+    final dateStr = DateFormat.yMd(locale).format(taskProgress.scheduledAt);
+
+    final AppBadgeTone tone;
+    final String badgeText;
+
+    if (taskProgress.isOverdue) {
+      tone = AppBadgeTone.danger;
+      badgeText = context.l10n.homeDaysOverdue(taskProgress.daysRemaining.abs());
+    } else if (taskProgress.daysRemaining == 0) {
+      tone = AppBadgeTone.warning;
+      badgeText = context.l10n.homeDueToday;
+    } else {
+      tone = AppBadgeTone.neutral;
+      badgeText = context.l10n.homeDaysRemaining(taskProgress.daysRemaining);
+    }
+
+    return Row(
+      children: [
+        Icon(Icons.calendar_today_outlined, size: 11, color: colors.textMuted),
+        const SizedBox(width: 4),
+        Text(
+          dateStr,
+          style: TextStyle(fontSize: 11, color: colors.textMuted),
+        ),
+        const SizedBox(width: 6),
+        AppBadge(label: badgeText, tone: tone),
+      ],
     );
   }
 }

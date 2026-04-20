@@ -24,6 +24,36 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeReRegister => '再登録';
 
   @override
+  String get homeFilterAll => 'すべて';
+
+  @override
+  String get homeFilterOverdue => '超過';
+
+  @override
+  String get homeFilterToday => '今日';
+
+  @override
+  String get homeFilterWeek => '7日以内';
+
+  @override
+  String get homeSectionOverdue => '超過';
+
+  @override
+  String get homeSectionUpcoming => '今後の予定';
+
+  @override
+  String get homeComplete => '完了';
+
+  @override
+  String get homeDueToday => '今日';
+
+  @override
+  String get homeAddTask => 'タスクを追加';
+
+  @override
+  String get homeSettings => '設定';
+
+  @override
   String homeDaysOverdue(int days) {
     return '$days日超過';
   }
