@@ -71,10 +71,7 @@ class TaskListItem extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 6),
                                 AppProgressBar(
-                                  value: taskProgress.isOverdue
-                                      ? 1.0
-                                      : taskProgress.progress,
-                                  color: taskColors.base(task.color),
+                                  value: taskProgress.progress,
                                   isOverdue: taskProgress.isOverdue,
                                   thickness: 2,
                                 ),
