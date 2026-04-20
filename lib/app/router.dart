@@ -4,10 +4,7 @@ import 'package:go_router/go_router.dart';
 
 final appRouter = GoRouter(
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (_, __) => const HomeScreen(),
-    ),
+    GoRoute(path: '/', builder: (context, _) => const HomeScreen()),
     GoRoute(
       path: '/editor',
       builder: (_, state) => EditorScreen(taskId: state.extra as int?),
