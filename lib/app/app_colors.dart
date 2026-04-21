@@ -342,6 +342,12 @@ class AppTaskColorScheme {
   );
 }
 
+extension TaskColorContext on TaskColor {
+  Color baseColor(BuildContext context) => context.appTaskColorScheme.base(this);
+  Color softColor(BuildContext context) => context.appTaskColorScheme.soft(this);
+  Color onColor(BuildContext context) => context.appTaskColorScheme.on(this);
+}
+
 extension AppColors on BuildContext {
   AppColorScheme get appColorScheme => MediaQuery.platformBrightnessOf(this) == Brightness.dark
       ? AppColorScheme.dark

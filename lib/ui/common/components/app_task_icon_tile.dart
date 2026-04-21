@@ -19,10 +19,9 @@ class AppTaskIconTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final taskColor = context.appTaskColorScheme;
     final radius = size * 0.28;
-    final softColor = taskColor.soft(color);
-    final baseColor = taskColor.base(color);
+    final softColor = color.softColor(context);
+    final baseColor = color.baseColor(context);
     final fontSize = size * 0.55;
 
     final borderRadius = BorderRadius.circular(radius);

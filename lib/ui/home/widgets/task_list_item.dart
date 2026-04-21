@@ -24,7 +24,6 @@ class TaskListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    final taskColors = context.appTaskColorScheme;
     final taskProgress = task.computeProgress();
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -32,7 +31,7 @@ class TaskListItem extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(width: 4, color: taskColors.base(task.color)),
+            Container(width: 4, color: task.color.baseColor(context)),
             Expanded(
               child: InkWell(
                 onTap: onTap,
