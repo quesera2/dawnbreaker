@@ -40,7 +40,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final colorScheme = AppColorScheme.of(context);
+    final colorScheme = context.appColorScheme;
 
     return Scaffold(
       body: CustomScrollView(
@@ -94,7 +94,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final upcoming = uiState.upcomingTasks;
 
     if (overdue.isEmpty && upcoming.isEmpty) {
-      final colors = AppColorScheme.of(context);
+      final colors = context.appColorScheme;
       return [
         SliverFillRemaining(
           child: Center(
@@ -214,7 +214,7 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColorScheme.of(context);
+    final colors = context.appColorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
       child: Row(

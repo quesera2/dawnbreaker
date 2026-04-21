@@ -28,7 +28,7 @@ class AppProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
     final barColor = _barColor(c);
     final clamped = value.clamp(0.0, 1.0);
 
@@ -56,7 +56,7 @@ final class ProgressBarShowCase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
     return Container(
       color: c.bg,
       padding: const EdgeInsets.all(24),

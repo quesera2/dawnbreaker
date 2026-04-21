@@ -46,7 +46,7 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
     final (height, padding, textStyle) = _sizeConfig;
     final minSize = Size(fullWidth ? double.infinity : 0, height);
     final shape = RoundedRectangleBorder(
@@ -125,7 +125,7 @@ final class ButtonShowCase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
     return Container(
       color: c.bg,
       padding: const EdgeInsets.all(24),

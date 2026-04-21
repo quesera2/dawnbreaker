@@ -21,7 +21,7 @@ class AppPillButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
 
     final (bg, fg) = switch (variant) {
       AppPillButtonVariant.primary => (c.primary, c.primaryOn),
@@ -77,7 +77,7 @@ final class PillButtonShowCase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
     return Container(
       color: c.bg,
       padding: const EdgeInsets.all(24),

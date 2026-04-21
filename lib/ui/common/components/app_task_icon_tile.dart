@@ -22,10 +22,10 @@ class AppTaskIconTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tc = AppTaskColorScheme.of(context);
+    final taskColor = context.appTaskColorScheme;
     final radius = size * 0.28;
-    final softColor = tc.soft(color);
-    final baseColor = tc.base(color);
+    final softColor = taskColor.soft(color);
+    final baseColor = taskColor.base(color);
     final fontSize = size * 0.55;
 
     Widget tile = Container(
@@ -80,7 +80,7 @@ final class TaskIconTileShowCase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = AppColorScheme.of(context).bg;
+    final bg = context.appColorScheme.bg;
     return Container(
       color: bg,
       padding: const EdgeInsets.all(24),

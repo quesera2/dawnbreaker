@@ -23,8 +23,8 @@ class TaskListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColorScheme.of(context);
-    final taskColors = AppTaskColorScheme.of(context);
+    final colors = context.appColorScheme;
+    final taskColors = context.appTaskColorScheme;
     final taskProgress = task.computeProgress();
     return Card(
       clipBehavior: Clip.antiAlias,

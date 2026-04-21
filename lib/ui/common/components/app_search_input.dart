@@ -44,7 +44,7 @@ class _AppSearchInputState extends State<AppSearchInput> {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 120),
       height: 44,
@@ -106,7 +106,7 @@ final class SearchInputShowCase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
     return Container(
       color: c.bg,
       padding: const EdgeInsets.all(24),

@@ -38,7 +38,7 @@ class AppBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
     final bg = tone.bgColor(c);
     final fg = tone.fgColor(c);
     return Container(
@@ -67,7 +67,7 @@ final class LabelShowCase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = AppColorScheme.of(context);
+    final colorScheme = context.appColorScheme;
     return Container(
       color: colorScheme.bg,
       padding: const EdgeInsets.all(18),

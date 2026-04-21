@@ -132,7 +132,7 @@ class AppTaskColorsDark {
 }
 
 class AppColorScheme {
-  const AppColorScheme({
+  const AppColorScheme._({
     required this.bg,
     required this.bgSubtle,
     required this.surface,
@@ -186,7 +186,7 @@ class AppColorScheme {
   final Color info;
   final Color infoSoft;
 
-  static const light = AppColorScheme(
+  static const light = AppColorScheme._(
     bg: AppColorsLight.bg,
     bgSubtle: AppColorsLight.bgSubtle,
     surface: AppColorsLight.surface,
@@ -214,7 +214,7 @@ class AppColorScheme {
     infoSoft: AppColorsLight.infoSoft,
   );
 
-  static const dark = AppColorScheme(
+  static const dark = AppColorScheme._(
     bg: AppColorsDark.bg,
     bgSubtle: AppColorsDark.bgSubtle,
     surface: AppColorsDark.surface,
@@ -241,15 +241,10 @@ class AppColorScheme {
     info: AppColorsDark.info,
     infoSoft: AppColorsDark.infoSoft,
   );
-
-  static AppColorScheme of(BuildContext context) =>
-      MediaQuery.platformBrightnessOf(context) == Brightness.dark
-      ? dark
-      : light;
 }
 
 class AppTaskColorScheme {
-  const AppTaskColorScheme({
+  const AppTaskColorScheme._({
     required this.slateBase,
     required this.slateSoft,
     required this.slateOn,
@@ -304,7 +299,7 @@ class AppTaskColorScheme {
     TaskColor.orange => orangeOn,
   };
 
-  static const light = AppTaskColorScheme(
+  static const light = AppTaskColorScheme._(
     slateBase: AppTaskColorsLight.slateBase,
     slateSoft: AppTaskColorsLight.slateSoft,
     slateOn: AppTaskColorsLight.slateOn,
@@ -325,7 +320,7 @@ class AppTaskColorScheme {
     orangeOn: AppTaskColorsLight.orangeOn,
   );
 
-  static const dark = AppTaskColorScheme(
+  static const dark = AppTaskColorScheme._(
     slateBase: AppTaskColorsDark.slateBase,
     slateSoft: AppTaskColorsDark.slateSoft,
     slateOn: AppTaskColorsDark.slateOn,
@@ -345,9 +340,14 @@ class AppTaskColorScheme {
     orangeSoft: AppTaskColorsDark.orangeSoft,
     orangeOn: AppTaskColorsDark.orangeOn,
   );
+}
 
-  static AppTaskColorScheme of(BuildContext context) =>
-      MediaQuery.platformBrightnessOf(context) == Brightness.dark
-      ? dark
-      : light;
+extension AppColors on BuildContext {
+  AppColorScheme get appColorScheme => MediaQuery.platformBrightnessOf(this) == Brightness.dark
+      ? AppColorScheme.dark
+      : AppColorScheme.light;
+
+  AppTaskColorScheme get appTaskColorScheme => MediaQuery.platformBrightnessOf(this) == Brightness.dark
+      ? AppTaskColorScheme.dark
+      : AppTaskColorScheme.light;
 }
