@@ -14,6 +14,12 @@
   "homeComplete": "完了",
   "homeCompleteSheetTitle": "タスクを完了",
   "homeCompleteRecord": "完了を記録",
+  "homeCompleteSuccess": "「{name}」の完了を記録しました",
+  "@homeCompleteSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
   "homeDueToday": "今日",
   "homeAddTask": "タスクを追加",
   "homeSettings": "設定",

@@ -1,35 +1,37 @@
 import 'package:flutter/foundation.dart';
+import 'package:uuid/uuid.dart';
 
 sealed class ErrorMessage {
-  const ErrorMessage({this.handler});
+  ErrorMessage({this.handler}) : id = const Uuid().v4();
 
   final VoidCallback? handler;
+  final String id;
 }
 
 class TaskNotFoundErrorMessage extends ErrorMessage {
-  const TaskNotFoundErrorMessage() : super();
+  TaskNotFoundErrorMessage() : super();
 }
 
 class TaskLoadErrorMessage extends ErrorMessage {
-  const TaskLoadErrorMessage({super.handler});
+  TaskLoadErrorMessage({super.handler});
 }
 
 class TaskSaveErrorMessage extends ErrorMessage {
-  const TaskSaveErrorMessage({super.handler});
+  TaskSaveErrorMessage({super.handler});
 }
 
 class TaskUpdateErrorMessage extends ErrorMessage {
-  const TaskUpdateErrorMessage({super.handler});
+  TaskUpdateErrorMessage({super.handler});
 }
 
 class TaskDeleteErrorMessage extends ErrorMessage {
-  const TaskDeleteErrorMessage({super.handler});
+  TaskDeleteErrorMessage({super.handler});
 }
 
 class TaskInvalidArgumentErrorMessage extends ErrorMessage {
-  const TaskInvalidArgumentErrorMessage() : super();
+  TaskInvalidArgumentErrorMessage() : super();
 }
 
 class UnknownErrorMessage extends ErrorMessage {
-  const UnknownErrorMessage() : super();
+  UnknownErrorMessage() : super();
 }

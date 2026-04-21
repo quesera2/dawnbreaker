@@ -182,6 +182,12 @@ abstract class AppLocalizations {
   /// **'完了を記録'**
   String get homeCompleteRecord;
 
+  /// No description provided for @homeCompleteSuccess.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」の完了を記録しました'**
+  String homeCompleteSuccess(String name);
+
   /// No description provided for @homeDueToday.
   ///
   /// In ja, this message translates to:

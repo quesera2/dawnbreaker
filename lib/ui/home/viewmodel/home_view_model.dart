@@ -1,10 +1,12 @@
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -270,9 +272,12 @@ class HomeViewModel extends _$HomeViewModel {
     state = state.copyWith(selectedFilter: filter);
   }
 
-  Future<void> recordCompletion(int taskId, DateTime executedAt) async {
+  Future<void> recordCompletion(TaskItem task, DateTime executedAt) async {
     try {
-      await _repository.recordExecution(taskId, executedAt: executedAt);
+      await _repository.recordExecution(task.id, executedAt: executedAt);
+      state = state.copyWith(
+        snackBarMessage: TaskCompleteSuccessSnackMessage(taskName: task.name),
+      );
     } on TaskRepositoryException {
       if (!ref.mounted) return;
       state = state.copyWith(errorMessage: TaskSaveErrorMessage());

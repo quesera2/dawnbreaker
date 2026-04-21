@@ -14,6 +14,12 @@
   "homeComplete": "Done",
   "homeCompleteSheetTitle": "Complete task",
   "homeCompleteRecord": "Record completion",
+  "homeCompleteSuccess": "Marked \"{name}\" as complete",
+  "@homeCompleteSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
   "homeDueToday": "Today",
   "homeAddTask": "Add task",
   "homeSettings": "Settings",

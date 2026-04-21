@@ -51,6 +51,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeCompleteRecord => '完了を記録';
 
   @override
+  String homeCompleteSuccess(String name) {
+    return '「$name」の完了を記録しました';
+  }
+
+  @override
   String get homeDueToday => '今日';
 
   @override

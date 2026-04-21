@@ -3,7 +3,7 @@ import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
-import 'package:dawnbreaker/ui/common/error_dialog_mixin.dart';
+import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_ui_state.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_view_model.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
@@ -29,7 +29,7 @@ class EditorScreen extends ConsumerStatefulWidget {
 }
 
 class _EditorScreenState extends ConsumerState<EditorScreen>
-    with ErrorDialogMixin<EditorScreen> {
+    with MessagesListenMixin<EditorScreen> {
   late final _nameController = TextEditingController();
 
   @override
@@ -50,7 +50,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
   @override
   Widget build(BuildContext context) {
     final provider = editorViewModelProvider(taskId: widget.taskId);
-    listenError(provider);
+    listenMessages(provider);
 
     ref.listen(provider.select((s) => s.isSaved), (_, isSaved) {
       if (isSaved == true) context.pop();
