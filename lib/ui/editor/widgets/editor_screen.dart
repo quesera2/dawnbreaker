@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
@@ -489,10 +490,8 @@ class _ColorChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final displayColor = taskColor == TaskColor.none
-        ? colorScheme.surfaceContainerHighest
-        : taskColor.color;
+    final c = context.appColorScheme;
+    final displayColor = taskColor.baseColor(context);
 
     return GestureDetector(
       onTap: onTap,
@@ -504,25 +503,14 @@ class _ColorChip extends StatelessWidget {
           color: displayColor,
           shape: BoxShape.circle,
           border: isSelected
-              ? Border.all(color: colorScheme.primary, width: 3)
-              : Border.all(color: colorScheme.outlineVariant, width: 1),
+              ? Border.all(color: c.primary, width: 3)
+              : Border.all(color: c.border, width: 1),
           boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: colorScheme.primary.withAlpha(80),
-                    blurRadius: 6,
-                  ),
-                ]
+              ? [BoxShadow(color: c.primary.withAlpha(80), blurRadius: 6)]
               : null,
         ),
         child: isSelected
-            ? Icon(
-                Icons.check,
-                size: 20,
-                color: taskColor == TaskColor.none
-                    ? colorScheme.onSurface
-                    : Colors.white,
-              )
+            ? Icon(Icons.check, size: 20, color: taskColor.onColor(context))
             : null,
       ),
     );
