@@ -20,7 +20,7 @@ class AppFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -74,7 +74,7 @@ final class FilterChipShowCase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
     return Container(
       color: c.bg,
       padding: const EdgeInsets.all(24),

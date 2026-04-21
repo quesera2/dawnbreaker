@@ -1,4 +1,4 @@
-import "package:collection/collection.dart";
+import 'package:collection/collection.dart';
 import 'package:dawnbreaker/core/util/furigana_translate.dart';
 import 'package:dawnbreaker/data/database/app_database.dart';
 import 'package:dawnbreaker/data/database/app_database_provider.dart';

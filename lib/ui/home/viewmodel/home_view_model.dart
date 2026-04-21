@@ -264,4 +264,9 @@ class HomeViewModel extends _$HomeViewModel {
     if (query == state.searchQuery) return;
     state = state.copyWith(searchQuery: query);
   }
+
+  void updateFilter(HomeFilter filter) {
+    if (filter == state.selectedFilter) return;
+    state = state.copyWith(selectedFilter: filter);
+  }
 }

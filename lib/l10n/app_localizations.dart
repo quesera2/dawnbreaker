@@ -128,6 +128,66 @@ abstract class AppLocalizations {
   /// **'再登録'**
   String get homeReRegister;
 
+  /// No description provided for @homeFilterAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべて'**
+  String get homeFilterAll;
+
+  /// No description provided for @homeFilterOverdue.
+  ///
+  /// In ja, this message translates to:
+  /// **'超過'**
+  String get homeFilterOverdue;
+
+  /// No description provided for @homeFilterToday.
+  ///
+  /// In ja, this message translates to:
+  /// **'今日'**
+  String get homeFilterToday;
+
+  /// No description provided for @homeFilterWeek.
+  ///
+  /// In ja, this message translates to:
+  /// **'7日以内'**
+  String get homeFilterWeek;
+
+  /// No description provided for @homeSectionOverdue.
+  ///
+  /// In ja, this message translates to:
+  /// **'超過'**
+  String get homeSectionOverdue;
+
+  /// No description provided for @homeSectionUpcoming.
+  ///
+  /// In ja, this message translates to:
+  /// **'今後の予定'**
+  String get homeSectionUpcoming;
+
+  /// No description provided for @homeComplete.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了'**
+  String get homeComplete;
+
+  /// No description provided for @homeDueToday.
+  ///
+  /// In ja, this message translates to:
+  /// **'今日'**
+  String get homeDueToday;
+
+  /// No description provided for @homeAddTask.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスクを追加'**
+  String get homeAddTask;
+
+  /// No description provided for @homeSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定'**
+  String get homeSettings;
+
   /// No description provided for @homeDaysOverdue.
   ///
   /// In ja, this message translates to:

@@ -7,13 +7,17 @@ import 'package:flutter/widget_previews.dart';
 class AppSearchInput extends StatefulWidget {
   const AppSearchInput({
     super.key,
+    required this.placeholder,
     this.controller,
     this.onChanged,
-    this.placeholder = 'タスクを検索',
+    this.onClear,
+    this.showClear = false,
   });
 
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
+  final VoidCallback? onClear;
+  final bool showClear;
   final String? placeholder;
 
   @override
@@ -40,13 +44,13 @@ class _AppSearchInputState extends State<AppSearchInput> {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 120),
       height: 44,
       decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: BorderRadius.circular(AppRadius.md),
+        color: c.bgSubtle,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
           color: _focusNode.hasFocus ? c.primary : c.border,
           width: _focusNode.hasFocus ? 1.5 : 1.0,
@@ -77,9 +81,17 @@ class _AppSearchInputState extends State<AppSearchInput> {
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
+              onTapOutside: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
             ),
           ),
-          const SizedBox(width: 14),
+          if (widget.showClear && widget.onClear != null) ...[
+            IconButton(
+              onPressed: widget.onClear,
+              icon: Icon(Icons.clear, size: 18, color: c.textMuted),
+            ),
+          ] else
+            const SizedBox(width: 14),
         ],
       ),
     );
@@ -94,11 +106,14 @@ final class SearchInputShowCase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
     return Container(
       color: c.bg,
       padding: const EdgeInsets.all(24),
-      child: const SizedBox(width: 320, child: AppSearchInput()),
+      child: const SizedBox(
+        width: 320,
+        child: AppSearchInput(placeholder: '入力してください'),
+      ),
     );
   }
 }

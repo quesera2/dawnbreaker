@@ -3,11 +3,10 @@ import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
-class AppProgressBar extends StatelessWidget {
+class AppProgressBar extends StatefulWidget {
   const AppProgressBar({
     super.key,
     required this.value,
-    this.color,
     this.isOverdue = false,
     this.thickness = 3,
   });
@@ -15,55 +14,132 @@ class AppProgressBar extends StatelessWidget {
   /// 進捗 (0.0 〜 1.0)
   final double value;
 
-  /// バーの色。null の場合は primary を使用。isOverdue=true のときは danger で上書き。
-  final Color? color;
-
   final bool isOverdue;
 
   /// バーの太さ (dp)
   final double thickness;
 
   @override
+  State<AppProgressBar> createState() => _AppProgressBarState();
+}
+
+class _AppProgressBarState extends State<AppProgressBar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  Duration get _duration => widget.isOverdue
+      ? const Duration(milliseconds: 500)
+      : const Duration(milliseconds: 2600);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: _duration)
+      ..repeat(reverse: widget.isOverdue);
+  }
+
+  @override
+  void didUpdateWidget(AppProgressBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isOverdue != widget.isOverdue) {
+      _controller
+        ..duration = _duration
+        ..repeat(reverse: widget.isOverdue);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Color _barColor(AppColorScheme c) {
+    if (widget.isOverdue) return c.danger;
+    if (widget.value >= 0.75) return c.warning;
+    if (widget.value >= 0.5) return c.success;
+    return c.info;
+  }
+
+  Color _barSoftColor(AppColorScheme c) {
+    if (widget.isOverdue) return c.dangerSoft;
+    if (widget.value >= 0.75) return c.warningSoft;
+    if (widget.value >= 0.5) return c.successSoft;
+    return c.infoSoft;
+  }
+
+  Color _barHighlightColor(AppColorScheme c) =>
+      Color.lerp(_barColor(c), _barSoftColor(c), 0.6)!;
+
+  @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
-    final barColor = isOverdue ? c.danger : (color ?? c.primary);
-    final clamped = value.clamp(0.0, 1.0);
+    final c = context.appColorScheme;
+    final baseColor = _barColor(c);
+    final highlightColor = _barHighlightColor(c);
+    final clamped = widget.value.clamp(0.0, 1.0);
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final totalWidth = constraints.maxWidth;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.pill),
+      child: Container(
+        height: widget.thickness,
+        color: c.trackBg,
+        alignment: Alignment.centerLeft,
+        child: FractionallySizedBox(
+          widthFactor: clamped,
+          heightFactor: 1.0,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return AnimatedBuilder(
+                animation: _controller,
+                builder: (context, _) {
+                  if (widget.isOverdue) {
+                    // 期限切れの場合は点滅
+                    return ColoredBox(
+                      color: Color.lerp(
+                        highlightColor,
+                        baseColor,
+                        _controller.value,
+                      )!,
+                    );
+                  }
 
-        return Container(
-          height: thickness,
-          width: totalWidth,
-          decoration: BoxDecoration(
-            color: c.trackBg,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-          ),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              width: totalWidth * clamped,
-              height: thickness,
-              decoration: BoxDecoration(
-                color: barColor,
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-                boxShadow: isOverdue
-                    ? [
-                        BoxShadow(
-                          color: c.danger.withValues(alpha: 0.35),
-                          blurRadius: 6,
-                          spreadRadius: 1,
+                  // Phase 1 (0.0→0.7): グラデーションが右へ伸長
+                  // Phase 2 (0.7→1.0): フェードアウト
+                  final t = _controller.value;
+                  final double width;
+                  final double alpha;
+                  if (t <= 0.7) {
+                    width = constraints.maxWidth * (t / 0.7);
+                    alpha = 1.0;
+                  } else {
+                    width = constraints.maxWidth;
+                    alpha = 1.0 - (t - 0.7) / 0.3;
+                  }
+
+                  return Stack(
+                    children: [
+                      Positioned.fill(child: ColoredBox(color: baseColor)),
+                      Container(
+                        width: width,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              baseColor.withValues(alpha: alpha),
+                              highlightColor.withValues(alpha: alpha),
+                            ],
+                          ),
                         ),
-                      ]
-                    : null,
-              ),
-            ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
@@ -76,7 +152,7 @@ final class ProgressBarShowCase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = AppColorScheme.of(context);
+    final c = context.appColorScheme;
     return Container(
       color: c.bg,
       padding: const EdgeInsets.all(24),
@@ -87,9 +163,9 @@ final class ProgressBarShowCase extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           spacing: 16,
           children: [
-            AppProgressBar(value: 0.2, color: c.primary),
-            AppProgressBar(value: 0.55, color: c.success),
-            AppProgressBar(value: 0.85, color: c.warning),
+            const AppProgressBar(value: 0.2),
+            const AppProgressBar(value: 0.55),
+            const AppProgressBar(value: 0.85),
             const AppProgressBar(value: 1.0, isOverdue: true),
           ],
         ),

@@ -16,6 +16,7 @@ class AppColorsLight {
   static const divider = Color(0x0F1E1914);
   static const overlay = Color(0x731E1914);
   static const trackBg = Color(0x121E1914);
+  static const shadow = Color(0x0A1E1914);
 
   // Text
   static const text = Color(0xFF1B1A17);
@@ -53,6 +54,7 @@ class AppColorsDark {
   static const divider = Color(0x0FFFFAF0);
   static const overlay = Color(0x99000000);
   static const trackBg = Color(0x17FFFAF0);
+  static const shadow = Color(0x40000000);
 
   static const text = Color(0xFFF2EFE8);
   static const textMuted = Color(0x9EF2EFE8);
@@ -130,7 +132,7 @@ class AppTaskColorsDark {
 }
 
 class AppColorScheme {
-  const AppColorScheme({
+  const AppColorScheme._({
     required this.bg,
     required this.bgSubtle,
     required this.surface,
@@ -140,6 +142,7 @@ class AppColorScheme {
     required this.divider,
     required this.overlay,
     required this.trackBg,
+    required this.shadow,
     required this.text,
     required this.textMuted,
     required this.textSubtle,
@@ -166,6 +169,7 @@ class AppColorScheme {
   final Color divider;
   final Color overlay;
   final Color trackBg;
+  final Color shadow;
   final Color text;
   final Color textMuted;
   final Color textSubtle;
@@ -182,7 +186,7 @@ class AppColorScheme {
   final Color info;
   final Color infoSoft;
 
-  static const light = AppColorScheme(
+  static const light = AppColorScheme._(
     bg: AppColorsLight.bg,
     bgSubtle: AppColorsLight.bgSubtle,
     surface: AppColorsLight.surface,
@@ -192,6 +196,7 @@ class AppColorScheme {
     divider: AppColorsLight.divider,
     overlay: AppColorsLight.overlay,
     trackBg: AppColorsLight.trackBg,
+    shadow: AppColorsLight.shadow,
     text: AppColorsLight.text,
     textMuted: AppColorsLight.textMuted,
     textSubtle: AppColorsLight.textSubtle,
@@ -209,7 +214,7 @@ class AppColorScheme {
     infoSoft: AppColorsLight.infoSoft,
   );
 
-  static const dark = AppColorScheme(
+  static const dark = AppColorScheme._(
     bg: AppColorsDark.bg,
     bgSubtle: AppColorsDark.bgSubtle,
     surface: AppColorsDark.surface,
@@ -219,6 +224,7 @@ class AppColorScheme {
     divider: AppColorsDark.divider,
     overlay: AppColorsDark.overlay,
     trackBg: AppColorsDark.trackBg,
+    shadow: AppColorsDark.shadow,
     text: AppColorsDark.text,
     textMuted: AppColorsDark.textMuted,
     textSubtle: AppColorsDark.textSubtle,
@@ -235,15 +241,10 @@ class AppColorScheme {
     info: AppColorsDark.info,
     infoSoft: AppColorsDark.infoSoft,
   );
-
-  static AppColorScheme of(BuildContext context) =>
-      MediaQuery.platformBrightnessOf(context) == Brightness.dark
-      ? dark
-      : light;
 }
 
 class AppTaskColorScheme {
-  const AppTaskColorScheme({
+  const AppTaskColorScheme._({
     required this.slateBase,
     required this.slateSoft,
     required this.slateOn,
@@ -298,7 +299,7 @@ class AppTaskColorScheme {
     TaskColor.orange => orangeOn,
   };
 
-  static const light = AppTaskColorScheme(
+  static const light = AppTaskColorScheme._(
     slateBase: AppTaskColorsLight.slateBase,
     slateSoft: AppTaskColorsLight.slateSoft,
     slateOn: AppTaskColorsLight.slateOn,
@@ -319,7 +320,7 @@ class AppTaskColorScheme {
     orangeOn: AppTaskColorsLight.orangeOn,
   );
 
-  static const dark = AppTaskColorScheme(
+  static const dark = AppTaskColorScheme._(
     slateBase: AppTaskColorsDark.slateBase,
     slateSoft: AppTaskColorsDark.slateSoft,
     slateOn: AppTaskColorsDark.slateOn,
@@ -339,9 +340,14 @@ class AppTaskColorScheme {
     orangeSoft: AppTaskColorsDark.orangeSoft,
     orangeOn: AppTaskColorsDark.orangeOn,
   );
+}
 
-  static AppTaskColorScheme of(BuildContext context) =>
-      MediaQuery.platformBrightnessOf(context) == Brightness.dark
-      ? dark
-      : light;
+extension AppColors on BuildContext {
+  AppColorScheme get appColorScheme => MediaQuery.platformBrightnessOf(this) == Brightness.dark
+      ? AppColorScheme.dark
+      : AppColorScheme.light;
+
+  AppTaskColorScheme get appTaskColorScheme => MediaQuery.platformBrightnessOf(this) == Brightness.dark
+      ? AppTaskColorScheme.dark
+      : AppTaskColorScheme.light;
 }

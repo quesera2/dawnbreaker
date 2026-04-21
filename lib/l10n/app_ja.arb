@@ -5,6 +5,16 @@
   "homeNoTasksYet": "タスクがまだありません",
   "homeNoTasksFound": "一致するタスクが見つかりません",
   "homeReRegister": "再登録",
+  "homeFilterAll": "すべて",
+  "homeFilterOverdue": "超過",
+  "homeFilterToday": "今日",
+  "homeFilterWeek": "7日以内",
+  "homeSectionOverdue": "超過",
+  "homeSectionUpcoming": "今後の予定",
+  "homeComplete": "完了",
+  "homeDueToday": "今日",
+  "homeAddTask": "タスクを追加",
+  "homeSettings": "設定",
   "homeDaysOverdue": "{days}日超過",
   "@homeDaysOverdue": {
     "placeholders": {

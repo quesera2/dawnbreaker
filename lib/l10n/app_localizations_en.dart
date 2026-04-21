@@ -24,6 +24,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeReRegister => 'Re-register';
 
   @override
+  String get homeFilterAll => 'All';
+
+  @override
+  String get homeFilterOverdue => 'Overdue';
+
+  @override
+  String get homeFilterToday => 'Today';
+
+  @override
+  String get homeFilterWeek => 'Next 7 days';
+
+  @override
+  String get homeSectionOverdue => 'Overdue';
+
+  @override
+  String get homeSectionUpcoming => 'Upcoming';
+
+  @override
+  String get homeComplete => 'Done';
+
+  @override
+  String get homeDueToday => 'Today';
+
+  @override
+  String get homeAddTask => 'Add task';
+
+  @override
+  String get homeSettings => 'Settings';
+
+  @override
   String homeDaysOverdue(int days) {
     return '${days}d overdue';
   }

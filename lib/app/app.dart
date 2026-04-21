@@ -1,3 +1,5 @@
+import 'package:dawnbreaker/app/app_colors.dart';
+import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/router.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/l10n/app_localizations.dart';
@@ -7,27 +9,48 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 class App extends StatelessWidget {
   const App({super.key});
 
-  static final _colorScheme = ColorScheme.fromSeed(seedColor: Colors.indigo);
-  static final _theme = ThemeData(
-    useMaterial3: true,
-    colorScheme: _colorScheme,
-    scaffoldBackgroundColor: _colorScheme.surface,
-    appBarTheme: AppBarTheme(
-      backgroundColor: _colorScheme.surface,
-      elevation: 0,
-    ),
-    cardTheme: CardThemeData(
-      color: _colorScheme.surface,
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ),
-  );
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = context.appColorScheme;
+
     return MaterialApp.router(
       onGenerateTitle: (context) => context.l10n.title,
-      theme: _theme,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: colorScheme.primary,
+          brightness: MediaQuery.platformBrightnessOf(context),
+        ),
+        scaffoldBackgroundColor: colorScheme.bg,
+        canvasColor: colorScheme.bg,
+        hintColor: colorScheme.textMuted,
+        iconTheme: IconThemeData(color: colorScheme.text),
+        appBarTheme: AppBarTheme(
+          backgroundColor: colorScheme.bg,
+          foregroundColor: colorScheme.text,
+          iconTheme: IconThemeData(color: colorScheme.text),
+          elevation: 0,
+          scrolledUnderElevation: 0,
+        ),
+        cardTheme: CardThemeData(
+          color: colorScheme.surface,
+          elevation: 1,
+          shadowColor: colorScheme.shadow,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            side: BorderSide(color: colorScheme.border),
+          ),
+        ),
+        dividerTheme: DividerThemeData(color: colorScheme.divider),
+        bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: colorScheme.surface,
+          surfaceTintColor: Colors.transparent,
+        ),
+        dialogTheme: DialogThemeData(
+          backgroundColor: colorScheme.surface,
+          surfaceTintColor: Colors.transparent,
+        ),
+      ),
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

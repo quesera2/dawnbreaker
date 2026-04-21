@@ -45,4 +45,8 @@ final class DueDate extends TaskProgress {
   final int daysRemaining;
 
   final bool isOverdue;
+
+  bool get isToday => daysRemaining == 0;
+
+  bool get isCurrentWeek => daysRemaining <= 7;
 }
