@@ -24,9 +24,10 @@
 fvm flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
-## UI 実装                                                                                                                                                                                                                                              
-                                                                                                          
-画面・ウィジェットを作成・変更する際は必ず `material-3-skill` をロードしてから実装すること。   
+## UI 実装
+
+画面・ウィジェットを作成・変更する際は必ず `material-3-skill` をロードしてから実装すること。
+コンポーネントやトークンの仕様は `DESIGN.md` を参照すること。
 
 ## アーキテクチャ
 
