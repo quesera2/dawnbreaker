@@ -4,6 +4,7 @@ import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/components/app_filter_chip.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_search_input.dart';
+import 'package:dawnbreaker/ui/common/default_sticky_header.dart';
 import 'package:dawnbreaker/ui/common/error_dialog_mixin.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_task_list.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
@@ -45,6 +46,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     return Scaffold(
       body: CustomScrollView(
+        clipBehavior: Clip.none,
         slivers: [
           SliverAppBar(
             pinned: true,
@@ -114,30 +116,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     return [
-      if (overdue.isNotEmpty) ...[
-        SliverToBoxAdapter(
-          child: _SectionHeader(
-            title: context.l10n.homeSectionOverdue,
-            count: overdue.length,
-          ),
+      if (overdue.isNotEmpty)
+        SliverMainAxisGroup(
+          slivers: [
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: DefaultStickyHeaderDelegate(
+                maxHeight: 40,
+                minHeight: 40,
+                child: _SectionHeader(
+                  title: context.l10n.homeSectionOverdue,
+                  count: overdue.length,
+                ),
+              ),
+            ),
+            _TaskSliver(
+              tasks: overdue,
+              onTap: (task) => context.push('/editor', extra: task.id),
+            ),
+          ],
         ),
-        _TaskSliver(
-          tasks: overdue,
-          onTap: (task) => context.push('/editor', extra: task.id),
+      if (upcoming.isNotEmpty)
+        SliverMainAxisGroup(
+          slivers: [
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: DefaultStickyHeaderDelegate(
+                maxHeight: 40,
+                minHeight: 40,
+                child: _SectionHeader(
+                  title: context.l10n.homeSectionUpcoming,
+                  count: upcoming.length,
+                ),
+              ),
+            ),
+            _TaskSliver(
+              tasks: upcoming,
+              onTap: (task) => context.push('/editor', extra: task.id),
+            ),
+          ],
         ),
-      ],
-      if (upcoming.isNotEmpty) ...[
-        SliverToBoxAdapter(
-          child: _SectionHeader(
-            title: context.l10n.homeSectionUpcoming,
-            count: upcoming.length,
-          ),
-        ),
-        _TaskSliver(
-          tasks: upcoming,
-          onTap: (task) => context.push('/editor', extra: task.id),
-        ),
-      ],
     ];
   }
 }
@@ -163,10 +181,7 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
 }
 
 class _FilterChipRow extends StatelessWidget {
-  const _FilterChipRow({
-    required this.uiState,
-    required this.onFilterChanged,
-  });
+  const _FilterChipRow({required this.uiState, required this.onFilterChanged});
 
   final HomeUiState uiState;
   final void Function(HomeFilter) onFilterChanged;
@@ -220,26 +235,29 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          Text(
-            title.toUpperCase(),
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: colors.textMuted,
+    return ColoredBox(
+      color: colors.bg.withValues(alpha: 0.8),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              title.toUpperCase(),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: colors.textMuted,
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '$count',
-            style: TextStyle(fontSize: 11, color: colors.textSubtle),
-          ),
-        ],
+            const SizedBox(width: 8),
+            Text(
+              '$count',
+              style: TextStyle(fontSize: 11, color: colors.textSubtle),
+            ),
+          ],
+        ),
       ),
     );
   }
