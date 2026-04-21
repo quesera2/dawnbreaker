@@ -93,6 +93,40 @@ void main() {
         expect(identical(stateBefore, stateAfter), true);
       });
     });
+
+    group('recordCompletion', () {
+      setUp(() async {
+        await _waitUntilLoaded(container);
+      });
+
+      test('成功時はエラーなし', () async {
+        await container
+            .read(homeViewModelProvider.notifier)
+            .recordCompletion(1, DateTime(2026, 4, 1));
+
+        expect(container.read(homeViewModelProvider).errorMessage, isNull);
+      });
+
+      test('リポジトリが例外を投げると errorMessage がセットされる', () async {
+        final throwingRepo = FakeTaskRepository(shouldThrow: true);
+        final c = ProviderContainer(
+          overrides: [
+            taskRepositoryProvider.overrideWith((_) => throwingRepo),
+          ],
+        );
+        addTearDown(() {
+          c.dispose();
+          throwingRepo.dispose();
+        });
+        await _waitUntilLoaded(c);
+
+        await c
+            .read(homeViewModelProvider.notifier)
+            .recordCompletion(1, DateTime(2026, 4, 1));
+
+        expect(c.read(homeViewModelProvider).errorMessage, isNotNull);
+      });
+    });
   });
 }
 
