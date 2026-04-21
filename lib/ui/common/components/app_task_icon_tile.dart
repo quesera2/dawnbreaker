@@ -9,7 +9,6 @@ class AppTaskIconTile extends StatelessWidget {
     required this.emoji,
     required this.color,
     this.size = 40,
-    this.isDisabled = false,
   });
 
   final String emoji;
@@ -17,8 +16,6 @@ class AppTaskIconTile extends StatelessWidget {
 
   /// タイルのサイズ (dp)。推奨: 32 / 40 / 48 / 52
   final double size;
-
-  final bool isDisabled;
 
   @override
   Widget build(BuildContext context) {
@@ -28,47 +25,52 @@ class AppTaskIconTile extends StatelessWidget {
     final baseColor = taskColor.base(color);
     final fontSize = size * 0.55;
 
-    Widget tile = Container(
+    final borderRadius = BorderRadius.circular(radius);
+    return SizedBox(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: softColor,
-        borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: baseColor.withValues(alpha: 0.2), width: 0.5),
-        boxShadow: [
-          BoxShadow(
-            color: baseColor.withValues(alpha: 0.15),
-            offset: const Offset(0, 2),
-            blurRadius: 4,
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          emoji,
-          style: TextStyle(fontSize: fontSize),
-          textHeightBehavior: const TextHeightBehavior(
-            applyHeightToFirstAscent: false,
-            applyHeightToLastDescent: false,
-          ),
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ColoredBox(color: softColor),
+
+            // グロー表現
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: const Alignment(-0.2, -0.2),
+                  radius: 1.8,
+                  colors: [
+                    baseColor.withValues(alpha: 0.0),
+                    baseColor.withValues(alpha: 0.2),
+                  ],
+                ),
+              ),
+            ),
+
+            // 外ボーダー
+            DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: borderRadius,
+                border: Border.all(
+                  color: baseColor.withValues(alpha: 0.4),
+                  width: 0.5,
+                ),
+              ),
+            ),
+
+            Center(
+              child: Text(
+                emoji,
+                style: TextStyle(fontSize: fontSize),
+              ),
+            ),
+          ],
         ),
       ),
     );
-
-    if (isDisabled) {
-      tile = ColorFiltered(
-        colorFilter: const ColorFilter.matrix([
-          // luminosity grayscale
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0, 0, 0, 0.5, 0,
-        ]),
-        child: tile,
-      );
-    }
-
-    return tile;
   }
 }
 
@@ -110,18 +112,6 @@ final class TaskIconTileShowCase extends StatelessWidget {
               AppTaskIconTile(emoji: '🚗', color: TaskColor.none),
               AppTaskIconTile(emoji: '🚗', color: TaskColor.none, size: 48),
               AppTaskIconTile(emoji: '🚗', color: TaskColor.none, size: 52),
-            ],
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 8,
-            children: [
-              AppTaskIconTile(emoji: '🪴', color: TaskColor.green),
-              AppTaskIconTile(
-                emoji: '🪴',
-                color: TaskColor.green,
-                isDisabled: true,
-              ),
             ],
           ),
         ],
