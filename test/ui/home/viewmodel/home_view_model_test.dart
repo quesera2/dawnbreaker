@@ -121,6 +121,15 @@ void main() {
         );
       });
 
+      test('成功時の snackBarMessage に undo ハンドラがある', () async {
+        await container
+            .read(homeViewModelProvider.notifier)
+            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+
+        final msg = container.read(homeViewModelProvider).snackBarMessage;
+        expect(msg?.handler, isNotNull);
+      });
+
       test('リポジトリが例外を投げると errorMessage がセットされる', () async {
         final throwingRepo = FakeTaskRepository(shouldThrow: true);
         final c = ProviderContainer(

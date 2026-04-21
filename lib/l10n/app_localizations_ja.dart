@@ -108,6 +108,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get retry => '再試行';
 
   @override
+  String get undo => '取り消し';
+
+  @override
   String get editorTitleNew => '新規タスクを追加';
 
   @override

@@ -21,7 +21,15 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
     ref.listen(provider.select((s) => s.snackBarMessage), (prev, next) {
       if (next == null || prev?.id == next.id) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_snackText(context, next))),
+        SnackBar(
+          content: Text(_snackText(context, next)),
+          action: next.handler == null
+              ? null
+              : SnackBarAction(
+                  label: _snackActionLabel(context, next),
+                  onPressed: next.handler!,
+                ),
+        ),
       );
     });
   }
@@ -55,6 +63,10 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
   String _snackText(BuildContext ctx, SnackBarMessage m) => switch (m) {
     TaskCompleteSuccessSnackMessage(:final taskName) =>
       ctx.l10n.homeCompleteSuccess(taskName),
+  };
+
+  String _snackActionLabel(BuildContext ctx, SnackBarMessage m) => switch (m) {
+    TaskCompleteSuccessSnackMessage() => ctx.l10n.undo,
   };
 
   String _errorText(BuildContext ctx, ErrorMessage e) => switch (e) {

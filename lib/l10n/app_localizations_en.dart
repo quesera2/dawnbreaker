@@ -108,6 +108,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Retry';
 
   @override
+  String get undo => 'Undo';
+
+  @override
   String get editorTitleNew => 'Add Task';
 
   @override

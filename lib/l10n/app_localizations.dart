@@ -284,6 +284,12 @@ abstract class AppLocalizations {
   /// **'再試行'**
   String get retry;
 
+  /// No description provided for @undo.
+  ///
+  /// In ja, this message translates to:
+  /// **'取り消し'**
+  String get undo;
+
   /// No description provided for @editorTitleNew.
   ///
   /// In ja, this message translates to:

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
@@ -62,11 +63,17 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Future<void> recordExecution(
+  Future<TaskHistory> recordExecution(
     int taskId, {
     required DateTime executedAt,
   }) async {
     if (shouldThrow) throw const TaskSaveException('テストエラー');
+    return TaskHistory(id: _nextId++, executedAt: executedAt);
+  }
+
+  @override
+  Future<void> deleteExecution(int executionId) async {
+    if (shouldThrow) throw const TaskDeleteException('テストエラー');
   }
 
   @override

@@ -187,12 +187,12 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> recordExecution(
+  Future<TaskHistory> recordExecution(
     int taskId, {
     required DateTime executedAt,
   }) async {
     try {
-      await _db
+      final id = await _db
           .into(_db.taskExecutions)
           .insert(
             TaskExecutionsCompanion.insert(
@@ -200,8 +200,20 @@ class TaskRepositoryImpl implements TaskRepository {
               executedAt: executedAt,
             ),
           );
+      return TaskHistory(id: id, executedAt: executedAt);
     } catch (e) {
       throw TaskSaveException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> deleteExecution(int executionId) async {
+    try {
+      await (_db.delete(_db.taskExecutions)
+            ..where((t) => t.id.equals(executionId)))
+          .go();
+    } catch (e) {
+      throw TaskDeleteException(e.toString());
     }
   }
 

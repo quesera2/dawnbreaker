@@ -274,13 +274,29 @@ class HomeViewModel extends _$HomeViewModel {
 
   Future<void> recordCompletion(TaskItem task, DateTime executedAt) async {
     try {
-      await _repository.recordExecution(task.id, executedAt: executedAt);
+      final history = await _repository.recordExecution(
+        task.id,
+        executedAt: executedAt,
+      );
+      if (!ref.mounted) return;
       state = state.copyWith(
-        snackBarMessage: TaskCompleteSuccessSnackMessage(taskName: task.name),
+        snackBarMessage: TaskCompleteSuccessSnackMessage(
+          taskName: task.name,
+          handler: () => _undoCompletion(history.id),
+        ),
       );
     } on TaskRepositoryException {
       if (!ref.mounted) return;
       state = state.copyWith(errorMessage: TaskSaveErrorMessage());
+    }
+  }
+
+  Future<void> _undoCompletion(int executionId) async {
+    try {
+      await _repository.deleteExecution(executionId);
+    } on TaskRepositoryException {
+      if (!ref.mounted) return;
+      state = state.copyWith(errorMessage: TaskDeleteErrorMessage());
     }
   }
 }

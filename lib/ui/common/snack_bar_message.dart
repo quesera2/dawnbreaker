@@ -1,11 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 sealed class SnackBarMessage {
-  SnackBarMessage() : id = const Uuid().v4();
+  SnackBarMessage({this.handler}) : id = const Uuid().v4();
   final String id;
+  final VoidCallback? handler;
 }
 
 class TaskCompleteSuccessSnackMessage extends SnackBarMessage {
-  TaskCompleteSuccessSnackMessage({required this.taskName});
+  TaskCompleteSuccessSnackMessage({required this.taskName, super.handler});
   final String taskName;
 }
