@@ -1,11 +1,11 @@
 import 'package:dawnbreaker/app/app_colors.dart';
-import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/components/app_filter_chip.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_search_input.dart';
 import 'package:dawnbreaker/ui/common/error_dialog_mixin.dart';
+import 'package:dawnbreaker/ui/home/viewmodel/home_task_list.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_view_model.dart';
 import 'package:dawnbreaker/ui/home/widgets/task_list_item.dart';
@@ -41,6 +41,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     final colorScheme = context.appColorScheme;
+    final taskList = uiState.taskList;
 
     return Scaffold(
       body: CustomScrollView(
@@ -78,7 +79,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               onFilterChanged: viewModel.updateFilter,
             ),
           ),
-          ..._buildContentSlivers(context, uiState),
+          ..._buildContentSlivers(context, taskList),
           SliverPadding(
             padding: EdgeInsets.only(
               bottom: 8 + MediaQuery.paddingOf(context).bottom,
@@ -89,9 +90,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  List<Widget> _buildContentSlivers(BuildContext context, HomeUiState uiState) {
-    final overdue = uiState.overdueTasks;
-    final upcoming = uiState.upcomingTasks;
+  List<Widget> _buildContentSlivers(
+    BuildContext context,
+    HomeTaskList taskList,
+  ) {
+    final overdue = taskList.overdueTasks;
+    final upcoming = taskList.upcomingTasks;
 
     if (overdue.isEmpty && upcoming.isEmpty) {
       final colors = context.appColorScheme;
@@ -99,7 +103,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         SliverFillRemaining(
           child: Center(
             child: Text(
-              uiState.hasTasks
+              taskList.hasTasks
                   ? context.l10n.homeNoTasksFound
                   : context.l10n.homeNoTasksYet,
               style: TextStyle(color: colors.textMuted),
@@ -151,17 +155,18 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         AppIconButton(onTap: () => context.push('/editor'), icon: Icons.add),
         const SizedBox(width: 4),
-        AppIconButton(onTap: (){}, icon: Icons.settings_outlined),
+        AppIconButton(onTap: () {}, icon: Icons.settings_outlined),
         const SizedBox(width: 4),
       ],
     );
   }
 }
 
-
-
 class _FilterChipRow extends StatelessWidget {
-  const _FilterChipRow({required this.uiState, required this.onFilterChanged});
+  const _FilterChipRow({
+    required this.uiState,
+    required this.onFilterChanged,
+  });
 
   final HomeUiState uiState;
   final void Function(HomeFilter) onFilterChanged;
@@ -177,7 +182,7 @@ class _FilterChipRow extends StatelessWidget {
             label: context.l10n.homeFilterAll,
             isSelected: uiState.selectedFilter == HomeFilter.all,
             onTap: () => onFilterChanged(HomeFilter.all),
-            count: uiState.tasks.length,
+            count: uiState.allCount,
           ),
           const SizedBox(width: 6),
           AppFilterChip(

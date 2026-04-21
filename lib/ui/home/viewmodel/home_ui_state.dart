@@ -2,6 +2,7 @@ import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_progress.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
 import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/home/viewmodel/home_task_list.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'home_ui_state.freezed.dart';
@@ -20,7 +21,7 @@ abstract class HomeUiState with _$HomeUiState implements BaseUiState {
     @Default(HomeFilter.all) HomeFilter selectedFilter,
   }) = _HomeUiState;
 
-  bool get hasTasks => tasks.isNotEmpty;
+  int get allCount => tasks.length;
 
   int get overdueCount => tasks.where((t) {
     final p = t.computeProgress();
@@ -29,46 +30,17 @@ abstract class HomeUiState with _$HomeUiState implements BaseUiState {
 
   int get todayCount => tasks.where((t) {
     final p = t.computeProgress();
-    return p is DueDate && !p.isOverdue && p.daysRemaining == 0;
+    return p is DueDate && !p.isOverdue && p.isToday;
   }).length;
 
   int get weekCount => tasks.where((t) {
     final p = t.computeProgress();
-    return p is DueDate && !p.isOverdue && p.daysRemaining <= 7;
+    return p is DueDate && !p.isOverdue && p.isCurrentWeek;
   }).length;
 
-  List<TaskItem> get _searchFiltered {
-    if (searchQuery.isEmpty) return tasks;
-    final query = searchQuery.toLowerCase();
-    return tasks.where((t) {
-      if (t.name.toLowerCase().contains(query)) return true;
-      return t.furigana.contains(query);
-    }).toList();
-  }
-
-  List<TaskItem> get filteredTasks => switch (selectedFilter) {
-    HomeFilter.all => _searchFiltered,
-    HomeFilter.overdue => _searchFiltered.where((t) {
-      final p = t.computeProgress();
-      return p is DueDate && p.isOverdue;
-    }).toList(),
-    HomeFilter.today => _searchFiltered.where((t) {
-      final p = t.computeProgress();
-      return p is DueDate && !p.isOverdue && p.daysRemaining == 0;
-    }).toList(),
-    HomeFilter.week => _searchFiltered.where((t) {
-      final p = t.computeProgress();
-      return p is DueDate && !p.isOverdue && p.daysRemaining <= 7;
-    }).toList(),
-  };
-
-  List<TaskItem> get overdueTasks => filteredTasks.where((t) {
-    final p = t.computeProgress();
-    return p is DueDate && p.isOverdue;
-  }).toList();
-
-  List<TaskItem> get upcomingTasks => filteredTasks.where((t) {
-    final p = t.computeProgress();
-    return !(p is DueDate && p.isOverdue);
-  }).toList();
+  HomeTaskList get taskList => HomeTaskList.from(
+    tasks: tasks,
+    searchQuery: searchQuery,
+    filter: selectedFilter,
+  );
 }
