@@ -4,6 +4,7 @@ import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
+import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -91,6 +92,62 @@ void main() {
         final stateAfter = container.read(homeViewModelProvider);
 
         expect(identical(stateBefore, stateAfter), true);
+      });
+    });
+
+    group('recordCompletion', () {
+      setUp(() async {
+        await _waitUntilLoaded(container);
+      });
+
+      test('成功時はエラーなし', () async {
+        await container
+            .read(homeViewModelProvider.notifier)
+            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+
+        expect(container.read(homeViewModelProvider).errorMessage, isNull);
+      });
+
+      test('成功時に TaskCompleteSuccessSnackMessage がセットされる', () async {
+        await container
+            .read(homeViewModelProvider.notifier)
+            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+
+        final msg = container.read(homeViewModelProvider).snackBarMessage;
+        expect(msg, isA<TaskCompleteSuccessSnackMessage>());
+        expect(
+          (msg as TaskCompleteSuccessSnackMessage).taskName,
+          _testTasks[0].name,
+        );
+      });
+
+      test('成功時の snackBarMessage に undo ハンドラがある', () async {
+        await container
+            .read(homeViewModelProvider.notifier)
+            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+
+        final msg = container.read(homeViewModelProvider).snackBarMessage;
+        expect(msg?.handler, isNotNull);
+      });
+
+      test('リポジトリが例外を投げると errorMessage がセットされる', () async {
+        final throwingRepo = FakeTaskRepository(shouldThrow: true);
+        final c = ProviderContainer(
+          overrides: [
+            taskRepositoryProvider.overrideWith((_) => throwingRepo),
+          ],
+        );
+        addTearDown(() {
+          c.dispose();
+          throwingRepo.dispose();
+        });
+        await _waitUntilLoaded(c);
+
+        await c
+            .read(homeViewModelProvider.notifier)
+            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+
+        expect(c.read(homeViewModelProvider).errorMessage, isNotNull);
       });
     });
   });

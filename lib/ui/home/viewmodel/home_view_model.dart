@@ -1,10 +1,12 @@
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -268,5 +270,33 @@ class HomeViewModel extends _$HomeViewModel {
   void updateFilter(HomeFilter filter) {
     if (filter == state.selectedFilter) return;
     state = state.copyWith(selectedFilter: filter);
+  }
+
+  Future<void> recordCompletion(TaskItem task, DateTime executedAt) async {
+    try {
+      final history = await _repository.recordExecution(
+        task.id,
+        executedAt: executedAt,
+      );
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        snackBarMessage: TaskCompleteSuccessSnackMessage(
+          taskName: task.name,
+          handler: () => _undoCompletion(history.id),
+        ),
+      );
+    } on TaskRepositoryException {
+      if (!ref.mounted) return;
+      state = state.copyWith(errorMessage: TaskSaveErrorMessage());
+    }
+  }
+
+  Future<void> _undoCompletion(int executionId) async {
+    try {
+      await _repository.deleteExecution(executionId);
+    } on TaskRepositoryException {
+      if (!ref.mounted) return;
+      state = state.copyWith(errorMessage: TaskDeleteErrorMessage());
+    }
   }
 }

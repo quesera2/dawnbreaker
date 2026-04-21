@@ -45,6 +45,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeComplete => '完了';
 
   @override
+  String get homeCompleteSheetTitle => 'タスクを完了';
+
+  @override
+  String get homeCompleteRecord => '完了を記録';
+
+  @override
+  String homeCompleteSuccess(String name) {
+    return '「$name」の完了を記録しました';
+  }
+
+  @override
   String get homeDueToday => '今日';
 
   @override
@@ -95,6 +106,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get retry => '再試行';
+
+  @override
+  String get undo => '取り消し';
 
   @override
   String get editorTitleNew => '新規タスクを追加';

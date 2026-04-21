@@ -170,6 +170,24 @@ abstract class AppLocalizations {
   /// **'完了'**
   String get homeComplete;
 
+  /// No description provided for @homeCompleteSheetTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスクを完了'**
+  String get homeCompleteSheetTitle;
+
+  /// No description provided for @homeCompleteRecord.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了を記録'**
+  String get homeCompleteRecord;
+
+  /// No description provided for @homeCompleteSuccess.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」の完了を記録しました'**
+  String homeCompleteSuccess(String name);
+
   /// No description provided for @homeDueToday.
   ///
   /// In ja, this message translates to:
@@ -265,6 +283,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'再試行'**
   String get retry;
+
+  /// No description provided for @undo.
+  ///
+  /// In ja, this message translates to:
+  /// **'取り消し'**
+  String get undo;
 
   /// No description provided for @editorTitleNew.
   ///

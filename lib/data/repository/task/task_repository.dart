@@ -1,5 +1,6 @@
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 
@@ -28,7 +29,9 @@ abstract interface class TaskRepository {
     ScheduleUnit? scheduleUnit,
   });
 
-  Future<void> recordExecution(int taskId, {required DateTime executedAt});
+  Future<TaskHistory> recordExecution(int taskId, {required DateTime executedAt});
+
+  Future<void> deleteExecution(int executionId);
 
   Future<void> deleteTask(int taskId);
 }

@@ -45,6 +45,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeComplete => 'Done';
 
   @override
+  String get homeCompleteSheetTitle => 'Complete task';
+
+  @override
+  String get homeCompleteRecord => 'Record completion';
+
+  @override
+  String homeCompleteSuccess(String name) {
+    return 'Marked \"$name\" as complete';
+  }
+
+  @override
   String get homeDueToday => 'Today';
 
   @override
@@ -95,6 +106,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get undo => 'Undo';
 
   @override
   String get editorTitleNew => 'Add Task';

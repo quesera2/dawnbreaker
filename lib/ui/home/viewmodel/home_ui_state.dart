@@ -2,6 +2,7 @@ import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_progress.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
 import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_task_list.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -16,6 +17,7 @@ abstract class HomeUiState with _$HomeUiState implements BaseUiState {
   const factory HomeUiState({
     @Default(false) bool isLoading,
     ErrorMessage? errorMessage,
+    SnackBarMessage? snackBarMessage,
     @Default([]) List<TaskItem> tasks,
     @Default('') String searchQuery,
     @Default(HomeFilter.all) HomeFilter selectedFilter,

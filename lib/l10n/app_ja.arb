@@ -12,6 +12,14 @@
   "homeSectionOverdue": "超過",
   "homeSectionUpcoming": "今後の予定",
   "homeComplete": "完了",
+  "homeCompleteSheetTitle": "タスクを完了",
+  "homeCompleteRecord": "完了を記録",
+  "homeCompleteSuccess": "「{name}」の完了を記録しました",
+  "@homeCompleteSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
   "homeDueToday": "今日",
   "homeAddTask": "タスクを追加",
   "homeSettings": "設定",
@@ -38,6 +46,7 @@
   "ok": "OK",
   "cancel": "キャンセル",
   "retry": "再試行",
+  "undo": "取り消し",
   "editorTitleNew": "新規タスクを追加",
   "editorTitleEdit": "タスクを編集",
   "editorSectionBasic": "基本情報",

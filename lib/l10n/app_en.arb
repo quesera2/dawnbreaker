@@ -12,6 +12,14 @@
   "homeSectionOverdue": "Overdue",
   "homeSectionUpcoming": "Upcoming",
   "homeComplete": "Done",
+  "homeCompleteSheetTitle": "Complete task",
+  "homeCompleteRecord": "Record completion",
+  "homeCompleteSuccess": "Marked \"{name}\" as complete",
+  "@homeCompleteSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
   "homeDueToday": "Today",
   "homeAddTask": "Add task",
   "homeSettings": "Settings",
@@ -38,6 +46,7 @@
   "ok": "OK",
   "cancel": "Cancel",
   "retry": "Retry",
+  "undo": "Undo",
   "editorTitleNew": "Add Task",
   "editorTitleEdit": "Edit Task",
   "editorSectionBasic": "Basic info",
