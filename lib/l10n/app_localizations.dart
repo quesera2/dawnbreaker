@@ -170,6 +170,18 @@ abstract class AppLocalizations {
   /// **'完了'**
   String get homeComplete;
 
+  /// No description provided for @homeCompleteSheetTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスクを完了'**
+  String get homeCompleteSheetTitle;
+
+  /// No description provided for @homeCompleteRecord.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了を記録'**
+  String get homeCompleteRecord;
+
   /// No description provided for @homeDueToday.
   ///
   /// In ja, this message translates to:

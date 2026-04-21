@@ -45,6 +45,7 @@ class App extends StatelessWidget {
         bottomSheetTheme: BottomSheetThemeData(
           backgroundColor: colorScheme.surface,
           surfaceTintColor: Colors.transparent,
+          dragHandleColor: colorScheme.borderStrong,
         ),
         dialogTheme: DialogThemeData(
           backgroundColor: colorScheme.surface,

@@ -45,6 +45,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeComplete => '完了';
 
   @override
+  String get homeCompleteSheetTitle => 'タスクを完了';
+
+  @override
+  String get homeCompleteRecord => '完了を記録';
+
+  @override
   String get homeDueToday => '今日';
 
   @override

@@ -269,4 +269,13 @@ class HomeViewModel extends _$HomeViewModel {
     if (filter == state.selectedFilter) return;
     state = state.copyWith(selectedFilter: filter);
   }
+
+  Future<void> recordCompletion(int taskId, DateTime executedAt) async {
+    try {
+      await _repository.recordExecution(taskId, executedAt: executedAt);
+    } on TaskRepositoryException {
+      if (!ref.mounted) return;
+      state = state.copyWith(errorMessage: TaskSaveErrorMessage());
+    }
+  }
 }

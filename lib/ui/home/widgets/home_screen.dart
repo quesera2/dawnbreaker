@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/ui/home/widgets/task_complete_sheet.dart';
 import 'package:dawnbreaker/ui/common/components/app_filter_chip.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_search_input.dart';
@@ -92,6 +93,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
+  void _showCompleteSheet(BuildContext context, TaskItem task) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => TaskCompleteSheet(
+        task: task,
+        onConfirm: (date) => ref
+            .read(homeViewModelProvider.notifier)
+            .recordCompletion(task.id, date),
+      ),
+    );
+  }
+
   List<Widget> _buildContentSlivers(
     BuildContext context,
     HomeTaskList taskList,
@@ -133,6 +148,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             _TaskSliver(
               tasks: overdue,
               onTap: (task) => context.push('/editor', extra: task.id),
+              onComplete: (task) => _showCompleteSheet(context, task),
             ),
           ],
         ),
@@ -153,6 +169,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             _TaskSliver(
               tasks: upcoming,
               onTap: (task) => context.push('/editor', extra: task.id),
+              onComplete: (task) => _showCompleteSheet(context, task),
             ),
           ],
         ),
@@ -264,10 +281,15 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _TaskSliver extends StatelessWidget {
-  const _TaskSliver({required this.tasks, required this.onTap});
+  const _TaskSliver({
+    required this.tasks,
+    required this.onTap,
+    required this.onComplete,
+  });
 
   final List<TaskItem> tasks;
   final void Function(TaskItem) onTap;
+  final void Function(TaskItem) onComplete;
 
   @override
   Widget build(BuildContext context) {
@@ -278,7 +300,7 @@ class _TaskSliver extends StatelessWidget {
           (context, index) => TaskListItem(
             task: tasks[index],
             onTap: () => onTap(tasks[index]),
-            onComplete: () {},
+            onComplete: () => onComplete(tasks[index]),
           ),
           childCount: tasks.length,
         ),

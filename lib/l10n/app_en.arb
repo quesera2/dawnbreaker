@@ -12,6 +12,8 @@
   "homeSectionOverdue": "Overdue",
   "homeSectionUpcoming": "Upcoming",
   "homeComplete": "Done",
+  "homeCompleteSheetTitle": "Complete task",
+  "homeCompleteRecord": "Record completion",
   "homeDueToday": "Today",
   "homeAddTask": "Add task",
   "homeSettings": "Settings",

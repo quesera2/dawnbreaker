@@ -45,6 +45,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeComplete => 'Done';
 
   @override
+  String get homeCompleteSheetTitle => 'Complete task';
+
+  @override
+  String get homeCompleteRecord => 'Record completion';
+
+  @override
   String get homeDueToday => 'Today';
 
   @override

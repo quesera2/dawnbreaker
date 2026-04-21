@@ -12,6 +12,8 @@
   "homeSectionOverdue": "超過",
   "homeSectionUpcoming": "今後の予定",
   "homeComplete": "完了",
+  "homeCompleteSheetTitle": "タスクを完了",
+  "homeCompleteRecord": "完了を記録",
   "homeDueToday": "今日",
   "homeAddTask": "タスクを追加",
   "homeSettings": "設定",
