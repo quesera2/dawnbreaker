@@ -23,6 +23,7 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_snackText(context, next)),
+          persist: false,
           action: next.handler == null
               ? null
               : SnackBarAction(
