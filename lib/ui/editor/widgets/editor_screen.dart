@@ -7,6 +7,7 @@ import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
+import 'package:dawnbreaker/ui/common/components/app_input.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_ui_state.dart';
@@ -116,7 +117,8 @@ class _EditorBody extends StatelessWidget {
                   onChanged: viewModel.updateIcon,
                 ),
                 const SizedBox(height: 16),
-                _NameField(
+                AppTextInput(
+                  hintText: context.l10n.editorNameHint,
                   controller: nameController,
                   onChanged: viewModel.updateName,
                 ),
@@ -272,42 +274,6 @@ class _ColorLabel extends StatelessWidget {
   }
 }
 
-class _NameField extends StatelessWidget {
-  const _NameField({required this.controller, required this.onChanged});
-
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.appColorScheme;
-    return TextField(
-      controller: controller,
-      onChanged: onChanged,
-      textInputAction: TextInputAction.done,
-      decoration: InputDecoration(
-        hintText: context.l10n.editorNameHint,
-        hintStyle: AppTextStyle.body.copyWith(color: c.textSubtle),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: c.border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: c.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: c.primary, width: 2),
-        ),
-        filled: true,
-        fillColor: c.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      ),
-      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-    );
-  }
-}
 
 class _TypeSelector extends StatelessWidget {
   const _TypeSelector({
