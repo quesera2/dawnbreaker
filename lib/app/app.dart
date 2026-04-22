@@ -1,5 +1,6 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
+import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/app/router.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/l10n/app_localizations.dart';
@@ -15,6 +16,10 @@ class App extends StatelessWidget {
 
     return MaterialApp.router(
       onGenerateTitle: (context) => context.l10n.title,
+      builder: (context, child) => ColoredBox(
+        color: context.appColorScheme.bg,
+        child: child!,
+      ),
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
@@ -29,6 +34,10 @@ class App extends StatelessWidget {
           backgroundColor: colorScheme.bg,
           foregroundColor: colorScheme.text,
           iconTheme: IconThemeData(color: colorScheme.text),
+          titleTextStyle: AppTextStyle.body.copyWith(
+            color: colorScheme.text,
+            fontWeight: FontWeight.w700,
+          ),
           elevation: 0,
           scrolledUnderElevation: 0,
         ),

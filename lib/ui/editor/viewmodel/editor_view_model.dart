@@ -8,6 +8,7 @@ import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_ui_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -65,27 +66,27 @@ class EditorViewModel extends _$EditorViewModel {
 
   Future<void> save() async {
     if (!state.canSave) return;
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isSaving: true, errorMessage: null);
     try {
-      final id = taskId;
-      if (id == null) {
-        await _create();
+      final EditorUiState newState;
+      if (taskId == null) {
+        newState = await _createTask();
       } else {
-        await _update(id);
+        newState = await _updateTask(taskId!);
       }
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, isSaved: true);
+      state = newState;
     } on TaskRepositoryException {
       if (!ref.mounted) return;
       state = state.copyWith(
-        isLoading: false,
+        isSaving: false,
         errorMessage: TaskSaveErrorMessage(handler: save),
       );
     }
   }
 
-  Future<void> _create() async {
-    await _repository.addTask(
+  Future<EditorUiState> _createTask() async {
+    final newId = await _repository.addTask(
       taskType: state.type,
       name: state.name,
       icon: state.icon,
@@ -94,9 +95,18 @@ class EditorViewModel extends _$EditorViewModel {
       scheduleUnit: state.scheduleUnit,
       executedAt: DateTime.now(),
     );
+    return state.copyWith(
+      isSaving: false,
+      isSaved: true,
+      snackBarMessage: TaskCreateSuccessSnackMessage(
+        taskName: state.name,
+        handler: () => _repository.deleteTask(newId),
+      ),
+    );
   }
 
-  Future<void> _update(int id) async {
+  Future<EditorUiState> _updateTask(int id) async {
+    final originalTask = await _repository.findTaskById(id);
     await _repository.updateTask(
       taskId: id,
       taskType: state.type,
@@ -105,6 +115,26 @@ class EditorViewModel extends _$EditorViewModel {
       color: state.color,
       scheduleValue: state.scheduleValue,
       scheduleUnit: state.scheduleUnit,
+    );
+    return state.copyWith(
+      isSaving: false,
+      isSaved: true,
+      snackBarMessage: TaskUpdateSuccessSnackMessage(
+        taskName: state.name,
+        handler: () => _revertTask(originalTask),
+      )
+    );
+  }
+
+  Future<void> _revertTask(TaskItem original) async {
+    await _repository.updateTask(
+      taskId: original.id,
+      taskType: original._taskType,
+      name: original.name,
+      icon: original.icon,
+      color: original.color,
+      scheduleValue: original._scheduleValueOrDefault,
+      scheduleUnit: original._scheduleUnitOrDefault,
     );
   }
 }

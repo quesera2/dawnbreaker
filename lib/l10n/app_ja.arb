@@ -55,13 +55,13 @@
   "editorLabelColor": "カラー",
   "editorLabelSpan": "実行スパン",
   "editorLabelIcon": "アイコン",
-  "editorChangeIcon": "アイコンを変更する",
+  "editorChangeIcon": "アイコンを変更",
   "editorTypeIrregular": "予定日を表示しない",
-  "editorTypeIrregularDesc": "不定期に実行するタスクで予定日を表示しません",
+  "editorTypeIrregularDesc": "不定期に実行するタスク",
   "editorTypePeriod": "自動的に周期を判定",
-  "editorTypePeriodDesc": "タスクの実行履歴から次の予定日を表示します",
+  "editorTypePeriodDesc": "実行履歴から次回予定日を予測",
   "editorTypeScheduled": "周期を指定",
-  "editorTypeScheduledDesc": "次の予定日までの間隔を手動で設定します",
+  "editorTypeScheduledDesc": "次回予定日までの間隔を手動で設定",
   "editorSpanDay": "日",
   "editorSpanWeek": "週",
   "editorSpanMonth": "ヶ月",
@@ -72,10 +72,22 @@
       "unit": { "type": "String" }
     }
   },
-  "editorSaveNew": "登録",
-  "editorSaveEdit": "更新",
+  "editorSaveNew": "登録する",
+  "editorSaveEdit": "更新する",
+  "editorSaveNewSuccess": "「{name}」を登録しました",
+  "@editorSaveNewSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "editorSaveEditSuccess": "「{name}」を更新しました",
+  "@editorSaveEditSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
   "editorIconDialogTitle": "アイコンを選択",
   "editorColorNone": "なし",
-  "editorColorNote": "色を選択することでタスクのグループ分けに使えます",
-  "editorNameHint": "例：歯医者の予約"
+  "editorColorNote": "色でタスクをグループ分けできます",
+  "editorNameHint": "タスク名を入力"
 }

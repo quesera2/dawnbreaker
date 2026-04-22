@@ -6,6 +6,7 @@ import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
+import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -115,6 +116,32 @@ void main() {
         expect(container.read(editorViewModelProvider()).isSaved, true);
       });
 
+      test('save() 成功後に snackBarMessage が TaskCreateSuccessSnackMessage になる', () async {
+        viewModel.updateName('散髪');
+        await viewModel.save();
+        final state = container.read(editorViewModelProvider());
+        expect(state.snackBarMessage, isA<TaskCreateSuccessSnackMessage>());
+        expect(
+          (state.snackBarMessage as TaskCreateSuccessSnackMessage).taskName,
+          '散髪',
+        );
+        expect(state.snackBarMessage!.handler, isNotNull);
+      });
+
+      test('create の undo ハンドラを実行するとタスクがリポジトリから削除される', () async {
+        viewModel.updateName('散髪');
+        await viewModel.save();
+        final snackMsg = container.read(editorViewModelProvider()).snackBarMessage;
+        expect(snackMsg, isA<TaskCreateSuccessSnackMessage>());
+
+        // undo 前はタスクが存在する
+        expect(fakeRepository.containsTask(100), true);
+
+        await snackMsg!.handler!();
+
+        expect(fakeRepository.containsTask(100), false);
+      });
+
       test('save() でリポジトリがエラーを返すと errorMessage が設定される', () async {
         final throwingRepo = FakeTaskRepository(shouldThrow: true);
         final c = ProviderContainer(
@@ -131,7 +158,7 @@ void main() {
         await n.save();
         final state = c.read(editorViewModelProvider());
         expect(state.isSaved, false);
-        expect(state.isLoading, false);
+        expect(state.isSaving, false);
         expect(state.errorMessage, isNotNull);
       });
     });
@@ -189,6 +216,48 @@ void main() {
           container.read(editorViewModelProvider(taskId: 1)).isSaved,
           true,
         );
+      });
+
+      test('save() 成功後に snackBarMessage が TaskUpdateSuccessSnackMessage になる', () async {
+        await _waitUntilLoaded(container, taskId: 1);
+        final notifier = container.read(
+          editorViewModelProvider(taskId: 1).notifier,
+        );
+        notifier.updateName('新しい名前');
+        await notifier.save();
+        final state = container.read(editorViewModelProvider(taskId: 1));
+        expect(state.snackBarMessage, isA<TaskUpdateSuccessSnackMessage>());
+        expect(
+          (state.snackBarMessage as TaskUpdateSuccessSnackMessage).taskName,
+          '新しい名前',
+        );
+        expect(state.snackBarMessage!.handler, isNotNull);
+      });
+
+      test('update の undo ハンドラを実行すると元のタスクの状態に戻る', () async {
+        await _waitUntilLoaded(container, taskId: 1);
+        final notifier = container.read(
+          editorViewModelProvider(taskId: 1).notifier,
+        );
+
+        notifier.updateName('新しい名前');
+        notifier.updateColor(TaskColor.green);
+        await notifier.save();
+
+        final snackMsg = container.read(
+          editorViewModelProvider(taskId: 1),
+        ).snackBarMessage;
+        expect(snackMsg, isA<TaskUpdateSuccessSnackMessage>());
+
+        // undo 前は更新後の値
+        expect(fakeRepository.taskById(1)?.name, '新しい名前');
+        expect(fakeRepository.taskById(1)?.color, TaskColor.green);
+
+        await snackMsg!.handler!();
+
+        // undo 後は元の値に戻っている
+        expect(fakeRepository.taskById(1)?.name, '歯ブラシ交換');
+        expect(fakeRepository.taskById(1)?.color, TaskColor.blue);
       });
     });
   });

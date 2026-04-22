@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
 import 'package:dawnbreaker/ui/common/error_message.dart';
@@ -28,7 +30,7 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
               ? null
               : SnackBarAction(
                   label: _snackActionLabel(context, next),
-                  onPressed: next.handler!,
+                  onPressed: () => unawaited(next.handler!()),
                 ),
         ),
       );
@@ -64,10 +66,16 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
   String _snackText(BuildContext ctx, SnackBarMessage m) => switch (m) {
     TaskCompleteSuccessSnackMessage(:final taskName) =>
       ctx.l10n.homeCompleteSuccess(taskName),
+    TaskCreateSuccessSnackMessage(:final taskName) =>
+      ctx.l10n.editorSaveNewSuccess(taskName),
+    TaskUpdateSuccessSnackMessage(:final taskName) =>
+      ctx.l10n.editorSaveEditSuccess(taskName),
   };
 
   String _snackActionLabel(BuildContext ctx, SnackBarMessage m) => switch (m) {
     TaskCompleteSuccessSnackMessage() => ctx.l10n.undo,
+    TaskCreateSuccessSnackMessage() => ctx.l10n.undo,
+    TaskUpdateSuccessSnackMessage() => ctx.l10n.undo,
   };
 
   String _errorText(BuildContext ctx, ErrorMessage e) => switch (e) {
