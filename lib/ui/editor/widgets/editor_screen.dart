@@ -240,32 +240,33 @@ class _IconArea extends StatelessWidget {
   }
 
   Future<void> _showEmojiPicker(BuildContext context) async {
-    final colorScheme = Theme.of(context).colorScheme;
+    final c = context.appColorScheme;
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      showDragHandle: true,
       builder: (ctx) => EmojiPicker(
         onEmojiSelected: (_, emoji) {
           onChanged(emoji.emoji);
           Navigator.of(ctx).pop();
         },
         config: Config(
-          height: 256,
+          height: MediaQuery.sizeOf(ctx).height * 0.35,
           checkPlatformCompatibility: true,
           emojiViewConfig: EmojiViewConfig(
-            backgroundColor: colorScheme.surfaceContainerLow,
+            backgroundColor: c.surface,
             columns: 8,
             emojiSizeMax: 40,
             gridPadding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
           ),
           categoryViewConfig: CategoryViewConfig(
-            backgroundColor: colorScheme.surfaceContainerLow,
-            iconColor: colorScheme.onSurfaceVariant,
-            iconColorSelected: colorScheme.primary,
-            indicatorColor: colorScheme.primary,
-            backspaceColor: colorScheme.onSurfaceVariant,
-            dividerColor: colorScheme.outlineVariant,
+            backgroundColor: c.surface,
+            iconColor: c.textMuted,
+            iconColorSelected: c.primary,
+            indicatorColor: c.primary,
+            backspaceColor: c.textMuted,
+            dividerColor: c.divider,
           ),
           bottomActionBarConfig: const BottomActionBarConfig(enabled: false),
         ),
