@@ -24,6 +24,7 @@ abstract class EditorUiState with _$EditorUiState implements BaseUiState {
     @Default([]) List<TaskHistory> taskHistory,
     ErrorMessage? errorMessage,
     SnackBarMessage? snackBarMessage,
+    @Default(false) bool isSaving,
     @Default(false) bool isSaved,
   }) = _EditorUiState;
 

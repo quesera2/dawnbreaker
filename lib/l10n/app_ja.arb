@@ -74,6 +74,18 @@
   },
   "editorSaveNew": "登録する",
   "editorSaveEdit": "更新する",
+  "editorSaveNewSuccess": "「{name}」を登録しました",
+  "@editorSaveNewSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "editorSaveEditSuccess": "「{name}」を更新しました",
+  "@editorSaveEditSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
   "editorIconDialogTitle": "アイコンを選択",
   "editorColorNone": "なし",
   "editorColorNote": "色でタスクをグループ分けできます",

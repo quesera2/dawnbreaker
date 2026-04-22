@@ -8,6 +8,7 @@ import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_ui_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -65,7 +66,7 @@ class EditorViewModel extends _$EditorViewModel {
 
   Future<void> save() async {
     if (!state.canSave) return;
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isSaving: true, errorMessage: null);
     try {
       final id = taskId;
       if (id == null) {
@@ -74,11 +75,14 @@ class EditorViewModel extends _$EditorViewModel {
         await _update(id);
       }
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, isSaved: true);
+      final message = taskId == null
+          ? TaskCreateSuccessSnackMessage(taskName: state.name)
+          : TaskUpdateSuccessSnackMessage(taskName: state.name);
+      state = state.copyWith(isSaving: false, isSaved: true, snackBarMessage: message);
     } on TaskRepositoryException {
       if (!ref.mounted) return;
       state = state.copyWith(
-        isLoading: false,
+        isSaving: false,
         errorMessage: TaskSaveErrorMessage(handler: save),
       );
     }

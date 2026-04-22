@@ -74,6 +74,18 @@
   },
   "editorSaveNew": "Register",
   "editorSaveEdit": "Update",
+  "editorSaveNewSuccess": "\"{name}\" registered",
+  "@editorSaveNewSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "editorSaveEditSuccess": "\"{name}\" updated",
+  "@editorSaveEditSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
   "editorIconDialogTitle": "Select icon",
   "editorColorNone": "None",
   "editorColorNote": "Use colors to group your tasks",

@@ -11,3 +11,13 @@ class TaskCompleteSuccessSnackMessage extends SnackBarMessage {
   TaskCompleteSuccessSnackMessage({required this.taskName, super.handler});
   final String taskName;
 }
+
+class TaskCreateSuccessSnackMessage extends SnackBarMessage {
+  TaskCreateSuccessSnackMessage({required this.taskName});
+  final String taskName;
+}
+
+class TaskUpdateSuccessSnackMessage extends SnackBarMessage {
+  TaskUpdateSuccessSnackMessage({required this.taskName});
+  final String taskName;
+}

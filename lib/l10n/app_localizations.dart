@@ -416,6 +416,18 @@ abstract class AppLocalizations {
   /// **'更新する'**
   String get editorSaveEdit;
 
+  /// No description provided for @editorSaveNewSuccess.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を登録しました'**
+  String editorSaveNewSuccess(String name);
+
+  /// No description provided for @editorSaveEditSuccess.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を更新しました'**
+  String editorSaveEditSuccess(String name);
+
   /// No description provided for @editorIconDialogTitle.
   ///
   /// In ja, this message translates to:

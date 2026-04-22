@@ -64,10 +64,16 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
   String _snackText(BuildContext ctx, SnackBarMessage m) => switch (m) {
     TaskCompleteSuccessSnackMessage(:final taskName) =>
       ctx.l10n.homeCompleteSuccess(taskName),
+    TaskCreateSuccessSnackMessage(:final taskName) =>
+      ctx.l10n.editorSaveNewSuccess(taskName),
+    TaskUpdateSuccessSnackMessage(:final taskName) =>
+      ctx.l10n.editorSaveEditSuccess(taskName),
   };
 
   String _snackActionLabel(BuildContext ctx, SnackBarMessage m) => switch (m) {
     TaskCompleteSuccessSnackMessage() => ctx.l10n.undo,
+    TaskCreateSuccessSnackMessage() => '',
+    TaskUpdateSuccessSnackMessage() => '',
   };
 
   String _errorText(BuildContext ctx, ErrorMessage e) => switch (e) {

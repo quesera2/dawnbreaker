@@ -66,22 +66,39 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
     final viewModel = ref.read(provider.notifier);
     final isNew = widget.taskId == null;
 
-    return Scaffold(
-      appBar: AppAppBar(
-        title: isNew ? context.l10n.editorTitleNew : context.l10n.editorTitleEdit,
-      ),
-      body: uiState.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _EditorBody(
-              uiState: uiState,
-              viewModel: viewModel,
-              nameController: _nameController,
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppAppBar(
+            title: isNew
+                ? context.l10n.editorTitleNew
+                : context.l10n.editorTitleEdit,
+          ),
+          body: uiState.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _EditorBody(
+                  uiState: uiState,
+                  viewModel: viewModel,
+                  nameController: _nameController,
+                ),
+          bottomNavigationBar: _SaveBar(
+            enabled: uiState.canSave && !uiState.isLoading && !uiState.isSaving,
+            isNew: isNew,
+            onSave: viewModel.save,
+          ),
+        ),
+        IgnorePointer(
+          ignoring: !uiState.isSaving,
+          child: AnimatedOpacity(
+            opacity: uiState.isSaving ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 200),
+            child: ColoredBox(
+              color: context.appColorScheme.overlay,
+              child: const Center(child: CircularProgressIndicator()),
             ),
-      bottomNavigationBar: _SaveBar(
-        enabled: uiState.canSave && !uiState.isLoading,
-        isNew: isNew,
-        onSave: viewModel.save,
-      ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -105,54 +122,80 @@ class _EditorBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionHeader(context.l10n.editorSectionBasic),
-          const SizedBox(height: 8),
-          _SectionCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _IconSection(
-                  icon: uiState.icon,
-                  color: uiState.color,
-                  onChanged: viewModel.updateIcon,
-                ),
-                const SizedBox(height: 16),
-                AppTextInput(
-                  hintText: context.l10n.editorNameHint,
-                  controller: nameController,
-                  onChanged: viewModel.updateName,
-                ),
-                const SizedBox(height: 16),
-                _ColorLabel(),
-                const SizedBox(height: 8),
-                _ColorPicker(
-                  selected: uiState.color,
-                  onChanged: viewModel.updateColor,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  context.l10n.editorColorNote,
-                  style: AppTextStyle.caption.copyWith(
-                    color: context.appColorScheme.textSubtle,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ..._basicInfoSection(context),
           const SizedBox(height: 24),
-          _SectionHeader(context.l10n.editorLabelType),
-          const SizedBox(height: 8),
-          _TypeSelector(
-            selected: uiState.type,
-            onChanged: viewModel.updateType,
-            scheduleValue: uiState.scheduleValue,
-            scheduleUnit: uiState.scheduleUnit,
-            onScheduleValueChanged: viewModel.updateScheduleValue,
-            onScheduleUnitChanged: viewModel.updateScheduleUnit,
-          ),
+          ..._taskTypeSection(context),
         ],
       ),
     );
+  }
+
+  List<Widget> _basicInfoSection(BuildContext context) {
+    var appColorScheme = context.appColorScheme;
+    return [
+      _SectionHeader(context.l10n.editorSectionBasic),
+      const SizedBox(height: 8),
+      Container(
+        decoration: BoxDecoration(
+          color: appColorScheme.surface,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          border: Border.all(color: appColorScheme.border),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _IconArea(
+              icon: uiState.icon,
+              color: uiState.color,
+              onChanged: viewModel.updateIcon,
+            ),
+            const SizedBox(height: 16),
+            AppTextInput(
+              hintText: context.l10n.editorNameHint,
+              controller: nameController,
+              onChanged: viewModel.updateName,
+            ),
+            const SizedBox(height: 16),
+            // 色選択
+            Text(
+              context.l10n.editorLabelColor,
+              style: AppTextStyle.caption.copyWith(
+                color: appColorScheme.textMuted,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _ColorPicker(
+              selected: uiState.color,
+              onChanged: viewModel.updateColor,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              context.l10n.editorColorNote,
+              style: AppTextStyle.caption.copyWith(
+                color: appColorScheme.textSubtle,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _taskTypeSection(BuildContext context) {
+    return [
+      _SectionHeader(context.l10n.editorLabelType),
+      const SizedBox(height: 8),
+      _TypeSelector(
+        selected: uiState.type,
+        onChanged: viewModel.updateType,
+        scheduleValue: uiState.scheduleValue,
+        scheduleUnit: uiState.scheduleUnit,
+        onScheduleValueChanged: viewModel.updateScheduleValue,
+        onScheduleUnitChanged: viewModel.updateScheduleUnit,
+      ),
+    ];
   }
 }
 
@@ -177,28 +220,8 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.appColorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: c.border),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: child,
-    );
-  }
-}
-
-class _IconSection extends StatelessWidget {
-  const _IconSection({
+class _IconArea extends StatelessWidget {
+  const _IconArea({
     required this.icon,
     required this.color,
     required this.onChanged,
@@ -257,23 +280,6 @@ class _IconSection extends StatelessWidget {
     );
   }
 }
-
-class _ColorLabel extends StatelessWidget {
-  const _ColorLabel();
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.appColorScheme;
-    return Text(
-      context.l10n.editorLabelColor,
-      style: AppTextStyle.caption.copyWith(
-        color: c.textMuted,
-        fontWeight: FontWeight.w600,
-      ),
-    );
-  }
-}
-
 
 class _TypeSelector extends StatelessWidget {
   const _TypeSelector({
@@ -377,10 +383,7 @@ class _TypeCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    _TypeIconContainer(
-                      icon: icon,
-                      isSelected: isSelected,
-                    ),
+                    _TypeIconContainer(icon: icon, isSelected: isSelected),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
@@ -473,9 +476,7 @@ class _RadioIndicator extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isSelected ? c.primary : Colors.transparent,
-        border: isSelected
-            ? null
-            : Border.all(color: c.borderStrong, width: 2),
+        border: isSelected ? null : Border.all(color: c.borderStrong, width: 2),
       ),
       child: isSelected
           ? Icon(Icons.check, size: 14, color: c.primaryOn)
@@ -519,7 +520,6 @@ class _ColorChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.appColorScheme;
     final displayColor = taskColor.baseColor(context);
 
     return GestureDetector(
@@ -532,14 +532,14 @@ class _ColorChip extends StatelessWidget {
           color: displayColor,
           shape: BoxShape.circle,
           border: isSelected
-              ? Border.all(color: c.primary, width: 3)
-              : Border.all(color: c.border, width: 1),
+              ? Border.all(color: taskColor.onColor(context).withAlpha(80), width: 3)
+              : Border.all(color: taskColor.softColor(context).withAlpha(80), width: 1),
           boxShadow: isSelected
-              ? [BoxShadow(color: c.primary.withAlpha(80), blurRadius: 6)]
+              ? [BoxShadow(color: taskColor.onColor(context).withAlpha(80), blurRadius: 6)]
               : null,
         ),
         child: isSelected
-            ? Icon(Icons.check, size: 20, color: taskColor.onColor(context))
+            ? Icon(Icons.check_rounded, size: 24, color: taskColor.softColor(context))
             : null,
       ),
     );
@@ -575,10 +575,7 @@ class _SpanPickerButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Text(
-              label,
-              style: AppTextStyle.headline.copyWith(color: c.text),
-            ),
+            Text(label, style: AppTextStyle.headline.copyWith(color: c.text)),
             const Spacer(),
             Icon(Icons.arrow_drop_down, color: c.textMuted),
           ],

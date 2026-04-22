@@ -56,6 +56,14 @@ lib/
   - 画面固有の文言: `画面名Xxx`（例: `homeNoTasksYet`）
   - Repository エラー文言: `リポジトリ名ErrorXxx`（例: `taskErrorLoadFailed`）
 
+## スナックバー通知
+
+- `SnackBarMessage` のサブクラスを定義し、ViewModel で `state.copyWith(snackBarMessage: ...)` にセット
+- 画面側は `MessagesListenMixin` を `with` して `build()` 内で `listenMessages(provider)` を呼ぶだけで自動表示
+- `ScaffoldMessenger` は `MaterialApp` レベルで共有されるため、**画面ポップ直前にセットしてもポップ先の画面でスナックバーが表示される**（登録・更新成功メッセージ等に活用）
+- `messages_mixin.dart` の `_snackText` / `_snackActionLabel` スイッチに新しい型を追加すること
+- SnackBar に取り消しアクションを付ける場合は `handler` に処理を渡す
+
 ## エラーハンドリング
 
 - Repository の例外は `sealed class TaskRepositoryException` のサブクラスとして定義（`lib/data/repository/task/task_repository_exception.dart`）

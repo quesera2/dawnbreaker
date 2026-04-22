@@ -176,6 +176,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get editorSaveEdit => '更新する';
 
   @override
+  String editorSaveNewSuccess(String name) {
+    return '「$name」を登録しました';
+  }
+
+  @override
+  String editorSaveEditSuccess(String name) {
+    return '「$name」を更新しました';
+  }
+
+  @override
   String get editorIconDialogTitle => 'アイコンを選択';
 
   @override
