@@ -57,9 +57,9 @@
   "editorLabelIcon": "Icon",
   "editorChangeIcon": "Change icon",
   "editorTypeIrregular": "No due date",
-  "editorTypeIrregularDesc": "For irregular tasks — no due date shown",
+  "editorTypeIrregularDesc": "For tasks without a fixed schedule",
   "editorTypePeriod": "Auto-detect interval",
-  "editorTypePeriodDesc": "Next due date inferred from task history",
+  "editorTypePeriodDesc": "Predicts next due date from history",
   "editorTypeScheduled": "Set interval",
   "editorTypeScheduledDesc": "Manually set the interval to the next due date",
   "editorSpanDay": "days",
@@ -72,10 +72,10 @@
       "unit": { "type": "String" }
     }
   },
-  "editorSaveNew": "Add",
+  "editorSaveNew": "Register",
   "editorSaveEdit": "Update",
   "editorIconDialogTitle": "Select icon",
   "editorColorNone": "None",
-  "editorColorNote": "Select a color to group your tasks",
-  "editorNameHint": "e.g. Dentist appointment"
+  "editorColorNote": "Use colors to group your tasks",
+  "editorNameHint": "Enter task name"
 }

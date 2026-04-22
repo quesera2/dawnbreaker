@@ -135,25 +135,25 @@ class AppLocalizationsJa extends AppLocalizations {
   String get editorLabelIcon => 'アイコン';
 
   @override
-  String get editorChangeIcon => 'アイコンを変更する';
+  String get editorChangeIcon => 'アイコンを変更';
 
   @override
   String get editorTypeIrregular => '予定日を表示しない';
 
   @override
-  String get editorTypeIrregularDesc => '不定期に実行するタスクで予定日を表示しません';
+  String get editorTypeIrregularDesc => '不定期に実行するタスク';
 
   @override
   String get editorTypePeriod => '自動的に周期を判定';
 
   @override
-  String get editorTypePeriodDesc => 'タスクの実行履歴から次の予定日を表示します';
+  String get editorTypePeriodDesc => '実行履歴から次回予定日を予測';
 
   @override
   String get editorTypeScheduled => '周期を指定';
 
   @override
-  String get editorTypeScheduledDesc => '次の予定日までの間隔を手動で設定します';
+  String get editorTypeScheduledDesc => '次回予定日までの間隔を手動で設定';
 
   @override
   String get editorSpanDay => '日';
@@ -170,10 +170,10 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get editorSaveNew => '登録';
+  String get editorSaveNew => '登録する';
 
   @override
-  String get editorSaveEdit => '更新';
+  String get editorSaveEdit => '更新する';
 
   @override
   String get editorIconDialogTitle => 'アイコンを選択';
@@ -182,8 +182,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get editorColorNone => 'なし';
 
   @override
-  String get editorColorNote => '色を選択することでタスクのグループ分けに使えます';
+  String get editorColorNote => '色でタスクをグループ分けできます';
 
   @override
-  String get editorNameHint => '例：歯医者の予約';
+  String get editorNameHint => 'タスク名を入力';
 }

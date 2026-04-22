@@ -1,8 +1,13 @@
 import 'package:dawnbreaker/app/app_colors.dart';
+import 'package:dawnbreaker/app/app_radius.dart';
+import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
+import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
+import 'package:dawnbreaker/ui/common/components/app_button.dart';
+import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_ui_state.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_view_model.dart';
@@ -61,11 +66,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
     final isNew = widget.taskId == null;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          isNew ? context.l10n.editorTitleNew : context.l10n.editorTitleEdit,
-        ),
-        centerTitle: false,
+      appBar: AppAppBar(
+        title: isNew ? context.l10n.editorTitleNew : context.l10n.editorTitleEdit,
       ),
       body: uiState.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -110,6 +112,7 @@ class _EditorBody extends StatelessWidget {
               children: [
                 _IconSection(
                   icon: uiState.icon,
+                  color: uiState.color,
                   onChanged: viewModel.updateIcon,
                 ),
                 const SizedBox(height: 16),
@@ -118,6 +121,8 @@ class _EditorBody extends StatelessWidget {
                   onChanged: viewModel.updateName,
                 ),
                 const SizedBox(height: 16),
+                _ColorLabel(),
+                const SizedBox(height: 8),
                 _ColorPicker(
                   selected: uiState.color,
                   onChanged: viewModel.updateColor,
@@ -125,8 +130,8 @@ class _EditorBody extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   context.l10n.editorColorNote,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  style: AppTextStyle.caption.copyWith(
+                    color: context.appColorScheme.textSubtle,
                   ),
                 ),
               ],
@@ -156,12 +161,14 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Text(
         text,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
+        style: AppTextStyle.caption.copyWith(
+          color: c.textMuted,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -175,49 +182,40 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(padding: const EdgeInsets.all(16), child: child),
+    final c = context.appColorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: c.border),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: child,
     );
   }
 }
 
 class _IconSection extends StatelessWidget {
-  const _IconSection({required this.icon, required this.onChanged});
+  const _IconSection({
+    required this.icon,
+    required this.color,
+    required this.onChanged,
+  });
 
   final String icon;
+  final TaskColor color;
   final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            color: colorScheme.secondaryContainer,
-            borderRadius: BorderRadius.circular(32),
-          ),
-          child: Center(
-            child: Text(icon, style: const TextStyle(fontSize: 32)),
-          ),
-        ),
-        const SizedBox(width: 12),
-        FilledButton(
+        AppTaskIconTile(emoji: icon, color: color, size: 64),
+        const SizedBox(width: 16),
+        AppButton(
+          label: context.l10n.editorChangeIcon,
+          variant: AppButtonVariant.secondary,
           onPressed: () => _showEmojiPicker(context),
-          style: FilledButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            textStyle: Theme.of(context).textTheme.labelSmall,
-            minimumSize: Size.zero,
-          ),
-          child: Text(context.l10n.editorChangeIcon),
         ),
       ],
     );
@@ -258,6 +256,22 @@ class _IconSection extends StatelessWidget {
   }
 }
 
+class _ColorLabel extends StatelessWidget {
+  const _ColorLabel();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.appColorScheme;
+    return Text(
+      context.l10n.editorLabelColor,
+      style: AppTextStyle.caption.copyWith(
+        color: c.textMuted,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+}
+
 class _NameField extends StatelessWidget {
   const _NameField({required this.controller, required this.onChanged});
 
@@ -266,16 +280,29 @@ class _NameField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColorScheme;
     return TextField(
       controller: controller,
       onChanged: onChanged,
       textInputAction: TextInputAction.done,
       decoration: InputDecoration(
-        labelText: context.l10n.editorLabelName,
         hintText: context.l10n.editorNameHint,
-        border: const OutlineInputBorder(),
+        hintStyle: AppTextStyle.body.copyWith(color: c.textSubtle),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: c.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: c.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: c.primary, width: 2),
+        ),
         filled: true,
-        fillColor: Theme.of(context).colorScheme.surface,
+        fillColor: c.surface,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       ),
       onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
     );
@@ -356,19 +383,11 @@ class _TypeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final bgColor = isSelected
-        ? colorScheme.primaryContainer
-        : colorScheme.surfaceContainerLow;
-    final borderColor = isSelected
-        ? colorScheme.primary
-        : colorScheme.outlineVariant;
-    final titleColor = isSelected
-        ? colorScheme.onPrimaryContainer
-        : colorScheme.onSurface;
-    final descColor = isSelected
-        ? colorScheme.onPrimaryContainer.withAlpha(180)
-        : colorScheme.onSurfaceVariant;
+    final c = context.appColorScheme;
+    final bgColor = isSelected ? c.primarySoft : c.surface;
+    final borderColor = isSelected ? c.primary : c.border;
+    final titleColor = isSelected ? c.primary : c.text;
+    final descColor = isSelected ? c.primary.withAlpha(180) : c.textMuted;
 
     return Semantics(
       inMutuallyExclusiveGroup: true,
@@ -379,13 +398,12 @@ class _TypeCard extends StatelessWidget {
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           border: Border.all(color: borderColor, width: 2),
         ),
         child: InkWell(
-          // 選択済みのカードは再タップ不要なのでnullにして内部ウィジェットのタップと競合させない
           onTap: isSelected ? null : onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Column(
@@ -393,7 +411,10 @@ class _TypeCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(icon, size: 24, color: titleColor),
+                    _TypeIconContainer(
+                      icon: icon,
+                      isSelected: isSelected,
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
@@ -401,32 +422,22 @@ class _TypeCard extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(
-                                  color: titleColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            style: AppTextStyle.headline.copyWith(
+                              color: titleColor,
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             description,
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodySmall?.copyWith(color: descColor),
+                            style: AppTextStyle.caption.copyWith(
+                              color: descColor,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(width: 8),
-                    AnimatedOpacity(
-                      duration: const Duration(milliseconds: 200),
-                      opacity: isSelected ? 1 : 0,
-                      child: Icon(
-                        Icons.check_circle,
-                        size: 22,
-                        color: colorScheme.primary,
-                      ),
-                    ),
+                    _RadioIndicator(isSelected: isSelected),
                   ],
                 ),
                 if (expandedChild != null)
@@ -451,6 +462,58 @@ class _TypeCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _TypeIconContainer extends StatelessWidget {
+  const _TypeIconContainer({required this.icon, required this.isSelected});
+
+  final IconData icon;
+  final bool isSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.appColorScheme;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: isSelected ? c.primary : c.bgSubtle,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Icon(
+        icon,
+        size: 22,
+        color: isSelected ? c.primaryOn : c.textMuted,
+      ),
+    );
+  }
+}
+
+class _RadioIndicator extends StatelessWidget {
+  const _RadioIndicator({required this.isSelected});
+
+  final bool isSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.appColorScheme;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isSelected ? c.primary : Colors.transparent,
+        border: isSelected
+            ? null
+            : Border.all(color: c.borderStrong, width: 2),
+      ),
+      child: isSelected
+          ? Icon(Icons.check, size: 14, color: c.primaryOn)
+          : null,
     );
   }
 }
@@ -532,28 +595,26 @@ class _SpanPickerButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final c = context.appColorScheme;
     final label = context.l10n.editorSpanLabel('$value', unit.label(context));
     return InkWell(
       onTap: () => _showPicker(context),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppRadius.md),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: colorScheme.outline),
+          color: c.surface,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: c.borderStrong),
         ),
         child: Row(
           children: [
             Text(
               label,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
+              style: AppTextStyle.headline.copyWith(color: c.text),
             ),
             const Spacer(),
-            Icon(Icons.arrow_drop_down, color: colorScheme.onSurfaceVariant),
+            Icon(Icons.arrow_drop_down, color: c.textMuted),
           ],
         ),
       ),
@@ -737,16 +798,12 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          FilledButton(
+          AppButton(
+            label: context.l10n.ok,
             onPressed: () =>
                 Navigator.of(context).pop((value: _value, unit: _unit)),
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(context.l10n.ok),
+            fullWidth: true,
+            size: AppButtonSize.large,
           ),
         ],
       ),
@@ -768,25 +825,18 @@ class _SaveBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final c = context.appColorScheme;
     return Container(
       padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomPadding),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-        ),
+        color: c.bg,
+        border: Border(top: BorderSide(color: c.divider)),
       ),
-      child: FilledButton(
+      child: AppButton(
+        label: isNew ? context.l10n.editorSaveNew : context.l10n.editorSaveEdit,
         onPressed: enabled ? onSave : null,
-        style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        child: Text(
-          isNew ? context.l10n.editorSaveNew : context.l10n.editorSaveEdit,
-        ),
+        fullWidth: true,
+        size: AppButtonSize.large,
       ),
     );
   }

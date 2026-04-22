@@ -341,7 +341,7 @@ abstract class AppLocalizations {
   /// No description provided for @editorChangeIcon.
   ///
   /// In ja, this message translates to:
-  /// **'アイコンを変更する'**
+  /// **'アイコンを変更'**
   String get editorChangeIcon;
 
   /// No description provided for @editorTypeIrregular.
@@ -353,7 +353,7 @@ abstract class AppLocalizations {
   /// No description provided for @editorTypeIrregularDesc.
   ///
   /// In ja, this message translates to:
-  /// **'不定期に実行するタスクで予定日を表示しません'**
+  /// **'不定期に実行するタスク'**
   String get editorTypeIrregularDesc;
 
   /// No description provided for @editorTypePeriod.
@@ -365,7 +365,7 @@ abstract class AppLocalizations {
   /// No description provided for @editorTypePeriodDesc.
   ///
   /// In ja, this message translates to:
-  /// **'タスクの実行履歴から次の予定日を表示します'**
+  /// **'実行履歴から次回予定日を予測'**
   String get editorTypePeriodDesc;
 
   /// No description provided for @editorTypeScheduled.
@@ -377,7 +377,7 @@ abstract class AppLocalizations {
   /// No description provided for @editorTypeScheduledDesc.
   ///
   /// In ja, this message translates to:
-  /// **'次の予定日までの間隔を手動で設定します'**
+  /// **'次回予定日までの間隔を手動で設定'**
   String get editorTypeScheduledDesc;
 
   /// No description provided for @editorSpanDay.
@@ -407,13 +407,13 @@ abstract class AppLocalizations {
   /// No description provided for @editorSaveNew.
   ///
   /// In ja, this message translates to:
-  /// **'登録'**
+  /// **'登録する'**
   String get editorSaveNew;
 
   /// No description provided for @editorSaveEdit.
   ///
   /// In ja, this message translates to:
-  /// **'更新'**
+  /// **'更新する'**
   String get editorSaveEdit;
 
   /// No description provided for @editorIconDialogTitle.
@@ -431,13 +431,13 @@ abstract class AppLocalizations {
   /// No description provided for @editorColorNote.
   ///
   /// In ja, this message translates to:
-  /// **'色を選択することでタスクのグループ分けに使えます'**
+  /// **'色でタスクをグループ分けできます'**
   String get editorColorNote;
 
   /// No description provided for @editorNameHint.
   ///
   /// In ja, this message translates to:
-  /// **'例：歯医者の予約'**
+  /// **'タスク名を入力'**
   String get editorNameHint;
 }
 

@@ -141,14 +141,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorTypeIrregular => 'No due date';
 
   @override
-  String get editorTypeIrregularDesc =>
-      'For irregular tasks — no due date shown';
+  String get editorTypeIrregularDesc => 'For tasks without a fixed schedule';
 
   @override
   String get editorTypePeriod => 'Auto-detect interval';
 
   @override
-  String get editorTypePeriodDesc => 'Next due date inferred from task history';
+  String get editorTypePeriodDesc => 'Predicts next due date from history';
 
   @override
   String get editorTypeScheduled => 'Set interval';
@@ -172,7 +171,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get editorSaveNew => 'Add';
+  String get editorSaveNew => 'Register';
 
   @override
   String get editorSaveEdit => 'Update';
@@ -184,8 +183,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorColorNone => 'None';
 
   @override
-  String get editorColorNote => 'Select a color to group your tasks';
+  String get editorColorNote => 'Use colors to group your tasks';
 
   @override
-  String get editorNameHint => 'e.g. Dentist appointment';
+  String get editorNameHint => 'Enter task name';
 }
