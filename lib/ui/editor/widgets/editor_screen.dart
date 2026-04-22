@@ -12,18 +12,11 @@ import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_ui_state.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_view_model.dart';
+import 'package:dawnbreaker/ui/editor/widgets/editor_span_picker.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-extension _ScheduleUnitLabel on ScheduleUnit {
-  String label(BuildContext context) => switch (this) {
-    ScheduleUnit.day => context.l10n.editorSpanDay,
-    ScheduleUnit.week => context.l10n.editorSpanWeek,
-    ScheduleUnit.month => context.l10n.editorSpanMonth,
-  };
-}
 
 class EditorScreen extends ConsumerStatefulWidget {
   const EditorScreen({super.key, this.taskId});
@@ -324,11 +317,13 @@ class _TypeSelector extends StatelessWidget {
           icon: Icons.repeat_outlined,
           isSelected: selected == TaskType.scheduled,
           onTap: () => onChanged(TaskType.scheduled),
-          expandedChild: _SpanPickerButton(
+          expandedChild: SpanPickerButton(
             value: scheduleValue,
             unit: scheduleUnit,
-            onValueChanged: onScheduleValueChanged,
-            onUnitChanged: onScheduleUnitChanged,
+            onChanged: (span) {
+              onScheduleValueChanged(span.value);
+              onScheduleUnitChanged(span.unit);
+            },
           ),
         ),
       ],
@@ -541,234 +536,6 @@ class _ColorChip extends StatelessWidget {
         child: isSelected
             ? Icon(Icons.check_rounded, size: 24, color: taskColor.softColor(context))
             : null,
-      ),
-    );
-  }
-}
-
-class _SpanPickerButton extends StatelessWidget {
-  const _SpanPickerButton({
-    required this.value,
-    required this.unit,
-    required this.onValueChanged,
-    required this.onUnitChanged,
-  });
-
-  final int value;
-  final ScheduleUnit unit;
-  final ValueChanged<int> onValueChanged;
-  final ValueChanged<ScheduleUnit> onUnitChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.appColorScheme;
-    final label = context.l10n.editorSpanLabel('$value', unit.label(context));
-    return InkWell(
-      onTap: () => _showPicker(context),
-      borderRadius: BorderRadius.circular(AppRadius.md),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: c.surface,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: c.borderStrong),
-        ),
-        child: Row(
-          children: [
-            Text(label, style: AppTextStyle.headline.copyWith(color: c.text)),
-            const Spacer(),
-            Icon(Icons.arrow_drop_down, color: c.textMuted),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showPicker(BuildContext context) async {
-    final result = await showModalBottomSheet<({int value, ScheduleUnit unit})>(
-      context: context,
-      builder: (_) => _SpanPickerSheet(initialValue: value, initialUnit: unit),
-    );
-    if (result != null) {
-      onValueChanged(result.value);
-      onUnitChanged(result.unit);
-    }
-  }
-}
-
-class _SpanPickerSheet extends StatefulWidget {
-  const _SpanPickerSheet({
-    required this.initialValue,
-    required this.initialUnit,
-  });
-
-  final int initialValue;
-  final ScheduleUnit initialUnit;
-
-  @override
-  State<_SpanPickerSheet> createState() => _SpanPickerSheetState();
-}
-
-class _SpanPickerSheetState extends State<_SpanPickerSheet> {
-  static const _maxValue = 99;
-  static const _itemExtent = 52.0;
-  static const _wheelHeight = 200.0;
-
-  late int _value;
-  late ScheduleUnit _unit;
-  late final FixedExtentScrollController _valueController;
-  late final FixedExtentScrollController _unitController;
-
-  @override
-  void initState() {
-    super.initState();
-    _value = widget.initialValue;
-    _unit = widget.initialUnit;
-    _valueController = FixedExtentScrollController(
-      initialItem: widget.initialValue - 1,
-    );
-    _unitController = FixedExtentScrollController(
-      initialItem: ScheduleUnit.values.indexOf(widget.initialUnit),
-    );
-  }
-
-  @override
-  void dispose() {
-    _valueController.dispose();
-    _unitController.dispose();
-    super.dispose();
-  }
-
-  TextStyle? _wheelTextStyle(ColorScheme colorScheme, bool isSelected) {
-    return Theme.of(context).textTheme.titleLarge?.copyWith(
-      color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
-    );
-  }
-
-  Positioned _fadeEdge({required Color color, required bool top}) {
-    return Positioned(
-      top: top ? 0 : null,
-      bottom: top ? null : 0,
-      left: 0,
-      right: 0,
-      child: IgnorePointer(
-        child: Container(
-          height: 72,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: top ? Alignment.topCenter : Alignment.bottomCenter,
-              end: top ? Alignment.bottomCenter : Alignment.topCenter,
-              colors: [color, color.withAlpha(0)],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final bottomPadding = MediaQuery.paddingOf(context).bottom;
-    final surfaceColor = colorScheme.surfaceContainerLow;
-
-    return Container(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, 16 + bottomPadding),
-      decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 32,
-            height: 4,
-            decoration: BoxDecoration(
-              color: colorScheme.onSurfaceVariant.withAlpha(80),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: _wheelHeight,
-            child: Stack(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: ListWheelScrollView.useDelegate(
-                        controller: _valueController,
-                        itemExtent: _itemExtent,
-                        physics: const FixedExtentScrollPhysics(),
-                        onSelectedItemChanged: (i) =>
-                            setState(() => _value = i + 1),
-                        childDelegate: ListWheelChildBuilderDelegate(
-                          childCount: _maxValue,
-                          builder: (context, i) {
-                            final v = i + 1;
-                            return Center(
-                              child: Text(
-                                '$v',
-                                style: _wheelTextStyle(
-                                  colorScheme,
-                                  v == _value,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: ListWheelScrollView(
-                        controller: _unitController,
-                        itemExtent: _itemExtent,
-                        physics: const FixedExtentScrollPhysics(),
-                        onSelectedItemChanged: (i) =>
-                            setState(() => _unit = ScheduleUnit.values[i]),
-                        children: ScheduleUnit.values.map((u) {
-                          return Center(
-                            child: Text(
-                              u.label(context),
-                              style: _wheelTextStyle(colorScheme, u == _unit),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ],
-                ),
-                Positioned(
-                  top: (_wheelHeight - _itemExtent) / 2,
-                  left: 0,
-                  right: 0,
-                  child: IgnorePointer(
-                    child: Container(
-                      height: _itemExtent,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer.withAlpha(80),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-                _fadeEdge(color: surfaceColor, top: true),
-                _fadeEdge(color: surfaceColor, top: false),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          AppButton(
-            label: context.l10n.ok,
-            onPressed: () =>
-                Navigator.of(context).pop((value: _value, unit: _unit)),
-            fullWidth: true,
-            size: AppButtonSize.large,
-          ),
-        ],
       ),
     );
   }
