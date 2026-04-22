@@ -112,7 +112,7 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
 
   TextStyle _wheelTextStyle(AppColorScheme c, bool isSelected) {
     return AppTextStyle.headline.copyWith(
-      color: isSelected ? c.primary : c.textMuted,
+      color: isSelected ? c.text : c.textMuted,
     );
   }
 
@@ -152,6 +152,31 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
     ),
   );
 
+  Widget get _buttonArea {
+    return Row(
+      children: [
+        Expanded(
+          child: AppButton(
+            label: context.l10n.cancel,
+            variant: AppButtonVariant.secondary,
+            fullWidth: true,
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          flex: 2,
+          child: AppButton(
+            label: context.l10n.ok,
+            fullWidth: true,
+            onPressed: () =>
+                Navigator.of(context).pop((value: _value, unit: _unit)),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.appColorScheme;
@@ -162,8 +187,14 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
+          Container(
             height: _wheelHeight,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: c.bgSubtle,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(color: c.border),
+            ),
             child: Stack(
               children: [
                 Positioned(
@@ -173,70 +204,68 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
                   child: IgnorePointer(
                     child: Container(
                       height: _itemExtent,
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
                       decoration: BoxDecoration(
-                        color: c.primarySoft,
+                        color: c.trackBg,
                         borderRadius: BorderRadius.circular(AppRadius.md),
                       ),
                     ),
                   ),
                 ),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: ListWheelScrollView.useDelegate(
-                        controller: _valueController,
-                        itemExtent: _itemExtent,
-                        physics: const FixedExtentScrollPhysics(),
-                        onSelectedItemChanged: (i) =>
-                            setState(() => _value = i + 1),
-                        childDelegate: ListWheelChildBuilderDelegate(
-                          childCount: _maxValue,
-                          builder: (context, i) {
-                            final v = i + 1;
-                            return Center(
-                              child: Text(
-                                '$v',
-                                style: _wheelTextStyle(c, v == _value),
-                              ),
-                            );
-                          },
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: ListWheelScrollView.useDelegate(
+                          controller: _valueController,
+                          itemExtent: _itemExtent,
+                          physics: const FixedExtentScrollPhysics(),
+                          onSelectedItemChanged: (i) =>
+                              setState(() => _value = i + 1),
+                          childDelegate: ListWheelChildBuilderDelegate(
+                            childCount: _maxValue,
+                            builder: (context, i) {
+                              final v = i + 1;
+                              return Center(
+                                child: Text(
+                                  '$v',
+                                  style: _wheelTextStyle(c, v == _value),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: ListWheelScrollView(
-                        controller: _unitController,
-                        itemExtent: _itemExtent,
-                        physics: const FixedExtentScrollPhysics(),
-                        onSelectedItemChanged: (i) =>
-                            setState(() => _unit = ScheduleUnit.values[i]),
-                        children: ScheduleUnit.values.map((u) {
-                          return Center(
-                            child: Text(
-                              u.label(context),
-                              style: _wheelTextStyle(c, u == _unit),
-                            ),
-                          );
-                        }).toList(),
+                      Expanded(
+                        flex: 3,
+                        child: ListWheelScrollView(
+                          controller: _unitController,
+                          itemExtent: _itemExtent,
+                          physics: const FixedExtentScrollPhysics(),
+                          onSelectedItemChanged: (i) =>
+                              setState(() => _unit = ScheduleUnit.values[i]),
+                          children: ScheduleUnit.values.map((u) {
+                            return Center(
+                              child: Text(
+                                u.label(context),
+                                style: _wheelTextStyle(c, u == _unit),
+                              ),
+                            );
+                          }).toList(),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                _topFadeEdge(c.surface),
-                _bottomFadeEdge(c.surface),
+                _topFadeEdge(c.bgSubtle),
+                _bottomFadeEdge(c.bgSubtle),
               ],
             ),
           ),
           const SizedBox(height: 16),
-          AppButton(
-            label: context.l10n.ok,
-            onPressed: () =>
-                Navigator.of(context).pop((value: _value, unit: _unit)),
-            fullWidth: true,
-            size: AppButtonSize.large,
-          ),
+          _buttonArea,
         ],
       ),
     );
