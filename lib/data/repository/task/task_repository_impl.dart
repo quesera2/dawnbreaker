@@ -41,21 +41,19 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<TaskItem> findTaskById(int taskId) async {
-    try {
-      final rows = await (_db.select(
-        _db.taskDefinitions,
-      )..where((t) => t.id.equals(taskId))).join(_taskJoins()).get();
-      if (rows.isEmpty) {
-        throw TaskNotFoundException(taskId: taskId);
-      }
-      return _buildTaskItemFromRows(rows);
-    } on TaskRepositoryException {
-      rethrow;
-    } catch (e) {
-      throw TaskLoadException(e.toString());
-    }
+  Stream<TaskItem> watchTaskById(int taskId) {
+    return (_db.select(_db.taskDefinitions)
+          ..where((t) => t.id.equals(taskId)))
+        .join(_taskJoins())
+        .watch()
+        .map((rows) {
+          if (rows.isEmpty) throw TaskNotFoundException(taskId: taskId);
+          return _buildTaskItemFromRows(rows);
+        });
   }
+
+  @override
+  Future<TaskItem> findTaskById(int taskId) => watchTaskById(taskId).first;
 
   List<TaskItem> _buildAllTaskItemsFromRows(List<TypedResult> rows) {
     final grouped = rows.groupListsBy(

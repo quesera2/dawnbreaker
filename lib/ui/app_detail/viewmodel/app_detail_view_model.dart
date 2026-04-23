@@ -19,19 +19,22 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     return const AppDetailUiState();
   }
 
-  Future<void> _loadTask(int taskId) async {
-    try {
-      final task = await _repository.findTaskById(taskId);
-      if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, task: task);
-    } on TaskRepositoryException {
-      if (!ref.mounted) return;
-      state = state.copyWith(
-        isLoading: false,
-        shouldPop: true,
-        errorMessage: TaskLoadErrorMessage(),
-      );
-    }
+  void _loadTask(int taskId) {
+    final subscription = _repository.watchTaskById(taskId).listen(
+      (task) {
+        if (!ref.mounted) return;
+        state = state.copyWith(isLoading: false, task: task);
+      },
+      onError: (e) {
+        if (!ref.mounted) return;
+        state = state.copyWith(
+          isLoading: false,
+          shouldPop: true,
+          errorMessage: TaskLoadErrorMessage(),
+        );
+      },
+    );
+    ref.onDispose(subscription.cancel);
   }
 
   Future<void> deleteTask() async {

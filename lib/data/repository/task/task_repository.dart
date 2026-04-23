@@ -7,6 +7,8 @@ import 'package:dawnbreaker/data/model/task_type.dart';
 abstract interface class TaskRepository {
   Stream<List<TaskItem>> allTaskItems();
 
+  Stream<TaskItem> watchTaskById(int taskId);
+
   Future<TaskItem> findTaskById(int taskId);
 
   Future<int> addTask({
