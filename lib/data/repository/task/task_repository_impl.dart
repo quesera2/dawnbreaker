@@ -209,9 +209,9 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<void> deleteExecution(int executionId) async {
     try {
-      await (_db.delete(_db.taskExecutions)
-            ..where((t) => t.id.equals(executionId)))
-          .go();
+      await (_db.delete(
+        _db.taskExecutions,
+      )..where((t) => t.id.equals(executionId))).go();
     } catch (e) {
       throw TaskDeleteException(e.toString());
     }
@@ -280,6 +280,49 @@ class TaskRepositoryImpl implements TaskRepository {
       // task_executions / task_scheduled_configs はカスケード削除
     } catch (e) {
       throw TaskDeleteException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> restoreTask(TaskItem taskItem) async {
+    try {
+      await _db.transaction(() async {
+        final id = await _db
+            .into(_db.taskDefinitions)
+            .insert(
+              TaskDefinitionsCompanion.insert(
+                taskType: taskItem.taskType,
+                name: taskItem.name,
+                furigana: taskItem.furigana,
+                icon: taskItem.icon,
+                color: taskItem.color,
+              ),
+            );
+        if (taskItem.taskType == TaskType.scheduled) {
+          await _db
+              .into(_db.taskScheduledConfigs)
+              .insert(
+                TaskScheduledConfigsCompanion.insert(
+                  taskDefinitionId: Value(id),
+                  scheduleValue: taskItem.scheduleValueOrDefault,
+                  scheduleUnit: taskItem.scheduleUnitOrDefault,
+                ),
+              );
+        }
+        await _db.batch((batch) {
+          batch.insertAll(
+            _db.taskExecutions,
+            taskItem.taskHistory.map(
+              (history) => TaskExecutionsCompanion.insert(
+                taskDefinitionId: id,
+                executedAt: history.executedAt,
+              ),
+            ),
+          );
+        });
+      });
+    } catch (e) {
+      throw TaskSaveException(e.toString());
     }
   }
 }

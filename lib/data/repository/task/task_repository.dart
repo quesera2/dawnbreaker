@@ -34,4 +34,6 @@ abstract interface class TaskRepository {
   Future<void> deleteExecution(int executionId);
 
   Future<void> deleteTask(int taskId);
+
+  Future<void> restoreTask(TaskItem taskItem);
 }

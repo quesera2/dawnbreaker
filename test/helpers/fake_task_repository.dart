@@ -112,6 +112,13 @@ class FakeTaskRepository implements TaskRepository {
     _notify();
   }
 
+  @override
+  Future<void> restoreTask(TaskItem taskItem) async {
+    if (shouldThrow) throw const TaskSaveException('テストエラー');
+    _tasks.add(taskItem);
+    _notify();
+  }
+
   bool containsTask(int taskId) => _tasks.any((t) => t.id == taskId);
 
   TaskItem? taskById(int taskId) =>
