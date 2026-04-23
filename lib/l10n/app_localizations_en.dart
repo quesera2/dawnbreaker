@@ -33,7 +33,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeFilterToday => 'Today';
 
   @override
-  String get homeFilterWeek => 'Next 7 days';
+  String get homeFilterWeek => 'Current week';
+
+  @override
+  String get homeFilterIrregular => 'Irregular';
 
   @override
   String get homeSectionOverdue => 'Overdue';
@@ -155,6 +158,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get editorTypeScheduledDesc =>
       'Manually set the interval to the next due date';
+
+  @override
+  String get editorSpanPickerTitle => 'Repeat interval';
 
   @override
   String get editorSpanDay => 'days';

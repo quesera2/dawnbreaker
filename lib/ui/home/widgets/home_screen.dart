@@ -216,13 +216,6 @@ class _FilterChipRow extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           AppFilterChip(
-            label: context.l10n.homeFilterOverdue,
-            isSelected: uiState.selectedFilter == HomeFilter.overdue,
-            onTap: () => onFilterChanged(HomeFilter.overdue),
-            count: uiState.overdueCount,
-          ),
-          const SizedBox(width: 6),
-          AppFilterChip(
             label: context.l10n.homeFilterToday,
             isSelected: uiState.selectedFilter == HomeFilter.today,
             onTap: () => onFilterChanged(HomeFilter.today),
@@ -234,6 +227,13 @@ class _FilterChipRow extends StatelessWidget {
             isSelected: uiState.selectedFilter == HomeFilter.week,
             onTap: () => onFilterChanged(HomeFilter.week),
             count: uiState.weekCount,
+          ),
+          const SizedBox(width: 6),
+          AppFilterChip(
+            label: context.l10n.homeFilterIrregular,
+            isSelected: uiState.selectedFilter == HomeFilter.irregular,
+            onTap: () => onFilterChanged(HomeFilter.irregular),
+            count: uiState.irregularCount,
           ),
         ],
       ),

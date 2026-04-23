@@ -38,6 +38,10 @@ class HomeTaskList {
         final p = t.computeProgress(now);
         return p is DueDate && !p.isOverdue && p.isCurrentWeek;
       }),
+      HomeFilter.irregular => searched.where((t) {
+        final p = t.computeProgress(now);
+        return p is NoDueDate;
+      }),
     };
 
     final divideByOverdue = filtered.groupListsBy((t) {

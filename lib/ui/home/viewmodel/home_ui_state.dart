@@ -8,7 +8,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'home_ui_state.freezed.dart';
 
-enum HomeFilter { all, overdue, today, week }
+enum HomeFilter { all, overdue, today, week, irregular }
 
 @freezed
 abstract class HomeUiState with _$HomeUiState implements BaseUiState {
@@ -38,6 +38,11 @@ abstract class HomeUiState with _$HomeUiState implements BaseUiState {
   int get weekCount => tasks.where((t) {
     final p = t.computeProgress();
     return p is DueDate && !p.isOverdue && p.isCurrentWeek;
+  }).length;
+
+  int get irregularCount => tasks.where((t) {
+    final p = t.computeProgress();
+    return p is NoDueDate;
   }).length;
 
   HomeTaskList get taskList => HomeTaskList.from(

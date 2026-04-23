@@ -33,7 +33,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeFilterToday => '今日';
 
   @override
-  String get homeFilterWeek => '7日以内';
+  String get homeFilterWeek => '今週';
+
+  @override
+  String get homeFilterIrregular => '不定期';
 
   @override
   String get homeSectionOverdue => '超過';
@@ -154,6 +157,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get editorTypeScheduledDesc => '次回予定日までの間隔を手動で設定';
+
+  @override
+  String get editorSpanPickerTitle => '繰り返し間隔';
 
   @override
   String get editorSpanDay => '日';
