@@ -39,7 +39,7 @@ void main() {
       });
 
       test('hasTasks は false', () {
-        expect(container.read(homeViewModelProvider).taskList.hasTasks, false);
+        expect(container.read(homeViewModelProvider).hasTasks, false);
       });
     });
 
@@ -55,7 +55,7 @@ void main() {
       });
 
       test('hasTasks は true', () {
-        expect(container.read(homeViewModelProvider).taskList.hasTasks, true);
+        expect(container.read(homeViewModelProvider).hasTasks, true);
       });
 
       test('searchQuery が空のとき overdueTasks + upcomingTasks は全タスクを返す', () {

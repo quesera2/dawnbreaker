@@ -28,6 +28,15 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
+  Stream<TaskItem> watchTaskById(int taskId) {
+    final task = _tasks.where((t) => t.id == taskId).firstOrNull;
+    if (task == null) {
+      return Stream.error(TaskNotFoundException(taskId: taskId));
+    }
+    return Stream.value(task);
+  }
+
+  @override
   Future<TaskItem> findTaskById(int taskId) async {
     if (shouldThrow) throw const TaskLoadException('テストエラー');
     final task = _tasks.where((t) => t.id == taskId).firstOrNull;
