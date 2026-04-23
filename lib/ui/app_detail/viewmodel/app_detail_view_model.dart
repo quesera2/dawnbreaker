@@ -20,20 +20,19 @@ class AppDetailViewModel extends _$AppDetailViewModel {
   }
 
   void _loadTask(int taskId) {
-    final subscription = _repository.watchTaskById(taskId).listen(
-      (task) {
-        if (!ref.mounted) return;
-        state = state.copyWith(isLoading: false, task: task);
-      },
-      onError: (e) {
-        if (!ref.mounted) return;
-        state = state.copyWith(
-          isLoading: false,
-          shouldPop: true,
-          errorMessage: TaskLoadErrorMessage(),
+    final subscription = _repository
+        .watchTaskById(taskId)
+        .listen(
+          (task) {
+            // 削除されたときは無視する
+            if (!ref.mounted || task == null) return;
+            state = state.copyWith(isLoading: false, task: task);
+          },
+          onError: (e) {
+            if (!ref.mounted) return;
+            state = state.copyWith(isLoading: false, shouldPop: true);
+          },
         );
-      },
-    );
     ref.onDispose(subscription.cancel);
   }
 
