@@ -147,7 +147,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             _TaskSliver(
               tasks: overdue,
-              onTap: (task) => context.push('/editor', extra: task.id),
+              onTap: (task) => context.push('/app-detail', extra: task.id),
               onComplete: (task) => _showCompleteSheet(context, task),
             ),
           ],
@@ -168,7 +168,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             _TaskSliver(
               tasks: upcoming,
-              onTap: (task) => context.push('/editor', extra: task.id),
+              onTap: (task) => context.push('/app-detail', extra: task.id),
               onComplete: (task) => _showCompleteSheet(context, task),
             ),
           ],

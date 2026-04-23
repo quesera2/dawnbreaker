@@ -21,3 +21,8 @@ class TaskUpdateSuccessSnackMessage extends SnackBarMessage {
   TaskUpdateSuccessSnackMessage({required this.taskName, super.handler});
   final String taskName;
 }
+
+class TaskDeleteSuccessSnackMessage extends SnackBarMessage {
+  TaskDeleteSuccessSnackMessage({required this.taskName, super.handler});
+  final String taskName;
+}

@@ -4,22 +4,27 @@ import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
+enum AppIconTone { normal, destruction }
+
 class AppIconButton extends StatelessWidget {
   const AppIconButton({
     super.key,
     required this.icon,
     required this.onTap,
     this.label,
+    this.tone = AppIconTone.normal,
   });
 
   final IconData icon;
   final String? label;
   final VoidCallback onTap;
+  final AppIconTone tone;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
     final borderRadius = BorderRadius.circular(AppRadius.md);
+
     return InkWell(
       onTap: onTap,
       borderRadius: borderRadius,
@@ -28,10 +33,10 @@ class AppIconButton extends StatelessWidget {
         child: Center(
           child: Ink(
             height: 36,
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             decoration: BoxDecoration(
-              color: colors.surface,
-              border: Border.all(color: colors.border),
+              color: colors.appIconBackGroundColor(tone),
+              border: Border.all(color: colors.appIconBorderColor(tone)),
               borderRadius: borderRadius,
             ),
             child: Center(widthFactor: 1.0, child: _buttonContent(colors)),
@@ -42,22 +47,43 @@ class AppIconButton extends StatelessWidget {
   }
 
   Widget _buttonContent(AppColorScheme colors) {
+    final buttonColor = colors.appIconContentColor(tone);
     if (label == null) {
-      return Icon(icon, size: 16, color: colors.text);
+      return Icon(icon, size: 16, color: buttonColor);
     } else {
       return Row(
         mainAxisSize: MainAxisSize.min,
-        spacing: 10,
+        spacing: 4,
         children: [
-          Icon(icon, size: 16, color: colors.text),
+          Icon(icon, size: 16, color: buttonColor),
           Text(
             label!,
-            style: AppTextStyle.caption.copyWith(color: colors.text),
+            style: AppTextStyle.caption.copyWith(
+              color: buttonColor,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       );
     }
   }
+}
+
+extension _AppIconButtonTone on AppColorScheme {
+  Color appIconBorderColor(AppIconTone tone) => switch (tone) {
+    .normal => borderStrong,
+    .destruction => danger,
+  };
+
+  Color appIconBackGroundColor(AppIconTone tone) => switch (tone) {
+    .normal => surface,
+    .destruction => dangerSoft,
+  };
+
+  Color appIconContentColor(AppIconTone tone) => switch (tone) {
+    .normal => text,
+    .destruction => danger,
+  };
 }
 
 @Preview()

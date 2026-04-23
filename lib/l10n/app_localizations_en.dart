@@ -203,4 +203,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editorNameHint => 'Enter task name';
+
+  @override
+  String get appDetailTitle => 'History';
+
+  @override
+  String get appDetailEdit => 'Edit';
+
+  @override
+  String appDetailDeleteSuccess(String name) {
+    return 'Deleted \"$name\"';
+  }
+
+  @override
+  String get appDetailStatsDaysSince => 'Days since';
+
+  @override
+  String get appDetailStatsAvgInterval => 'Avg interval';
+
+  @override
+  String get appDetailStatsDay => 'd';
+
+  @override
+  String get appDetailHistorySection => 'History';
+
+  @override
+  String appDetailDaysInterval(int days) {
+    return '${days}d from prev';
+  }
+
+  @override
+  String get appDetailTypeBadgeIrregular => 'Irregular';
+
+  @override
+  String get appDetailTypeBadgePeriod => 'Auto interval';
+
+  @override
+  String appDetailTypeBadgeScheduled(int value, String unit) {
+    return 'Every $value $unit';
+  }
+
+  @override
+  String get appDetailCommentPlaceholder => 'Comment';
 }

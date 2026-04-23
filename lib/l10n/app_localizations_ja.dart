@@ -202,4 +202,46 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get editorNameHint => 'タスク名を入力';
+
+  @override
+  String get appDetailTitle => '実行履歴';
+
+  @override
+  String get appDetailEdit => '編集';
+
+  @override
+  String appDetailDeleteSuccess(String name) {
+    return '「$name」を削除しました';
+  }
+
+  @override
+  String get appDetailStatsDaysSince => '前回から';
+
+  @override
+  String get appDetailStatsAvgInterval => '平均間隔';
+
+  @override
+  String get appDetailStatsDay => '日';
+
+  @override
+  String get appDetailHistorySection => '履歴';
+
+  @override
+  String appDetailDaysInterval(int days) {
+    return '前回から$days日';
+  }
+
+  @override
+  String get appDetailTypeBadgeIrregular => '不定期';
+
+  @override
+  String get appDetailTypeBadgePeriod => '自動周期';
+
+  @override
+  String appDetailTypeBadgeScheduled(int value, String unit) {
+    return '定期 $value$unit';
+  }
+
+  @override
+  String get appDetailCommentPlaceholder => 'コメント';
 }
