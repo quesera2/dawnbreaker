@@ -186,12 +186,10 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      toolbarHeight: 44,
+      toolbarHeight: 48,
       actions: [
         AppIconButton(onTap: () => context.push('/editor'), icon: Icons.add),
-        const SizedBox(width: 4),
         AppIconButton(onTap: () {}, icon: Icons.settings_outlined),
-        const SizedBox(width: 4),
       ],
     );
   }

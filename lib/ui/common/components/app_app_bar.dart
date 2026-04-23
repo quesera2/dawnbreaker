@@ -35,7 +35,7 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget? _leading(BuildContext context) {
     if (onBack != null || Navigator.maybeOf(context)?.canPop() == true) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(20, 10, 0, 10),
+        padding: const EdgeInsets.fromLTRB(8, 4, 0, 4),
         child: AppIconButton(
           icon: Icons.arrow_back_ios_new,
           onTap: onBack ?? () => context.pop(),
