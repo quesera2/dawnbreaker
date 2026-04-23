@@ -59,39 +59,24 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
     final viewModel = ref.read(provider.notifier);
     final isNew = widget.taskId == null;
 
-    return Stack(
-      children: [
-        Scaffold(
-          appBar: AppAppBar(
-            title: isNew
-                ? context.l10n.editorTitleNew
-                : context.l10n.editorTitleEdit,
-          ),
-          body: uiState.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _EditorBody(
-                  uiState: uiState,
-                  viewModel: viewModel,
-                  nameController: _nameController,
-                ),
-          bottomNavigationBar: _SaveBar(
-            enabled: uiState.canSave && !uiState.isLoading && !uiState.isSaving,
-            isNew: isNew,
-            onSave: viewModel.save,
-          ),
-        ),
-        IgnorePointer(
-          ignoring: !uiState.isSaving,
-          child: AnimatedOpacity(
-            opacity: uiState.isSaving ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 200),
-            child: ColoredBox(
-              color: context.appColorScheme.overlay,
-              child: const Center(child: CircularProgressIndicator()),
+    return Scaffold(
+      appBar: AppAppBar(
+        title: isNew
+            ? context.l10n.editorTitleNew
+            : context.l10n.editorTitleEdit,
+      ),
+      body: uiState.isLoading
+          ? const SizedBox.shrink()
+          : _EditorBody(
+              uiState: uiState,
+              viewModel: viewModel,
+              nameController: _nameController,
             ),
-          ),
-        ),
-      ],
+      bottomNavigationBar: _SaveBar(
+        enabled: uiState.canSave && !uiState.isLoading && !uiState.isSaving,
+        isNew: isNew,
+        onSave: viewModel.save,
+      ),
     );
   }
 }
