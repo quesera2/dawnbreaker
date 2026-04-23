@@ -19,29 +19,44 @@ class AppIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    return OutlinedButton(
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        backgroundColor: colors.surface,
-        foregroundColor: colors.text,
-        side: BorderSide(color: colors.border, width: 1),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-        minimumSize: const Size(0, 36),
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
-      child: label == null
-          ? Icon(icon, size: 16)
-          : Row(
-              spacing: 10,
-              children: [
-                Icon(icon, size: 16),
-                Text(label!, style: AppTextStyle.caption),
-              ],
+    final borderRadius = BorderRadius.circular(AppRadius.md);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: borderRadius,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+        child: Center(
+          child: Ink(
+            height: 36,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              border: Border.all(color: colors.border),
+              borderRadius: borderRadius,
             ),
+            child: Center(widthFactor: 1.0, child: _buttonContent(colors)),
+          ),
+        ),
+      ),
     );
+  }
+
+  Widget _buttonContent(AppColorScheme colors) {
+    if (label == null) {
+      return Icon(icon, size: 16, color: colors.text);
+    } else {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 10,
+        children: [
+          Icon(icon, size: 16, color: colors.text),
+          Text(
+            label!,
+            style: AppTextStyle.caption.copyWith(color: colors.text),
+          ),
+        ],
+      );
+    }
   }
 }
 

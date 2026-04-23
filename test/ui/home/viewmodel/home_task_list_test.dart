@@ -54,13 +54,19 @@ void main() {
     intervalDays: 14,
   );
 
-  // 予定なし (履歴なし)
+  // 予定なし (履歴なし period)
   final noDateTask = TaskItem.period(
     id: 5, name: '予定なしタスク', furigana: '',
     icon: '📝', color: TaskColor.none, taskHistory: [],
   );
 
-  final allTasks = [overdueTask, todayTask, weekTask, futureTask, noDateTask];
+  // 不定期タスク (IrregularTaskItem は常に NoDueDate)
+  final irregularTask = TaskItem.irregular(
+    id: 6, name: '不定期タスク', furigana: '',
+    icon: '📝', color: TaskColor.none, taskHistory: [],
+  );
+
+  final allTasks = [overdueTask, todayTask, weekTask, futureTask, noDateTask, irregularTask];
 
   group('HomeTaskList カウント', () {
     late HomeTaskList taskList;
@@ -92,7 +98,7 @@ void main() {
         tasks: allTasks, searchQuery: '', filter: HomeFilter.all, now: now,
       );
       expect(tl.overdueTasks, [overdueTask]);
-      expect(tl.upcomingTasks, [todayTask, weekTask, futureTask, noDateTask]);
+      expect(tl.upcomingTasks, [todayTask, weekTask, futureTask, noDateTask, irregularTask]);
     });
 
     test('overdue フィルタ: overdueTasks のみ', () {
@@ -120,6 +126,26 @@ void main() {
     });
   });
 
+  group('HomeTaskList irregular フィルタ', () {
+    test('irregular フィルタ: NoDueDate タスクのみ upcomingTasks に入る', () {
+      final tl = HomeTaskList.from(
+        tasks: allTasks, searchQuery: '', filter: HomeFilter.irregular, now: now,
+      );
+      expect(tl.overdueTasks, isEmpty);
+      expect(tl.upcomingTasks, [noDateTask, irregularTask]);
+    });
+
+    test('irregular フィルタ: DueDate タスクは除外される', () {
+      final tl = HomeTaskList.from(
+        tasks: allTasks, searchQuery: '', filter: HomeFilter.irregular, now: now,
+      );
+      expect(tl.upcomingTasks, isNot(contains(overdueTask)));
+      expect(tl.upcomingTasks, isNot(contains(todayTask)));
+      expect(tl.upcomingTasks, isNot(contains(weekTask)));
+      expect(tl.upcomingTasks, isNot(contains(futureTask)));
+    });
+  });
+
   group('HomeTaskList 検索', () {
     test('searchQuery で名前一致するタスクのみ残る', () {
       final tl = HomeTaskList.from(
@@ -133,7 +159,7 @@ void main() {
       final tl = HomeTaskList.from(
         tasks: allTasks, searchQuery: '', filter: HomeFilter.all, now: now,
       );
-      expect(tl.overdueTasks.length + tl.upcomingTasks.length, 5);
+      expect(tl.overdueTasks.length + tl.upcomingTasks.length, 6);
     });
 
     test('一致しない searchQuery のとき両リストが空', () {

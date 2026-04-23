@@ -149,8 +149,14 @@ abstract class AppLocalizations {
   /// No description provided for @homeFilterWeek.
   ///
   /// In ja, this message translates to:
-  /// **'7日以内'**
+  /// **'今週'**
   String get homeFilterWeek;
+
+  /// No description provided for @homeFilterIrregular.
+  ///
+  /// In ja, this message translates to:
+  /// **'不定期'**
+  String get homeFilterIrregular;
 
   /// No description provided for @homeSectionOverdue.
   ///
@@ -379,6 +385,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'次回予定日までの間隔を手動で設定'**
   String get editorTypeScheduledDesc;
+
+  /// No description provided for @editorSpanPickerTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'繰り返し間隔'**
+  String get editorSpanPickerTitle;
 
   /// No description provided for @editorSpanDay.
   ///

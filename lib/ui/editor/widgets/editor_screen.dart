@@ -59,39 +59,25 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
     final viewModel = ref.read(provider.notifier);
     final isNew = widget.taskId == null;
 
-    return Stack(
-      children: [
-        Scaffold(
-          appBar: AppAppBar(
-            title: isNew
-                ? context.l10n.editorTitleNew
-                : context.l10n.editorTitleEdit,
-          ),
-          body: uiState.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _EditorBody(
-                  uiState: uiState,
-                  viewModel: viewModel,
-                  nameController: _nameController,
-                ),
-          bottomNavigationBar: _SaveBar(
-            enabled: uiState.canSave && !uiState.isLoading && !uiState.isSaving,
-            isNew: isNew,
-            onSave: viewModel.save,
-          ),
-        ),
-        IgnorePointer(
-          ignoring: !uiState.isSaving,
-          child: AnimatedOpacity(
-            opacity: uiState.isSaving ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 200),
-            child: ColoredBox(
-              color: context.appColorScheme.overlay,
-              child: const Center(child: CircularProgressIndicator()),
-            ),
-          ),
-        ),
-      ],
+    return Scaffold(
+      appBar: AppAppBar(
+        title: isNew
+            ? context.l10n.editorTitleNew
+            : context.l10n.editorTitleEdit,
+        onBack: () => context.pop(),
+      ),
+      body: uiState.isLoading
+          ? const SizedBox.shrink()
+          : _EditorBody(
+        uiState: uiState,
+        viewModel: viewModel,
+        nameController: _nameController,
+      ),
+      bottomNavigationBar: _SaveBar(
+        enabled: uiState.canSave && !uiState.isLoading && !uiState.isSaving,
+        isNew: isNew,
+        onSave: viewModel.save,
+      ),
     );
   }
 }
@@ -246,31 +232,35 @@ class _IconArea extends StatelessWidget {
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      builder: (ctx) => EmojiPicker(
-        onEmojiSelected: (_, emoji) {
-          onChanged(emoji.emoji);
-          Navigator.of(ctx).pop();
-        },
-        config: Config(
-          height: MediaQuery.sizeOf(ctx).height * 0.35,
-          checkPlatformCompatibility: true,
-          emojiViewConfig: EmojiViewConfig(
-            backgroundColor: c.surface,
-            columns: 8,
-            emojiSizeMax: 40,
-            gridPadding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+      builder: (ctx) =>
+          EmojiPicker(
+            onEmojiSelected: (_, emoji) {
+              onChanged(emoji.emoji);
+              Navigator.of(ctx).pop();
+            },
+            config: Config(
+              height: MediaQuery
+                  .sizeOf(ctx)
+                  .height * 0.35,
+              checkPlatformCompatibility: true,
+              emojiViewConfig: EmojiViewConfig(
+                backgroundColor: c.surfaceAlt,
+                columns: 8,
+                emojiSizeMax: 40,
+                gridPadding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+              ),
+              categoryViewConfig: CategoryViewConfig(
+                backgroundColor: c.surface,
+                iconColor: c.textMuted,
+                iconColorSelected: c.primary,
+                indicatorColor: c.primary,
+                backspaceColor: c.textMuted,
+                dividerColor: c.divider,
+              ),
+              bottomActionBarConfig: const BottomActionBarConfig(
+                  enabled: false),
+            ),
           ),
-          categoryViewConfig: CategoryViewConfig(
-            backgroundColor: c.surface,
-            iconColor: c.textMuted,
-            iconColorSelected: c.primary,
-            indicatorColor: c.primary,
-            backspaceColor: c.textMuted,
-            dividerColor: c.divider,
-          ),
-          bottomActionBarConfig: const BottomActionBarConfig(enabled: false),
-        ),
-      ),
     );
   }
 }
@@ -414,9 +404,9 @@ class _TypeCard extends StatelessWidget {
                           curve: Curves.easeInOut,
                           child: isSelected
                               ? Padding(
-                                  padding: const EdgeInsets.only(top: 16),
-                                  child: expandedChild!,
-                                )
+                            padding: const EdgeInsets.only(top: 16),
+                            child: expandedChild!,
+                          )
                               : const SizedBox.shrink(),
                         ),
                       ),
@@ -528,14 +518,20 @@ class _ColorChip extends StatelessWidget {
           color: displayColor,
           shape: BoxShape.circle,
           border: isSelected
-              ? Border.all(color: taskColor.onColor(context).withAlpha(80), width: 3)
-              : Border.all(color: taskColor.softColor(context).withAlpha(80), width: 1),
+              ? Border.all(
+              color: taskColor.onColor(context).withAlpha(80), width: 3)
+              : Border.all(
+              color: taskColor.softColor(context).withAlpha(80), width: 1),
           boxShadow: isSelected
-              ? [BoxShadow(color: taskColor.onColor(context).withAlpha(80), blurRadius: 6)]
+              ? [
+            BoxShadow(
+                color: taskColor.onColor(context).withAlpha(80), blurRadius: 6)
+          ]
               : null,
         ),
         child: isSelected
-            ? Icon(Icons.check_rounded, size: 24, color: taskColor.softColor(context))
+            ? Icon(
+            Icons.check_rounded, size: 24, color: taskColor.softColor(context))
             : null,
       ),
     );
@@ -555,7 +551,9 @@ class _SaveBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final bottomPadding = MediaQuery
+        .paddingOf(context)
+        .bottom;
     final c = context.appColorScheme;
     return Container(
       padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomPadding),

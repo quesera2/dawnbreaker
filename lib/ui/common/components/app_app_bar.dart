@@ -2,7 +2,6 @@ import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:go_router/go_router.dart';
 
 class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
   const AppAppBar({
@@ -33,13 +32,10 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget? _leading(BuildContext context) {
-    if (onBack != null || Navigator.maybeOf(context)?.canPop() == true) {
+    if (onBack != null) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(20, 10, 0, 10),
-        child: AppIconButton(
-          icon: Icons.arrow_back_ios_new,
-          onTap: onBack ?? () => context.pop(),
-        ),
+        padding: const EdgeInsets.fromLTRB(8, 4, 0, 4),
+        child: AppIconButton(icon: Icons.arrow_back_ios_new, onTap: onBack!),
       );
     }
     return null;
@@ -76,9 +72,9 @@ final class AppAppBarShowCase extends StatelessWidget {
           Divider(height: 1, color: c.divider),
           AppAppBar(
             title: 'すべてあり',
-            onBack: (){},
+            onBack: () {},
             actions: [
-              AppIconButton(onTap: () {},  icon: Icons.more_vert),
+              AppIconButton(onTap: () {}, icon: Icons.more_vert),
               const SizedBox(width: 4),
             ],
           ),
