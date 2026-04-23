@@ -25,6 +25,8 @@ abstract class HomeUiState with _$HomeUiState implements BaseUiState {
 
   int get allCount => tasks.length;
 
+  bool get hasTasks => tasks.isNotEmpty;
+
   int get overdueCount => tasks.where((t) {
     final p = t.computeProgress();
     return p is DueDate && p.isOverdue;
