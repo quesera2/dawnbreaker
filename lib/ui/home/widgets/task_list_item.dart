@@ -7,7 +7,7 @@ import 'package:dawnbreaker/ui/common/components/app_pill_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_progress_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:dawnbreaker/core/date_util.dart';
 
 class TaskListItem extends StatelessWidget {
   const TaskListItem({
@@ -105,8 +105,7 @@ class _DateRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Localizations.localeOf(context).toString();
-    final dateStr = DateFormat.yMd(locale).format(taskProgress.scheduledAt);
+    final dateStr = DateUtil.format(context, taskProgress.scheduledAt);
 
     final AppBadgeTone tone;
     final String badgeText;

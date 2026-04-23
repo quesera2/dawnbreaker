@@ -2,6 +2,7 @@ import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
+import 'package:dawnbreaker/core/date_util.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
@@ -16,7 +17,6 @@ import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 class AppDetailScreen extends ConsumerStatefulWidget {
   const AppDetailScreen({super.key, required this.taskId});
@@ -364,11 +364,6 @@ class _HistoryItem extends StatelessWidget {
   static const _dotTopY = 4.0;
   static const _dotBottomY = _dotTopY + _dotSize; // 14.0
 
-  String _formatDate(BuildContext context, DateTime date) {
-    final locale = Localizations.localeOf(context).toString();
-    return DateFormat.yMMMEd(locale).format(date);
-  }
-
   BoxDecoration _dotDecoration(Color dotColor, Color surface) => isFirst
       ? BoxDecoration(color: dotColor, shape: BoxShape.circle)
       : BoxDecoration(
@@ -408,7 +403,7 @@ class _HistoryItem extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    _formatDate(context, entry.executedAt),
+                    DateUtil.format(context, entry.executedAt),
                     style: AppTextStyle.body.copyWith(
                       color: colors.text,
                       fontWeight: FontWeight.w400,
