@@ -62,6 +62,7 @@
   "editorTypePeriodDesc": "実行履歴から次回予定日を予測",
   "editorTypeScheduled": "周期を指定",
   "editorTypeScheduledDesc": "次回予定日までの間隔を手動で設定",
+  "editorSpanPickerTitle": "繰り返し間隔",
   "editorSpanDay": "日",
   "editorSpanWeek": "週",
   "editorSpanMonth": "ヶ月",

@@ -62,6 +62,7 @@
   "editorTypePeriodDesc": "Predicts next due date from history",
   "editorTypeScheduled": "Set interval",
   "editorTypeScheduledDesc": "Manually set the interval to the next due date",
+  "editorSpanPickerTitle": "Repeat interval",
   "editorSpanDay": "days",
   "editorSpanWeek": "weeks",
   "editorSpanMonth": "months",

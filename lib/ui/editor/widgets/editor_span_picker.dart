@@ -186,7 +186,13 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
       padding: EdgeInsets.fromLTRB(20, 0, 20, 16 + bottomPadding),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            context.l10n.editorSpanPickerTitle,
+            style: AppTextStyle.headline,
+          ),
+          const SizedBox(height: 16),
           Container(
             height: _wheelHeight,
             clipBehavior: Clip.antiAlias,
