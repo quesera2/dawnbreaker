@@ -244,7 +244,7 @@ class _IconArea extends StatelessWidget {
                   .height * 0.35,
               checkPlatformCompatibility: true,
               emojiViewConfig: EmojiViewConfig(
-                backgroundColor: c.surface,
+                backgroundColor: c.surfaceAlt,
                 columns: 8,
                 emojiSizeMax: 40,
                 gridPadding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
