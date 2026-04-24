@@ -34,16 +34,12 @@ class TaskRepositoryImpl implements TaskRepository {
 
   @override
   Stream<List<TaskItem>> allTaskItems() {
-    return (_db.select(_db.taskDefinitions).join(_taskJoins())
-          ..orderBy([OrderingTerm.asc(_db.taskExecutions.executedAt)]))
-        .watch()
-        .map(_buildAllTaskItemsFromRows);
+    return _baseTaskQuery().watch().map(_buildAllTaskItemsFromRows);
   }
 
   @override
   Stream<TaskItem?> watchTaskById(int taskId) {
-    return (_db.select(_db.taskDefinitions)..where((t) => t.id.equals(taskId)))
-        .join(_taskJoins())
+    return _baseTaskQuery(where: _db.taskDefinitions.id.equals(taskId))
         .watch()
         .map((rows) {
           if (rows.isEmpty) return null;
@@ -54,9 +50,9 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<TaskItem> findTaskById(int taskId) async {
     try {
-      final rows = await (_db.select(
-        _db.taskDefinitions,
-      )..where((t) => t.id.equals(taskId))).join(_taskJoins()).get();
+      final rows = await _baseTaskQuery(
+        where: _db.taskDefinitions.id.equals(taskId),
+      ).get();
       if (rows.isEmpty) {
         throw TaskNotFoundException(taskId: taskId);
       }
@@ -66,6 +62,27 @@ class TaskRepositoryImpl implements TaskRepository {
     } catch (e) {
       throw TaskLoadException(e.toString());
     }
+  }
+
+  JoinedSelectStatement<HasResultSet, dynamic> _baseTaskQuery({
+    Expression<bool>? where,
+  }) {
+    final query = _db.select(_db.taskDefinitions).join([
+      leftOuterJoin(
+        _db.taskScheduledConfigs,
+        _db.taskScheduledConfigs.taskDefinitionId.equalsExp(
+          _db.taskDefinitions.id,
+        ),
+      ),
+      leftOuterJoin(
+        _db.taskExecutions,
+        _db.taskExecutions.taskDefinitionId.equalsExp(_db.taskDefinitions.id),
+      ),
+    ])..orderBy([OrderingTerm.asc(_db.taskExecutions.executedAt)]);
+    if (where != null) {
+      query.where(where);
+    }
+    return query;
   }
 
   List<TaskItem> _buildAllTaskItemsFromRows(List<TypedResult> rows) {
@@ -85,19 +102,6 @@ class TaskRepositoryImpl implements TaskRepository {
 
     return items;
   }
-
-  List<Join<HasResultSet, dynamic>> _taskJoins() => [
-    leftOuterJoin(
-      _db.taskScheduledConfigs,
-      _db.taskScheduledConfigs.taskDefinitionId.equalsExp(
-        _db.taskDefinitions.id,
-      ),
-    ),
-    leftOuterJoin(
-      _db.taskExecutions,
-      _db.taskExecutions.taskDefinitionId.equalsExp(_db.taskDefinitions.id),
-    ),
-  ];
 
   TaskItem _buildTaskItemFromRows(List<TypedResult> rows) {
     final def = rows.first.readTable(_db.taskDefinitions);
