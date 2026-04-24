@@ -1,15 +1,14 @@
+import 'package:collection/collection.dart';
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/core/date_util.dart';
-import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_view_model.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
-import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_badge.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
@@ -43,45 +42,81 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
 
     final colors = context.appColorScheme;
     final task = uiState.task;
+    final history = task?.taskHistory.reversed.toList() ?? [];
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
-      appBar: AppAppBar(
-        title: context.l10n.appDetailTitle,
-        onBack: () => context.pop(),
-        actions: task != null
-            ? [
-                AppIconButton(
-                  icon: Icons.edit_outlined,
-                  label: context.l10n.appDetailEdit,
-                  onTap: () => context.push('/editor', extra: task.id),
-                ),
-                const SizedBox(width: 4),
-                AppIconButton(
-                  icon: Icons.delete,
-                  tone: AppIconTone.destruction,
-                  onTap: viewModel.deleteTask,
-                ),
-                const SizedBox(width: 12),
-              ]
-            : null,
-      ),
       backgroundColor: colors.bg,
-      body: (uiState.isLoading || task == null)
-          ? const SizedBox.shrink()
-          : SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + bottomPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _TaskHeader(task: task),
-                  const SizedBox(height: 20),
-                  _StatsAndChartCard(task: task),
-                  const SizedBox(height: 28),
-                  _HistorySection(task: task),
-                ],
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 3.0,
+            shadowColor: colors.shadow.withValues(alpha: 0.2),
+            automaticallyImplyLeading: false,
+            leading: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 0, 4),
+              child: AppIconButton(
+                icon: Icons.arrow_back_ios_new,
+                onTap: () => context.pop(),
               ),
             ),
+            title: Text(context.l10n.appDetailTitle),
+            actions: task != null
+                ? [
+                    AppIconButton(
+                      icon: Icons.edit_outlined,
+                      label: context.l10n.appDetailEdit,
+                      onTap: () => context.push('/editor', extra: task.id),
+                    ),
+                    const SizedBox(width: 4),
+                    AppIconButton(
+                      icon: Icons.delete,
+                      tone: AppIconTone.destruction,
+                      onTap: viewModel.deleteTask,
+                    ),
+                    const SizedBox(width: 12),
+                  ]
+                : null,
+            bottom: task != null
+                ? PreferredSize(
+                    preferredSize: const Size.fromHeight(76),
+                    child: _TaskHeader(task: task),
+                  )
+                : null,
+          ),
+          if (!uiState.isLoading && task != null) ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: _StatsAndChartCard(task: task),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: _HistorySectionHeader(count: history.length),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverList.builder(
+                itemCount: history.length,
+                itemBuilder: (context, i) => _HistoryItem(
+                  entry: history[i],
+                  isFirst: i == 0,
+                  isLast: i == history.length - 1,
+                  taskColor: task.color,
+                  intervalDays: i < history.length - 1
+                      ? history[i].executedAt
+                            .difference(history[i + 1].executedAt)
+                            .inDays
+                      : null,
+                ),
+              ),
+            ),
+            SliverPadding(padding: EdgeInsets.only(bottom: 20 + bottomPadding)),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -94,23 +129,28 @@ class _TaskHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        AppTaskIconTile(emoji: task.icon, color: task.color, size: 52),
-        const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              task.name,
-              style: AppTextStyle.title2.copyWith(color: colors.text),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          AppTaskIconTile(emoji: task.icon, color: task.color, size: 52),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  task.name,
+                  style: AppTextStyle.title2.copyWith(color: colors.text),
+                ),
+                const SizedBox(height: 4),
+                _TypeBadge(task: task),
+              ],
             ),
-            const SizedBox(height: 4),
-            _TypeBadge(task: task),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -134,18 +174,12 @@ class _TypeBadge extends StatelessWidget {
       ScheduledTaskItem(:final scheduleValue, :final scheduleUnit) => AppBadge(
         label: context.l10n.appDetailTypeBadgeScheduled(
           scheduleValue,
-          _unitLabel(context, scheduleUnit),
+          scheduleUnit.label(context),
         ),
         tone: AppBadgeTone.info,
       ),
     };
   }
-
-  String _unitLabel(BuildContext context, ScheduleUnit unit) => switch (unit) {
-    ScheduleUnit.day => context.l10n.editorSpanDay,
-    ScheduleUnit.week => context.l10n.editorSpanWeek,
-    ScheduleUnit.month => context.l10n.editorSpanMonth,
-  };
 }
 
 class _StatsAndChartCard extends StatelessWidget {
@@ -171,9 +205,7 @@ class _StatsAndChartCard extends StatelessWidget {
         ? null
         : DateTime.now().difference(task.lastExecutedAt!).inDays;
 
-    final avgInterval = intervals.isEmpty
-        ? null
-        : (intervals.reduce((a, b) => a + b) / intervals.length).round();
+    final avgInterval = intervals.isEmpty ? null : intervals.average.round();
 
     final displayedIntervals = intervals.length > 10
         ? intervals.sublist(intervals.length - 10)
@@ -196,10 +228,8 @@ class _StatsAndChartCard extends StatelessWidget {
                   Expanded(
                     child: _StatCell(
                       label: context.l10n.appDetailStatsDaysSince,
-                      value: daysSince?.toString() ?? '—',
-                      unit: daysSince != null
-                          ? context.l10n.appDetailStatsDay
-                          : '',
+                      value: daysSince,
+                      unit: context.l10n.appDetailStatsDay,
                     ),
                   ),
                   VerticalDivider(
@@ -210,10 +240,8 @@ class _StatsAndChartCard extends StatelessWidget {
                   Expanded(
                     child: _StatCell(
                       label: context.l10n.appDetailStatsAvgInterval,
-                      value: avgInterval?.toString() ?? '—',
-                      unit: avgInterval != null
-                          ? context.l10n.appDetailStatsDay
-                          : '',
+                      value: avgInterval,
+                      unit: context.l10n.appDetailStatsDay,
                     ),
                   ),
                 ],
@@ -222,6 +250,7 @@ class _StatsAndChartCard extends StatelessWidget {
           ),
           if (displayedIntervals.isNotEmpty) ...[
             Divider(color: colors.divider, height: 1, thickness: 1),
+            SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
               child: IntervalBarChart(
@@ -247,7 +276,7 @@ class _StatCell extends StatelessWidget {
   });
 
   final String label;
-  final String value;
+  final int? value;
   final String unit;
 
   @override
@@ -261,82 +290,62 @@ class _StatCell extends StatelessWidget {
           style: AppTextStyle.caption.copyWith(color: colors.textMuted),
         ),
         const SizedBox(height: 8),
-        RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: value,
-                style: AppTextStyle.title1.copyWith(color: colors.text),
-              ),
-              if (unit.isNotEmpty)
-                TextSpan(
-                  text: unit,
-                  style: AppTextStyle.body.copyWith(color: colors.textMuted),
-                ),
-            ],
-          ),
-        ),
+        _valueText(colors),
       ],
+    );
+  }
+
+  Widget _valueText(AppColorScheme colors) {
+    if (value == null) {
+      return Text('—', style: AppTextStyle.title1.copyWith(color: colors.text));
+    }
+
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: value.toString(),
+            style: AppTextStyle.title1.copyWith(color: colors.text),
+          ),
+          if (unit.isNotEmpty)
+            TextSpan(
+              text: unit,
+              style: AppTextStyle.body.copyWith(color: colors.textMuted),
+            ),
+        ],
+      ),
     );
   }
 }
 
-class _HistorySection extends StatelessWidget {
-  const _HistorySection({required this.task});
+class _HistorySectionHeader extends StatelessWidget {
+  const _HistorySectionHeader({required this.count});
 
-  final TaskItem task;
+  final int count;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    final history = task.taskHistory.reversed.toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // タイトルヘッダ
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(
-              context.l10n.appDetailHistorySection.toUpperCase(),
-              style: AppTextStyle.overline.copyWith(color: colors.textMuted),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '${history.length}',
-              style: AppTextStyle.overline.copyWith(
-                color: colors.textSubtle,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        // 履歴
-        Card(
-          child: Padding(
-            padding: EdgeInsets.all(20),
-            child: Column(
-              children: [
-                for (var i = 0; i < history.length; i++)
-                  _HistoryItem(
-                    entry: history[i],
-                    isFirst: i == 0,
-                    isLast: i == history.length - 1,
-                    taskColor: task.color,
-                    intervalDays: i < history.length - 1
-                        ? history[i].executedAt
-                              .difference(history[i + 1].executedAt)
-                              .inDays
-                        : null,
-                  ),
-              ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Text(
+            context.l10n.appDetailHistorySection.toUpperCase(),
+            style: AppTextStyle.overline.copyWith(color: colors.textMuted),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '$count',
+            style: AppTextStyle.overline.copyWith(
+              color: colors.textSubtle,
+              fontWeight: FontWeight.w400,
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -358,11 +367,39 @@ class _HistoryItem extends StatelessWidget {
 
   static const _dotSize = 10.0;
   static const _lineWidth = 1.5;
-  static const _itemSpacing = 20.0;
+  static const _paddingH = 20.0;
+  static const _paddingV = 14.0;
 
-  // body(15px) 行高さ ~18px でドット(10px)を縦中央に置いた上端・下端 Y
-  static const _dotTopY = 4.0;
-  static const _dotBottomY = _dotTopY + _dotSize; // 14.0
+  // Container上端からの距離: paddingV + body行中心オフセット(4px)
+  static const _dotTopY = _paddingV + 4.0; // 18.0
+  static const _dotBottomY = _dotTopY + _dotSize; // 28.0
+  static const _lineLeft = _paddingH + _dotSize / 2 - _lineWidth / 2; // 24.25
+
+  BoxDecoration _containerDecoration(AppColorScheme colors) {
+    const radius = Radius.circular(AppRadius.lg);
+    final side = BorderSide(color: colors.border);
+    return switch ((isFirst, isLast)) {
+      (true, true) => BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.all(radius),
+        border: Border.all(color: colors.border),
+      ),
+      (true, false) => BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.vertical(top: radius),
+        border: Border(top: side, left: side, right: side),
+      ),
+      (false, true) => BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.vertical(bottom: radius),
+        border: Border(bottom: side, left: side, right: side),
+      ),
+      _ => BoxDecoration(
+        color: colors.surface,
+        border: Border(left: side, right: side),
+      ),
+    };
+  }
 
   BoxDecoration _dotDecoration(Color dotColor, Color surface) => isFirst
       ? BoxDecoration(color: dotColor, shape: BoxShape.circle)
@@ -377,57 +414,69 @@ class _HistoryItem extends StatelessWidget {
     final colors = context.appColorScheme;
     final dotColor = taskColor.baseColor(context);
 
-    return Stack(
-      children: [
-        // first: dotBottom→bottom、last: top→dotTop、middle: 全高
-        if (!isFirst || !isLast)
-          Positioned(
-            left: _dotSize / 2 - _lineWidth / 2,
-            width: _lineWidth,
-            top: isFirst ? _dotBottomY : 0,
-            bottom: isLast ? null : 0,
-            height: isLast ? _dotTopY : null,
-            child: ColoredBox(color: colors.divider),
-          ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+    return Container(
+      decoration: _containerDecoration(colors),
+      child: Stack(
+        children: [
+          // first: dotBottom→bottom、last: top→dotTop、middle: 全高
+          if (!isFirst || !isLast)
+            Positioned(
+              left: _lineLeft,
+              width: _lineWidth,
+              top: isFirst ? _dotBottomY : 0,
+              bottom: isLast ? null : 0,
+              height: isLast ? _dotTopY : null,
+              child: ColoredBox(color: colors.divider),
+            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              _paddingH,
+              _paddingV,
+              _paddingH,
+              _paddingV,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: _dotSize,
-                  height: _dotSize,
-                  decoration: _dotDecoration(dotColor, colors.surface),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    DateUtil.format(context, entry.executedAt),
-                    style: AppTextStyle.body.copyWith(
-                      color: colors.text,
-                      fontWeight: FontWeight.w400,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: _dotSize,
+                      height: _dotSize,
+                      decoration: _dotDecoration(dotColor, colors.surface),
                     ),
-                  ),
-                ),
-                if (intervalDays != null)
-                  Text(
-                    context.l10n.appDetailDaysInterval(intervalDays!),
-                    style: AppTextStyle.caption.copyWith(
-                      color: colors.textMuted,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        DateUtil.format(context, entry.executedAt),
+                        style: AppTextStyle.body.copyWith(
+                          color: colors.text,
+                          fontWeight: isFirst
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                        ),
+                      ),
                     ),
+                    if (intervalDays != null)
+                      Text(
+                        context.l10n.appDetailDaysInterval(intervalDays!),
+                        style: AppTextStyle.caption.copyWith(
+                          color: colors.textMuted,
+                        ),
+                      ),
+                  ],
+                ),
+                if (isFirst)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, left: _dotSize + 12),
+                    child: _CommentPlaceholder(colors: colors),
                   ),
               ],
             ),
-            if (isFirst)
-              Padding(
-                padding: const EdgeInsets.only(top: 8, left: _dotSize + 12),
-                child: _CommentPlaceholder(colors: colors),
-              ),
-            if (!isLast) const SizedBox(height: _itemSpacing),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }

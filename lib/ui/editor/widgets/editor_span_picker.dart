@@ -6,14 +6,6 @@ import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:flutter/material.dart';
 
-extension ScheduleUnitLabel on ScheduleUnit {
-  String label(BuildContext context) => switch (this) {
-    ScheduleUnit.day => context.l10n.editorSpanDay,
-    ScheduleUnit.week => context.l10n.editorSpanWeek,
-    ScheduleUnit.month => context.l10n.editorSpanMonth,
-  };
-}
-
 typedef SpanValue = ({int value, ScheduleUnit unit});
 
 class SpanPickerButton extends StatelessWidget {
