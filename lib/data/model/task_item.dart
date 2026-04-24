@@ -87,9 +87,11 @@ sealed class TaskItem with _$TaskItem {
     if (taskHistory.length < 2) return [];
     return taskHistory.skip(1).indexed.map((item) {
       final (index, current) = item;
-      return current.executedAt
-          .difference(taskHistory[index].executedAt)
-          .inDays;
+      final a = taskHistory[index].executedAt;
+      final b = current.executedAt;
+      final aDate = DateTime(a.year, a.month, a.day);
+      final bDate = DateTime(b.year, b.month, b.day);
+      return bDate.difference(aDate).inDays;
     }).toList();
   }
 

@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/core/date_util.dart';
 import 'package:dawnbreaker/data/model/task_history_stats.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
@@ -42,8 +43,9 @@ abstract class AppDetailUiState with _$AppDetailUiState implements BaseUiState {
   );
 
   int? _calculateDaysSinceLastExecution(TaskItem task) {
-    final last = task.lastExecutedAt;
+    final last = task.lastExecutedAt?.truncateTime;
     if (last == null) return null;
-    return DateTime.now().difference(last).inDays;
+    final now = DateTime.now().truncateTime;
+    return now.difference(last).inDays;
   }
 }

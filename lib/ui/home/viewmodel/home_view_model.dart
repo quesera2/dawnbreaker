@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/core/date_util.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
@@ -46,7 +47,7 @@ class HomeViewModel extends _$HomeViewModel {
     final tasks = await _repository.allTaskItems().first;
     if (tasks.isNotEmpty || !ref.mounted) return;
 
-    final now = DateTime.now();
+    final now = DateTime.now().truncateTime;
 
     // 超過: avg 30日サイクル, 3日超過
     final toothbrushId = await _repository.addTask(
