@@ -11,6 +11,7 @@ import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_view_model.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
 import 'package:dawnbreaker/ui/common/components/app_badge.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
+import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:flutter/material.dart';
@@ -90,7 +91,7 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
           if (!uiState.isLoading && task != null && historyStats != null) ...[
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                padding: const EdgeInsets.all(20),
                 child: _StatsAndChartCard(
                   taskColor: task.color,
                   daysSinceLastExecution: uiState.daysSinceLastExecution,
@@ -100,7 +101,10 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
               ),
             ),
             SliverToBoxAdapter(
-              child: _HistorySectionHeader(count: historyAndInterval.length),
+              child: AppSectionHeader(
+                title: Text(context.l10n.appDetailHistorySection.toUpperCase()),
+                subTitle: Text(historyAndInterval.length.toString()),
+              ),
             ),
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -304,38 +308,6 @@ class _StatCell extends StatelessWidget {
               text: unit,
               style: AppTextStyle.body.copyWith(color: colors.textMuted),
             ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HistorySectionHeader extends StatelessWidget {
-  const _HistorySectionHeader({required this.count});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          Text(
-            context.l10n.appDetailHistorySection.toUpperCase(),
-            style: AppTextStyle.overline.copyWith(color: colors.textMuted),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '$count',
-            style: AppTextStyle.overline.copyWith(
-              color: colors.textSubtle,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
         ],
       ),
     );

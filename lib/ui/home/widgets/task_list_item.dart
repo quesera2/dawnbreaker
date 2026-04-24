@@ -82,7 +82,7 @@ class TaskListItem extends StatelessWidget {
                         AppPillButton(
                           label: context.l10n.homeComplete,
                           onPressed: onComplete,
-                          leading: const Icon(Icons.check),
+                          leading: const Icon(Icons.check, fontWeight: FontWeight.w700),
                         ),
                       ],
                     ),
