@@ -159,7 +159,7 @@ class TaskRepositoryImpl implements TaskRepository {
     }
     try {
       final furigana = await _furiganaTranslate.translate(name);
-      return _db.transaction(() async {
+      return await _db.transaction(() async {
         final id = await _db
             .into(_db.taskDefinitions)
             .insert(

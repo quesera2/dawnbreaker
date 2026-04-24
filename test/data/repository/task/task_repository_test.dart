@@ -30,6 +30,195 @@ void main() {
 
   tearDown(() => db.close());
 
+  group('scheduled タスクで config がないとき', () {
+    test('allTaskItems が TaskNotFoundException をストリームエラーとして emit する', () async {
+      // DB に直接 scheduled タスクを挿入（taskScheduledConfigs なし）
+      await db.into(db.taskDefinitions).insert(
+        TaskDefinitionsCompanion.insert(
+          taskType: TaskType.scheduled,
+          name: 'config なしタスク',
+          furigana: '',
+          icon: '📝',
+          color: TaskColor.none,
+        ),
+      );
+
+      await expectLater(
+        repository.allTaskItems(),
+        emitsError(isA<TaskNotFoundException>()),
+      );
+    });
+  });
+
+  group('DB エラー時の異常系', () {
+    late TaskRepository closedRepo;
+
+    setUp(() async {
+      final errorDb = AppDatabase(NativeDatabase.memory());
+      closedRepo = TaskRepositoryImpl(
+        db: errorDb,
+        furiganaTranslate: const FakeFuriganaTranslate({}),
+      );
+      // スキーマを初期化してから閉じる
+      await errorDb.select(errorDb.taskDefinitions).get();
+      await errorDb.close();
+    });
+
+    test('addTask: TaskSaveException を投げる', () async {
+      await expectLater(
+        () => closedRepo.addTask(
+          taskType: TaskType.period,
+          name: 'x',
+          icon: '📝',
+          color: TaskColor.none,
+          executedAt: DateTime.now(),
+        ),
+        throwsA(isA<TaskSaveException>()),
+      );
+    });
+
+    test('findTaskById: TaskLoadException を投げる', () async {
+      await expectLater(
+        () => closedRepo.findTaskById(1),
+        throwsA(isA<TaskLoadException>()),
+      );
+    });
+
+    test('recordExecution: TaskSaveException を投げる', () async {
+      await expectLater(
+        () => closedRepo.recordExecution(1, executedAt: DateTime.now()),
+        throwsA(isA<TaskSaveException>()),
+      );
+    });
+
+    test('deleteExecution: TaskDeleteException を投げる', () async {
+      await expectLater(
+        () => closedRepo.deleteExecution(1),
+        throwsA(isA<TaskDeleteException>()),
+      );
+    });
+
+    test('updateTask: TaskUpdateException を投げる', () async {
+      await expectLater(
+        () => closedRepo.updateTask(
+          taskId: 1,
+          taskType: TaskType.period,
+          name: 'x',
+          icon: '📝',
+          color: TaskColor.none,
+        ),
+        throwsA(isA<TaskUpdateException>()),
+      );
+    });
+
+    test('deleteTask: TaskDeleteException を投げる', () async {
+      await expectLater(
+        () => closedRepo.deleteTask(1),
+        throwsA(isA<TaskDeleteException>()),
+      );
+    });
+
+    test('restoreTask: TaskSaveException を投げる', () async {
+      final task = TaskItem.period(
+        id: 1,
+        name: 'x',
+        furigana: '',
+        icon: '📝',
+        color: TaskColor.none,
+        taskHistory: [],
+      );
+      await expectLater(
+        () => closedRepo.restoreTask(task),
+        throwsA(isA<TaskSaveException>()),
+      );
+    });
+  });
+
+  group('allTaskItems ソート順', () {
+    test('scheduledAt が早いタスクが先に来る', () async {
+      // 後の scheduledAt を先に追加して、ソートで前に来ることを確認
+      await repository.addTask(
+        taskType: TaskType.scheduled,
+        name: 'タスクB',
+        icon: '📝',
+        color: TaskColor.none,
+        scheduleValue: 7,
+        scheduleUnit: ScheduleUnit.day,
+        executedAt: DateTime(2025, 1, 15), // scheduledAt = 1/22
+      );
+      await repository.addTask(
+        taskType: TaskType.scheduled,
+        name: 'タスクA',
+        icon: '📝',
+        color: TaskColor.none,
+        scheduleValue: 7,
+        scheduleUnit: ScheduleUnit.day,
+        executedAt: DateTime(2025, 1, 1), // scheduledAt = 1/8
+      );
+
+      final tasks = await repository.allTaskItems().first;
+      expect(tasks[0].name, 'タスクA'); // scheduledAt=1/8 が先
+      expect(tasks[1].name, 'タスクB'); // scheduledAt=1/22 が後
+    });
+
+    test('scheduledAt が null のタスクは末尾に来る', () async {
+      // PeriodTask 履歴1件 → scheduledAt=null
+      await repository.addTask(
+        taskType: TaskType.period,
+        name: '不定期タスク',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      await repository.addTask(
+        taskType: TaskType.scheduled,
+        name: '定期タスク',
+        icon: '📝',
+        color: TaskColor.none,
+        scheduleValue: 7,
+        scheduleUnit: ScheduleUnit.day,
+        executedAt: DateTime(2025, 1, 1),
+      );
+
+      final tasks = await repository.allTaskItems().first;
+      expect(tasks[0].name, '定期タスク');  // scheduledAt あり
+      expect(tasks[1].name, '不定期タスク'); // scheduledAt=null → 末尾
+    });
+
+    test('scheduledAt が null のタスクが複数あるとき全て末尾に集まる', () async {
+      await repository.addTask(
+        taskType: TaskType.scheduled,
+        name: '定期タスク',
+        icon: '📝',
+        color: TaskColor.none,
+        scheduleValue: 7,
+        scheduleUnit: ScheduleUnit.day,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      await repository.addTask(
+        taskType: TaskType.period,
+        name: '不定期A',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      await repository.addTask(
+        taskType: TaskType.period,
+        name: '不定期B',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+
+      final tasks = await repository.allTaskItems().first;
+      expect(tasks[0].name, '定期タスク');
+      expect(
+        tasks.skip(1).map((t) => t.name).toSet(),
+        {'不定期A', '不定期B'},
+      );
+    });
+  });
+
   group('addTask', () {
     test('period タスクが追加され PeriodTaskItem として取得できる', () async {
       await repository.addTask(
@@ -298,6 +487,189 @@ void main() {
         );
       },
     );
+  });
+
+  group('watchTaskById', () {
+    test('存在するタスクを emit する', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '✂️',
+        color: TaskColor.none,
+        executedAt: DateTime.now(),
+      );
+
+      final task = await repository.watchTaskById(id).first;
+      expect(task, isNotNull);
+      expect(task!.id, id);
+      expect(task.name, '散髪');
+    });
+
+    test('存在しない ID のとき null を emit する', () async {
+      final result = await repository.watchTaskById(999).first;
+      expect(result, isNull);
+    });
+
+    test('タスクが更新されたとき新しい値を emit する', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime.now(),
+      );
+
+      final future = expectLater(
+        repository.watchTaskById(id),
+        emitsInOrder([
+          isA<TaskItem>().having((t) => t.name, 'name', '散髪'),
+          isA<TaskItem>().having((t) => t.name, 'name', '散髪(更新)'),
+        ]),
+      );
+
+      await repository.updateTask(
+        taskId: id,
+        taskType: TaskType.period,
+        name: '散髪(更新)',
+        icon: '📝',
+        color: TaskColor.none,
+      );
+
+      await future;
+    });
+
+    test('タスクが削除されたとき null を emit する', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime.now(),
+      );
+
+      final future = expectLater(
+        repository.watchTaskById(id),
+        emitsInOrder([isA<TaskItem>(), isNull]),
+      );
+
+      await repository.deleteTask(id);
+
+      await future;
+    });
+  });
+
+  group('deleteExecution', () {
+    test('指定した実行履歴が削除される', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      final history = await repository.recordExecution(
+        id,
+        executedAt: DateTime(2025, 6, 1),
+      );
+
+      await repository.deleteExecution(history.id);
+
+      final task = await repository.findTaskById(id);
+      expect(task.taskHistory, hasLength(1));
+      expect(task.taskHistory.first.executedAt, DateTime(2025, 1, 1));
+    });
+
+    test('他の履歴には影響しない', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      await repository.recordExecution(id, executedAt: DateTime(2025, 3, 1));
+      final target = await repository.recordExecution(
+        id,
+        executedAt: DateTime(2025, 6, 1),
+      );
+      await repository.recordExecution(id, executedAt: DateTime(2025, 9, 1));
+
+      await repository.deleteExecution(target.id);
+
+      final task = await repository.findTaskById(id);
+      expect(task.taskHistory, hasLength(3));
+      expect(
+        task.taskHistory.map((h) => h.executedAt),
+        isNot(contains(DateTime(2025, 6, 1))),
+      );
+    });
+  });
+
+  group('restoreTask', () {
+    test('削除した period タスクを履歴ごと復元できる', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '✂️',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      await repository.recordExecution(id, executedAt: DateTime(2025, 6, 1));
+      final deleted = await repository.findTaskById(id);
+      await repository.deleteTask(id);
+
+      await repository.restoreTask(deleted);
+
+      final tasks = await repository.allTaskItems().first;
+      expect(tasks, hasLength(1));
+      final restored = tasks.first;
+      expect(restored, isA<PeriodTaskItem>());
+      expect(restored.name, '散髪');
+      expect(restored.icon, '✂️');
+      expect(restored.taskHistory, hasLength(2));
+    });
+
+    test('削除した scheduled タスクを scheduleConfig ごと復元できる', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.scheduled,
+        name: '虫避け交換',
+        icon: '📝',
+        color: TaskColor.orange,
+        scheduleValue: 2,
+        scheduleUnit: ScheduleUnit.week,
+        executedAt: DateTime.now(),
+      );
+      final deleted = await repository.findTaskById(id) as ScheduledTaskItem;
+      await repository.deleteTask(id);
+
+      await repository.restoreTask(deleted);
+
+      final tasks = await repository.allTaskItems().first;
+      expect(tasks, hasLength(1));
+      final restored = tasks.first as ScheduledTaskItem;
+      expect(restored.scheduleValue, 2);
+      expect(restored.scheduleUnit, ScheduleUnit.week);
+    });
+
+    test('復元後に watchTaskById で取得できる', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime.now(),
+      );
+      final deleted = await repository.findTaskById(id);
+      await repository.deleteTask(id);
+
+      await repository.restoreTask(deleted);
+
+      final tasks = await repository.allTaskItems().first;
+      final restoredId = tasks.first.id;
+      final watched = await repository.watchTaskById(restoredId).first;
+      expect(watched, isNotNull);
+      expect(watched!.name, '散髪');
+    });
   });
 
   group('deleteTask', () {
