@@ -1,8 +1,8 @@
 import 'package:dawnbreaker/data/model/task_item.dart';
-import 'package:dawnbreaker/data/model/task_progress.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
 import 'package:dawnbreaker/ui/common/error_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
+import 'package:dawnbreaker/ui/home/viewmodel/home_task_count.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_task_list.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -23,29 +23,9 @@ abstract class HomeUiState with _$HomeUiState implements BaseUiState {
     @Default(HomeFilter.all) HomeFilter selectedFilter,
   }) = _HomeUiState;
 
-  int get allCount => tasks.length;
-
   bool get hasTasks => tasks.isNotEmpty;
 
-  int get overdueCount => tasks.where((t) {
-    final p = t.computeProgress();
-    return p is DueDate && p.isOverdue;
-  }).length;
-
-  int get todayCount => tasks.where((t) {
-    final p = t.computeProgress();
-    return p is DueDate && !p.isOverdue && p.isToday;
-  }).length;
-
-  int get weekCount => tasks.where((t) {
-    final p = t.computeProgress();
-    return p is DueDate && !p.isOverdue && p.isCurrentWeek;
-  }).length;
-
-  int get irregularCount => tasks.where((t) {
-    final p = t.computeProgress();
-    return p is NoDueDate;
-  }).length;
+  HomeTaskCount get taskCount => HomeTaskCount.from(tasks: tasks);
 
   HomeTaskList get taskList => HomeTaskList.from(
     tasks: tasks,

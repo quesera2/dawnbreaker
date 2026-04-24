@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
+import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -95,6 +97,49 @@ void main() {
       });
     });
 
+    group('updateFilter', () {
+      setUp(() async {
+        await _waitUntilLoaded(container);
+      });
+
+      test('selectedFilter が変わる', () {
+        container
+            .read(homeViewModelProvider.notifier)
+            .updateFilter(HomeFilter.overdue);
+        expect(
+          container.read(homeViewModelProvider).selectedFilter,
+          HomeFilter.overdue,
+        );
+      });
+
+      test('同じフィルタを渡してもステートが変わらない', () {
+        final before = container.read(homeViewModelProvider);
+        container
+            .read(homeViewModelProvider.notifier)
+            .updateFilter(HomeFilter.all);
+        expect(identical(container.read(homeViewModelProvider), before), true);
+      });
+
+      test('overdue フィルタ: DueDate でないタスクは除外される', () {
+        // _testTasks は PeriodTask 履歴1件 → NoDueDate なので overdue では空
+        container
+            .read(homeViewModelProvider.notifier)
+            .updateFilter(HomeFilter.overdue);
+        final taskList = container.read(homeViewModelProvider).taskList;
+        expect(taskList.overdueTasks, isEmpty);
+        expect(taskList.upcomingTasks, isEmpty);
+      });
+
+      test('irregular フィルタ: NoDueDate タスクが upcomingTasks に返る', () {
+        // _testTasks はいずれも NoDueDate
+        container
+            .read(homeViewModelProvider.notifier)
+            .updateFilter(HomeFilter.irregular);
+        final taskList = container.read(homeViewModelProvider).taskList;
+        expect(taskList.upcomingTasks, _testTasks);
+      });
+    });
+
     group('recordCompletion', () {
       setUp(() async {
         await _waitUntilLoaded(container);
@@ -148,6 +193,95 @@ void main() {
             .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
 
         expect(c.read(homeViewModelProvider).errorMessage, isNotNull);
+      });
+
+      test('成功時の handler を呼び出してもエラーが発生しない', () async {
+        await container
+            .read(homeViewModelProvider.notifier)
+            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+
+        final handler =
+            container.read(homeViewModelProvider).snackBarMessage?.handler;
+        expect(handler, isNotNull);
+
+        await handler!();
+
+        expect(container.read(homeViewModelProvider).errorMessage, isNull);
+      });
+    });
+
+    group('taskCount', () {
+      final now = DateTime.now();
+
+      // 超過: 10日前実行, 5日スケジュール → scheduledAt = 5日前
+      // 今日: 7日前実行, 7日スケジュール → scheduledAt = 今日
+      // 今週(今日以外): 4日前実行, 7日スケジュール → scheduledAt = 3日後
+      // 将来: 今日実行, 14日スケジュール → scheduledAt = 14日後
+      // 不定期: period 履歴なし → NoDueDate
+      final countTasks = [
+        TaskItem.scheduled(
+          id: 10, name: '超過', furigana: '', icon: '📝', color: TaskColor.none,
+          scheduleValue: 5, scheduleUnit: ScheduleUnit.day,
+          taskHistory: [TaskHistory(id: 10, executedAt: now.subtract(const Duration(days: 10)))],
+        ),
+        TaskItem.scheduled(
+          id: 11, name: '今日', furigana: '', icon: '📝', color: TaskColor.none,
+          scheduleValue: 7, scheduleUnit: ScheduleUnit.day,
+          taskHistory: [TaskHistory(id: 11, executedAt: now.subtract(const Duration(days: 7)))],
+        ),
+        TaskItem.scheduled(
+          id: 12, name: '今週', furigana: '', icon: '📝', color: TaskColor.none,
+          scheduleValue: 7, scheduleUnit: ScheduleUnit.day,
+          taskHistory: [TaskHistory(id: 12, executedAt: now.subtract(const Duration(days: 4)))],
+        ),
+        TaskItem.scheduled(
+          id: 13, name: '将来', furigana: '', icon: '📝', color: TaskColor.none,
+          scheduleValue: 14, scheduleUnit: ScheduleUnit.day,
+          taskHistory: [TaskHistory(id: 13, executedAt: now)],
+        ),
+        TaskItem.period(
+          id: 14, name: '不定期', furigana: '', icon: '📝',
+          color: TaskColor.none, taskHistory: [],
+        ),
+      ];
+
+      late ProviderContainer countContainer;
+      late FakeTaskRepository countRepo;
+
+      setUp(() async {
+        countRepo = FakeTaskRepository(initialTasks: countTasks);
+        countContainer = ProviderContainer(
+          overrides: [taskRepositoryProvider.overrideWith((_) => countRepo)],
+        );
+        await _waitUntilLoaded(countContainer);
+      });
+
+      tearDown(() {
+        countContainer.dispose();
+        countRepo.dispose();
+      });
+
+      test('all は全タスク数を返す', () {
+        expect(countContainer.read(homeViewModelProvider).taskCount.all, 5);
+      });
+
+      test('overdue は超過タスクのみカウントする', () {
+        expect(countContainer.read(homeViewModelProvider).taskCount.overdue, 1);
+      });
+
+      test('today は今日期限タスクのみカウントする', () {
+        expect(countContainer.read(homeViewModelProvider).taskCount.today, 1);
+      });
+
+      test('week は today を含む今週内タスクをカウントする', () {
+        expect(countContainer.read(homeViewModelProvider).taskCount.week, 2);
+      });
+
+      test('irregular は NoDueDate タスクのみカウントする', () {
+        expect(
+          countContainer.read(homeViewModelProvider).taskCount.irregular,
+          1,
+        );
       });
     });
   });
