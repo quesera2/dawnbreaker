@@ -111,7 +111,7 @@ class _EditorBody extends StatelessWidget {
   }
 
   List<Widget> _basicInfoSection(BuildContext context) {
-    var appColorScheme = context.appColorScheme;
+    final appColorScheme = context.appColorScheme;
     return [
       AppSectionHeader(
         title: Text(context.l10n.editorSectionBasic),

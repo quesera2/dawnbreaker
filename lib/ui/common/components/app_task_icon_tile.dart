@@ -85,11 +85,11 @@ final class TaskIconTileShowCase extends StatelessWidget {
     return Container(
       color: bg,
       padding: const EdgeInsets.all(24),
-      child: Column(
+      child: const Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 16,
-        children: const [
+        children: [
           Row(
             mainAxisSize: MainAxisSize.min,
             spacing: 8,

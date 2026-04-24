@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:dawnbreaker/data/database/tables/task_definitions_table.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:drift/drift.dart';

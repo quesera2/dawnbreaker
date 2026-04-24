@@ -119,7 +119,7 @@ void main() {
     });
 
     test('restoreTask: TaskSaveException を投げる', () async {
-      final task = TaskItem.period(
+      const task = TaskItem.period(
         id: 1,
         name: 'x',
         furigana: '',

@@ -355,7 +355,7 @@ void main() {
 }
 
 // Jan 1, Feb 1 (31 days), Mar 4 (31 days) → averageIntervalDays = 31
-final _taskNoHistory = TaskItem.period(
+const _taskNoHistory = TaskItem.period(
   id: 1,
   name: 'タスク（履歴なし）',
   furigana: 'たすく',

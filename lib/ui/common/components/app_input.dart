@@ -187,8 +187,8 @@ final class InputShowCase extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 16,
             children: [
-              AppTextInput(hintText: 'タスク名を入力'),
-              AppSearchInput(placeholder: 'タスクを検索'),
+              const AppTextInput(hintText: 'タスク名を入力'),
+              const AppSearchInput(placeholder: 'タスクを検索'),
               AppSearchInput(
                 placeholder: '検索中…',
                 showClear: true,

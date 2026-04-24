@@ -239,7 +239,7 @@ void main() {
           scheduleValue: 14, scheduleUnit: ScheduleUnit.day,
           taskHistory: [TaskHistory(id: 13, executedAt: now)],
         ),
-        TaskItem.period(
+        const TaskItem.period(
           id: 14, name: '不定期', furigana: '', icon: '📝',
           color: TaskColor.none, taskHistory: [],
         ),

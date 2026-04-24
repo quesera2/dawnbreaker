@@ -86,7 +86,7 @@ class TaskRepositoryImpl implements TaskRepository {
     return items;
   }
 
-  List<Join> _taskJoins() => [
+  List<Join<HasResultSet, dynamic>> _taskJoins() => [
     leftOuterJoin(
       _db.taskScheduledConfigs,
       _db.taskScheduledConfigs.taskDefinitionId.equalsExp(

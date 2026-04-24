@@ -55,13 +55,13 @@ void main() {
   );
 
   // 予定なし (履歴なし period)
-  final noDateTask = TaskItem.period(
+  const noDateTask = TaskItem.period(
     id: 5, name: '予定なしタスク', furigana: '',
     icon: '📝', color: TaskColor.none, taskHistory: [],
   );
 
   // 不定期タスク (IrregularTaskItem は常に NoDueDate)
-  final irregularTask = TaskItem.irregular(
+  const irregularTask = TaskItem.irregular(
     id: 6, name: '不定期タスク', furigana: '',
     icon: '📝', color: TaskColor.none, taskHistory: [],
   );
