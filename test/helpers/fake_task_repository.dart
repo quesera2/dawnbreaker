@@ -128,6 +128,10 @@ class FakeTaskRepository implements TaskRepository {
     _notify();
   }
 
+  void emitError(Object error) {
+    if (!_controller.isClosed) _controller.addError(error);
+  }
+
   bool containsTask(int taskId) => _tasks.any((t) => t.id == taskId);
 
   TaskItem? taskById(int taskId) =>

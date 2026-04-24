@@ -36,7 +36,7 @@ void main() {
             taskRepositoryProvider.overrideWith((_) => fakeRepository),
           ],
         );
-        sub = container.listen(editorViewModelProvider().notifier, (_, __) {});
+        sub = container.listen(editorViewModelProvider().notifier, (_, _) {});
         viewModel = container.read(editorViewModelProvider().notifier);
       });
 
@@ -147,7 +147,7 @@ void main() {
         final c = ProviderContainer(
           overrides: [taskRepositoryProvider.overrideWith((_) => throwingRepo)],
         );
-        final s = c.listen(editorViewModelProvider().notifier, (_, __) {});
+        final s = c.listen(editorViewModelProvider().notifier, (_, _) {});
         addTearDown(() {
           s.close();
           c.dispose();

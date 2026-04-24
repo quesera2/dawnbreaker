@@ -211,6 +211,7 @@ class _FilterChipRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final taskCount = uiState.taskCount;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.fromLTRB(20, 6, 20, 10),
@@ -220,28 +221,28 @@ class _FilterChipRow extends StatelessWidget {
             label: context.l10n.homeFilterAll,
             isSelected: uiState.selectedFilter == HomeFilter.all,
             onTap: () => onFilterChanged(HomeFilter.all),
-            count: uiState.allCount,
+            count: taskCount.all,
           ),
           const SizedBox(width: 6),
           AppFilterChip(
             label: context.l10n.homeFilterToday,
             isSelected: uiState.selectedFilter == HomeFilter.today,
             onTap: () => onFilterChanged(HomeFilter.today),
-            count: uiState.todayCount,
+            count: taskCount.today,
           ),
           const SizedBox(width: 6),
           AppFilterChip(
             label: context.l10n.homeFilterWeek,
             isSelected: uiState.selectedFilter == HomeFilter.week,
             onTap: () => onFilterChanged(HomeFilter.week),
-            count: uiState.weekCount,
+            count: taskCount.week,
           ),
           const SizedBox(width: 6),
           AppFilterChip(
             label: context.l10n.homeFilterIrregular,
             isSelected: uiState.selectedFilter == HomeFilter.irregular,
             onTap: () => onFilterChanged(HomeFilter.irregular),
-            count: uiState.irregularCount,
+            count: taskCount.irregular,
           ),
         ],
       ),

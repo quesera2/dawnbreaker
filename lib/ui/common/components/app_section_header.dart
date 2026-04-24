@@ -63,22 +63,22 @@ final class AppSectionHeaderShowCase extends StatelessWidget {
     return Container(
       color: c.bg,
       padding: const EdgeInsets.all(24),
-      child: SizedBox(
+      child: const SizedBox(
         width: 320,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           spacing: 16,
           children: [
-            const AppSectionHeader(title: Text('タイトルのみ')),
-            const AppSectionHeader(
+            AppSectionHeader(title: Text('タイトルのみ')),
+            AppSectionHeader(
               title: Text('タイトルのみ長い文章長い文章長い文章長い文章長い文章長い文章長い文章'),
             ),
-            const AppSectionHeader(
+            AppSectionHeader(
               title: Text('タイトルとサブタイトル'),
               subTitle: Text('サブタイトル'),
             ),
-            const AppSectionHeader(
+            AppSectionHeader(
               title: Text('前景色・背景色指定', style: TextStyle(color: Colors.white)),
               backgroundColor: Colors.red,
             ),

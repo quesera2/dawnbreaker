@@ -217,7 +217,7 @@ class _StatsAndChartCard extends StatelessWidget {
         children: [
           IntrinsicHeight(
             child: Padding(
-              padding: EdgeInsetsGeometry.symmetric(vertical: 16),
+              padding: const EdgeInsetsGeometry.symmetric(vertical: 16),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -345,17 +345,17 @@ class _HistoryItem extends StatelessWidget {
     return switch ((isFirst, isLast)) {
       (true, true) => BoxDecoration(
         color: colors.surface,
-        borderRadius: BorderRadius.all(radius),
+        borderRadius: const BorderRadius.all(radius),
         border: Border.all(color: colors.border),
       ),
       (true, false) => BoxDecoration(
         color: colors.surface,
-        borderRadius: BorderRadius.vertical(top: radius),
+        borderRadius: const BorderRadius.vertical(top: radius),
         border: Border(top: side, left: side, right: side),
       ),
       (false, true) => BoxDecoration(
         color: colors.surface,
-        borderRadius: BorderRadius.vertical(bottom: radius),
+        borderRadius: const BorderRadius.vertical(bottom: radius),
         border: Border(bottom: side, left: side, right: side),
       ),
       _ => BoxDecoration(

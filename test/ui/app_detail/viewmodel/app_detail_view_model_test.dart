@@ -4,6 +4,7 @@ import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
+import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_view_model.dart';
 import 'package:dawnbreaker/ui/common/error_message.dart';
@@ -207,6 +208,35 @@ void main() {
       });
     });
 
+    group('watchTaskById でストリームエラーがきたとき', () {
+      setUp(() async {
+        setUpContainer();
+        await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+      });
+
+      test('shouldPop が true になる', () async {
+        fakeRepository.emitError(const TaskLoadException('stream error'));
+        await Future.microtask(() {});
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .shouldPop,
+          true,
+        );
+      });
+
+      test('isLoading が false になる', () async {
+        fakeRepository.emitError(const TaskLoadException('stream error'));
+        await Future.microtask(() {});
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .isLoading,
+          false,
+        );
+      });
+    });
+
     group('タスクの削除 成功時', () {
       setUp(() async {
         setUpContainer();
@@ -264,6 +294,22 @@ void main() {
           isNull,
         );
       });
+
+      test('snackBarMessage の handler を呼び出すとタスクが復元される', () async {
+        await container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+            .deleteTask();
+
+        expect(fakeRepository.containsTask(_taskOneHistory.id), false);
+
+        final handler = container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+            .snackBarMessage
+            ?.handler;
+        await handler!();
+
+        expect(fakeRepository.containsTask(_taskOneHistory.id), true);
+      });
     });
 
     group('タスクの削除 失敗時', () {
@@ -309,7 +355,7 @@ void main() {
 }
 
 // Jan 1, Feb 1 (31 days), Mar 4 (31 days) → averageIntervalDays = 31
-final _taskNoHistory = TaskItem.period(
+const _taskNoHistory = TaskItem.period(
   id: 1,
   name: 'タスク（履歴なし）',
   furigana: 'たすく',

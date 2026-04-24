@@ -218,7 +218,7 @@ class _BarChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BarChartPainter old) =>
-      !ListEquality().equals(intervals, old.intervals) ||
+      !const ListEquality<int>().equals(intervals, old.intervals) ||
       baseColor != old.baseColor ||
       softColor != old.softColor ||
       onColor != old.onColor ||

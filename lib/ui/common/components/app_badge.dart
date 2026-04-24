@@ -56,7 +56,7 @@ class AppBadge extends StatelessWidget {
 }
 
 @Preview()
-Widget previewAllTones() => LabelShowCase();
+Widget previewAllTones() => const LabelShowCase();
 
 final class LabelShowCase extends StatelessWidget {
   const LabelShowCase({super.key});

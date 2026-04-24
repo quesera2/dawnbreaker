@@ -87,7 +87,7 @@ extension _AppIconButtonTone on AppColorScheme {
 }
 
 @Preview()
-Widget previewIconButton() => IconButtonShowCase();
+Widget previewIconButton() => const IconButtonShowCase();
 
 final class IconButtonShowCase extends StatelessWidget {
   const IconButtonShowCase({super.key});

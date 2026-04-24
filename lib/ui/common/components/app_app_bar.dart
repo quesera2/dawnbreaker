@@ -56,7 +56,7 @@ final class AppAppBarShowCase extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AppAppBar(title: 'タイトルのみ'),
+          const AppAppBar(title: 'タイトルのみ'),
           Divider(height: 1, color: c.divider),
           AppAppBar(
             title: 'アクションあり',

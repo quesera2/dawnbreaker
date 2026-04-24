@@ -156,17 +156,17 @@ final class ProgressBarShowCase extends StatelessWidget {
     return Container(
       color: c.bg,
       padding: const EdgeInsets.all(24),
-      child: SizedBox(
+      child: const SizedBox(
         width: 320,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           spacing: 16,
           children: [
-            const AppProgressBar(value: 0.2),
-            const AppProgressBar(value: 0.55),
-            const AppProgressBar(value: 0.85),
-            const AppProgressBar(value: 1.0, isOverdue: true),
+            AppProgressBar(value: 0.2),
+            AppProgressBar(value: 0.55),
+            AppProgressBar(value: 0.85),
+            AppProgressBar(value: 1.0, isOverdue: true),
           ],
         ),
       ),
