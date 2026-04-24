@@ -132,7 +132,6 @@ class _TaskHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           AppTaskIconTile(emoji: task.icon, color: task.color, size: 52),
           const SizedBox(width: 16),
@@ -187,25 +186,17 @@ class _StatsAndChartCard extends StatelessWidget {
 
   final TaskItem task;
 
-  List<int> _computeIntervals() {
-    final h = task.taskHistory;
-    if (h.length < 2) return [];
-    return [
-      for (var i = 1; i < h.length; i++)
-        h[i].executedAt.difference(h[i - 1].executedAt).inDays,
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    final intervals = _computeIntervals();
+    final intervals = task.executionIntervalDays;
 
     final daysSince = task.lastExecutedAt == null
         ? null
         : DateTime.now().difference(task.lastExecutedAt!).inDays;
 
-    final avgInterval = intervals.isEmpty ? null : intervals.average.round();
+    final avgIntervalDouble = intervals.isEmpty ? null : intervals.average;
+    final avgInterval = avgIntervalDouble?.round();
 
     final displayedIntervals = intervals.length > 10
         ? intervals.sublist(intervals.length - 10)
@@ -250,14 +241,11 @@ class _StatsAndChartCard extends StatelessWidget {
           ),
           if (displayedIntervals.isNotEmpty) ...[
             Divider(color: colors.divider, height: 1, thickness: 1),
-            SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
               child: IntervalBarChart(
                 intervals: displayedIntervals,
-                averageInterval: avgInterval != null
-                    ? avgInterval.toDouble()
-                    : 0,
+                averageInterval: avgIntervalDouble ?? 0,
                 taskColor: task.color,
               ),
             ),
@@ -283,7 +271,6 @@ class _StatCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           label,
@@ -418,7 +405,6 @@ class _HistoryItem extends StatelessWidget {
       decoration: _containerDecoration(colors),
       child: Stack(
         children: [
-          // first: dotBottom→bottom、last: top→dotTop、middle: 全高
           if (!isFirst || !isLast)
             Positioned(
               left: _lineLeft,
@@ -439,7 +425,6 @@ class _HistoryItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(
                       width: _dotSize,

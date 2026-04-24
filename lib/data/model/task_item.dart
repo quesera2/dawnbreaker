@@ -45,7 +45,10 @@ sealed class TaskItem with _$TaskItem {
 
   DateTime? get scheduledAt => switch (this) {
     IrregularTaskItem() => null,
-    PeriodTaskItem(:final taskHistory) => _computePeriodNextAt(taskHistory),
+    PeriodTaskItem() => _computePeriodNextAt(
+      executionIntervalDays,
+      taskHistory,
+    ),
     ScheduledTaskItem(
       :final taskHistory,
       :final scheduleValue,
@@ -61,18 +64,6 @@ sealed class TaskItem with _$TaskItem {
     scheduledAt: scheduledAt,
     now: now ?? DateTime.now(),
   );
-
-  static DateTime? _computePeriodNextAt(List<TaskHistory> taskHistory) {
-    if (taskHistory.length < 2) return null;
-    final intervals = [
-      for (var i = 1; i < taskHistory.length; i++)
-        taskHistory[i].executedAt
-            .difference(taskHistory[i - 1].executedAt)
-            .inDays,
-    ];
-    final avgDays = intervals.reduce((a, b) => a + b) / intervals.length;
-    return taskHistory.last.executedAt.add(Duration(days: avgDays.round()));
-  }
 
   TaskType get taskType => switch (this) {
     IrregularTaskItem() => TaskType.irregular,
@@ -91,4 +82,23 @@ sealed class TaskItem with _$TaskItem {
     PeriodTaskItem() => ScheduleUnit.week,
     ScheduledTaskItem(:final scheduleUnit) => scheduleUnit,
   };
+
+  List<int> get executionIntervalDays {
+    if (taskHistory.length < 2) return [];
+    return taskHistory.skip(1).indexed.map((item) {
+      final (index, current) = item;
+      return current.executedAt
+          .difference(taskHistory[index].executedAt)
+          .inDays;
+    }).toList();
+  }
+
+  static DateTime? _computePeriodNextAt(
+      List<int> intervals,
+      List<TaskHistory> taskHistory,
+      ) {
+    if (intervals.isEmpty) return null;
+    final avgDays = intervals.reduce((a, b) => a + b) / intervals.length;
+    return taskHistory.last.executedAt.add(Duration(days: avgDays.round()));
+  }
 }
