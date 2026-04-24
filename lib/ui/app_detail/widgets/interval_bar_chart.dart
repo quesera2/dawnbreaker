@@ -1,5 +1,6 @@
 import 'dart:math' show max, min;
 
+import 'package:collection/collection.dart';
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:flutter/material.dart';
@@ -114,38 +115,35 @@ class _BarChartPainter extends CustomPainter {
     const dashLen = 6.0;
     const gapLen = 4.0;
 
-    const glowSigma = 6.0;
-
     final linePaint = Paint()
       ..color = onColor
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
+    // グロー層: 連続ラインにして strokeWidth を太くすることでブラーが広がる
+    // ダッシュ単位でブラーするとセグメント間が孤立してグロー感が出ない
     final glowPaint = Paint()
       ..color = softColor.withValues(alpha: 0.8)
-      ..strokeWidth = linePaint.strokeWidth
-      ..style = linePaint.style
-      ..strokeCap = linePaint.strokeCap
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, glowSigma);
+      ..strokeWidth = 6.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
 
+    canvas.drawLine(start, end, glowPaint);
+
+    // 点線はグロー層の上にシャープなラインとして描画
     double x = start.dx;
     while (x < end.dx) {
       final segmentEndX = (x + dashLen).clamp(start.dx, end.dx);
-
-      final currentStart = Offset(x, start.dy);
-      final currentEnd = Offset(segmentEndX, start.dy);
-
-      canvas.drawLine(currentStart, currentEnd, glowPaint);
-      canvas.drawLine(currentStart, currentEnd, linePaint);
-
+      canvas.drawLine(Offset(x, start.dy), Offset(segmentEndX, start.dy), linePaint);
       x += dashLen + gapLen;
     }
   }
 
   @override
   bool shouldRepaint(_BarChartPainter old) =>
-      intervals != old.intervals ||
+      !ListEquality().equals(intervals, old.intervals) ||
       baseColor != old.baseColor ||
       softColor != old.softColor ||
       onColor != old.onColor ||
