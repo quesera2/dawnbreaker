@@ -86,9 +86,9 @@ class _BarChartPainter extends CustomPainter {
         ..strokeWidth = 1,
     );
 
-    // バーを描画
+    // バーを描画（intervals は新しい順なので逆から描画して左=古い順にする）
     for (var i = 0; i < count; i++) {
-      final ratio = intervals[i] / maxVal;
+      final ratio = intervals[count - 1 - i] / maxVal;
       final barHeight = ratio * chartHeight;
       if (barHeight <= 0) continue;
 

@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/data/model/task_history_stats.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
@@ -25,8 +26,11 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         .listen(
           (task) {
             // 削除されたときは無視する
-            if (!ref.mounted || task == null) return;
-            state = state.copyWith(isLoading: false, task: task);
+            if (!ref.mounted || task == null) {
+              state = state.clearTaskItem();
+            } else {
+              state = state.updateTaskItem(task);
+            }
           },
           onError: (e) {
             if (!ref.mounted) return;

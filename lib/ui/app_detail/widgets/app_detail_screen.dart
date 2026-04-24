@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
@@ -6,6 +5,7 @@ import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/core/date_util.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
+import 'package:dawnbreaker/data/model/task_history_stats.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_view_model.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
@@ -42,7 +42,8 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
 
     final colors = context.appColorScheme;
     final task = uiState.task;
-    final history = task?.taskHistory.reversed.toList() ?? [];
+    final historyStats = uiState.historyStats;
+    final historyAndInterval = historyStats?.historyAndInterval ?? [];
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
@@ -86,31 +87,35 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
                   )
                 : null,
           ),
-          if (!uiState.isLoading && task != null) ...[
+          if (!uiState.isLoading && task != null && historyStats != null) ...[
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: _StatsAndChartCard(task: task),
+                child: _StatsAndChartCard(
+                  taskColor: task.color,
+                  daysSinceLastExecution: uiState.daysSinceLastExecution,
+                  averageIntervalDays: uiState.averageIntervalDays,
+                  historyStats: historyStats,
+                ),
               ),
             ),
             SliverToBoxAdapter(
-              child: _HistorySectionHeader(count: history.length),
+              child: _HistorySectionHeader(count: historyAndInterval.length),
             ),
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverList.builder(
-                itemCount: history.length,
-                itemBuilder: (context, i) => _HistoryItem(
-                  entry: history[i],
-                  isFirst: i == 0,
-                  isLast: i == history.length - 1,
-                  taskColor: task.color,
-                  intervalDays: i < history.length - 1
-                      ? history[i].executedAt
-                            .difference(history[i + 1].executedAt)
-                            .inDays
-                      : null,
-                ),
+                itemCount: historyAndInterval.length,
+                itemBuilder: (context, i) {
+                  final (entry, intervalDays) = historyAndInterval[i];
+                  return _HistoryItem(
+                    entry: entry,
+                    isFirst: i == 0,
+                    isLast: i == historyAndInterval.length - 1,
+                    taskColor: task.color,
+                    intervalDays: intervalDays,
+                  );
+                },
               ),
             ),
             SliverPadding(padding: EdgeInsets.only(bottom: 20 + bottomPadding)),
@@ -182,25 +187,21 @@ class _TypeBadge extends StatelessWidget {
 }
 
 class _StatsAndChartCard extends StatelessWidget {
-  const _StatsAndChartCard({required this.task});
+  const _StatsAndChartCard({
+    required this.taskColor,
+    required this.daysSinceLastExecution,
+    required this.averageIntervalDays,
+    required this.historyStats,
+  });
 
-  final TaskItem task;
+  final TaskColor taskColor;
+  final int? daysSinceLastExecution;
+  final int? averageIntervalDays;
+  final TaskHistoryStats historyStats;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    final intervals = task.executionIntervalDays;
-
-    final daysSince = task.lastExecutedAt == null
-        ? null
-        : DateTime.now().difference(task.lastExecutedAt!).inDays;
-
-    final avgIntervalDouble = intervals.isEmpty ? null : intervals.average;
-    final avgInterval = avgIntervalDouble?.round();
-
-    final displayedIntervals = intervals.length > 10
-        ? intervals.sublist(intervals.length - 10)
-        : intervals;
 
     return Container(
       decoration: BoxDecoration(
@@ -219,7 +220,7 @@ class _StatsAndChartCard extends StatelessWidget {
                   Expanded(
                     child: _StatCell(
                       label: context.l10n.appDetailStatsDaysSince,
-                      value: daysSince,
+                      value: daysSinceLastExecution,
                       unit: context.l10n.appDetailStatsDay,
                     ),
                   ),
@@ -231,7 +232,7 @@ class _StatsAndChartCard extends StatelessWidget {
                   Expanded(
                     child: _StatCell(
                       label: context.l10n.appDetailStatsAvgInterval,
-                      value: avgInterval,
+                      value: averageIntervalDays,
                       unit: context.l10n.appDetailStatsDay,
                     ),
                   ),
@@ -239,14 +240,18 @@ class _StatsAndChartCard extends StatelessWidget {
               ),
             ),
           ),
-          if (displayedIntervals.isNotEmpty) ...[
+          if (historyStats.averageIntervalDays != null) ...[
             Divider(color: colors.divider, height: 1, thickness: 1),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
               child: IntervalBarChart(
-                intervals: displayedIntervals,
-                averageInterval: avgIntervalDouble ?? 0,
-                taskColor: task.color,
+                intervals: historyStats.historyAndInterval
+                    .take(10)
+                    .map((e) => e.$2)
+                    .nonNulls
+                    .toList(),
+                averageInterval: historyStats.averageIntervalDays ?? 0,
+                taskColor: taskColor,
               ),
             ),
           ],
