@@ -1,3 +1,5 @@
+import 'package:dawnbreaker/core/date_util.dart';
+
 sealed class TaskProgress {
   const TaskProgress();
 
@@ -8,10 +10,15 @@ sealed class TaskProgress {
   }) {
     if (lastExecutedAt == null || scheduledAt == null) return const NoDueDate();
 
-    final totalDays = scheduledAt.difference(lastExecutedAt).inDays;
-    final elapsedDays = now.difference(lastExecutedAt).inDays;
-    final daysRemaining = scheduledAt.difference(now).inDays;
-    final isOverdue = now.isAfter(scheduledAt);
+    final lastExecutedDate = lastExecutedAt.truncateTime;
+    final scheduledDate = scheduledAt.truncateTime;
+    final nowDate = now.truncateTime;
+
+    final totalDays = scheduledDate.difference(lastExecutedDate).inDays;
+    final elapsedDays = nowDate.difference(lastExecutedDate).inDays;
+
+    final daysRemaining = scheduledDate.difference(nowDate).inDays;
+    final isOverdue = daysRemaining < 0;
     final progress = totalDays > 0
         ? (elapsedDays / totalDays).clamp(0.0, 1.0)
         : 0.0;

@@ -9,3 +9,7 @@ class DateUtil {
     return DateFormat.yMMMEd(locale).format(date);
   }
 }
+
+extension DateTimeUtil on DateTime {
+  DateTime get truncateTime => DateTime(year, month, day);
+}

@@ -2,6 +2,7 @@ import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
+import 'package:dawnbreaker/core/date_util.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
@@ -23,7 +24,7 @@ class TaskCompleteSheet extends StatefulWidget {
 }
 
 class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
-  DateTime _selectedDate = DateTime.now();
+  DateTime _selectedDate = DateTime.now().truncateTime;
 
   @override
   Widget build(BuildContext context) {
