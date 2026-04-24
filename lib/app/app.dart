@@ -63,10 +63,10 @@ class App extends StatelessWidget {
         snackBarTheme: SnackBarThemeData(
           backgroundColor: colorScheme.text,
           contentTextStyle: AppTextStyle.body.copyWith(
-            color: colorScheme.surface,
+            color: colorScheme.textInverse,
           ),
           actionTextColor: colorScheme.primaryInverse,
-        )
+        ),
       ),
       localizationsDelegates: const [
         AppLocalizations.delegate,

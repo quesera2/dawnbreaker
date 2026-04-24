@@ -6,6 +6,7 @@ import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 
 class TaskCompleteSheet extends StatefulWidget {
   const TaskCompleteSheet({
@@ -86,7 +87,10 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
         initialDateTime: _selectedDate,
         minimumDate: DateTime(2000),
         maximumDate: DateTime.now(),
-        onDateTimeChanged: (date) => setState(() => _selectedDate = date),
+        onDateTimeChanged: (date) {
+          HapticFeedback.selectionClick();
+          setState(() => _selectedDate = date);
+        },
       ),
     );
   }
@@ -95,18 +99,21 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
     return Row(
       children: [
         Expanded(
+          flex: 2,
           child: AppButton(
             label: context.l10n.cancel,
             variant: AppButtonVariant.secondary,
+            size: AppButtonSize.large,
             fullWidth: true,
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
-          flex: 2,
+          flex: 3,
           child: AppButton(
             label: context.l10n.homeCompleteRecord,
+            size: AppButtonSize.large,
             fullWidth: true,
             onPressed: () {
               Navigator.of(context).pop();
