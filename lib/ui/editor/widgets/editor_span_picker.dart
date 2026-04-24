@@ -5,6 +5,7 @@ import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 typedef SpanValue = ({int value, ScheduleUnit unit});
 
@@ -148,18 +149,21 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
     return Row(
       children: [
         Expanded(
+          flex: 2,
           child: AppButton(
             label: context.l10n.cancel,
             variant: AppButtonVariant.secondary,
+            size: AppButtonSize.large,
             fullWidth: true,
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
-          flex: 2,
+          flex: 3,
           child: AppButton(
             label: context.l10n.ok,
+            size: AppButtonSize.large,
             fullWidth: true,
             onPressed: () =>
                 Navigator.of(context).pop((value: _value, unit: _unit)),
@@ -220,8 +224,10 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
                           controller: _valueController,
                           itemExtent: _itemExtent,
                           physics: const FixedExtentScrollPhysics(),
-                          onSelectedItemChanged: (i) =>
-                              setState(() => _value = i + 1),
+                          onSelectedItemChanged: (i) {
+                            HapticFeedback.selectionClick();
+                            setState(() => _value = i + 1);
+                          },
                           childDelegate: ListWheelChildBuilderDelegate(
                             childCount: _maxValue,
                             builder: (context, i) {
@@ -242,8 +248,10 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
                           controller: _unitController,
                           itemExtent: _itemExtent,
                           physics: const FixedExtentScrollPhysics(),
-                          onSelectedItemChanged: (i) =>
-                              setState(() => _unit = ScheduleUnit.values[i]),
+                          onSelectedItemChanged: (i) {
+                            HapticFeedback.selectionClick();
+                            setState(() => _unit = ScheduleUnit.values[i]);
+                          },
                           children: ScheduleUnit.values.map((u) {
                             return Center(
                               child: Text(
