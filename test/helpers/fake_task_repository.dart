@@ -29,8 +29,11 @@ class FakeTaskRepository implements TaskRepository {
 
   @override
   Stream<TaskItem?> watchTaskById(int taskId) {
-    final task = _tasks.where((t) => t.id == taskId).firstOrNull;
-    return Stream.value(task);
+    Future.microtask(() {
+      if (!_controller.isClosed) _controller.add(List.of(_tasks));
+    });
+    return _controller.stream
+        .map((tasks) => tasks.where((t) => t.id == taskId).firstOrNull);
   }
 
   @override
