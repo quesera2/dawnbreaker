@@ -24,8 +24,8 @@ class AppColorsLight {
   static const textSubtle = Color(0x6B1B1A17);
   static const textInverse = Color(0xFFFBFAF6);
 
-  static const primary = Color(0xFF4B55A0);
-  static const primarySoft = Color(0xFFE5EAFF);
+  static const primary = Color(0xFF3C4253);
+  static const primarySoft = Color(0xFFE8EBF2);
   static const primaryOn = Color(0xFFFFFFFF);
 
   static const danger = Color(0xFFC82F33);
@@ -61,8 +61,8 @@ class AppColorsDark {
   static const textSubtle = Color(0x66F2EFE8);
   static const textInverse = Color(0xFF1B1A17);
 
-  static const primary = Color(0xFF8D9DF5);
-  static const primarySoft = Color(0xFF282E5B);
+  static const primary = Color(0xFF7D859F);
+  static const primarySoft = Color(0xFF2F333D);
   static const primaryOn = Color(0xFF12110F);
 
   static const danger = Color(0xFFFF645F);
@@ -148,6 +148,7 @@ class AppColorScheme {
     required this.textSubtle,
     required this.textInverse,
     required this.primary,
+    required this.primaryInverse,
     required this.primarySoft,
     required this.primaryOn,
     required this.danger,
@@ -175,6 +176,7 @@ class AppColorScheme {
   final Color textSubtle;
   final Color textInverse;
   final Color primary;
+  final Color primaryInverse;
   final Color primarySoft;
   final Color primaryOn;
   final Color danger;
@@ -202,6 +204,7 @@ class AppColorScheme {
     textSubtle: AppColorsLight.textSubtle,
     textInverse: AppColorsLight.textInverse,
     primary: AppColorsLight.primary,
+    primaryInverse: AppColorsDark.primary,
     primarySoft: AppColorsLight.primarySoft,
     primaryOn: AppColorsLight.primaryOn,
     danger: AppColorsLight.danger,
@@ -230,6 +233,7 @@ class AppColorScheme {
     textSubtle: AppColorsDark.textSubtle,
     textInverse: AppColorsDark.textInverse,
     primary: AppColorsDark.primary,
+    primaryInverse: AppColorsLight.primary,
     primarySoft: AppColorsDark.primarySoft,
     primaryOn: AppColorsDark.primaryOn,
     danger: AppColorsDark.danger,
