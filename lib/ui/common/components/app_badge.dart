@@ -49,11 +49,7 @@ class AppBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: AppTextStyle.overline.copyWith(
-          color: fg,
-          letterSpacing: 0.3,
-          height: 1.4,
-        ),
+        style: AppTextStyle.overline.copyWith(color: fg),
       ),
     );
   }
