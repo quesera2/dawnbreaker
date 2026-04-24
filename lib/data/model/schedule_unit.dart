@@ -1,3 +1,6 @@
+import 'package:dawnbreaker/core/context_extension.dart';
+import 'package:flutter/widgets.dart';
+
 enum ScheduleUnit {
   day,
   week,
@@ -15,5 +18,11 @@ enum ScheduleUnit {
       base.minute,
       base.second,
     ),
+  };
+
+  String label(BuildContext context) => switch (this) {
+    ScheduleUnit.day => context.l10n.editorSpanDay,
+    ScheduleUnit.week => context.l10n.editorSpanWeek,
+    ScheduleUnit.month => context.l10n.editorSpanMonth,
   };
 }

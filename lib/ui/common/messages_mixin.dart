@@ -70,12 +70,15 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
       ctx.l10n.editorSaveNewSuccess(taskName),
     TaskUpdateSuccessSnackMessage(:final taskName) =>
       ctx.l10n.editorSaveEditSuccess(taskName),
+    TaskDeleteSuccessSnackMessage(:final taskName) =>
+      ctx.l10n.appDetailDeleteSuccess(taskName),
   };
 
   String _snackActionLabel(BuildContext ctx, SnackBarMessage m) => switch (m) {
     TaskCompleteSuccessSnackMessage() => ctx.l10n.undo,
     TaskCreateSuccessSnackMessage() => ctx.l10n.undo,
     TaskUpdateSuccessSnackMessage() => ctx.l10n.undo,
+    TaskDeleteSuccessSnackMessage() => ctx.l10n.undo,
   };
 
   String _errorText(BuildContext ctx, ErrorMessage e) => switch (e) {

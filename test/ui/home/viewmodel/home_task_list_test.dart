@@ -68,30 +68,6 @@ void main() {
 
   final allTasks = [overdueTask, todayTask, weekTask, futureTask, noDateTask, irregularTask];
 
-  group('HomeTaskList カウント', () {
-    late HomeTaskList taskList;
-
-    setUp(() {
-      taskList = HomeTaskList.from(
-        tasks: allTasks,
-        searchQuery: '',
-        filter: HomeFilter.all,
-        now: now,
-      );
-    });
-
-    test('hasTasks はタスクがある場合 true', () {
-      expect(taskList.hasTasks, true);
-    });
-
-    test('hasTasks はタスクが空の場合 false', () {
-      final empty = HomeTaskList.from(
-        tasks: [], searchQuery: '', filter: HomeFilter.all, now: now,
-      );
-      expect(empty.hasTasks, false);
-    });
-  });
-
   group('HomeTaskList overdueTasks / upcomingTasks', () {
     test('all フィルタ: overdueTasks に超過タスク、upcomingTasks にそれ以外', () {
       final tl = HomeTaskList.from(

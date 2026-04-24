@@ -57,6 +57,4 @@ class HomeTaskList {
 
   final List<TaskItem> overdueTasks;
   final List<TaskItem> upcomingTasks;
-
-  bool get hasTasks => overdueTasks.isNotEmpty || upcomingTasks.isNotEmpty;
 }

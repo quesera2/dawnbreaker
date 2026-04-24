@@ -91,5 +91,33 @@
   "editorIconDialogTitle": "Select icon",
   "editorColorNone": "None",
   "editorColorNote": "Use colors to group your tasks",
-  "editorNameHint": "Enter task name"
+  "editorNameHint": "Enter task name",
+  "appDetailTitle": "History",
+  "appDetailEdit": "Edit",
+  "appDetailDeleteSuccess": "Deleted \"{name}\"",
+  "@appDetailDeleteSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "appDetailStatsDaysSince": "Days since",
+  "appDetailStatsAvgInterval": "Avg interval",
+  "appDetailStatsDay": "d",
+  "appDetailHistorySection": "History",
+  "appDetailDaysInterval": "{days}d from prev",
+  "@appDetailDaysInterval": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "appDetailTypeBadgeIrregular": "Irregular",
+  "appDetailTypeBadgePeriod": "Auto interval",
+  "appDetailTypeBadgeScheduled": "Every {value} {unit}",
+  "@appDetailTypeBadgeScheduled": {
+    "placeholders": {
+      "value": { "type": "int" },
+      "unit": { "type": "String" }
+    }
+  },
+  "appDetailCommentPlaceholder": "Comment"
 }

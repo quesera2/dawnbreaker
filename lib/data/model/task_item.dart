@@ -2,6 +2,7 @@ import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_progress.dart';
+import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'task_item.freezed.dart';
@@ -44,7 +45,10 @@ sealed class TaskItem with _$TaskItem {
 
   DateTime? get scheduledAt => switch (this) {
     IrregularTaskItem() => null,
-    PeriodTaskItem(:final taskHistory) => _computePeriodNextAt(taskHistory),
+    PeriodTaskItem() => _computePeriodNextAt(
+      executionIntervalDays,
+      taskHistory,
+    ),
     ScheduledTaskItem(
       :final taskHistory,
       :final scheduleValue,
@@ -61,14 +65,39 @@ sealed class TaskItem with _$TaskItem {
     now: now ?? DateTime.now(),
   );
 
-  static DateTime? _computePeriodNextAt(List<TaskHistory> taskHistory) {
-    if (taskHistory.length < 2) return null;
-    final intervals = [
-      for (var i = 1; i < taskHistory.length; i++)
-        taskHistory[i].executedAt
-            .difference(taskHistory[i - 1].executedAt)
-            .inDays,
-    ];
+  TaskType get taskType => switch (this) {
+    IrregularTaskItem() => TaskType.irregular,
+    PeriodTaskItem() => TaskType.period,
+    ScheduledTaskItem() => TaskType.scheduled,
+  };
+
+  int get scheduleValueOrDefault => switch (this) {
+    IrregularTaskItem() => 1,
+    PeriodTaskItem() => 1,
+    ScheduledTaskItem(:final scheduleValue) => scheduleValue,
+  };
+
+  ScheduleUnit get scheduleUnitOrDefault => switch (this) {
+    IrregularTaskItem() => ScheduleUnit.week,
+    PeriodTaskItem() => ScheduleUnit.week,
+    ScheduledTaskItem(:final scheduleUnit) => scheduleUnit,
+  };
+
+  List<int> get executionIntervalDays {
+    if (taskHistory.length < 2) return [];
+    return taskHistory.skip(1).indexed.map((item) {
+      final (index, current) = item;
+      return current.executedAt
+          .difference(taskHistory[index].executedAt)
+          .inDays;
+    }).toList();
+  }
+
+  static DateTime? _computePeriodNextAt(
+      List<int> intervals,
+      List<TaskHistory> taskHistory,
+      ) {
+    if (intervals.isEmpty) return null;
     final avgDays = intervals.reduce((a, b) => a + b) / intervals.length;
     return taskHistory.last.executedAt.add(Duration(days: avgDays.round()));
   }

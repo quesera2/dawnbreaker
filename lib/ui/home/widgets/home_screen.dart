@@ -82,7 +82,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               onFilterChanged: viewModel.updateFilter,
             ),
           ),
-          ..._buildContentSlivers(context, taskList),
+          ..._buildContentSlivers(context, uiState.hasTasks, taskList),
           SliverPadding(
             padding: EdgeInsets.only(
               bottom: 8 + MediaQuery.paddingOf(context).bottom,
@@ -109,6 +109,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   List<Widget> _buildContentSlivers(
     BuildContext context,
+    bool hasTasks,
     HomeTaskList taskList,
   ) {
     final overdue = taskList.overdueTasks;
@@ -120,7 +121,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         SliverFillRemaining(
           child: Center(
             child: Text(
-              taskList.hasTasks
+              hasTasks
                   ? context.l10n.homeNoTasksFound
                   : context.l10n.homeNoTasksYet,
               style: TextStyle(color: colors.textMuted),
@@ -147,7 +148,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             _TaskSliver(
               tasks: overdue,
-              onTap: (task) => context.push('/editor', extra: task.id),
+              onTap: (task) => context.push('/app-detail', extra: task.id),
               onComplete: (task) => _showCompleteSheet(context, task),
             ),
           ],
@@ -168,7 +169,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             _TaskSliver(
               tasks: upcoming,
-              onTap: (task) => context.push('/editor', extra: task.id),
+              onTap: (task) => context.push('/app-detail', extra: task.id),
               onComplete: (task) => _showCompleteSheet(context, task),
             ),
           ],

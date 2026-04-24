@@ -463,6 +463,78 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'タスク名を入力'**
   String get editorNameHint;
+
+  /// No description provided for @appDetailTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'実行履歴'**
+  String get appDetailTitle;
+
+  /// No description provided for @appDetailEdit.
+  ///
+  /// In ja, this message translates to:
+  /// **'編集'**
+  String get appDetailEdit;
+
+  /// No description provided for @appDetailDeleteSuccess.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を削除しました'**
+  String appDetailDeleteSuccess(String name);
+
+  /// No description provided for @appDetailStatsDaysSince.
+  ///
+  /// In ja, this message translates to:
+  /// **'前回から'**
+  String get appDetailStatsDaysSince;
+
+  /// No description provided for @appDetailStatsAvgInterval.
+  ///
+  /// In ja, this message translates to:
+  /// **'平均間隔'**
+  String get appDetailStatsAvgInterval;
+
+  /// No description provided for @appDetailStatsDay.
+  ///
+  /// In ja, this message translates to:
+  /// **'日'**
+  String get appDetailStatsDay;
+
+  /// No description provided for @appDetailHistorySection.
+  ///
+  /// In ja, this message translates to:
+  /// **'履歴'**
+  String get appDetailHistorySection;
+
+  /// No description provided for @appDetailDaysInterval.
+  ///
+  /// In ja, this message translates to:
+  /// **'前回から{days}日'**
+  String appDetailDaysInterval(int days);
+
+  /// No description provided for @appDetailTypeBadgeIrregular.
+  ///
+  /// In ja, this message translates to:
+  /// **'不定期'**
+  String get appDetailTypeBadgeIrregular;
+
+  /// No description provided for @appDetailTypeBadgePeriod.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動周期'**
+  String get appDetailTypeBadgePeriod;
+
+  /// No description provided for @appDetailTypeBadgeScheduled.
+  ///
+  /// In ja, this message translates to:
+  /// **'定期 {value}{unit}'**
+  String appDetailTypeBadgeScheduled(int value, String unit);
+
+  /// No description provided for @appDetailCommentPlaceholder.
+  ///
+  /// In ja, this message translates to:
+  /// **'コメント'**
+  String get appDetailCommentPlaceholder;
 }
 
 class _AppLocalizationsDelegate

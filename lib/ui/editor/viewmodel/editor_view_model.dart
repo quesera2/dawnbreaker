@@ -37,9 +37,9 @@ class EditorViewModel extends _$EditorViewModel {
         name: task.name,
         color: task.color,
         taskHistory: task.taskHistory,
-        type: task._taskType,
-        scheduleValue: task._scheduleValueOrDefault,
-        scheduleUnit: task._scheduleUnitOrDefault,
+        type: task.taskType,
+        scheduleValue: task.scheduleValueOrDefault,
+        scheduleUnit: task.scheduleUnitOrDefault,
       );
     } on TaskRepositoryException {
       if (!ref.mounted) return;
@@ -129,32 +129,12 @@ class EditorViewModel extends _$EditorViewModel {
   Future<void> _revertTask(TaskItem original) async {
     await _repository.updateTask(
       taskId: original.id,
-      taskType: original._taskType,
+      taskType: original.taskType,
       name: original.name,
       icon: original.icon,
       color: original.color,
-      scheduleValue: original._scheduleValueOrDefault,
-      scheduleUnit: original._scheduleUnitOrDefault,
+      scheduleValue: original.scheduleValueOrDefault,
+      scheduleUnit: original.scheduleUnitOrDefault,
     );
   }
-}
-
-extension _TaskItemEditorExtension on TaskItem {
-  TaskType get _taskType => switch (this) {
-    IrregularTaskItem() => TaskType.irregular,
-    PeriodTaskItem() => TaskType.period,
-    ScheduledTaskItem() => TaskType.scheduled,
-  };
-
-  int get _scheduleValueOrDefault => switch (this) {
-    IrregularTaskItem() => 1,
-    PeriodTaskItem() => 1,
-    ScheduledTaskItem(:final scheduleValue) => scheduleValue,
-  };
-
-  ScheduleUnit get _scheduleUnitOrDefault => switch (this) {
-    IrregularTaskItem() => ScheduleUnit.week,
-    PeriodTaskItem() => ScheduleUnit.week,
-    ScheduledTaskItem(:final scheduleUnit) => scheduleUnit,
-  };
 }

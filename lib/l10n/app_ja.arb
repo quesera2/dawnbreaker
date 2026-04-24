@@ -91,5 +91,33 @@
   "editorIconDialogTitle": "アイコンを選択",
   "editorColorNone": "なし",
   "editorColorNote": "色でタスクをグループ分けできます",
-  "editorNameHint": "タスク名を入力"
+  "editorNameHint": "タスク名を入力",
+  "appDetailTitle": "実行履歴",
+  "appDetailEdit": "編集",
+  "appDetailDeleteSuccess": "「{name}」を削除しました",
+  "@appDetailDeleteSuccess": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "appDetailStatsDaysSince": "前回から",
+  "appDetailStatsAvgInterval": "平均間隔",
+  "appDetailStatsDay": "日",
+  "appDetailHistorySection": "履歴",
+  "appDetailDaysInterval": "前回から{days}日",
+  "@appDetailDaysInterval": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "appDetailTypeBadgeIrregular": "不定期",
+  "appDetailTypeBadgePeriod": "自動周期",
+  "appDetailTypeBadgeScheduled": "定期 {value}{unit}",
+  "@appDetailTypeBadgeScheduled": {
+    "placeholders": {
+      "value": { "type": "int" },
+      "unit": { "type": "String" }
+    }
+  },
+  "appDetailCommentPlaceholder": "コメント"
 }

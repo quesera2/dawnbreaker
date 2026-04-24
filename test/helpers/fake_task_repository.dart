@@ -28,6 +28,12 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
+  Stream<TaskItem?> watchTaskById(int taskId) {
+    final task = _tasks.where((t) => t.id == taskId).firstOrNull;
+    return Stream.value(task);
+  }
+
+  @override
   Future<TaskItem> findTaskById(int taskId) async {
     if (shouldThrow) throw const TaskLoadException('テストエラー');
     final task = _tasks.where((t) => t.id == taskId).firstOrNull;
@@ -109,6 +115,13 @@ class FakeTaskRepository implements TaskRepository {
   Future<void> deleteTask(int taskId) async {
     if (shouldThrow) throw const TaskDeleteException('テストエラー');
     _tasks.removeWhere((t) => t.id == taskId);
+    _notify();
+  }
+
+  @override
+  Future<void> restoreTask(TaskItem taskItem) async {
+    if (shouldThrow) throw const TaskSaveException('テストエラー');
+    _tasks.add(taskItem);
     _notify();
   }
 
