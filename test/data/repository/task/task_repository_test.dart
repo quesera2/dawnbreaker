@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/data/database/app_database.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
@@ -88,6 +89,13 @@ void main() {
       await expectLater(
         () => closedRepo.recordExecution(1, executedAt: DateTime.now()),
         throwsA(isA<TaskSaveException>()),
+      );
+    });
+
+    test('updateExecution: TaskUpdateException を投げる', () async {
+      await expectLater(
+        () => closedRepo.updateExecution(1, executedAt: DateTime.now()),
+        throwsA(isA<TaskUpdateException>()),
       );
     });
 
@@ -363,6 +371,150 @@ void main() {
 
       final tasks = await repository.allTaskItems().first;
       expect(tasks.first.scheduledAt, isNotNull);
+    });
+
+    test('コメントなしで記録すると戻り値の comment は null になる', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      final history = await repository.recordExecution(
+        id,
+        executedAt: DateTime(2025, 6, 1),
+      );
+
+      expect(history.comment, isNull);
+    });
+
+    test('コメントなしで記録した履歴を取得すると comment は null になる', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      final history = await repository.recordExecution(
+        id,
+        executedAt: DateTime(2025, 6, 1),
+      );
+
+      final task = await repository.findTaskById(id);
+      final recorded = task.taskHistory.firstWhere((h) => h.id == history.id);
+      expect(recorded.comment, isNull);
+    });
+
+    test('コメントありで記録すると戻り値の comment が保存される', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      final history = await repository.recordExecution(
+        id,
+        executedAt: DateTime(2025, 6, 1),
+        comment: '良い感じ',
+      );
+
+      expect(history.comment, '良い感じ');
+    });
+
+    test('コメントありで記録した履歴を取得すると comment が保持されている', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      final history = await repository.recordExecution(
+        id,
+        executedAt: DateTime(2025, 6, 1),
+        comment: '良い感じ',
+      );
+
+      final task = await repository.findTaskById(id);
+      final recorded = task.taskHistory.firstWhere((h) => h.id == history.id);
+      expect(recorded.comment, '良い感じ');
+    });
+  });
+
+  group('updateExecution', () {
+    Future<({int taskId, TaskHistory history})> _setup({
+      DateTime? executedAt,
+      String? comment,
+    }) async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      final history = await repository.recordExecution(
+        id,
+        executedAt: executedAt ?? DateTime(2025, 6, 1),
+        comment: comment,
+      );
+      return (taskId: id, history: history);
+    }
+
+    test('日付を更新できる', () async {
+      final (:taskId, :history) = await _setup();
+      await repository.updateExecution(
+        history.id,
+        executedAt: DateTime(2025, 7, 1),
+      );
+
+      final task = await repository.findTaskById(taskId);
+      final updated = task.taskHistory.firstWhere((h) => h.id == history.id);
+      expect(updated.executedAt, DateTime(2025, 7, 1));
+    });
+
+    test('コメントを追加できる（null → 文字列）', () async {
+      final (:taskId, :history) = await _setup();
+      await repository.updateExecution(
+        history.id,
+        executedAt: history.executedAt,
+        comment: '更新コメント',
+      );
+
+      final task = await repository.findTaskById(taskId);
+      final updated = task.taskHistory.firstWhere((h) => h.id == history.id);
+      expect(updated.comment, '更新コメント');
+    });
+
+    test('コメントを削除できる（文字列 → null）', () async {
+      final (:taskId, :history) = await _setup(comment: '元のコメント');
+      await repository.updateExecution(
+        history.id,
+        executedAt: history.executedAt,
+      );
+
+      final task = await repository.findTaskById(taskId);
+      final updated = task.taskHistory.firstWhere((h) => h.id == history.id);
+      expect(updated.comment, isNull);
+    });
+
+    test('他の履歴には影響しない', () async {
+      final (:taskId, :history) = await _setup();
+      final other = await repository.recordExecution(
+        taskId,
+        executedAt: DateTime(2025, 9, 1),
+      );
+      await repository.updateExecution(
+        history.id,
+        executedAt: DateTime(2025, 7, 1),
+      );
+
+      final task = await repository.findTaskById(taskId);
+      final otherUpdated = task.taskHistory.firstWhere((h) => h.id == other.id);
+      expect(otherUpdated.executedAt, DateTime(2025, 9, 1));
     });
   });
 

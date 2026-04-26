@@ -54,6 +54,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeCompleteRecord => '完了を記録';
 
   @override
+  String get homeCompleteCommentPlaceholder => 'コメントを入力（任意）';
+
+  @override
   String homeCompleteSuccess(String name) {
     return '「$name」の完了を記録しました';
   }
@@ -243,5 +246,5 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get appDetailCommentPlaceholder => 'コメント';
+  String get appDetailUpdateHistorySuccess => '履歴を更新しました';
 }

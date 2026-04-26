@@ -15,6 +15,7 @@
   "homeComplete": "完了",
   "homeCompleteSheetTitle": "タスクを完了",
   "homeCompleteRecord": "完了を記録",
+  "homeCompleteCommentPlaceholder": "コメントを入力（任意）",
   "homeCompleteSuccess": "「{name}」の完了を記録しました",
   "@homeCompleteSuccess": {
     "placeholders": {
@@ -119,5 +120,5 @@
       "unit": { "type": "String" }
     }
   },
-  "appDetailCommentPlaceholder": "コメント"
+  "appDetailUpdateHistorySuccess": "履歴を更新しました"
 }

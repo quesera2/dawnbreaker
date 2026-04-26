@@ -148,7 +148,7 @@ void main() {
       test('成功時はエラーなし', () async {
         await container
             .read(homeViewModelProvider.notifier)
-            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+            .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
 
         expect(container.read(homeViewModelProvider).errorMessage, isNull);
       });
@@ -156,7 +156,7 @@ void main() {
       test('成功時に TaskCompleteSuccessSnackMessage がセットされる', () async {
         await container
             .read(homeViewModelProvider.notifier)
-            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+            .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
 
         final msg = container.read(homeViewModelProvider).snackBarMessage;
         expect(msg, isA<TaskCompleteSuccessSnackMessage>());
@@ -169,7 +169,7 @@ void main() {
       test('成功時の snackBarMessage に undo ハンドラがある', () async {
         await container
             .read(homeViewModelProvider.notifier)
-            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+            .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
 
         final msg = container.read(homeViewModelProvider).snackBarMessage;
         expect(msg?.handler, isNotNull);
@@ -190,7 +190,7 @@ void main() {
 
         await c
             .read(homeViewModelProvider.notifier)
-            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+            .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
 
         expect(c.read(homeViewModelProvider).errorMessage, isNotNull);
       });
@@ -198,7 +198,7 @@ void main() {
       test('成功時の handler を呼び出してもエラーが発生しない', () async {
         await container
             .read(homeViewModelProvider.notifier)
-            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+            .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
 
         final handler =
             container.read(homeViewModelProvider).snackBarMessage?.handler;
@@ -207,6 +207,35 @@ void main() {
         await handler!();
 
         expect(container.read(homeViewModelProvider).errorMessage, isNull);
+      });
+
+      group('コメントのバリエーション', () {
+        test('コメントなし(null)はリポジトリに null が渡される', () async {
+          await container
+              .read(homeViewModelProvider.notifier)
+              .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
+
+          expect(fakeRepository.lastRecordedComment, isNull);
+        });
+
+        test('コメントあり: リポジトリに文字列が渡される', () async {
+          await container
+              .read(homeViewModelProvider.notifier)
+              .recordExecution(_testTasks[0], DateTime(2026, 4, 1), '良い感じ');
+
+          expect(fakeRepository.lastRecordedComment, '良い感じ');
+        });
+
+        test('コメントありでも成功時の snackBarMessage はセットされる', () async {
+          await container
+              .read(homeViewModelProvider.notifier)
+              .recordExecution(_testTasks[0], DateTime(2026, 4, 1), '良い感じ');
+
+          expect(
+            container.read(homeViewModelProvider).snackBarMessage,
+            isA<TaskCompleteSuccessSnackMessage>(),
+          );
+        });
       });
     });
 
@@ -222,22 +251,22 @@ void main() {
         TaskItem.scheduled(
           id: 10, name: '超過', furigana: '', icon: '📝', color: TaskColor.none,
           scheduleValue: 5, scheduleUnit: ScheduleUnit.day,
-          taskHistory: [TaskHistory(id: 10, executedAt: now.subtract(const Duration(days: 10)))],
+          taskHistory: [TaskHistory(id: 10, executedAt: now.subtract(const Duration(days: 10)), comment: null)],
         ),
         TaskItem.scheduled(
           id: 11, name: '今日', furigana: '', icon: '📝', color: TaskColor.none,
           scheduleValue: 7, scheduleUnit: ScheduleUnit.day,
-          taskHistory: [TaskHistory(id: 11, executedAt: now.subtract(const Duration(days: 7)))],
+          taskHistory: [TaskHistory(id: 11, executedAt: now.subtract(const Duration(days: 7)), comment: null)],
         ),
         TaskItem.scheduled(
           id: 12, name: '今週', furigana: '', icon: '📝', color: TaskColor.none,
           scheduleValue: 7, scheduleUnit: ScheduleUnit.day,
-          taskHistory: [TaskHistory(id: 12, executedAt: now.subtract(const Duration(days: 4)))],
+          taskHistory: [TaskHistory(id: 12, executedAt: now.subtract(const Duration(days: 4)), comment: null)],
         ),
         TaskItem.scheduled(
           id: 13, name: '将来', furigana: '', icon: '📝', color: TaskColor.none,
           scheduleValue: 14, scheduleUnit: ScheduleUnit.day,
-          taskHistory: [TaskHistory(id: 13, executedAt: now)],
+          taskHistory: [TaskHistory(id: 13, executedAt: now, comment: null)],
         ),
         const TaskItem.period(
           id: 14, name: '不定期', furigana: '', icon: '📝',
@@ -294,7 +323,7 @@ final _testTasks = [
     furigana: 'はぶらしこうかん',
     icon: '📝',
     color: TaskColor.blue,
-    taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1))],
+    taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null)],
   ),
   TaskItem.period(
     id: 2,
@@ -302,7 +331,7 @@ final _testTasks = [
     furigana: 'さんぱつ',
     icon: '📝',
     color: TaskColor.none,
-    taskHistory: [TaskHistory(id: 2, executedAt: DateTime(2026, 1, 1))],
+    taskHistory: [TaskHistory(id: 2, executedAt: DateTime(2026, 1, 1), comment: null)],
   ),
 ];
 

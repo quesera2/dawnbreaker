@@ -13,7 +13,7 @@ void main() {
 
     test('履歴が1件のとき null を返す', () {
       final task = _periodTask(
-        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1))],
+        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1), comment: null)],
       );
       expect(task.scheduledAt, isNull);
     });
@@ -22,8 +22,8 @@ void main() {
       // 間隔: 31日 → 平均31日 → 2/1 + 31日 = 3/4
       final task = _periodTask(
         taskHistory: [
-          TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1)),
-          TaskHistory(id: 2, executedAt: DateTime(2025, 2, 1)),
+          TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(id: 2, executedAt: DateTime(2025, 2, 1), comment: null),
         ],
       );
       expect(task.scheduledAt, DateTime(2025, 3, 4));
@@ -33,9 +33,9 @@ void main() {
       // 間隔: 10日, 20日 → 平均15日 → 1/31 + 15日 = 2/15
       final task = _periodTask(
         taskHistory: [
-          TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1)),
-          TaskHistory(id: 2, executedAt: DateTime(2025, 1, 11)),
-          TaskHistory(id: 3, executedAt: DateTime(2025, 1, 31)),
+          TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(id: 2, executedAt: DateTime(2025, 1, 11), comment: null),
+          TaskHistory(id: 3, executedAt: DateTime(2025, 1, 31), comment: null),
         ],
       );
       expect(task.scheduledAt, DateTime(2025, 2, 15));
@@ -55,7 +55,7 @@ void main() {
       final task = _scheduledTask(
         scheduleValue: 14,
         scheduleUnit: ScheduleUnit.day,
-        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1))],
+        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1), comment: null)],
       );
       expect(task.scheduledAt, DateTime(2025, 1, 15));
     });
@@ -64,7 +64,7 @@ void main() {
       final task = _scheduledTask(
         scheduleValue: 2,
         scheduleUnit: ScheduleUnit.week,
-        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1))],
+        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1), comment: null)],
       );
       expect(task.scheduledAt, DateTime(2025, 1, 15));
     });
@@ -73,7 +73,7 @@ void main() {
       final task = _scheduledTask(
         scheduleValue: 3,
         scheduleUnit: ScheduleUnit.month,
-        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 10))],
+        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 10), comment: null)],
       );
       expect(task.scheduledAt, DateTime(2025, 4, 10));
     });
@@ -82,7 +82,7 @@ void main() {
   group('PeriodTaskItem.executionIntervalDays', () {
     test('履歴が1件のとき空リストを返す', () {
       final task = _periodTask(
-        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1))],
+        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1), comment: null)],
       );
       expect(task.executionIntervalDays, isEmpty);
     });
@@ -90,8 +90,8 @@ void main() {
     test('深夜0時の履歴: 1/1→2/1 は31日', () {
       final task = _periodTask(
         taskHistory: [
-          TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1)),
-          TaskHistory(id: 2, executedAt: DateTime(2025, 2, 1)),
+          TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(id: 2, executedAt: DateTime(2025, 2, 1), comment: null),
         ],
       );
       expect(task.executionIntervalDays, [31]);
@@ -100,8 +100,8 @@ void main() {
     test('夜遅い実行→翌朝実行でも1日としてカウントされる（22:00→翌08:00）', () {
       final task = _periodTask(
         taskHistory: [
-          TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1, 22, 0)),
-          TaskHistory(id: 2, executedAt: DateTime(2025, 1, 2, 8, 0)),
+          TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1, 22, 0), comment: null),
+          TaskHistory(id: 2, executedAt: DateTime(2025, 1, 2, 8, 0), comment: null),
         ],
       );
       expect(task.executionIntervalDays, [1]);
@@ -112,9 +112,9 @@ void main() {
       // カレンダー日数: 31日, 31日
       final task = _periodTask(
         taskHistory: [
-          TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1, 14, 0)),
-          TaskHistory(id: 2, executedAt: DateTime(2025, 2, 1, 8, 0)),
-          TaskHistory(id: 3, executedAt: DateTime(2025, 3, 4, 22, 0)),
+          TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1, 14, 0), comment: null),
+          TaskHistory(id: 2, executedAt: DateTime(2025, 2, 1, 8, 0), comment: null),
+          TaskHistory(id: 3, executedAt: DateTime(2025, 3, 4, 22, 0), comment: null),
         ],
       );
       expect(task.executionIntervalDays, [31, 31]);
@@ -132,7 +132,7 @@ void main() {
     test('scheduledAt が null のとき NoDueDate を返す', () {
       // PeriodTask で履歴1件 → scheduledAt が null
       final task = _periodTask(
-        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1))],
+        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1), comment: null)],
       );
       expect(task.computeProgress(DateTime(2025, 2, 1)), isA<NoDueDate>());
     });
@@ -141,8 +141,8 @@ void main() {
       // lastExecutedAt=1/1, scheduledAt=3/4(+62日), now=2/1(+31日) → progress=0.5
       final task = _periodTask(
         taskHistory: [
-          TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1)),
-          TaskHistory(id: 2, executedAt: DateTime(2025, 3, 4)),
+          TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(id: 2, executedAt: DateTime(2025, 3, 4), comment: null),
         ],
       );
       // scheduledAt = 3/4 + 62日 = 5/5
@@ -157,7 +157,7 @@ void main() {
       final task = _scheduledTask(
         scheduleValue: 30,
         scheduleUnit: ScheduleUnit.day,
-        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1))],
+        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1), comment: null)],
       );
       // scheduledAt = 1/31, now = 2/15 → 超過
       final progress = task.computeProgress(DateTime(2025, 2, 15));
@@ -172,7 +172,7 @@ void main() {
       final task = _scheduledTask(
         scheduleValue: 0,
         scheduleUnit: ScheduleUnit.day,
-        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1))],
+        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1), comment: null)],
       );
       final progress = task.computeProgress(DateTime(2025, 1, 1));
       expect(progress, isA<DueDate>());
@@ -185,7 +185,7 @@ void main() {
         final task = _scheduledTask(
           scheduleValue: 1,
           scheduleUnit: ScheduleUnit.day,
-          taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 4, 23))],
+          taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 4, 23), comment: null)],
         );
         final p = task.computeProgress(DateTime(2026, 4, 24, 14, 0)) as DueDate;
         expect(p.isToday, true);
@@ -196,7 +196,7 @@ void main() {
         final task = _scheduledTask(
           scheduleValue: 1,
           scheduleUnit: ScheduleUnit.day,
-          taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 4, 24))],
+          taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 4, 24), comment: null)],
         );
         final p = task.computeProgress(DateTime(2026, 4, 24, 14, 0)) as DueDate;
         expect(p.isToday, false);
@@ -212,7 +212,7 @@ void main() {
           scheduleValue: 30,
           scheduleUnit: ScheduleUnit.day,
           taskHistory: [
-            TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1, 14, 0)),
+            TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1, 14, 0), comment: null),
           ],
         );
         final p = task.computeProgress(DateTime(2025, 1, 16)) as DueDate;
@@ -226,7 +226,7 @@ void main() {
       TaskItem task30() => _scheduledTask(
         scheduleValue: 30,
         scheduleUnit: ScheduleUnit.day,
-        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1))],
+        taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1), comment: null)],
       );
 
       test('scheduledAt の前日: isOverdue=false, daysRemaining=1', () {

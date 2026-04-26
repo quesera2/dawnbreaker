@@ -100,13 +100,26 @@ class FakeTaskRepository implements TaskRepository {
     _notify();
   }
 
+  String? lastRecordedComment;
+
   @override
   Future<TaskHistory> recordExecution(
     int taskId, {
     required DateTime executedAt,
+    String? comment,
   }) async {
     if (shouldThrow) throw const TaskSaveException('テストエラー');
-    return TaskHistory(id: _nextId++, executedAt: executedAt);
+    lastRecordedComment = comment;
+    return TaskHistory(id: _nextId++, executedAt: executedAt, comment: comment);
+  }
+
+  @override
+  Future<void> updateExecution(
+    int executionId, {
+    required DateTime executedAt,
+    String? comment,
+  }) async {
+    if (shouldThrow) throw const TaskUpdateException('テストエラー');
   }
 
   @override

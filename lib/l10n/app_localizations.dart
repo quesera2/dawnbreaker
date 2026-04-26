@@ -188,6 +188,12 @@ abstract class AppLocalizations {
   /// **'完了を記録'**
   String get homeCompleteRecord;
 
+  /// No description provided for @homeCompleteCommentPlaceholder.
+  ///
+  /// In ja, this message translates to:
+  /// **'コメントを入力（任意）'**
+  String get homeCompleteCommentPlaceholder;
+
   /// No description provided for @homeCompleteSuccess.
   ///
   /// In ja, this message translates to:
@@ -530,11 +536,11 @@ abstract class AppLocalizations {
   /// **'定期 {value}{unit}'**
   String appDetailTypeBadgeScheduled(int value, String unit);
 
-  /// No description provided for @appDetailCommentPlaceholder.
+  /// No description provided for @appDetailUpdateHistorySuccess.
   ///
   /// In ja, this message translates to:
-  /// **'コメント'**
-  String get appDetailCommentPlaceholder;
+  /// **'履歴を更新しました'**
+  String get appDetailUpdateHistorySuccess;
 }
 
 class _AppLocalizationsDelegate

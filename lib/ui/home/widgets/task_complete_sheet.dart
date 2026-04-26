@@ -5,6 +5,7 @@ import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/core/date_util.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
+import 'package:dawnbreaker/ui/common/components/app_input.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -14,34 +15,60 @@ class TaskCompleteSheet extends StatefulWidget {
     super.key,
     required this.task,
     required this.onConfirm,
+    this.initialDate,
+    this.initialComment,
   });
 
   final TaskItem task;
-  final void Function(DateTime date) onConfirm;
+  final void Function(DateTime date, String? comment) onConfirm;
+  final DateTime? initialDate;
+  final String? initialComment;
 
   @override
   State<TaskCompleteSheet> createState() => _TaskCompleteSheetState();
 }
 
 class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
-  DateTime _selectedDate = DateTime.now().truncateTime;
+  late DateTime _selectedDate;
+  final _commentController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate =
+        (widget.initialDate ?? DateTime.now()).truncateTime;
+    if (widget.initialComment case final comment?) {
+      _commentController.text = comment;
+    }
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final bottom = MediaQuery.paddingOf(context).bottom;
+    final safeBottom = MediaQuery.paddingOf(context).bottom;
+    final keyboardBottom = MediaQuery.viewInsetsOf(context).bottom;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20, 0, 20, 16 + bottom),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _titleArea,
-          const SizedBox(height: 20),
-          _calendar,
-          const SizedBox(height: 16),
-          _buttonArea,
-        ],
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20, 0, 20, 16 + safeBottom + keyboardBottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _titleArea,
+            const SizedBox(height: 20),
+            _calendar,
+            const SizedBox(height: 16),
+            _commentArea,
+            const SizedBox(height: 16),
+            _buttonArea,
+          ],
+        ),
       ),
     );
   }
@@ -96,6 +123,11 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
     );
   }
 
+  Widget get _commentArea => AppTextInput(
+    controller: _commentController,
+    hintText: context.l10n.homeCompleteCommentPlaceholder,
+  );
+
   Widget get _buttonArea {
     return Row(
       children: [
@@ -113,12 +145,18 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
         Expanded(
           flex: 3,
           child: AppButton(
-            label: context.l10n.homeCompleteRecord,
+            label: widget.initialDate != null
+                ? context.l10n.editorSaveEdit
+                : context.l10n.homeCompleteRecord,
             size: AppButtonSize.large,
             fullWidth: true,
             onPressed: () {
               Navigator.of(context).pop();
-              widget.onConfirm(_selectedDate);
+              final comment = _commentController.text.trim();
+              widget.onConfirm(
+                _selectedDate,
+                comment.isEmpty ? null : comment,
+              );
             },
           ),
         ),

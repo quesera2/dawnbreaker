@@ -237,6 +237,130 @@ void main() {
       });
     });
 
+    group('履歴の更新 成功時', () {
+      setUp(() async {
+        setUpContainer();
+        await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+      });
+
+      test('成功時はエラーなし', () async {
+        await container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+            .updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .errorMessage,
+          isNull,
+        );
+      });
+
+      test('コメントありで更新してもエラーなし', () async {
+        await container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+            .updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+              comment: '更新コメント',
+            );
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .errorMessage,
+          isNull,
+        );
+      });
+
+      test('成功時に TaskExecutionUpdateSuccessSnackMessage がセットされる', () async {
+        await container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+            .updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .snackBarMessage,
+          isA<TaskExecutionUpdateSuccessSnackMessage>(),
+        );
+      });
+
+      test('snackBarMessage の handler を呼び出すと元の日時・コメントで再更新される', () async {
+        final original = _taskOneHistory.taskHistory.first;
+        await container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+            .updateExecution(
+              original,
+              executedAt: DateTime(2026, 2, 1),
+              comment: '変更後',
+            );
+
+        final handler = container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+            .snackBarMessage
+            ?.handler;
+        expect(handler, isNotNull);
+        await handler!();
+
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .errorMessage,
+          isNull,
+        );
+      });
+    });
+
+    group('履歴の更新 失敗時', () {
+      setUp(() async {
+        fakeRepository = FakeTaskRepository(
+          initialTasks: _testTasks,
+          shouldThrow: true,
+        );
+        container = ProviderContainer(
+          overrides: [
+            taskRepositoryProvider.overrideWith((_) => fakeRepository),
+          ],
+        );
+        await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+      });
+
+      test('失敗時に TaskUpdateErrorMessage がセットされる', () async {
+        await container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+            .updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .errorMessage,
+          isA<TaskUpdateErrorMessage>(),
+        );
+      });
+
+      test('失敗時の errorMessage に retry handler がある', () async {
+        await container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+            .updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .errorMessage
+              ?.handler,
+          isNotNull,
+        );
+      });
+    });
+
     group('タスクの削除 成功時', () {
       setUp(() async {
         setUpContainer();
@@ -370,7 +494,7 @@ final _taskOneHistory = TaskItem.period(
   furigana: 'たすく',
   icon: '📝',
   color: TaskColor.blue,
-  taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1))],
+  taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null)],
 );
 
 final _taskMultiHistory = TaskItem.period(
@@ -380,9 +504,9 @@ final _taskMultiHistory = TaskItem.period(
   icon: '📝',
   color: TaskColor.green,
   taskHistory: [
-    TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1)),
-    TaskHistory(id: 2, executedAt: DateTime(2026, 2, 1)),
-    TaskHistory(id: 3, executedAt: DateTime(2026, 3, 4)),
+    TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null),
+    TaskHistory(id: 2, executedAt: DateTime(2026, 2, 1), comment: null),
+    TaskHistory(id: 3, executedAt: DateTime(2026, 3, 4), comment: null),
   ],
 );
 
