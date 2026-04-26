@@ -1,3 +1,5 @@
+import 'package:animated_list_plus/animated_list_plus.dart';
+import 'package:animated_list_plus/transitions.dart';
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
@@ -113,11 +115,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     bool hasTasks,
     HomeTaskList taskList,
   ) {
-    final overdue = taskList.overdueTasks;
-    final upcoming = taskList.upcomingTasks;
-    final colors = context.appColorScheme;
-
-    if (overdue.isEmpty && upcoming.isEmpty) {
+    if (taskList.isEmpty) {
       final colors = context.appColorScheme;
       return [
         SliverFillRemaining(
@@ -133,55 +131,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       ];
     }
 
+    final entries = taskList.taskItemMap.entries
+        .where((e) => e.value.isNotEmpty);
+
     return [
-      if (overdue.isNotEmpty)
-        SliverMainAxisGroup(
-          slivers: [
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: DefaultStickyHeaderDelegate(
-                maxHeight: 30,
-                minHeight: 30,
-                child: AppSectionHeader(
-                  title: Text(context.l10n.homeSectionOverdue),
-                  subTitle: Text(overdue.length.toString()),
-                  backgroundColor: colors.bg.withValues(alpha: 0.8),
-                ),
-              ),
-            ),
-            _TaskSliver(
-              tasks: overdue,
-              onTap: (task) => context.push('/app-detail', extra: task.id),
-              onComplete: (task) => _showCompleteSheet(context, task),
-            ),
-          ],
-        ),
-      if (upcoming.isNotEmpty)
-        SliverPadding(
-          padding: const EdgeInsets.only(top: 16),
-          sliver: SliverMainAxisGroup(
-            slivers: [
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: DefaultStickyHeaderDelegate(
-                  maxHeight: 30,
-                  minHeight: 30,
-                  child: AppSectionHeader(
-                    title: Text(context.l10n.homeSectionUpcoming),
-                    subTitle: Text(upcoming.length.toString()),
-                    backgroundColor: colors.bg.withValues(alpha: 0.8),
-                  ),
-                ),
-              ),
-              _TaskSliver(
-                tasks: upcoming,
-                onTap: (task) => context.push('/app-detail', extra: task.id),
-                onComplete: (task) => _showCompleteSheet(context, task),
-              ),
-            ],
-          ),
+      for (final (index, entry) in entries.indexed)
+        _buildSectionSliver(
+          context,
+          entry.key,
+          entry.value,
+          addTopPadding: index > 0,
         ),
     ];
+  }
+
+  Widget _buildSectionSliver(
+    BuildContext context,
+    HomeTaskListType type,
+    List<TaskItem> tasks, {
+    required bool addTopPadding,
+  }) {
+    final colors = context.appColorScheme;
+    final group = SliverMainAxisGroup(
+      slivers: [
+        SliverPersistentHeader(
+          pinned: true,
+          delegate: DefaultStickyHeaderDelegate(
+            maxHeight: 30,
+            minHeight: 30,
+            child: AppSectionHeader(
+              title: Text(type.label(context)),
+              subTitle: Text(tasks.length.toString()),
+              backgroundColor: colors.bg.withValues(alpha: 0.8),
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverImplicitlyAnimatedList<TaskItem>(
+            items: tasks,
+            areItemsTheSame: (a, b) => a.id == b.id,
+            itemBuilder: (context, animation, item, index) => SizeFadeTransition(
+              curve: Curves.easeInOut,
+              animation: animation,
+              child: TaskListItem(
+                task: item,
+                onTap: () => context.push('/app-detail', extra: item.id),
+                onComplete: () => _showCompleteSheet(context, item),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+
+    if (addTopPadding) {
+      return SliverPadding(
+        padding: const EdgeInsets.only(top: 16),
+        sliver: group,
+      );
+    }
+    return group;
   }
 }
 
@@ -250,31 +260,9 @@ class _FilterChipRow extends StatelessWidget {
   }
 }
 
-class _TaskSliver extends StatelessWidget {
-  const _TaskSliver({
-    required this.tasks,
-    required this.onTap,
-    required this.onComplete,
-  });
-
-  final List<TaskItem> tasks;
-  final void Function(TaskItem) onTap;
-  final void Function(TaskItem) onComplete;
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) => TaskListItem(
-            task: tasks[index],
-            onTap: () => onTap(tasks[index]),
-            onComplete: () => onComplete(tasks[index]),
-          ),
-          childCount: tasks.length,
-        ),
-      ),
-    );
-  }
+extension _HomeTaskListTypeLabel on HomeTaskListType {
+  String label(BuildContext context) => switch (this) {
+    HomeTaskListType.overdueTasks => context.l10n.homeSectionOverdue,
+    HomeTaskListType.upcomingTasks => context.l10n.homeSectionUpcoming,
+  };
 }
