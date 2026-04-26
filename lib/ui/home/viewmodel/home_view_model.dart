@@ -37,11 +37,16 @@ class HomeViewModel extends _$HomeViewModel {
     state = state.copyWith(selectedFilter: filter);
   }
 
-  Future<void> recordCompletion(TaskItem task, DateTime executedAt) async {
+  Future<void> recordExecution(
+    TaskItem task,
+    DateTime executedAt,
+    String? comment,
+  ) async {
     try {
       final history = await _repository.recordExecution(
         task.id,
         executedAt: executedAt,
+        comment: comment,
       );
       if (!ref.mounted) return;
       state = state.copyWith(

@@ -101,9 +101,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       isScrollControlled: true,
       builder: (_) => TaskCompleteSheet(
         task: task,
-        onConfirm: (date) => ref
+        onConfirm: (date, comment) => ref
             .read(homeViewModelProvider.notifier)
-            .recordCompletion(task, date),
+            .recordExecution(task, date, comment),
       ),
     );
   }

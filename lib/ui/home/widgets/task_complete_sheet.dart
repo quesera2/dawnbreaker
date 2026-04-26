@@ -5,6 +5,7 @@ import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/core/date_util.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
+import 'package:dawnbreaker/ui/common/components/app_input.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +18,7 @@ class TaskCompleteSheet extends StatefulWidget {
   });
 
   final TaskItem task;
-  final void Function(DateTime date) onConfirm;
+  final void Function(DateTime date, String? comment) onConfirm;
 
   @override
   State<TaskCompleteSheet> createState() => _TaskCompleteSheetState();
@@ -25,23 +26,35 @@ class TaskCompleteSheet extends StatefulWidget {
 
 class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
   DateTime _selectedDate = DateTime.now().truncateTime;
+  final _commentController = TextEditingController();
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final bottom = MediaQuery.paddingOf(context).bottom;
+    final safeBottom = MediaQuery.paddingOf(context).bottom;
+    final keyboardBottom = MediaQuery.viewInsetsOf(context).bottom;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20, 0, 20, 16 + bottom),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _titleArea,
-          const SizedBox(height: 20),
-          _calendar,
-          const SizedBox(height: 16),
-          _buttonArea,
-        ],
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20, 0, 20, 16 + safeBottom + keyboardBottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _titleArea,
+            const SizedBox(height: 20),
+            _calendar,
+            const SizedBox(height: 16),
+            _commentArea,
+            const SizedBox(height: 16),
+            _buttonArea,
+          ],
+        ),
       ),
     );
   }
@@ -96,6 +109,11 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
     );
   }
 
+  Widget get _commentArea => AppTextInput(
+    controller: _commentController,
+    hintText: context.l10n.homeCompleteCommentPlaceholder,
+  );
+
   Widget get _buttonArea {
     return Row(
       children: [
@@ -118,7 +136,11 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
             fullWidth: true,
             onPressed: () {
               Navigator.of(context).pop();
-              widget.onConfirm(_selectedDate);
+              final comment = _commentController.text.trim();
+              widget.onConfirm(
+                _selectedDate,
+                comment.isEmpty ? null : comment,
+              );
             },
           ),
         ),

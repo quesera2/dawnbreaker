@@ -15,6 +15,7 @@
   "homeComplete": "Done",
   "homeCompleteSheetTitle": "Complete task",
   "homeCompleteRecord": "Record completion",
+  "homeCompleteCommentPlaceholder": "Add a comment (optional)",
   "homeCompleteSuccess": "Marked \"{name}\" as complete",
   "@homeCompleteSuccess": {
     "placeholders": {

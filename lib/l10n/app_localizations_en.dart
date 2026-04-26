@@ -54,6 +54,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeCompleteRecord => 'Record completion';
 
   @override
+  String get homeCompleteCommentPlaceholder => 'Add a comment (optional)';
+
+  @override
   String homeCompleteSuccess(String name) {
     return 'Marked \"$name\" as complete';
   }

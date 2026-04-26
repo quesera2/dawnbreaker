@@ -188,6 +188,12 @@ abstract class AppLocalizations {
   /// **'完了を記録'**
   String get homeCompleteRecord;
 
+  /// No description provided for @homeCompleteCommentPlaceholder.
+  ///
+  /// In ja, this message translates to:
+  /// **'コメントを入力（任意）'**
+  String get homeCompleteCommentPlaceholder;
+
   /// No description provided for @homeCompleteSuccess.
   ///
   /// In ja, this message translates to:

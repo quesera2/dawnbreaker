@@ -100,6 +100,8 @@ class FakeTaskRepository implements TaskRepository {
     _notify();
   }
 
+  String? lastRecordedComment;
+
   @override
   Future<TaskHistory> recordExecution(
     int taskId, {
@@ -107,6 +109,7 @@ class FakeTaskRepository implements TaskRepository {
     String? comment,
   }) async {
     if (shouldThrow) throw const TaskSaveException('テストエラー');
+    lastRecordedComment = comment;
     return TaskHistory(id: _nextId++, executedAt: executedAt, comment: comment);
   }
 

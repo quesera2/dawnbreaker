@@ -148,7 +148,7 @@ void main() {
       test('成功時はエラーなし', () async {
         await container
             .read(homeViewModelProvider.notifier)
-            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+            .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
 
         expect(container.read(homeViewModelProvider).errorMessage, isNull);
       });
@@ -156,7 +156,7 @@ void main() {
       test('成功時に TaskCompleteSuccessSnackMessage がセットされる', () async {
         await container
             .read(homeViewModelProvider.notifier)
-            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+            .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
 
         final msg = container.read(homeViewModelProvider).snackBarMessage;
         expect(msg, isA<TaskCompleteSuccessSnackMessage>());
@@ -169,7 +169,7 @@ void main() {
       test('成功時の snackBarMessage に undo ハンドラがある', () async {
         await container
             .read(homeViewModelProvider.notifier)
-            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+            .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
 
         final msg = container.read(homeViewModelProvider).snackBarMessage;
         expect(msg?.handler, isNotNull);
@@ -190,7 +190,7 @@ void main() {
 
         await c
             .read(homeViewModelProvider.notifier)
-            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+            .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
 
         expect(c.read(homeViewModelProvider).errorMessage, isNotNull);
       });
@@ -198,7 +198,7 @@ void main() {
       test('成功時の handler を呼び出してもエラーが発生しない', () async {
         await container
             .read(homeViewModelProvider.notifier)
-            .recordCompletion(_testTasks[0], DateTime(2026, 4, 1));
+            .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
 
         final handler =
             container.read(homeViewModelProvider).snackBarMessage?.handler;
@@ -207,6 +207,35 @@ void main() {
         await handler!();
 
         expect(container.read(homeViewModelProvider).errorMessage, isNull);
+      });
+
+      group('コメントのバリエーション', () {
+        test('コメントなし(null)はリポジトリに null が渡される', () async {
+          await container
+              .read(homeViewModelProvider.notifier)
+              .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
+
+          expect(fakeRepository.lastRecordedComment, isNull);
+        });
+
+        test('コメントあり: リポジトリに文字列が渡される', () async {
+          await container
+              .read(homeViewModelProvider.notifier)
+              .recordExecution(_testTasks[0], DateTime(2026, 4, 1), '良い感じ');
+
+          expect(fakeRepository.lastRecordedComment, '良い感じ');
+        });
+
+        test('コメントありでも成功時の snackBarMessage はセットされる', () async {
+          await container
+              .read(homeViewModelProvider.notifier)
+              .recordExecution(_testTasks[0], DateTime(2026, 4, 1), '良い感じ');
+
+          expect(
+            container.read(homeViewModelProvider).snackBarMessage,
+            isA<TaskCompleteSuccessSnackMessage>(),
+          );
+        });
       });
     });
 
