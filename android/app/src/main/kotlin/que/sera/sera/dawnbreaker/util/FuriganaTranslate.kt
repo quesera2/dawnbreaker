@@ -1,4 +1,4 @@
-package que.sera.sera.dqnbreaker.dawnbreaker.util
+package que.sera.sera.dawnbreaker.util
 
 import com.atilika.kuromoji.ipadic.Tokenizer
 import io.flutter.embedding.engine.plugins.FlutterPlugin

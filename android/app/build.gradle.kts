@@ -11,7 +11,7 @@ android {
     packaging {
         resources.excludes += "META-INF/*.md"
     }
-    namespace = "que.sera.sera.dqnbreaker.dawnbreaker"
+    namespace = "que.sera.sera.dawnbreaker"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "que.sera.sera.dqnbreaker.dawnbreaker"
+        applicationId = "que.sera.sera.dawnbreaker"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
