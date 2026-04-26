@@ -220,6 +220,7 @@ class TaskRepositoryImpl implements TaskRepository {
             TaskExecutionsCompanion.insert(
               taskDefinitionId: taskId,
               executedAt: executedAt,
+              comment: Value(comment),
             ),
           );
       return TaskHistory(id: id, executedAt: executedAt, comment: comment);
