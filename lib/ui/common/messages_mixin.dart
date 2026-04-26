@@ -72,6 +72,8 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
       ctx.l10n.editorSaveEditSuccess(taskName),
     TaskDeleteSuccessSnackMessage(:final taskName) =>
       ctx.l10n.appDetailDeleteSuccess(taskName),
+    TaskExecutionUpdateSuccessSnackMessage() =>
+      ctx.l10n.appDetailUpdateHistorySuccess,
   };
 
   String _snackActionLabel(BuildContext ctx, SnackBarMessage m) => switch (m) {
@@ -79,6 +81,7 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
     TaskCreateSuccessSnackMessage() => ctx.l10n.undo,
     TaskUpdateSuccessSnackMessage() => ctx.l10n.undo,
     TaskDeleteSuccessSnackMessage() => ctx.l10n.undo,
+    TaskExecutionUpdateSuccessSnackMessage() => ctx.l10n.undo,
   };
 
   String _errorText(BuildContext ctx, ErrorMessage e) => switch (e) {

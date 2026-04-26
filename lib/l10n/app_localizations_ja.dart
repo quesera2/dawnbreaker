@@ -244,4 +244,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String appDetailTypeBadgeScheduled(int value, String unit) {
     return '定期 $value$unit';
   }
+
+  @override
+  String get appDetailUpdateHistorySuccess => '履歴を更新しました';
 }

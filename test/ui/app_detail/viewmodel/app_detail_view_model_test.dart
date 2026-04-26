@@ -273,6 +273,46 @@ void main() {
           isNull,
         );
       });
+
+      test('成功時に TaskExecutionUpdateSuccessSnackMessage がセットされる', () async {
+        await container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+            .updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .snackBarMessage,
+          isA<TaskExecutionUpdateSuccessSnackMessage>(),
+        );
+      });
+
+      test('snackBarMessage の handler を呼び出すと元の日時・コメントで再更新される', () async {
+        final original = _taskOneHistory.taskHistory.first;
+        await container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+            .updateExecution(
+              original,
+              executedAt: DateTime(2026, 2, 1),
+              comment: '変更後',
+            );
+
+        final handler = container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+            .snackBarMessage
+            ?.handler;
+        expect(handler, isNotNull);
+        await handler!();
+
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .errorMessage,
+          isNull,
+        );
+      });
     });
 
     group('履歴の更新 失敗時', () {

@@ -119,5 +119,6 @@
       "value": { "type": "int" },
       "unit": { "type": "String" }
     }
-  }
+  },
+  "appDetailUpdateHistorySuccess": "履歴を更新しました"
 }
