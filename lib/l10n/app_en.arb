@@ -119,6 +119,5 @@
       "value": { "type": "int" },
       "unit": { "type": "String" }
     }
-  },
-  "appDetailCommentPlaceholder": "Comment"
+  }
 }

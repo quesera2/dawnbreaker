@@ -245,7 +245,4 @@ class AppLocalizationsEn extends AppLocalizations {
   String appDetailTypeBadgeScheduled(int value, String unit) {
     return 'Every $value $unit';
   }
-
-  @override
-  String get appDetailCommentPlaceholder => 'Comment';
 }

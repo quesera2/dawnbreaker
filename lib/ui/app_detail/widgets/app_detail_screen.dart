@@ -392,11 +392,11 @@ class _HistoryItem extends StatelessWidget {
               child: ColoredBox(color: colors.divider),
             ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               _paddingH,
               _paddingV,
               _paddingH,
-              _paddingV,
+              entry.comment == null ? _paddingV : 8,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,17 +422,19 @@ class _HistoryItem extends StatelessWidget {
                     ),
                     if (intervalDays != null)
                       Text(
-                        context.l10n.appDetailDaysInterval(intervalDays!),
+                        intervalDays! == 0
+                            ? context.l10n.homeDueToday
+                            : context.l10n.appDetailDaysInterval(intervalDays!),
                         style: AppTextStyle.caption.copyWith(
                           color: colors.textMuted,
                         ),
                       ),
                   ],
                 ),
-                if (isFirst)
+                if (entry.comment case final comment?)
                   Padding(
                     padding: const EdgeInsets.only(top: 8, left: _dotSize + 12),
-                    child: _CommentPlaceholder(colors: colors),
+                    child: _HistoryComment(comment: comment, colors: colors),
                   ),
               ],
             ),
@@ -443,22 +445,25 @@ class _HistoryItem extends StatelessWidget {
   }
 }
 
-class _CommentPlaceholder extends StatelessWidget {
-  const _CommentPlaceholder({required this.colors});
+class _HistoryComment extends StatelessWidget {
+  const _HistoryComment({required this.comment, required this.colors});
 
+  final String comment;
   final AppColorScheme colors;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    return DecoratedBox(
       decoration: BoxDecoration(
         border: Border.all(color: colors.border),
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
-      child: Text(
-        context.l10n.appDetailCommentPlaceholder,
-        style: AppTextStyle.caption.copyWith(color: colors.textSubtle),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Text(
+          comment,
+          style: AppTextStyle.caption.copyWith(color: colors.textSubtle),
+        ),
       ),
     );
   }

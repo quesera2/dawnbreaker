@@ -535,12 +535,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'定期 {value}{unit}'**
   String appDetailTypeBadgeScheduled(int value, String unit);
-
-  /// No description provided for @appDetailCommentPlaceholder.
-  ///
-  /// In ja, this message translates to:
-  /// **'コメント'**
-  String get appDetailCommentPlaceholder;
 }
 
 class _AppLocalizationsDelegate
