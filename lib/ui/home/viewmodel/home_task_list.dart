@@ -3,11 +3,14 @@ import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_progress.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 
+enum HomeTaskListType { overdueTasks, upcomingTasks }
+
 class HomeTaskList {
-  HomeTaskList._({
-    required this.overdueTasks,
-    required this.upcomingTasks,
-  });
+  HomeTaskList._({required this.taskItemMap});
+
+  final Map<HomeTaskListType, List<TaskItem>> taskItemMap;
+
+  bool get isEmpty => taskItemMap.values.every((list) => list.isEmpty);
 
   factory HomeTaskList.from({
     required List<TaskItem> tasks,
@@ -44,17 +47,18 @@ class HomeTaskList {
       }),
     };
 
-    final divideByOverdue = filtered.groupListsBy((t) {
-      final p = t.computeProgress(now);
-      return p is DueDate && p.isOverdue;
-    });
+    final divideByOverdue = filtered
+        .groupListsBy((t) {
+          final p = t.computeProgress(now);
+          return p is DueDate && p.isOverdue;
+        })
+        .map((key, value) {
+          final newKey = key
+              ? HomeTaskListType.overdueTasks
+              : HomeTaskListType.upcomingTasks;
+          return MapEntry(newKey, value);
+        });
 
-    return HomeTaskList._(
-      overdueTasks: divideByOverdue[true] ?? [],
-      upcomingTasks: divideByOverdue[false] ?? [],
-    );
+    return HomeTaskList._(taskItemMap: divideByOverdue);
   }
-
-  final List<TaskItem> overdueTasks;
-  final List<TaskItem> upcomingTasks;
 }
