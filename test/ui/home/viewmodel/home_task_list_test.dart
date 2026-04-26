@@ -23,7 +23,7 @@ void main() {
     color: TaskColor.none,
     scheduleValue: intervalDays,
     scheduleUnit: ScheduleUnit.day,
-    taskHistory: [TaskHistory(id: id, executedAt: lastExecutedAt)],
+    taskHistory: [TaskHistory(id: id, executedAt: lastExecutedAt, comment: null)],
   );
 
   // 超過: 10日前が最後、5日周期 → scheduledAt は5日前

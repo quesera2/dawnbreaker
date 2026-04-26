@@ -39,12 +39,12 @@ class TaskRepositoryImpl implements TaskRepository {
 
   @override
   Stream<TaskItem?> watchTaskById(int taskId) {
-    return _baseTaskQuery(where: _db.taskDefinitions.id.equals(taskId))
-        .watch()
-        .map((rows) {
-          if (rows.isEmpty) return null;
-          return _buildTaskItemFromRows(rows);
-        });
+    return _baseTaskQuery(
+      where: _db.taskDefinitions.id.equals(taskId),
+    ).watch().map((rows) {
+      if (rows.isEmpty) return null;
+      return _buildTaskItemFromRows(rows);
+    });
   }
 
   @override
@@ -109,7 +109,13 @@ class TaskRepositoryImpl implements TaskRepository {
     final taskHistory = rows
         .map((r) => r.readTableOrNull(_db.taskExecutions))
         .nonNulls
-        .map((e) => TaskHistory(id: e.id, executedAt: e.executedAt))
+        .map(
+          (e) => TaskHistory(
+            id: e.id,
+            executedAt: e.executedAt,
+            comment: e.comment,
+          ),
+        )
         .toList();
 
     return switch (def.taskType) {
@@ -205,6 +211,7 @@ class TaskRepositoryImpl implements TaskRepository {
   Future<TaskHistory> recordExecution(
     int taskId, {
     required DateTime executedAt,
+    String? comment,
   }) async {
     try {
       final id = await _db
@@ -215,7 +222,7 @@ class TaskRepositoryImpl implements TaskRepository {
               executedAt: executedAt,
             ),
           );
-      return TaskHistory(id: id, executedAt: executedAt);
+      return TaskHistory(id: id, executedAt: executedAt, comment: comment);
     } catch (e) {
       throw TaskSaveException(e.toString());
     }

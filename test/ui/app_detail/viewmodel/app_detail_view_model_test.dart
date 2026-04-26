@@ -370,7 +370,7 @@ final _taskOneHistory = TaskItem.period(
   furigana: 'たすく',
   icon: '📝',
   color: TaskColor.blue,
-  taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1))],
+  taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null)],
 );
 
 final _taskMultiHistory = TaskItem.period(
@@ -380,9 +380,9 @@ final _taskMultiHistory = TaskItem.period(
   icon: '📝',
   color: TaskColor.green,
   taskHistory: [
-    TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1)),
-    TaskHistory(id: 2, executedAt: DateTime(2026, 2, 1)),
-    TaskHistory(id: 3, executedAt: DateTime(2026, 3, 4)),
+    TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null),
+    TaskHistory(id: 2, executedAt: DateTime(2026, 2, 1), comment: null),
+    TaskHistory(id: 3, executedAt: DateTime(2026, 3, 4), comment: null),
   ],
 );
 

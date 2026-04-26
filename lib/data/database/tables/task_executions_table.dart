@@ -12,4 +12,6 @@ class TaskExecutions extends Table {
       integer().references(TaskDefinitions, #id, onDelete: KeyAction.cascade)();
 
   DateTimeColumn get executedAt => dateTime()();
+
+  TextColumn get comment => text().nullable()();
 }

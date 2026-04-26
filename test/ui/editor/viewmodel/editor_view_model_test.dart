@@ -270,7 +270,7 @@ final _testTasks = [
     furigana: 'はぶらしこうかん',
     icon: '🪥',
     color: TaskColor.blue,
-    taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1))],
+    taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null)],
   ),
   TaskItem.scheduled(
     id: 2,
@@ -280,7 +280,7 @@ final _testTasks = [
     color: TaskColor.orange,
     scheduleValue: 2,
     scheduleUnit: ScheduleUnit.week,
-    taskHistory: [TaskHistory(id: 2, executedAt: DateTime(2026, 1, 1))],
+    taskHistory: [TaskHistory(id: 2, executedAt: DateTime(2026, 1, 1), comment: null)],
   ),
 ];
 

@@ -222,22 +222,22 @@ void main() {
         TaskItem.scheduled(
           id: 10, name: '超過', furigana: '', icon: '📝', color: TaskColor.none,
           scheduleValue: 5, scheduleUnit: ScheduleUnit.day,
-          taskHistory: [TaskHistory(id: 10, executedAt: now.subtract(const Duration(days: 10)))],
+          taskHistory: [TaskHistory(id: 10, executedAt: now.subtract(const Duration(days: 10)), comment: null)],
         ),
         TaskItem.scheduled(
           id: 11, name: '今日', furigana: '', icon: '📝', color: TaskColor.none,
           scheduleValue: 7, scheduleUnit: ScheduleUnit.day,
-          taskHistory: [TaskHistory(id: 11, executedAt: now.subtract(const Duration(days: 7)))],
+          taskHistory: [TaskHistory(id: 11, executedAt: now.subtract(const Duration(days: 7)), comment: null)],
         ),
         TaskItem.scheduled(
           id: 12, name: '今週', furigana: '', icon: '📝', color: TaskColor.none,
           scheduleValue: 7, scheduleUnit: ScheduleUnit.day,
-          taskHistory: [TaskHistory(id: 12, executedAt: now.subtract(const Duration(days: 4)))],
+          taskHistory: [TaskHistory(id: 12, executedAt: now.subtract(const Duration(days: 4)), comment: null)],
         ),
         TaskItem.scheduled(
           id: 13, name: '将来', furigana: '', icon: '📝', color: TaskColor.none,
           scheduleValue: 14, scheduleUnit: ScheduleUnit.day,
-          taskHistory: [TaskHistory(id: 13, executedAt: now)],
+          taskHistory: [TaskHistory(id: 13, executedAt: now, comment: null)],
         ),
         const TaskItem.period(
           id: 14, name: '不定期', furigana: '', icon: '📝',
@@ -294,7 +294,7 @@ final _testTasks = [
     furigana: 'はぶらしこうかん',
     icon: '📝',
     color: TaskColor.blue,
-    taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1))],
+    taskHistory: [TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null)],
   ),
   TaskItem.period(
     id: 2,
@@ -302,7 +302,7 @@ final _testTasks = [
     furigana: 'さんぱつ',
     icon: '📝',
     color: TaskColor.none,
-    taskHistory: [TaskHistory(id: 2, executedAt: DateTime(2026, 1, 1))],
+    taskHistory: [TaskHistory(id: 2, executedAt: DateTime(2026, 1, 1), comment: null)],
   ),
 ];
 

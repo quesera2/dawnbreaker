@@ -31,7 +31,11 @@ abstract interface class TaskRepository {
     ScheduleUnit? scheduleUnit,
   });
 
-  Future<TaskHistory> recordExecution(int taskId, {required DateTime executedAt});
+  Future<TaskHistory> recordExecution(
+    int taskId, {
+    required DateTime executedAt,
+    String? comment,
+  });
 
   Future<void> deleteExecution(int executionId);
 
