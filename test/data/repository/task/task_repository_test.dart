@@ -52,22 +52,14 @@ void main() {
   });
 
   group('DB エラー時の異常系', () {
-    late TaskRepository closedRepo;
-
     setUp(() async {
-      final errorDb = AppDatabase(NativeDatabase.memory());
-      closedRepo = TaskRepositoryImpl(
-        db: errorDb,
-        furiganaTranslate: const FakeFuriganaTranslate({}),
-      );
-      // スキーマを初期化してから閉じる
-      await errorDb.select(errorDb.taskDefinitions).get();
-      await errorDb.close();
+      await db.select(db.taskDefinitions).get();
+      await db.close();
     });
 
     test('addTask: TaskSaveException を投げる', () async {
       await expectLater(
-        () => closedRepo.addTask(
+        () => repository.addTask(
           taskType: TaskType.period,
           name: 'x',
           icon: '📝',
@@ -80,35 +72,35 @@ void main() {
 
     test('findTaskById: TaskLoadException を投げる', () async {
       await expectLater(
-        () => closedRepo.findTaskById(1),
+        () => repository.findTaskById(1),
         throwsA(isA<TaskLoadException>()),
       );
     });
 
     test('recordExecution: TaskSaveException を投げる', () async {
       await expectLater(
-        () => closedRepo.recordExecution(1, executedAt: DateTime.now()),
+        () => repository.recordExecution(1, executedAt: DateTime.now()),
         throwsA(isA<TaskSaveException>()),
       );
     });
 
     test('updateExecution: TaskUpdateException を投げる', () async {
       await expectLater(
-        () => closedRepo.updateExecution(1, executedAt: DateTime.now()),
+        () => repository.updateExecution(1, executedAt: DateTime.now()),
         throwsA(isA<TaskUpdateException>()),
       );
     });
 
     test('deleteExecution: TaskDeleteException を投げる', () async {
       await expectLater(
-        () => closedRepo.deleteExecution(1),
+        () => repository.deleteExecution(1),
         throwsA(isA<TaskDeleteException>()),
       );
     });
 
     test('updateTask: TaskUpdateException を投げる', () async {
       await expectLater(
-        () => closedRepo.updateTask(
+        () => repository.updateTask(
           taskId: 1,
           taskType: TaskType.period,
           name: 'x',
@@ -121,7 +113,7 @@ void main() {
 
     test('deleteTask: TaskDeleteException を投げる', () async {
       await expectLater(
-        () => closedRepo.deleteTask(1),
+        () => repository.deleteTask(1),
         throwsA(isA<TaskDeleteException>()),
       );
     });
@@ -136,7 +128,7 @@ void main() {
         taskHistory: [],
       );
       await expectLater(
-        () => closedRepo.restoreTask(task),
+        () => repository.restoreTask(task),
         throwsA(isA<TaskSaveException>()),
       );
     });
