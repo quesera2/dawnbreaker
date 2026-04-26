@@ -367,29 +367,20 @@ class _HistoryItem extends StatelessWidget {
     };
   }
 
+  Border _border(BorderSide side) => switch ((isFirst, isLast)) {
+    (true, true) => Border.fromBorderSide(side),
+    (true, false) => Border(top: side, left: side, right: side),
+    (false, true) => Border(bottom: side, left: side, right: side),
+    _ => Border(left: side, right: side),
+  };
+
   BoxDecoration _containerDecoration(AppColorScheme colors) {
     final side = BorderSide(color: colors.border);
-    return switch ((isFirst, isLast)) {
-      (true, true) => BoxDecoration(
-        color: colors.surface,
-        borderRadius: _borderRadius(),
-        border: Border.fromBorderSide(side),
-      ),
-      (true, false) => BoxDecoration(
-        color: colors.surface,
-        borderRadius: _borderRadius(),
-        border: Border(top: side, left: side, right: side),
-      ),
-      (false, true) => BoxDecoration(
-        color: colors.surface,
-        borderRadius: _borderRadius(),
-        border: Border(bottom: side, left: side, right: side),
-      ),
-      _ => BoxDecoration(
-        color: colors.surface,
-        border: Border(left: side, right: side),
-      ),
-    };
+    return BoxDecoration(
+      color: colors.surface,
+      borderRadius: _borderRadius(),
+      border: _border(side),
+    );
   }
 
   BoxDecoration _dotDecoration(Color dotColor, Color surface) => isFirst
