@@ -237,6 +237,90 @@ void main() {
       });
     });
 
+    group('履歴の更新 成功時', () {
+      setUp(() async {
+        setUpContainer();
+        await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+      });
+
+      test('成功時はエラーなし', () async {
+        await container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+            .updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .errorMessage,
+          isNull,
+        );
+      });
+
+      test('コメントありで更新してもエラーなし', () async {
+        await container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+            .updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+              comment: '更新コメント',
+            );
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .errorMessage,
+          isNull,
+        );
+      });
+    });
+
+    group('履歴の更新 失敗時', () {
+      setUp(() async {
+        fakeRepository = FakeTaskRepository(
+          initialTasks: _testTasks,
+          shouldThrow: true,
+        );
+        container = ProviderContainer(
+          overrides: [
+            taskRepositoryProvider.overrideWith((_) => fakeRepository),
+          ],
+        );
+        await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+      });
+
+      test('失敗時に TaskUpdateErrorMessage がセットされる', () async {
+        await container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+            .updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .errorMessage,
+          isA<TaskUpdateErrorMessage>(),
+        );
+      });
+
+      test('失敗時の errorMessage に retry handler がある', () async {
+        await container
+            .read(appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+            .updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
+        expect(
+          container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .errorMessage
+              ?.handler,
+          isNotNull,
+        );
+      });
+    });
+
     group('タスクの削除 成功時', () {
       setUp(() async {
         setUpContainer();

@@ -114,6 +114,15 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
+  Future<void> updateExecution(
+    int executionId, {
+    required DateTime executedAt,
+    String? comment,
+  }) async {
+    if (shouldThrow) throw const TaskUpdateException('テストエラー');
+  }
+
+  @override
   Future<void> deleteExecution(int executionId) async {
     if (shouldThrow) throw const TaskDeleteException('テストエラー');
   }

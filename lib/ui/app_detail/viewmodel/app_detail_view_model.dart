@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
@@ -37,6 +38,31 @@ class AppDetailViewModel extends _$AppDetailViewModel {
           },
         );
     ref.onDispose(subscription.cancel);
+  }
+
+  Future<void> updateExecution(
+    TaskHistory history, {
+    required DateTime executedAt,
+    String? comment,
+  }) async {
+    try {
+      await _repository.updateExecution(
+        history.id,
+        executedAt: executedAt,
+        comment: comment,
+      );
+    } on TaskRepositoryException {
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        errorMessage: TaskUpdateErrorMessage(
+          handler: () => updateExecution(
+            history,
+            executedAt: executedAt,
+            comment: comment,
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> deleteTask() async {

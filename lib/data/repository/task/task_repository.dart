@@ -37,6 +37,12 @@ abstract interface class TaskRepository {
     String? comment,
   });
 
+  Future<void> updateExecution(
+    int executionId, {
+    required DateTime executedAt,
+    String? comment,
+  });
+
   Future<void> deleteExecution(int executionId);
 
   Future<void> deleteTask(int taskId);

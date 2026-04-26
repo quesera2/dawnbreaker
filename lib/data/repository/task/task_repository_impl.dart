@@ -230,6 +230,26 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
+  Future<void> updateExecution(
+    int executionId, {
+    required DateTime executedAt,
+    String? comment,
+  }) async {
+    try {
+      await (_db.update(_db.taskExecutions)
+            ..where((t) => t.id.equals(executionId)))
+          .write(
+            TaskExecutionsCompanion(
+              executedAt: Value(executedAt),
+              comment: Value(comment),
+            ),
+          );
+    } catch (e) {
+      throw TaskUpdateException(e.toString());
+    }
+  }
+
+  @override
   Future<void> deleteExecution(int executionId) async {
     try {
       await (_db.delete(

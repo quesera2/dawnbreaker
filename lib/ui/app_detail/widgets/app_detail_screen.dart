@@ -14,6 +14,7 @@ import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
+import 'package:dawnbreaker/ui/home/widgets/task_complete_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -118,6 +119,7 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
                     isLast: i == historyAndInterval.length - 1,
                     taskColor: task.color,
                     intervalDays: intervalDays,
+                    onTap: () => _showEditSheet(task, entry),
                   );
                 },
               ),
@@ -125,6 +127,22 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
             SliverPadding(padding: EdgeInsets.only(bottom: 20 + bottomPadding)),
           ],
         ],
+      ),
+    );
+  }
+
+  void _showEditSheet(TaskItem task, TaskHistory entry) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => TaskCompleteSheet(
+        task: task,
+        initialDate: entry.executedAt,
+        initialComment: entry.comment,
+        onConfirm: (date, comment) => ref
+            .read(appDetailViewModelProvider(taskId: widget.taskId).notifier)
+            .updateExecution(entry, executedAt: date, comment: comment),
       ),
     );
   }
@@ -321,6 +339,7 @@ class _HistoryItem extends StatelessWidget {
     required this.isLast,
     required this.taskColor,
     required this.intervalDays,
+    this.onTap,
   });
 
   final TaskHistory entry;
@@ -328,6 +347,7 @@ class _HistoryItem extends StatelessWidget {
   final bool isLast;
   final TaskColor taskColor;
   final int? intervalDays;
+  final VoidCallback? onTap;
 
   static const _dotSize = 10.0;
   static const _lineWidth = 1.5;
@@ -365,6 +385,16 @@ class _HistoryItem extends StatelessWidget {
     };
   }
 
+  BorderRadius? _borderRadius() {
+    const radius = Radius.circular(AppRadius.lg);
+    return switch ((isFirst, isLast)) {
+      (true, true) => const BorderRadius.all(radius),
+      (true, false) => const BorderRadius.vertical(top: radius),
+      (false, true) => const BorderRadius.vertical(bottom: radius),
+      _ => null,
+    };
+  }
+
   BoxDecoration _dotDecoration(Color dotColor, Color surface) => isFirst
       ? BoxDecoration(color: dotColor, shape: BoxShape.circle)
       : BoxDecoration(
@@ -378,9 +408,12 @@ class _HistoryItem extends StatelessWidget {
     final colors = context.appColorScheme;
     final dotColor = taskColor.baseColor(context);
 
-    return Container(
+    return Ink(
       decoration: _containerDecoration(colors),
-      child: Stack(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: _borderRadius(),
+        child: Stack(
         children: [
           if (!isFirst || !isLast)
             Positioned(
@@ -440,6 +473,7 @@ class _HistoryItem extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

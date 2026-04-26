@@ -15,18 +15,32 @@ class TaskCompleteSheet extends StatefulWidget {
     super.key,
     required this.task,
     required this.onConfirm,
+    this.initialDate,
+    this.initialComment,
   });
 
   final TaskItem task;
   final void Function(DateTime date, String? comment) onConfirm;
+  final DateTime? initialDate;
+  final String? initialComment;
 
   @override
   State<TaskCompleteSheet> createState() => _TaskCompleteSheetState();
 }
 
 class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
-  DateTime _selectedDate = DateTime.now().truncateTime;
+  late DateTime _selectedDate;
   final _commentController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate =
+        (widget.initialDate ?? DateTime.now()).truncateTime;
+    if (widget.initialComment case final comment?) {
+      _commentController.text = comment;
+    }
+  }
 
   @override
   void dispose() {
@@ -131,7 +145,9 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
         Expanded(
           flex: 3,
           child: AppButton(
-            label: context.l10n.homeCompleteRecord,
+            label: widget.initialDate != null
+                ? context.l10n.editorSaveEdit
+                : context.l10n.homeCompleteRecord,
             size: AppButtonSize.large,
             fullWidth: true,
             onPressed: () {
