@@ -353,37 +353,9 @@ class _HistoryItem extends StatelessWidget {
   static const _lineWidth = 1.5;
   static const _paddingH = 20.0;
   static const _paddingV = 14.0;
-
-  // Container上端からの距離: paddingV + body行中心オフセット(4px)
-  static const _dotTopY = _paddingV + 4.0; // 18.0
-  static const _dotBottomY = _dotTopY + _dotSize; // 28.0
-  static const _lineLeft = _paddingH + _dotSize / 2 - _lineWidth / 2; // 24.25
-
-  BoxDecoration _containerDecoration(AppColorScheme colors) {
-    const radius = Radius.circular(AppRadius.lg);
-    final side = BorderSide(color: colors.border);
-    return switch ((isFirst, isLast)) {
-      (true, true) => BoxDecoration(
-        color: colors.surface,
-        borderRadius: const BorderRadius.all(radius),
-        border: Border.all(color: colors.border),
-      ),
-      (true, false) => BoxDecoration(
-        color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: radius),
-        border: Border(top: side, left: side, right: side),
-      ),
-      (false, true) => BoxDecoration(
-        color: colors.surface,
-        borderRadius: const BorderRadius.vertical(bottom: radius),
-        border: Border(bottom: side, left: side, right: side),
-      ),
-      _ => BoxDecoration(
-        color: colors.surface,
-        border: Border(left: side, right: side),
-      ),
-    };
-  }
+  static const _dotTopY = _paddingV + 4.0;
+  static const _dotBottomY = _dotTopY + _dotSize;
+  static const _lineLeft = _paddingH + _dotSize / 2 - _lineWidth / 2;
 
   BorderRadius? _borderRadius() {
     const radius = Radius.circular(AppRadius.lg);
@@ -392,6 +364,31 @@ class _HistoryItem extends StatelessWidget {
       (true, false) => const BorderRadius.vertical(top: radius),
       (false, true) => const BorderRadius.vertical(bottom: radius),
       _ => null,
+    };
+  }
+
+  BoxDecoration _containerDecoration(AppColorScheme colors) {
+    final side = BorderSide(color: colors.border);
+    return switch ((isFirst, isLast)) {
+      (true, true) => BoxDecoration(
+        color: colors.surface,
+        borderRadius: _borderRadius(),
+        border: Border.fromBorderSide(side),
+      ),
+      (true, false) => BoxDecoration(
+        color: colors.surface,
+        borderRadius: _borderRadius(),
+        border: Border(top: side, left: side, right: side),
+      ),
+      (false, true) => BoxDecoration(
+        color: colors.surface,
+        borderRadius: _borderRadius(),
+        border: Border(bottom: side, left: side, right: side),
+      ),
+      _ => BoxDecoration(
+        color: colors.surface,
+        border: Border(left: side, right: side),
+      ),
     };
   }
 
