@@ -364,6 +364,76 @@ void main() {
       final tasks = await repository.allTaskItems().first;
       expect(tasks.first.scheduledAt, isNotNull);
     });
+
+    test('コメントなしで記録すると戻り値の comment は null になる', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      final history = await repository.recordExecution(
+        id,
+        executedAt: DateTime(2025, 6, 1),
+      );
+
+      expect(history.comment, isNull);
+    });
+
+    test('コメントなしで記録した履歴を取得すると comment は null になる', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      final history = await repository.recordExecution(
+        id,
+        executedAt: DateTime(2025, 6, 1),
+      );
+
+      final task = await repository.findTaskById(id);
+      final recorded = task.taskHistory.firstWhere((h) => h.id == history.id);
+      expect(recorded.comment, isNull);
+    });
+
+    test('コメントありで記録すると戻り値の comment が保存される', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      final history = await repository.recordExecution(
+        id,
+        executedAt: DateTime(2025, 6, 1),
+        comment: '良い感じ',
+      );
+
+      expect(history.comment, '良い感じ');
+    });
+
+    test('コメントありで記録した履歴を取得すると comment が保持されている', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+        executedAt: DateTime(2025, 1, 1),
+      );
+      final history = await repository.recordExecution(
+        id,
+        executedAt: DateTime(2025, 6, 1),
+        comment: '良い感じ',
+      );
+
+      final task = await repository.findTaskById(id);
+      final recorded = task.taskHistory.firstWhere((h) => h.id == history.id);
+      expect(recorded.comment, '良い感じ');
+    });
   });
 
   group('updateTask', () {
