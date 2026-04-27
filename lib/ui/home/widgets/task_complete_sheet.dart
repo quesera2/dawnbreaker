@@ -50,12 +50,17 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final safeBottom = MediaQuery.paddingOf(context).bottom;
-    final keyboardBottom = MediaQuery.viewInsetsOf(context).bottom;
+    final safeBottom = MediaQuery
+        .paddingOf(context)
+        .bottom;
+    final keyboardBottom = MediaQuery
+        .viewInsetsOf(context)
+        .bottom;
 
     return SingleChildScrollView(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(20, 0, 20, 16 + safeBottom + keyboardBottom),
+        padding: EdgeInsets.fromLTRB(
+            20, 0, 20, 16 + safeBottom + keyboardBottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -123,10 +128,11 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
     );
   }
 
-  Widget get _commentArea => AppTextInput(
-    controller: _commentController,
-    hintText: context.l10n.homeCompleteCommentPlaceholder,
-  );
+  Widget get _commentArea =>
+      AppTextInput(
+        controller: _commentController,
+        hintText: context.l10n.homeCompleteCommentPlaceholder,
+      );
 
   Widget get _buttonArea {
     return Row(

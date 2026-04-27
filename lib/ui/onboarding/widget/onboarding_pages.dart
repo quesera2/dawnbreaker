@@ -187,7 +187,9 @@ class _OnboardingPage1Description extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tasks = _demoTasks(DateTime.now().truncateTime, context);
+    final tasks = _demoTasks(DateTime
+        .now()
+        .truncateTime, context);
     return Padding(
       padding: EdgeInsets.only(bottom: (tasks.length - 1) * _offsetStep),
       child: Stack(

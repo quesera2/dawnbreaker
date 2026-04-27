@@ -27,9 +27,10 @@ abstract class HomeUiState with _$HomeUiState implements BaseUiState {
 
   HomeTaskCount get taskCount => HomeTaskCount.from(tasks: tasks);
 
-  HomeTaskList get taskList => HomeTaskList.from(
-    tasks: tasks,
-    searchQuery: searchQuery,
-    filter: selectedFilter,
-  );
+  HomeTaskList get taskList =>
+      HomeTaskList.from(
+        tasks: tasks,
+        searchQuery: searchQuery,
+        filter: selectedFilter,
+      );
 }

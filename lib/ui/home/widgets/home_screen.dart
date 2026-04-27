@@ -88,7 +88,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ..._buildContentSlivers(context, uiState.hasTasks, taskList),
           SliverPadding(
             padding: EdgeInsets.only(
-              bottom: 8 + MediaQuery.paddingOf(context).bottom,
+              bottom: 8 + MediaQuery
+                  .paddingOf(context)
+                  .bottom,
             ),
           ),
         ],
@@ -101,20 +103,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (_) => TaskCompleteSheet(
-        task: task,
-        onConfirm: (date, comment) => ref
-            .read(homeViewModelProvider.notifier)
-            .recordExecution(task, date, comment),
-      ),
+      builder: (_) =>
+          TaskCompleteSheet(
+            task: task,
+            onConfirm: (date, comment) =>
+                ref
+                    .read(homeViewModelProvider.notifier)
+                    .recordExecution(task, date, comment),
+          ),
     );
   }
 
-  List<Widget> _buildContentSlivers(
-    BuildContext context,
-    bool hasTasks,
-    HomeTaskList taskList,
-  ) {
+  List<Widget> _buildContentSlivers(BuildContext context,
+      bool hasTasks,
+      HomeTaskList taskList,) {
     if (taskList.isEmpty) {
       final colors = context.appColorScheme;
       return [
@@ -132,7 +134,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     final entries = taskList.taskItemMap.entries.where(
-      (e) => e.value.isNotEmpty,
+          (e) => e.value.isNotEmpty,
     );
 
     return [
@@ -146,12 +148,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     ];
   }
 
-  Widget _buildSectionSliver(
-    BuildContext context,
-    HomeTaskListType type,
-    List<TaskItem> tasks, {
-    required bool addTopPadding,
-  }) {
+  Widget _buildSectionSliver(BuildContext context,
+      HomeTaskListType type,
+      List<TaskItem> tasks, {
+        required bool addTopPadding,
+      }) {
     final colors = context.appColorScheme;
     final group = SliverMainAxisGroup(
       slivers: [
@@ -209,7 +210,10 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       toolbarHeight: 48,
       actions: [
         AppIconButton(onTap: () => context.push('/editor'), icon: Icons.add),
-        AppIconButton(onTap: () {}, icon: Icons.settings_outlined),
+        AppIconButton(
+          onTap: () => context.push('/onboarding'),
+          icon: Icons.settings_outlined,
+        ),
       ],
     );
   }
@@ -263,8 +267,9 @@ class _FilterChipRow extends StatelessWidget {
 }
 
 extension _HomeTaskListTypeLabel on HomeTaskListType {
-  String label(BuildContext context) => switch (this) {
-    HomeTaskListType.overdueTasks => context.l10n.homeSectionOverdue,
-    HomeTaskListType.upcomingTasks => context.l10n.homeSectionUpcoming,
-  };
+  String label(BuildContext context) =>
+      switch (this) {
+        HomeTaskListType.overdueTasks => context.l10n.homeSectionOverdue,
+        HomeTaskListType.upcomingTasks => context.l10n.homeSectionUpcoming,
+      };
 }

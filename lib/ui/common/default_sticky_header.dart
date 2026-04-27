@@ -12,11 +12,9 @@ class DefaultStickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  Widget build(
-      BuildContext context,
+  Widget build(BuildContext context,
       double shrinkOffset,
-      bool overlapsContent,
-      ) {
+      bool overlapsContent,) {
     return SizedBox.expand(child: child);
   }
 

@@ -276,32 +276,35 @@ class AppTaskColorScheme {
   final Color greenBase, greenSoft, greenOn;
   final Color orangeBase, orangeSoft, orangeOn;
 
-  Color base(TaskColor color) => switch (color) {
-    TaskColor.none => slateBase,
-    TaskColor.red => redBase,
-    TaskColor.blue => blueBase,
-    TaskColor.yellow => yellowBase,
-    TaskColor.green => greenBase,
-    TaskColor.orange => orangeBase,
-  };
+  Color base(TaskColor color) =>
+      switch (color) {
+        TaskColor.none => slateBase,
+        TaskColor.red => redBase,
+        TaskColor.blue => blueBase,
+        TaskColor.yellow => yellowBase,
+        TaskColor.green => greenBase,
+        TaskColor.orange => orangeBase,
+      };
 
-  Color soft(TaskColor color) => switch (color) {
-    TaskColor.none => slateSoft,
-    TaskColor.red => redSoft,
-    TaskColor.blue => blueSoft,
-    TaskColor.yellow => yellowSoft,
-    TaskColor.green => greenSoft,
-    TaskColor.orange => orangeSoft,
-  };
+  Color soft(TaskColor color) =>
+      switch (color) {
+        TaskColor.none => slateSoft,
+        TaskColor.red => redSoft,
+        TaskColor.blue => blueSoft,
+        TaskColor.yellow => yellowSoft,
+        TaskColor.green => greenSoft,
+        TaskColor.orange => orangeSoft,
+      };
 
-  Color on(TaskColor color) => switch (color) {
-    TaskColor.none => slateOn,
-    TaskColor.red => redOn,
-    TaskColor.blue => blueOn,
-    TaskColor.yellow => yellowOn,
-    TaskColor.green => greenOn,
-    TaskColor.orange => orangeOn,
-  };
+  Color on(TaskColor color) =>
+      switch (color) {
+        TaskColor.none => slateOn,
+        TaskColor.red => redOn,
+        TaskColor.blue => blueOn,
+        TaskColor.yellow => yellowOn,
+        TaskColor.green => greenOn,
+        TaskColor.orange => orangeOn,
+      };
 
   static const light = AppTaskColorScheme._(
     slateBase: AppTaskColorsLight.slateBase,
@@ -347,17 +350,23 @@ class AppTaskColorScheme {
 }
 
 extension TaskColorContext on TaskColor {
-  Color baseColor(BuildContext context) => context.appTaskColorScheme.base(this);
-  Color softColor(BuildContext context) => context.appTaskColorScheme.soft(this);
+  Color baseColor(BuildContext context) =>
+      context.appTaskColorScheme.base(this);
+
+  Color softColor(BuildContext context) =>
+      context.appTaskColorScheme.soft(this);
+
   Color onColor(BuildContext context) => context.appTaskColorScheme.on(this);
 }
 
 extension AppColors on BuildContext {
-  AppColorScheme get appColorScheme => MediaQuery.platformBrightnessOf(this) == Brightness.dark
-      ? AppColorScheme.dark
-      : AppColorScheme.light;
+  AppColorScheme get appColorScheme =>
+      MediaQuery.platformBrightnessOf(this) == Brightness.dark
+          ? AppColorScheme.dark
+          : AppColorScheme.light;
 
-  AppTaskColorScheme get appTaskColorScheme => MediaQuery.platformBrightnessOf(this) == Brightness.dark
-      ? AppTaskColorScheme.dark
-      : AppTaskColorScheme.light;
+  AppTaskColorScheme get appTaskColorScheme =>
+      MediaQuery.platformBrightnessOf(this) == Brightness.dark
+          ? AppTaskColorScheme.dark
+          : AppTaskColorScheme.light;
 }

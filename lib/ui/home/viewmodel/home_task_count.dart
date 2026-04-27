@@ -23,7 +23,10 @@ class HomeTaskCount {
     required List<TaskItem> tasks,
     DateTime? now,
   }) {
-    int overdue = 0, today = 0, week = 0, irregular = 0;
+    int overdue = 0,
+        today = 0,
+        week = 0,
+        irregular = 0;
 
     for (final task in tasks) {
       final p = task.computeProgress(now);

@@ -14,10 +14,16 @@ sealed class TaskProgress {
     final scheduledDate = scheduledAt.truncateTime;
     final nowDate = now.truncateTime;
 
-    final totalDays = scheduledDate.difference(lastExecutedDate).inDays;
-    final elapsedDays = nowDate.difference(lastExecutedDate).inDays;
+    final totalDays = scheduledDate
+        .difference(lastExecutedDate)
+        .inDays;
+    final elapsedDays = nowDate
+        .difference(lastExecutedDate)
+        .inDays;
 
-    final daysRemaining = scheduledDate.difference(nowDate).inDays;
+    final daysRemaining = scheduledDate
+        .difference(nowDate)
+        .inDays;
     final isOverdue = daysRemaining < 0;
     final progress = totalDays > 0
         ? (elapsedDays / totalDays).clamp(0.0, 1.0)

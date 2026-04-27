@@ -36,64 +36,64 @@ class AppTaskListItem extends StatelessWidget {
               child: InkWell(
                 onTap: onTap,
                 child: Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 10, 12, 10),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        AppTaskIconTile(
-                          emoji: task.icon,
-                          color: task.color,
-                          size: 32,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                task.name,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: colors.text,
-                                  letterSpacing: -0.2,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                  padding: const EdgeInsets.fromLTRB(14, 10, 12, 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      AppTaskIconTile(
+                        emoji: task.icon,
+                        color: task.color,
+                        size: 32,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              task.name,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: colors.text,
+                                letterSpacing: -0.2,
                               ),
-                              if (taskProgress is DueDate) ...[
-                                const SizedBox(height: 4),
-                                _DateRow(
-                                  taskProgress: taskProgress,
-                                  colors: colors,
-                                ),
-                                const SizedBox(height: 6),
-                                AppProgressBar(
-                                  value: taskProgress.progress,
-                                  isOverdue: taskProgress.isOverdue,
-                                  thickness: 2,
-                                ),
-                              ],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (taskProgress is DueDate) ...[
+                              const SizedBox(height: 4),
+                              _DateRow(
+                                taskProgress: taskProgress,
+                                colors: colors,
+                              ),
+                              const SizedBox(height: 6),
+                              AppProgressBar(
+                                value: taskProgress.progress,
+                                isOverdue: taskProgress.isOverdue,
+                                thickness: 2,
+                              ),
                             ],
-                          ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        AppPillButton(
-                          label: context.l10n.homeComplete,
-                          onPressed: onComplete,
-                          leading: const Icon(Icons.check, fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 12),
+                      AppPillButton(
+                        label: context.l10n.homeComplete,
+                        onPressed: onComplete,
+                        leading: const Icon(
+                            Icons.check, fontWeight: FontWeight.w700),
+                      ),
+                    ],
                   ),
                 ),
               ),
+            ),
           ],
         ),
       ),
     );
-
   }
 }
 
@@ -112,7 +112,8 @@ class _DateRow extends StatelessWidget {
 
     if (taskProgress.isOverdue) {
       tone = AppBadgeTone.danger;
-      badgeText = context.l10n.homeDaysOverdue(taskProgress.daysRemaining.abs());
+      badgeText =
+          context.l10n.homeDaysOverdue(taskProgress.daysRemaining.abs());
     } else if (taskProgress.daysRemaining == 0) {
       tone = AppBadgeTone.warning;
       badgeText = context.l10n.homeDueToday;

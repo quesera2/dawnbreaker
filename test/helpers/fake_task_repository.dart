@@ -33,13 +33,18 @@ class FakeTaskRepository implements TaskRepository {
       if (!_controller.isClosed) _controller.add(List.of(_tasks));
     });
     return _controller.stream
-        .map((tasks) => tasks.where((t) => t.id == taskId).firstOrNull);
+        .map((tasks) =>
+    tasks
+        .where((t) => t.id == taskId)
+        .firstOrNull);
   }
 
   @override
   Future<TaskItem> findTaskById(int taskId) async {
     if (shouldThrow) throw const TaskLoadException('テストエラー');
-    final task = _tasks.where((t) => t.id == taskId).firstOrNull;
+    final task = _tasks
+        .where((t) => t.id == taskId)
+        .firstOrNull;
     if (task == null) throw TaskNotFoundException(taskId: taskId);
     return task;
   }
@@ -103,8 +108,7 @@ class FakeTaskRepository implements TaskRepository {
   String? lastRecordedComment;
 
   @override
-  Future<TaskHistory> recordExecution(
-    int taskId, {
+  Future<TaskHistory> recordExecution(int taskId, {
     required DateTime executedAt,
     String? comment,
   }) async {
@@ -114,8 +118,7 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Future<void> updateExecution(
-    int executionId, {
+  Future<void> updateExecution(int executionId, {
     required DateTime executedAt,
     String? comment,
   }) async {
@@ -148,7 +151,9 @@ class FakeTaskRepository implements TaskRepository {
   bool containsTask(int taskId) => _tasks.any((t) => t.id == taskId);
 
   TaskItem? taskById(int taskId) =>
-      _tasks.where((t) => t.id == taskId).firstOrNull;
+      _tasks
+          .where((t) => t.id == taskId)
+          .firstOrNull;
 
   void dispose() => _controller.close();
 
@@ -168,31 +173,34 @@ class FakeTaskRepository implements TaskRepository {
     required List<TaskHistory> taskHistory,
   }) =>
       switch (taskType) {
-        TaskType.irregular => TaskItem.irregular(
-          id: id,
-          name: name,
-          furigana: furigana,
-          icon: icon,
-          color: color,
-          taskHistory: taskHistory,
-        ),
-        TaskType.period => TaskItem.period(
-          id: id,
-          name: name,
-          furigana: furigana,
-          icon: icon,
-          color: color,
-          taskHistory: taskHistory,
-        ),
-        TaskType.scheduled => TaskItem.scheduled(
-          id: id,
-          name: name,
-          furigana: furigana,
-          icon: icon,
-          color: color,
-          scheduleValue: scheduleValue!,
-          scheduleUnit: scheduleUnit!,
-          taskHistory: taskHistory,
-        ),
+        TaskType.irregular =>
+            TaskItem.irregular(
+              id: id,
+              name: name,
+              furigana: furigana,
+              icon: icon,
+              color: color,
+              taskHistory: taskHistory,
+            ),
+        TaskType.period =>
+            TaskItem.period(
+              id: id,
+              name: name,
+              furigana: furigana,
+              icon: icon,
+              color: color,
+              taskHistory: taskHistory,
+            ),
+        TaskType.scheduled =>
+            TaskItem.scheduled(
+              id: id,
+              name: name,
+              furigana: furigana,
+              icon: icon,
+              color: color,
+              scheduleValue: scheduleValue!,
+              scheduleUnit: scheduleUnit!,
+              taskHistory: taskHistory,
+            ),
       };
 }

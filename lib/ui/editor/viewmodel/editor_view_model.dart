@@ -94,7 +94,9 @@ class EditorViewModel extends _$EditorViewModel {
       color: state.color,
       scheduleValue: state.scheduleValue,
       scheduleUnit: state.scheduleUnit,
-      executedAt: DateTime.now().truncateTime,
+      executedAt: DateTime
+          .now()
+          .truncateTime,
     );
     return state.copyWith(
       isSaving: false,
@@ -118,12 +120,12 @@ class EditorViewModel extends _$EditorViewModel {
       scheduleUnit: state.scheduleUnit,
     );
     return state.copyWith(
-      isSaving: false,
-      isSaved: true,
-      snackBarMessage: TaskUpdateSuccessSnackMessage(
-        taskName: state.name,
-        handler: () => _revertTask(originalTask),
-      )
+        isSaving: false,
+        isSaved: true,
+        snackBarMessage: TaskUpdateSuccessSnackMessage(
+          taskName: state.name,
+          handler: () => _revertTask(originalTask),
+        )
     );
   }
 

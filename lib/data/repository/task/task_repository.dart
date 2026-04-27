@@ -31,14 +31,12 @@ abstract interface class TaskRepository {
     ScheduleUnit? scheduleUnit,
   });
 
-  Future<TaskHistory> recordExecution(
-    int taskId, {
+  Future<TaskHistory> recordExecution(int taskId, {
     required DateTime executedAt,
     String? comment,
   });
 
-  Future<void> updateExecution(
-    int executionId, {
+  Future<void> updateExecution(int executionId, {
     required DateTime executedAt,
     String? comment,
   });
