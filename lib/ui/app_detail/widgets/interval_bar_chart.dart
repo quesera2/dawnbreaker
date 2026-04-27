@@ -47,7 +47,7 @@ class IntervalBarChart extends StatelessWidget {
           softColor: taskColor.softColor(context),
           primaryColor: c.primary,
           primaryOnColor: c.primaryOn,
-          dayUnit: context.l10n.appDetailStatsDay,
+          dayUnit: context.l10n.commonUnitDay,
           barAreaHeight: barAreaHeight,
         ),
       ),

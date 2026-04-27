@@ -4,9 +4,7 @@
   "homeSearchHint": "Search tasks",
   "homeNoTasksYet": "No tasks yet",
   "homeNoTasksFound": "No matching tasks found",
-  "homeReRegister": "Re-register",
   "homeFilterAll": "All",
-  "homeFilterOverdue": "Overdue",
   "homeFilterToday": "Today",
   "homeFilterWeek": "Current week",
   "homeFilterIrregular": "Irregular",
@@ -22,9 +20,16 @@
       "name": { "type": "String" }
     }
   },
-  "homeDueToday": "Today",
-  "homeAddTask": "Add task",
-  "homeSettings": "Settings",
+  "commonToday": "Today",
+  "commonOk": "OK",
+  "commonCancel": "Cancel",
+  "commonRetry": "Retry",
+  "commonUndo": "Undo",
+  "commonErrorTitle": "Error",
+  "commonErrorUnknown": "An unexpected error occurred",
+  "commonUnitDay": "d",
+  "commonUnitWeek": "weeks",
+  "commonUnitMonth": "months",
   "homeDaysOverdue": "{days}d overdue",
   "@daysOverdue": {
     "placeholders": {
@@ -43,20 +48,11 @@
   "taskErrorUpdateFailed": "Failed to update",
   "taskErrorDeleteFailed": "Failed to delete",
   "taskErrorInvalidArgument": "Invalid input",
-  "errorTitle": "Error",
-  "errorUnknown": "An unexpected error occurred",
-  "ok": "OK",
-  "cancel": "Cancel",
-  "retry": "Retry",
-  "undo": "Undo",
   "editorTitleNew": "Add Task",
   "editorTitleEdit": "Edit Task",
   "editorSectionBasic": "Basic info",
-  "editorLabelName": "Task name",
   "editorLabelType": "Task type",
   "editorLabelColor": "Color",
-  "editorLabelSpan": "Interval",
-  "editorLabelIcon": "Icon",
   "editorChangeIcon": "Change icon",
   "editorTypeIrregular": "No due date",
   "editorTypeIrregularDesc": "For tasks without a fixed schedule",
@@ -65,9 +61,6 @@
   "editorTypeScheduled": "Set interval",
   "editorTypeScheduledDesc": "Manually set the interval to the next due date",
   "editorSpanPickerTitle": "Repeat interval",
-  "editorSpanDay": "days",
-  "editorSpanWeek": "weeks",
-  "editorSpanMonth": "months",
   "editorSpanLabel": "Every {value} {unit}",
   "@editorSpanLabel": {
     "placeholders": {
@@ -89,8 +82,6 @@
       "name": { "type": "String" }
     }
   },
-  "editorIconDialogTitle": "Select icon",
-  "editorColorNone": "None",
   "editorColorNote": "Use colors to group your tasks",
   "editorNameHint": "Enter task name",
   "appDetailTitle": "History",
@@ -103,7 +94,6 @@
   },
   "appDetailStatsDaysSince": "Days since",
   "appDetailStatsAvgInterval": "Avg interval",
-  "appDetailStatsDay": "d",
   "appDetailHistorySection": "History",
   "appDetailDaysInterval": "{days}d from prev",
   "@appDetailDaysInterval": {

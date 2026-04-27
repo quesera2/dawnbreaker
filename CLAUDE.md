@@ -55,6 +55,8 @@ lib/
 - ARB キーの命名規則: **プレフィクスを必ずつける**
   - 画面固有の文言: `画面名Xxx`（例: `homeNoTasksYet`）
   - Repository エラー文言: `リポジトリ名ErrorXxx`（例: `taskErrorLoadFailed`）
+  - 複数画面で使う汎用文言: `commonXxx`（例: `commonToday`、`commonOk`、`commonCancel`）
+    - 「今日」「OK」「キャンセル」「再試行」「取り消し」などの汎用語もこのルールで命名する
 
 ## スナックバー通知
 

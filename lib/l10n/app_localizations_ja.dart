@@ -21,13 +21,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeNoTasksFound => '一致するタスクが見つかりません';
 
   @override
-  String get homeReRegister => '再登録';
-
-  @override
   String get homeFilterAll => 'すべて';
-
-  @override
-  String get homeFilterOverdue => '超過';
 
   @override
   String get homeFilterToday => '今日';
@@ -62,13 +56,34 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get homeDueToday => '今日';
+  String get commonToday => '今日';
 
   @override
-  String get homeAddTask => 'タスクを追加';
+  String get commonOk => 'OK';
 
   @override
-  String get homeSettings => '設定';
+  String get commonCancel => 'キャンセル';
+
+  @override
+  String get commonRetry => '再試行';
+
+  @override
+  String get commonUndo => '取り消し';
+
+  @override
+  String get commonErrorTitle => 'エラー';
+
+  @override
+  String get commonErrorUnknown => '予期しないエラーが発生しました';
+
+  @override
+  String get commonUnitDay => '日';
+
+  @override
+  String get commonUnitWeek => '週';
+
+  @override
+  String get commonUnitMonth => 'ヶ月';
 
   @override
   String homeDaysOverdue(int days) {
@@ -99,24 +114,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get taskErrorInvalidArgument => '入力内容が正しくありません';
 
   @override
-  String get errorTitle => 'エラー';
-
-  @override
-  String get errorUnknown => '予期しないエラーが発生しました';
-
-  @override
-  String get ok => 'OK';
-
-  @override
-  String get cancel => 'キャンセル';
-
-  @override
-  String get retry => '再試行';
-
-  @override
-  String get undo => '取り消し';
-
-  @override
   String get editorTitleNew => '新規タスクを追加';
 
   @override
@@ -126,19 +123,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get editorSectionBasic => '基本情報';
 
   @override
-  String get editorLabelName => 'タスク名';
-
-  @override
   String get editorLabelType => 'タスク種別';
 
   @override
   String get editorLabelColor => 'カラー';
-
-  @override
-  String get editorLabelSpan => '実行スパン';
-
-  @override
-  String get editorLabelIcon => 'アイコン';
 
   @override
   String get editorChangeIcon => 'アイコンを変更';
@@ -165,15 +153,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get editorSpanPickerTitle => '繰り返し間隔';
 
   @override
-  String get editorSpanDay => '日';
-
-  @override
-  String get editorSpanWeek => '週';
-
-  @override
-  String get editorSpanMonth => 'ヶ月';
-
-  @override
   String editorSpanLabel(String value, String unit) {
     return '$value$unitごと';
   }
@@ -193,12 +172,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String editorSaveEditSuccess(String name) {
     return '「$name」を更新しました';
   }
-
-  @override
-  String get editorIconDialogTitle => 'アイコンを選択';
-
-  @override
-  String get editorColorNone => 'なし';
 
   @override
   String get editorColorNote => '色でタスクをグループ分けできます';
@@ -222,9 +195,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get appDetailStatsAvgInterval => '平均間隔';
-
-  @override
-  String get appDetailStatsDay => '日';
 
   @override
   String get appDetailHistorySection => '履歴';

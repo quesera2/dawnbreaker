@@ -39,25 +39,25 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
 
   Widget _errorAlertDialog(BuildContext ctx, ErrorMessage errorMessage) {
     return AlertDialog(
-      title: Text(ctx.l10n.errorTitle),
+      title: Text(ctx.l10n.commonErrorTitle),
       content: Text(_errorText(ctx, errorMessage)),
       actions: [
         if (errorMessage.handler != null) ...[
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(ctx.l10n.cancel),
+            child: Text(ctx.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               errorMessage.handler!();
             },
-            child: Text(ctx.l10n.retry),
+            child: Text(ctx.l10n.commonRetry),
           ),
         ] else
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(ctx.l10n.ok),
+            child: Text(ctx.l10n.commonOk),
           ),
       ],
     );
@@ -77,11 +77,11 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
   };
 
   String _snackActionLabel(BuildContext ctx, SnackBarMessage m) => switch (m) {
-    TaskCompleteSuccessSnackMessage() => ctx.l10n.undo,
-    TaskCreateSuccessSnackMessage() => ctx.l10n.undo,
-    TaskUpdateSuccessSnackMessage() => ctx.l10n.undo,
-    TaskDeleteSuccessSnackMessage() => ctx.l10n.undo,
-    TaskExecutionUpdateSuccessSnackMessage() => ctx.l10n.undo,
+    TaskCompleteSuccessSnackMessage() => ctx.l10n.commonUndo,
+    TaskCreateSuccessSnackMessage() => ctx.l10n.commonUndo,
+    TaskUpdateSuccessSnackMessage() => ctx.l10n.commonUndo,
+    TaskDeleteSuccessSnackMessage() => ctx.l10n.commonUndo,
+    TaskExecutionUpdateSuccessSnackMessage() => ctx.l10n.commonUndo,
   };
 
   String _errorText(BuildContext ctx, ErrorMessage e) => switch (e) {
@@ -91,6 +91,6 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
     TaskUpdateErrorMessage() => ctx.l10n.taskErrorUpdateFailed,
     TaskDeleteErrorMessage() => ctx.l10n.taskErrorDeleteFailed,
     TaskInvalidArgumentErrorMessage() => ctx.l10n.taskErrorInvalidArgument,
-    UnknownErrorMessage() => ctx.l10n.errorUnknown,
+    UnknownErrorMessage() => ctx.l10n.commonErrorUnknown,
   };
 }

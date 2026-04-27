@@ -138,7 +138,7 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
         Expanded(
           flex: 2,
           child: AppButton(
-            label: context.l10n.cancel,
+            label: context.l10n.commonCancel,
             variant: AppButtonVariant.secondary,
             size: AppButtonSize.large,
             fullWidth: true,
