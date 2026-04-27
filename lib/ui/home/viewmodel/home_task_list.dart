@@ -22,42 +22,46 @@ class HomeTaskList {
     final searched = searchQuery.isEmpty
         ? tasks
         : tasks.where((t) {
-            final q = searchQuery.toLowerCase();
-            return t.name.toLowerCase().contains(q) || t.furigana.contains(q);
-          });
+      final q = searchQuery.toLowerCase();
+      return t.name.toLowerCase().contains(q) || t.furigana.contains(q);
+    });
 
     // フィルタ絞り込み
     final filtered = switch (filter) {
       HomeFilter.all => searched,
-      HomeFilter.overdue => searched.where((t) {
-        final p = t.computeProgress(now);
-        return p is DueDate && p.isOverdue;
-      }),
-      HomeFilter.today => searched.where((t) {
-        final p = t.computeProgress(now);
-        return p is DueDate && !p.isOverdue && p.isToday;
-      }),
-      HomeFilter.week => searched.where((t) {
-        final p = t.computeProgress(now);
-        return p is DueDate && !p.isOverdue && p.isCurrentWeek;
-      }),
-      HomeFilter.irregular => searched.where((t) {
-        final p = t.computeProgress(now);
-        return p is NoDueDate;
-      }),
+      HomeFilter.overdue =>
+          searched.where((t) {
+            final p = t.computeProgress(now);
+            return p is DueDate && p.isOverdue;
+          }),
+      HomeFilter.today =>
+          searched.where((t) {
+            final p = t.computeProgress(now);
+            return p is DueDate && !p.isOverdue && p.isToday;
+          }),
+      HomeFilter.week =>
+          searched.where((t) {
+            final p = t.computeProgress(now);
+            return p is DueDate && !p.isOverdue && p.isCurrentWeek;
+          }),
+      HomeFilter.irregular =>
+          searched.where((t) {
+            final p = t.computeProgress(now);
+            return p is NoDueDate;
+          }),
     };
 
     final divideByOverdue = filtered
         .groupListsBy((t) {
-          final p = t.computeProgress(now);
-          return p is DueDate && p.isOverdue;
-        })
+      final p = t.computeProgress(now);
+      return p is DueDate && p.isOverdue;
+    })
         .map((key, value) {
-          final newKey = key
-              ? HomeTaskListType.overdueTasks
-              : HomeTaskListType.upcomingTasks;
-          return MapEntry(newKey, value);
-        });
+      final newKey = key
+          ? HomeTaskListType.overdueTasks
+          : HomeTaskListType.upcomingTasks;
+      return MapEntry(newKey, value);
+    });
 
     return HomeTaskList._(taskItemMap: divideByOverdue);
   }

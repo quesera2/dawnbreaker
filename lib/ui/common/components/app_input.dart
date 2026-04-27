@@ -54,7 +54,8 @@ class _AppTextInputState extends State<AppTextInput> {
         hintStyle: AppTextStyle.body.copyWith(color: c.textSubtle),
         filled: true,
         fillColor: c.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: BorderSide(color: c.border),

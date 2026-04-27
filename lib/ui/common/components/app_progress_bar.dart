@@ -27,9 +27,10 @@ class _AppProgressBarState extends State<AppProgressBar>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
-  Duration get _duration => widget.isOverdue
-      ? const Duration(milliseconds: 500)
-      : const Duration(milliseconds: 2600);
+  Duration get _duration =>
+      widget.isOverdue
+          ? const Duration(milliseconds: 500)
+          : const Duration(milliseconds: 2600);
 
   @override
   void initState() {

@@ -16,10 +16,11 @@ class App extends StatelessWidget {
 
     return MaterialApp.router(
       onGenerateTitle: (context) => context.l10n.title,
-      builder: (context, child) => ColoredBox(
-        color: context.appColorScheme.bg,
-        child: child!,
-      ),
+      builder: (context, child) =>
+          ColoredBox(
+            color: context.appColorScheme.bg,
+            child: child!,
+          ),
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(

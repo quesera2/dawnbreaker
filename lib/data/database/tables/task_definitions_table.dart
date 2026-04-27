@@ -5,7 +5,8 @@ import 'package:drift/drift.dart';
 class TaskDefinitions extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  TextColumn get taskType => text().map(const EnumNameConverter(TaskType.values))();
+  TextColumn get taskType =>
+      text().map(const EnumNameConverter(TaskType.values))();
 
   TextColumn get icon => text()();
 
@@ -13,5 +14,6 @@ class TaskDefinitions extends Table {
 
   TextColumn get furigana => text()();
 
-  TextColumn get color => text().map(const EnumNameConverter(TaskColor.values))();
+  TextColumn get color =>
+      text().map(const EnumNameConverter(TaskColor.values))();
 }

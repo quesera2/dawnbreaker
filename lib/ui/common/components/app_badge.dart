@@ -7,23 +7,25 @@ import 'package:flutter/widget_previews.dart';
 enum AppBadgeTone { neutral, danger, warning, success, info, primary }
 
 extension AppBadgeToneColors on AppBadgeTone {
-  Color bgColor(AppColorScheme c) => switch (this) {
-    AppBadgeTone.neutral => c.divider,
-    AppBadgeTone.danger => c.dangerSoft,
-    AppBadgeTone.warning => c.warningSoft,
-    AppBadgeTone.success => c.successSoft,
-    AppBadgeTone.info => c.infoSoft,
-    AppBadgeTone.primary => c.primarySoft,
-  };
+  Color bgColor(AppColorScheme c) =>
+      switch (this) {
+        AppBadgeTone.neutral => c.divider,
+        AppBadgeTone.danger => c.dangerSoft,
+        AppBadgeTone.warning => c.warningSoft,
+        AppBadgeTone.success => c.successSoft,
+        AppBadgeTone.info => c.infoSoft,
+        AppBadgeTone.primary => c.primarySoft,
+      };
 
-  Color fgColor(AppColorScheme c) => switch (this) {
-    AppBadgeTone.neutral => c.textMuted,
-    AppBadgeTone.danger => c.danger,
-    AppBadgeTone.warning => c.warning,
-    AppBadgeTone.success => c.success,
-    AppBadgeTone.info => c.info,
-    AppBadgeTone.primary => c.primary,
-  };
+  Color fgColor(AppColorScheme c) =>
+      switch (this) {
+        AppBadgeTone.neutral => c.textMuted,
+        AppBadgeTone.danger => c.danger,
+        AppBadgeTone.warning => c.warning,
+        AppBadgeTone.success => c.success,
+        AppBadgeTone.info => c.info,
+        AppBadgeTone.primary => c.primary,
+      };
 }
 
 class AppBadge extends StatelessWidget {

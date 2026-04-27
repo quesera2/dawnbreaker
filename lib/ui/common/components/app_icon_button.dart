@@ -70,20 +70,23 @@ class AppIconButton extends StatelessWidget {
 }
 
 extension _AppIconButtonTone on AppColorScheme {
-  Color appIconBorderColor(AppIconTone tone) => switch (tone) {
-    .normal => borderStrong,
-    .destruction => danger,
-  };
+  Color appIconBorderColor(AppIconTone tone) =>
+      switch (tone) {
+            .normal => borderStrong,
+            .destruction => danger,
+      };
 
-  Color appIconBackGroundColor(AppIconTone tone) => switch (tone) {
-    .normal => surface,
-    .destruction => dangerSoft,
-  };
+  Color appIconBackGroundColor(AppIconTone tone) =>
+      switch (tone) {
+            .normal => surface,
+            .destruction => dangerSoft,
+      };
 
-  Color appIconContentColor(AppIconTone tone) => switch (tone) {
-    .normal => text,
-    .destruction => danger,
-  };
+  Color appIconContentColor(AppIconTone tone) =>
+      switch (tone) {
+            .normal => text,
+            .destruction => danger,
+      };
 }
 
 @Preview()
