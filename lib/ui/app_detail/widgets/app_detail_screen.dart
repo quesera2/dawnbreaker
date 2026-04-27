@@ -243,7 +243,7 @@ class _StatsAndChartCard extends StatelessWidget {
                     child: _StatCell(
                       label: context.l10n.appDetailStatsDaysSince,
                       value: daysSinceLastExecution,
-                      unit: context.l10n.appDetailStatsDay,
+                      unit: context.l10n.commonUnitDay,
                     ),
                   ),
                   VerticalDivider(
@@ -255,7 +255,7 @@ class _StatsAndChartCard extends StatelessWidget {
                     child: _StatCell(
                       label: context.l10n.appDetailStatsAvgInterval,
                       value: averageIntervalDays,
-                      unit: context.l10n.appDetailStatsDay,
+                      unit: context.l10n.commonUnitDay,
                     ),
                   ),
                 ],
@@ -444,7 +444,7 @@ class _HistoryItem extends StatelessWidget {
                       if (intervalDays != null)
                         Text(
                           intervalDays! == 0
-                              ? context.l10n.homeDueToday
+                              ? context.l10n.commonToday
                               : context.l10n.appDetailDaysInterval(
                                   intervalDays!,
                                 ),

@@ -119,7 +119,7 @@ class _DateRow extends StatelessWidget {
       );
     } else if (taskProgress.daysRemaining == 0) {
       tone = AppBadgeTone.warning;
-      badgeText = context.l10n.homeDueToday;
+      badgeText = context.l10n.commonToday;
     } else {
       tone = AppBadgeTone.neutral;
       badgeText = context.l10n.homeDaysRemaining(taskProgress.daysRemaining);

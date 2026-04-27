@@ -21,8 +21,8 @@ enum ScheduleUnit {
   };
 
   String label(BuildContext context) => switch (this) {
-    ScheduleUnit.day => context.l10n.editorSpanDay,
-    ScheduleUnit.week => context.l10n.editorSpanWeek,
-    ScheduleUnit.month => context.l10n.editorSpanMonth,
+    ScheduleUnit.day => context.l10n.commonUnitDay,
+    ScheduleUnit.week => context.l10n.commonUnitWeek,
+    ScheduleUnit.month => context.l10n.commonUnitMonth,
   };
 }

@@ -21,13 +21,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeNoTasksFound => 'No matching tasks found';
 
   @override
-  String get homeReRegister => 'Re-register';
-
-  @override
   String get homeFilterAll => 'All';
-
-  @override
-  String get homeFilterOverdue => 'Overdue';
 
   @override
   String get homeFilterToday => 'Today';
@@ -62,13 +56,34 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get homeDueToday => 'Today';
+  String get commonToday => 'Today';
 
   @override
-  String get homeAddTask => 'Add task';
+  String get commonOk => 'OK';
 
   @override
-  String get homeSettings => 'Settings';
+  String get commonCancel => 'Cancel';
+
+  @override
+  String get commonRetry => 'Retry';
+
+  @override
+  String get commonUndo => 'Undo';
+
+  @override
+  String get commonErrorTitle => 'Error';
+
+  @override
+  String get commonErrorUnknown => 'An unexpected error occurred';
+
+  @override
+  String get commonUnitDay => 'd';
+
+  @override
+  String get commonUnitWeek => 'weeks';
+
+  @override
+  String get commonUnitMonth => 'months';
 
   @override
   String homeDaysOverdue(int days) {
@@ -99,24 +114,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taskErrorInvalidArgument => 'Invalid input';
 
   @override
-  String get errorTitle => 'Error';
-
-  @override
-  String get errorUnknown => 'An unexpected error occurred';
-
-  @override
-  String get ok => 'OK';
-
-  @override
-  String get cancel => 'Cancel';
-
-  @override
-  String get retry => 'Retry';
-
-  @override
-  String get undo => 'Undo';
-
-  @override
   String get editorTitleNew => 'Add Task';
 
   @override
@@ -126,19 +123,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorSectionBasic => 'Basic info';
 
   @override
-  String get editorLabelName => 'Task name';
-
-  @override
   String get editorLabelType => 'Task type';
 
   @override
   String get editorLabelColor => 'Color';
-
-  @override
-  String get editorLabelSpan => 'Interval';
-
-  @override
-  String get editorLabelIcon => 'Icon';
 
   @override
   String get editorChangeIcon => 'Change icon';
@@ -166,15 +154,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorSpanPickerTitle => 'Repeat interval';
 
   @override
-  String get editorSpanDay => 'days';
-
-  @override
-  String get editorSpanWeek => 'weeks';
-
-  @override
-  String get editorSpanMonth => 'months';
-
-  @override
   String editorSpanLabel(String value, String unit) {
     return 'Every $value $unit';
   }
@@ -194,12 +173,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String editorSaveEditSuccess(String name) {
     return '\"$name\" updated';
   }
-
-  @override
-  String get editorIconDialogTitle => 'Select icon';
-
-  @override
-  String get editorColorNone => 'None';
 
   @override
   String get editorColorNote => 'Use colors to group your tasks';
@@ -223,9 +196,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appDetailStatsAvgInterval => 'Avg interval';
-
-  @override
-  String get appDetailStatsDay => 'd';
 
   @override
   String get appDetailHistorySection => 'History';

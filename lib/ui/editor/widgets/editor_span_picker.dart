@@ -151,7 +151,7 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
         Expanded(
           flex: 2,
           child: AppButton(
-            label: context.l10n.cancel,
+            label: context.l10n.commonCancel,
             variant: AppButtonVariant.secondary,
             size: AppButtonSize.large,
             fullWidth: true,
@@ -162,7 +162,7 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
         Expanded(
           flex: 3,
           child: AppButton(
-            label: context.l10n.ok,
+            label: context.l10n.commonOk,
             size: AppButtonSize.large,
             fullWidth: true,
             onPressed: () =>

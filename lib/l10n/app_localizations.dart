@@ -122,23 +122,11 @@ abstract class AppLocalizations {
   /// **'一致するタスクが見つかりません'**
   String get homeNoTasksFound;
 
-  /// No description provided for @homeReRegister.
-  ///
-  /// In ja, this message translates to:
-  /// **'再登録'**
-  String get homeReRegister;
-
   /// No description provided for @homeFilterAll.
   ///
   /// In ja, this message translates to:
   /// **'すべて'**
   String get homeFilterAll;
-
-  /// No description provided for @homeFilterOverdue.
-  ///
-  /// In ja, this message translates to:
-  /// **'超過'**
-  String get homeFilterOverdue;
 
   /// No description provided for @homeFilterToday.
   ///
@@ -200,23 +188,65 @@ abstract class AppLocalizations {
   /// **'「{name}」の完了を記録しました'**
   String homeCompleteSuccess(String name);
 
-  /// No description provided for @homeDueToday.
+  /// No description provided for @commonToday.
   ///
   /// In ja, this message translates to:
   /// **'今日'**
-  String get homeDueToday;
+  String get commonToday;
 
-  /// No description provided for @homeAddTask.
+  /// No description provided for @commonOk.
   ///
   /// In ja, this message translates to:
-  /// **'タスクを追加'**
-  String get homeAddTask;
+  /// **'OK'**
+  String get commonOk;
 
-  /// No description provided for @homeSettings.
+  /// No description provided for @commonCancel.
   ///
   /// In ja, this message translates to:
-  /// **'設定'**
-  String get homeSettings;
+  /// **'キャンセル'**
+  String get commonCancel;
+
+  /// No description provided for @commonRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'再試行'**
+  String get commonRetry;
+
+  /// No description provided for @commonUndo.
+  ///
+  /// In ja, this message translates to:
+  /// **'取り消し'**
+  String get commonUndo;
+
+  /// No description provided for @commonErrorTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラー'**
+  String get commonErrorTitle;
+
+  /// No description provided for @commonErrorUnknown.
+  ///
+  /// In ja, this message translates to:
+  /// **'予期しないエラーが発生しました'**
+  String get commonErrorUnknown;
+
+  /// No description provided for @commonUnitDay.
+  ///
+  /// In ja, this message translates to:
+  /// **'日'**
+  String get commonUnitDay;
+
+  /// No description provided for @commonUnitWeek.
+  ///
+  /// In ja, this message translates to:
+  /// **'週'**
+  String get commonUnitWeek;
+
+  /// No description provided for @commonUnitMonth.
+  ///
+  /// In ja, this message translates to:
+  /// **'ヶ月'**
+  String get commonUnitMonth;
 
   /// No description provided for @homeDaysOverdue.
   ///
@@ -266,42 +296,6 @@ abstract class AppLocalizations {
   /// **'入力内容が正しくありません'**
   String get taskErrorInvalidArgument;
 
-  /// No description provided for @errorTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'エラー'**
-  String get errorTitle;
-
-  /// No description provided for @errorUnknown.
-  ///
-  /// In ja, this message translates to:
-  /// **'予期しないエラーが発生しました'**
-  String get errorUnknown;
-
-  /// No description provided for @ok.
-  ///
-  /// In ja, this message translates to:
-  /// **'OK'**
-  String get ok;
-
-  /// No description provided for @cancel.
-  ///
-  /// In ja, this message translates to:
-  /// **'キャンセル'**
-  String get cancel;
-
-  /// No description provided for @retry.
-  ///
-  /// In ja, this message translates to:
-  /// **'再試行'**
-  String get retry;
-
-  /// No description provided for @undo.
-  ///
-  /// In ja, this message translates to:
-  /// **'取り消し'**
-  String get undo;
-
   /// No description provided for @editorTitleNew.
   ///
   /// In ja, this message translates to:
@@ -320,12 +314,6 @@ abstract class AppLocalizations {
   /// **'基本情報'**
   String get editorSectionBasic;
 
-  /// No description provided for @editorLabelName.
-  ///
-  /// In ja, this message translates to:
-  /// **'タスク名'**
-  String get editorLabelName;
-
   /// No description provided for @editorLabelType.
   ///
   /// In ja, this message translates to:
@@ -337,18 +325,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'カラー'**
   String get editorLabelColor;
-
-  /// No description provided for @editorLabelSpan.
-  ///
-  /// In ja, this message translates to:
-  /// **'実行スパン'**
-  String get editorLabelSpan;
-
-  /// No description provided for @editorLabelIcon.
-  ///
-  /// In ja, this message translates to:
-  /// **'アイコン'**
-  String get editorLabelIcon;
 
   /// No description provided for @editorChangeIcon.
   ///
@@ -398,24 +374,6 @@ abstract class AppLocalizations {
   /// **'繰り返し間隔'**
   String get editorSpanPickerTitle;
 
-  /// No description provided for @editorSpanDay.
-  ///
-  /// In ja, this message translates to:
-  /// **'日'**
-  String get editorSpanDay;
-
-  /// No description provided for @editorSpanWeek.
-  ///
-  /// In ja, this message translates to:
-  /// **'週'**
-  String get editorSpanWeek;
-
-  /// No description provided for @editorSpanMonth.
-  ///
-  /// In ja, this message translates to:
-  /// **'ヶ月'**
-  String get editorSpanMonth;
-
   /// No description provided for @editorSpanLabel.
   ///
   /// In ja, this message translates to:
@@ -445,18 +403,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'「{name}」を更新しました'**
   String editorSaveEditSuccess(String name);
-
-  /// No description provided for @editorIconDialogTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'アイコンを選択'**
-  String get editorIconDialogTitle;
-
-  /// No description provided for @editorColorNone.
-  ///
-  /// In ja, this message translates to:
-  /// **'なし'**
-  String get editorColorNone;
 
   /// No description provided for @editorColorNote.
   ///
@@ -499,12 +445,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'平均間隔'**
   String get appDetailStatsAvgInterval;
-
-  /// No description provided for @appDetailStatsDay.
-  ///
-  /// In ja, this message translates to:
-  /// **'日'**
-  String get appDetailStatsDay;
 
   /// No description provided for @appDetailHistorySection.
   ///

@@ -4,9 +4,7 @@
   "homeSearchHint": "タスクを検索",
   "homeNoTasksYet": "タスクがまだありません",
   "homeNoTasksFound": "一致するタスクが見つかりません",
-  "homeReRegister": "再登録",
   "homeFilterAll": "すべて",
-  "homeFilterOverdue": "超過",
   "homeFilterToday": "今日",
   "homeFilterWeek": "今週",
   "homeFilterIrregular": "不定期",
@@ -22,9 +20,16 @@
       "name": { "type": "String" }
     }
   },
-  "homeDueToday": "今日",
-  "homeAddTask": "タスクを追加",
-  "homeSettings": "設定",
+  "commonToday": "今日",
+  "commonOk": "OK",
+  "commonCancel": "キャンセル",
+  "commonRetry": "再試行",
+  "commonUndo": "取り消し",
+  "commonErrorTitle": "エラー",
+  "commonErrorUnknown": "予期しないエラーが発生しました",
+  "commonUnitDay": "日",
+  "commonUnitWeek": "週",
+  "commonUnitMonth": "ヶ月",
   "homeDaysOverdue": "{days}日超過",
   "@homeDaysOverdue": {
     "placeholders": {
@@ -43,20 +48,11 @@
   "taskErrorUpdateFailed": "更新に失敗しました",
   "taskErrorDeleteFailed": "削除に失敗しました",
   "taskErrorInvalidArgument": "入力内容が正しくありません",
-  "errorTitle": "エラー",
-  "errorUnknown": "予期しないエラーが発生しました",
-  "ok": "OK",
-  "cancel": "キャンセル",
-  "retry": "再試行",
-  "undo": "取り消し",
   "editorTitleNew": "新規タスクを追加",
   "editorTitleEdit": "タスクを編集",
   "editorSectionBasic": "基本情報",
-  "editorLabelName": "タスク名",
   "editorLabelType": "タスク種別",
   "editorLabelColor": "カラー",
-  "editorLabelSpan": "実行スパン",
-  "editorLabelIcon": "アイコン",
   "editorChangeIcon": "アイコンを変更",
   "editorTypeIrregular": "予定日を表示しない",
   "editorTypeIrregularDesc": "不定期に実行するタスク",
@@ -65,9 +61,6 @@
   "editorTypeScheduled": "周期を指定",
   "editorTypeScheduledDesc": "次回予定日までの間隔を手動で設定",
   "editorSpanPickerTitle": "繰り返し間隔",
-  "editorSpanDay": "日",
-  "editorSpanWeek": "週",
-  "editorSpanMonth": "ヶ月",
   "editorSpanLabel": "{value}{unit}ごと",
   "@editorSpanLabel": {
     "placeholders": {
@@ -89,8 +82,6 @@
       "name": { "type": "String" }
     }
   },
-  "editorIconDialogTitle": "アイコンを選択",
-  "editorColorNone": "なし",
   "editorColorNote": "色でタスクをグループ分けできます",
   "editorNameHint": "タスク名を入力",
   "appDetailTitle": "実行履歴",
@@ -103,7 +94,6 @@
   },
   "appDetailStatsDaysSince": "前回から",
   "appDetailStatsAvgInterval": "平均間隔",
-  "appDetailStatsDay": "日",
   "appDetailHistorySection": "履歴",
   "appDetailDaysInterval": "前回から{days}日",
   "@appDetailDaysInterval": {
