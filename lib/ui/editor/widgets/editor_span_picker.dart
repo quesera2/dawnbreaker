@@ -109,43 +109,41 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
     );
   }
 
-  Positioned _topFadeEdge(Color color) =>
-      Positioned(
-        top: 0,
-        left: 0,
-        right: 0,
-        child: IgnorePointer(
-          child: Container(
-            height: 72,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [color, color.withAlpha(0)],
-              ),
-            ),
+  Positioned _topFadeEdge(Color color) => Positioned(
+    top: 0,
+    left: 0,
+    right: 0,
+    child: IgnorePointer(
+      child: Container(
+        height: 72,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [color, color.withAlpha(0)],
           ),
         ),
-      );
+      ),
+    ),
+  );
 
-  Positioned _bottomFadeEdge(Color color) =>
-      Positioned(
-        bottom: 0,
-        left: 0,
-        right: 0,
-        child: IgnorePointer(
-          child: Container(
-            height: 72,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [color, color.withAlpha(0)],
-              ),
-            ),
+  Positioned _bottomFadeEdge(Color color) => Positioned(
+    bottom: 0,
+    left: 0,
+    right: 0,
+    child: IgnorePointer(
+      child: Container(
+        height: 72,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [color, color.withAlpha(0)],
           ),
         ),
-      );
+      ),
+    ),
+  );
 
   Widget get _buttonArea {
     return Row(
@@ -178,9 +176,7 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
   @override
   Widget build(BuildContext context) {
     final c = context.appColorScheme;
-    final bottomPadding = MediaQuery
-        .paddingOf(context)
-        .bottom;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 0, 20, 16 + bottomPadding),

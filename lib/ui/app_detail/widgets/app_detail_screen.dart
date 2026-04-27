@@ -46,9 +46,7 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
     final task = uiState.task;
     final historyStats = uiState.historyStats;
     final historyAndInterval = historyStats?.historyAndInterval ?? [];
-    final bottomPadding = MediaQuery
-        .paddingOf(context)
-        .bottom;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
       backgroundColor: colors.bg,
@@ -70,25 +68,25 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
             title: Text(context.l10n.appDetailTitle),
             actions: task != null
                 ? [
-              AppIconButton(
-                icon: Icons.edit_outlined,
-                label: context.l10n.appDetailEdit,
-                onTap: () => context.push('/editor', extra: task.id),
-              ),
-              const SizedBox(width: 4),
-              AppIconButton(
-                icon: Icons.delete,
-                tone: AppIconTone.destruction,
-                onTap: viewModel.deleteTask,
-              ),
-              const SizedBox(width: 12),
-            ]
+                    AppIconButton(
+                      icon: Icons.edit_outlined,
+                      label: context.l10n.appDetailEdit,
+                      onTap: () => context.push('/editor', extra: task.id),
+                    ),
+                    const SizedBox(width: 4),
+                    AppIconButton(
+                      icon: Icons.delete,
+                      tone: AppIconTone.destruction,
+                      onTap: viewModel.deleteTask,
+                    ),
+                    const SizedBox(width: 12),
+                  ]
                 : null,
             bottom: task != null
                 ? PreferredSize(
-              preferredSize: const Size.fromHeight(76),
-              child: _TaskHeader(task: task),
-            )
+                    preferredSize: const Size.fromHeight(76),
+                    child: _TaskHeader(task: task),
+                  )
                 : null,
           ),
           if (!uiState.isLoading && task != null && historyStats != null) ...[
@@ -138,17 +136,14 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (_) =>
-          TaskCompleteSheet(
-            task: task,
-            initialDate: entry.executedAt,
-            initialComment: entry.comment,
-            onConfirm: (date, comment) =>
-                ref
-                    .read(
-                    appDetailViewModelProvider(taskId: widget.taskId).notifier)
-                    .updateExecution(entry, executedAt: date, comment: comment),
-          ),
+      builder: (_) => TaskCompleteSheet(
+        task: task,
+        initialDate: entry.executedAt,
+        initialComment: entry.comment,
+        onConfirm: (date, comment) => ref
+            .read(appDetailViewModelProvider(taskId: widget.taskId).notifier)
+            .updateExecution(entry, executedAt: date, comment: comment),
+      ),
     );
   }
 }
@@ -194,24 +189,21 @@ class _TypeBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (task) {
-      IrregularTaskItem() =>
-          AppBadge(
-            label: context.l10n.appDetailTypeBadgeIrregular,
-            tone: AppBadgeTone.neutral,
-          ),
-      PeriodTaskItem() =>
-          AppBadge(
-            label: context.l10n.appDetailTypeBadgePeriod,
-            tone: AppBadgeTone.success,
-          ),
-      ScheduledTaskItem(:final scheduleValue, :final scheduleUnit) =>
-          AppBadge(
-            label: context.l10n.appDetailTypeBadgeScheduled(
-              scheduleValue,
-              scheduleUnit.label(context),
-            ),
-            tone: AppBadgeTone.info,
-          ),
+      IrregularTaskItem() => AppBadge(
+        label: context.l10n.appDetailTypeBadgeIrregular,
+        tone: AppBadgeTone.neutral,
+      ),
+      PeriodTaskItem() => AppBadge(
+        label: context.l10n.appDetailTypeBadgePeriod,
+        tone: AppBadgeTone.success,
+      ),
+      ScheduledTaskItem(:final scheduleValue, :final scheduleUnit) => AppBadge(
+        label: context.l10n.appDetailTypeBadgeScheduled(
+          scheduleValue,
+          scheduleUnit.label(context),
+        ),
+        tone: AppBadgeTone.info,
+      ),
     };
   }
 }
@@ -375,13 +367,12 @@ class _HistoryItem extends StatelessWidget {
     };
   }
 
-  Border _border(BorderSide side) =>
-      switch ((isFirst, isLast)) {
-        (true, true) => Border.fromBorderSide(side),
-        (true, false) => Border(top: side, left: side, right: side),
-        (false, true) => Border(bottom: side, left: side, right: side),
-        _ => Border(left: side, right: side),
-      };
+  Border _border(BorderSide side) => switch ((isFirst, isLast)) {
+    (true, true) => Border.fromBorderSide(side),
+    (true, false) => Border(top: side, left: side, right: side),
+    (false, true) => Border(bottom: side, left: side, right: side),
+    _ => Border(left: side, right: side),
+  };
 
   BoxDecoration _containerDecoration(AppColorScheme colors) {
     final side = BorderSide(color: colors.border);
@@ -392,14 +383,13 @@ class _HistoryItem extends StatelessWidget {
     );
   }
 
-  BoxDecoration _dotDecoration(Color dotColor, Color surface) =>
-      isFirst
-          ? BoxDecoration(color: dotColor, shape: BoxShape.circle)
-          : BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: dotColor, width: _lineWidth),
-        color: surface,
-      );
+  BoxDecoration _dotDecoration(Color dotColor, Color surface) => isFirst
+      ? BoxDecoration(color: dotColor, shape: BoxShape.circle)
+      : BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: dotColor, width: _lineWidth),
+          color: surface,
+        );
 
   @override
   Widget build(BuildContext context) {
@@ -456,7 +446,8 @@ class _HistoryItem extends StatelessWidget {
                           intervalDays! == 0
                               ? context.l10n.homeDueToday
                               : context.l10n.appDetailDaysInterval(
-                              intervalDays!),
+                                  intervalDays!,
+                                ),
                           style: AppTextStyle.caption.copyWith(
                             color: colors.textMuted,
                           ),
@@ -466,7 +457,9 @@ class _HistoryItem extends StatelessWidget {
                   if (entry.comment case final comment?)
                     Padding(
                       padding: const EdgeInsets.only(
-                          top: 8, left: _dotSize + 12),
+                        top: 8,
+                        left: _dotSize + 12,
+                      ),
                       child: _HistoryComment(comment: comment, colors: colors),
                     ),
                 ],

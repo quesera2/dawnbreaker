@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
-on ConsumerState<T> {
+    on ConsumerState<T> {
   void listenMessages<S extends BaseUiState>(ProviderListenable<S> provider) {
     ref.listen(provider.select((s) => s.errorMessage), (prev, next) {
       if (next == null || prev?.id == next.id) return;
@@ -29,9 +29,9 @@ on ConsumerState<T> {
           action: next.handler == null
               ? null
               : SnackBarAction(
-            label: _snackActionLabel(context, next),
-            onPressed: () => unawaited(next.handler!()),
-          ),
+                  label: _snackActionLabel(context, next),
+                  onPressed: () => unawaited(next.handler!()),
+                ),
         ),
       );
     });
@@ -63,37 +63,34 @@ on ConsumerState<T> {
     );
   }
 
-  String _snackText(BuildContext ctx, SnackBarMessage m) =>
-      switch (m) {
-        TaskCompleteSuccessSnackMessage(:final taskName) =>
-            ctx.l10n.homeCompleteSuccess(taskName),
-        TaskCreateSuccessSnackMessage(:final taskName) =>
-            ctx.l10n.editorSaveNewSuccess(taskName),
-        TaskUpdateSuccessSnackMessage(:final taskName) =>
-            ctx.l10n.editorSaveEditSuccess(taskName),
-        TaskDeleteSuccessSnackMessage(:final taskName) =>
-            ctx.l10n.appDetailDeleteSuccess(taskName),
-        TaskExecutionUpdateSuccessSnackMessage() =>
-        ctx.l10n.appDetailUpdateHistorySuccess,
-      };
+  String _snackText(BuildContext ctx, SnackBarMessage m) => switch (m) {
+    TaskCompleteSuccessSnackMessage(:final taskName) =>
+      ctx.l10n.homeCompleteSuccess(taskName),
+    TaskCreateSuccessSnackMessage(:final taskName) =>
+      ctx.l10n.editorSaveNewSuccess(taskName),
+    TaskUpdateSuccessSnackMessage(:final taskName) =>
+      ctx.l10n.editorSaveEditSuccess(taskName),
+    TaskDeleteSuccessSnackMessage(:final taskName) =>
+      ctx.l10n.appDetailDeleteSuccess(taskName),
+    TaskExecutionUpdateSuccessSnackMessage() =>
+      ctx.l10n.appDetailUpdateHistorySuccess,
+  };
 
-  String _snackActionLabel(BuildContext ctx, SnackBarMessage m) =>
-      switch (m) {
-        TaskCompleteSuccessSnackMessage() => ctx.l10n.undo,
-        TaskCreateSuccessSnackMessage() => ctx.l10n.undo,
-        TaskUpdateSuccessSnackMessage() => ctx.l10n.undo,
-        TaskDeleteSuccessSnackMessage() => ctx.l10n.undo,
-        TaskExecutionUpdateSuccessSnackMessage() => ctx.l10n.undo,
-      };
+  String _snackActionLabel(BuildContext ctx, SnackBarMessage m) => switch (m) {
+    TaskCompleteSuccessSnackMessage() => ctx.l10n.undo,
+    TaskCreateSuccessSnackMessage() => ctx.l10n.undo,
+    TaskUpdateSuccessSnackMessage() => ctx.l10n.undo,
+    TaskDeleteSuccessSnackMessage() => ctx.l10n.undo,
+    TaskExecutionUpdateSuccessSnackMessage() => ctx.l10n.undo,
+  };
 
-  String _errorText(BuildContext ctx, ErrorMessage e) =>
-      switch (e) {
-        TaskNotFoundErrorMessage() => ctx.l10n.taskErrorNotFound,
-        TaskLoadErrorMessage() => ctx.l10n.taskErrorLoadFailed,
-        TaskSaveErrorMessage() => ctx.l10n.taskErrorSaveFailed,
-        TaskUpdateErrorMessage() => ctx.l10n.taskErrorUpdateFailed,
-        TaskDeleteErrorMessage() => ctx.l10n.taskErrorDeleteFailed,
-        TaskInvalidArgumentErrorMessage() => ctx.l10n.taskErrorInvalidArgument,
-        UnknownErrorMessage() => ctx.l10n.errorUnknown,
-      };
+  String _errorText(BuildContext ctx, ErrorMessage e) => switch (e) {
+    TaskNotFoundErrorMessage() => ctx.l10n.taskErrorNotFound,
+    TaskLoadErrorMessage() => ctx.l10n.taskErrorLoadFailed,
+    TaskSaveErrorMessage() => ctx.l10n.taskErrorSaveFailed,
+    TaskUpdateErrorMessage() => ctx.l10n.taskErrorUpdateFailed,
+    TaskDeleteErrorMessage() => ctx.l10n.taskErrorDeleteFailed,
+    TaskInvalidArgumentErrorMessage() => ctx.l10n.taskErrorInvalidArgument,
+    UnknownErrorMessage() => ctx.l10n.errorUnknown,
+  };
 }

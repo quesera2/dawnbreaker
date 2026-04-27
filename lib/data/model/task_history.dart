@@ -8,5 +8,5 @@ abstract class TaskHistory with _$TaskHistory {
     required int id,
     required DateTime executedAt,
     required String? comment,
-  }) =_TaskHistory;
+  }) = _TaskHistory;
 }

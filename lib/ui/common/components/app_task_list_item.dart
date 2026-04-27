@@ -83,7 +83,9 @@ class AppTaskListItem extends StatelessWidget {
                         label: context.l10n.homeComplete,
                         onPressed: onComplete,
                         leading: const Icon(
-                            Icons.check, fontWeight: FontWeight.w700),
+                          Icons.check,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
@@ -112,8 +114,9 @@ class _DateRow extends StatelessWidget {
 
     if (taskProgress.isOverdue) {
       tone = AppBadgeTone.danger;
-      badgeText =
-          context.l10n.homeDaysOverdue(taskProgress.daysRemaining.abs());
+      badgeText = context.l10n.homeDaysOverdue(
+        taskProgress.daysRemaining.abs(),
+      );
     } else if (taskProgress.daysRemaining == 0) {
       tone = AppBadgeTone.warning;
       badgeText = context.l10n.homeDueToday;
@@ -126,10 +129,7 @@ class _DateRow extends StatelessWidget {
       children: [
         Icon(Icons.calendar_today_outlined, size: 11, color: colors.textMuted),
         const SizedBox(width: 4),
-        Text(
-          dateStr,
-          style: TextStyle(fontSize: 11, color: colors.textMuted),
-        ),
+        Text(dateStr, style: TextStyle(fontSize: 11, color: colors.textMuted)),
         const SizedBox(width: 6),
         AppBadge(label: badgeText, tone: tone),
       ],

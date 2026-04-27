@@ -89,7 +89,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 onDotClicked: (index) => _pageController.jumpToPage(index),
               ),
               _buttonArea(
-                  context, isLastPage: _currentPage == _pages.length - 1),
+                context,
+                isLastPage: _currentPage == _pages.length - 1,
+              ),
             ],
           ),
         ),
@@ -106,11 +108,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           AppButton(
             label: isLastPage ? l10n.onboardingStart : l10n.onboardingNext,
-            onPressed: () =>
-                _pageController.nextPage(
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeInOut,
-                ),
+            onPressed: () => _pageController.nextPage(
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+            ),
             fullWidth: true,
             size: AppButtonSize.large,
           ),

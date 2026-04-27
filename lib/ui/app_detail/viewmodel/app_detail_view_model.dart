@@ -25,22 +25,23 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         .watchTaskById(taskId)
         .listen(
           (task) {
-        // 削除されたときは無視する
-        if (!ref.mounted || task == null) {
-          state = state.clearTaskItem();
-        } else {
-          state = state.updateTaskItem(task);
-        }
-      },
-      onError: (e) {
-        if (!ref.mounted) return;
-        state = state.copyWith(isLoading: false, shouldPop: true);
-      },
-    );
+            // 削除されたときは無視する
+            if (!ref.mounted || task == null) {
+              state = state.clearTaskItem();
+            } else {
+              state = state.updateTaskItem(task);
+            }
+          },
+          onError: (e) {
+            if (!ref.mounted) return;
+            state = state.copyWith(isLoading: false, shouldPop: true);
+          },
+        );
     ref.onDispose(subscription.cancel);
   }
 
-  Future<void> updateExecution(TaskHistory history, {
+  Future<void> updateExecution(
+    TaskHistory history, {
     required DateTime executedAt,
     String? comment,
   }) async {
@@ -53,24 +54,22 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       if (!ref.mounted) return;
       state = state.copyWith(
         snackBarMessage: TaskExecutionUpdateSuccessSnackMessage(
-          handler: () =>
-              updateExecution(
-                history,
-                executedAt: history.executedAt,
-                comment: history.comment,
-              ),
+          handler: () => updateExecution(
+            history,
+            executedAt: history.executedAt,
+            comment: history.comment,
+          ),
         ),
       );
     } on TaskRepositoryException {
       if (!ref.mounted) return;
       state = state.copyWith(
         errorMessage: TaskUpdateErrorMessage(
-          handler: () =>
-              updateExecution(
-                history,
-                executedAt: executedAt,
-                comment: comment,
-              ),
+          handler: () => updateExecution(
+            history,
+            executedAt: executedAt,
+            comment: comment,
+          ),
         ),
       );
     }

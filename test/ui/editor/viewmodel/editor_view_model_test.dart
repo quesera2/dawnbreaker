@@ -54,9 +54,7 @@ void main() {
       });
 
       test('name が空のとき canSave は false', () {
-        expect(container
-            .read(editorViewModelProvider())
-            .canSave, false);
+        expect(container.read(editorViewModelProvider()).canSave, false);
       });
 
       test('updateName で name が更新され canSave が true になる', () {
@@ -68,41 +66,31 @@ void main() {
 
       test('updateIcon で icon が更新される', () {
         viewModel.updateIcon('✂️');
-        expect(container
-            .read(editorViewModelProvider())
-            .icon, '✂️');
+        expect(container.read(editorViewModelProvider()).icon, '✂️');
       });
 
       test('updateType で type が更新される', () {
         viewModel.updateType(TaskType.scheduled);
         expect(
-          container
-              .read(editorViewModelProvider())
-              .type,
+          container.read(editorViewModelProvider()).type,
           TaskType.scheduled,
         );
       });
 
       test('updateColor で color が更新される', () {
         viewModel.updateColor(TaskColor.blue);
-        expect(container
-            .read(editorViewModelProvider())
-            .color, TaskColor.blue);
+        expect(container.read(editorViewModelProvider()).color, TaskColor.blue);
       });
 
       test('updateScheduleValue で scheduleValue が更新される', () {
         viewModel.updateScheduleValue(3);
-        expect(container
-            .read(editorViewModelProvider())
-            .scheduleValue, 3);
+        expect(container.read(editorViewModelProvider()).scheduleValue, 3);
       });
 
       test('updateScheduleUnit で scheduleUnit が更新される', () {
         viewModel.updateScheduleUnit(ScheduleUnit.week);
         expect(
-          container
-              .read(editorViewModelProvider())
-              .scheduleUnit,
+          container.read(editorViewModelProvider()).scheduleUnit,
           ScheduleUnit.week,
         );
       });
@@ -117,9 +105,7 @@ void main() {
       test('period タスクを save() すると isSaved: true になる', () async {
         viewModel.updateName('散髪');
         await viewModel.save();
-        expect(container
-            .read(editorViewModelProvider())
-            .isSaved, true);
+        expect(container.read(editorViewModelProvider()).isSaved, true);
       });
 
       test('scheduled タスクを save() すると isSaved: true になる', () async {
@@ -127,26 +113,25 @@ void main() {
           ..updateName('虫避け交換')
           ..updateType(TaskType.scheduled);
         await viewModel.save();
-        expect(container
-            .read(editorViewModelProvider())
-            .isSaved, true);
+        expect(container.read(editorViewModelProvider()).isSaved, true);
       });
 
       test(
-          'save() 成功後に snackBarMessage が TaskCreateSuccessSnackMessage になる', () async {
-        viewModel.updateName('散髪');
-        await viewModel.save();
-        final state = container.read(editorViewModelProvider());
-        expect(state.snackBarMessage, isA<TaskCreateSuccessSnackMessage>());
-        expect(
-          (state.snackBarMessage as TaskCreateSuccessSnackMessage).taskName,
-          '散髪',
-        );
-        expect(state.snackBarMessage!.handler, isNotNull);
-      });
+        'save() 成功後に snackBarMessage が TaskCreateSuccessSnackMessage になる',
+        () async {
+          viewModel.updateName('散髪');
+          await viewModel.save();
+          final state = container.read(editorViewModelProvider());
+          expect(state.snackBarMessage, isA<TaskCreateSuccessSnackMessage>());
+          expect(
+            (state.snackBarMessage as TaskCreateSuccessSnackMessage).taskName,
+            '散髪',
+          );
+          expect(state.snackBarMessage!.handler, isNotNull);
+        },
+      );
 
-      test(
-          'create の undo ハンドラを実行するとタスクがリポジトリから削除される', () async {
+      test('create の undo ハンドラを実行するとタスクがリポジトリから削除される', () async {
         viewModel.updateName('散髪');
         await viewModel.save();
         final snackMsg = container
@@ -162,8 +147,7 @@ void main() {
         expect(fakeRepository.containsTask(100), false);
       });
 
-      test(
-          'save() でリポジトリがエラーを返すと errorMessage が設定される', () async {
+      test('save() でリポジトリがエラーを返すと errorMessage が設定される', () async {
         final throwingRepo = FakeTaskRepository(shouldThrow: true);
         final c = ProviderContainer(
           overrides: [taskRepositoryProvider.overrideWith((_) => throwingRepo)],
@@ -210,8 +194,7 @@ void main() {
         expect(state.taskHistory, hasLength(1));
       });
 
-      test(
-          'scheduled タスクのロード後: scheduleValue/scheduleUnit が反映される', () async {
+      test('scheduled タスクのロード後: scheduleValue/scheduleUnit が反映される', () async {
         await _waitUntilLoaded(container, taskId: 2);
         final state = container.read(editorViewModelProvider(taskId: 2));
         expect(state.isLoading, false);
@@ -235,32 +218,31 @@ void main() {
         notifier.updateColor(TaskColor.green);
         await notifier.save();
         expect(
-          container
-              .read(editorViewModelProvider(taskId: 1))
-              .isSaved,
+          container.read(editorViewModelProvider(taskId: 1)).isSaved,
           true,
         );
       });
 
       test(
-          'save() 成功後に snackBarMessage が TaskUpdateSuccessSnackMessage になる', () async {
-        await _waitUntilLoaded(container, taskId: 1);
-        final notifier = container.read(
-          editorViewModelProvider(taskId: 1).notifier,
-        );
-        notifier.updateName('新しい名前');
-        await notifier.save();
-        final state = container.read(editorViewModelProvider(taskId: 1));
-        expect(state.snackBarMessage, isA<TaskUpdateSuccessSnackMessage>());
-        expect(
-          (state.snackBarMessage as TaskUpdateSuccessSnackMessage).taskName,
-          '新しい名前',
-        );
-        expect(state.snackBarMessage!.handler, isNotNull);
-      });
+        'save() 成功後に snackBarMessage が TaskUpdateSuccessSnackMessage になる',
+        () async {
+          await _waitUntilLoaded(container, taskId: 1);
+          final notifier = container.read(
+            editorViewModelProvider(taskId: 1).notifier,
+          );
+          notifier.updateName('新しい名前');
+          await notifier.save();
+          final state = container.read(editorViewModelProvider(taskId: 1));
+          expect(state.snackBarMessage, isA<TaskUpdateSuccessSnackMessage>());
+          expect(
+            (state.snackBarMessage as TaskUpdateSuccessSnackMessage).taskName,
+            '新しい名前',
+          );
+          expect(state.snackBarMessage!.handler, isNotNull);
+        },
+      );
 
-      test(
-          'update の undo ハンドラを実行すると元のタスクの状態に戻る', () async {
+      test('update の undo ハンドラを実行すると元のタスクの状態に戻る', () async {
         await _waitUntilLoaded(container, taskId: 1);
         final notifier = container.read(
           editorViewModelProvider(taskId: 1).notifier,
@@ -271,29 +253,19 @@ void main() {
         await notifier.save();
 
         final snackMsg = container
-            .read(
-          editorViewModelProvider(taskId: 1),
-        )
+            .read(editorViewModelProvider(taskId: 1))
             .snackBarMessage;
         expect(snackMsg, isA<TaskUpdateSuccessSnackMessage>());
 
         // undo 前は更新後の値
-        expect(fakeRepository
-            .taskById(1)
-            ?.name, '新しい名前');
-        expect(fakeRepository
-            .taskById(1)
-            ?.color, TaskColor.green);
+        expect(fakeRepository.taskById(1)?.name, '新しい名前');
+        expect(fakeRepository.taskById(1)?.color, TaskColor.green);
 
         await snackMsg!.handler!();
 
         // undo 後は元の値に戻っている
-        expect(fakeRepository
-            .taskById(1)
-            ?.name, '歯ブラシ交換');
-        expect(fakeRepository
-            .taskById(1)
-            ?.color, TaskColor.blue);
+        expect(fakeRepository.taskById(1)?.name, '歯ブラシ交換');
+        expect(fakeRepository.taskById(1)?.color, TaskColor.blue);
       });
     });
   });
@@ -307,7 +279,7 @@ final _testTasks = [
     icon: '🪥',
     color: TaskColor.blue,
     taskHistory: [
-      TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null)
+      TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null),
     ],
   ),
   TaskItem.scheduled(
@@ -319,17 +291,20 @@ final _testTasks = [
     scheduleValue: 2,
     scheduleUnit: ScheduleUnit.week,
     taskHistory: [
-      TaskHistory(id: 2, executedAt: DateTime(2026, 1, 1), comment: null)
+      TaskHistory(id: 2, executedAt: DateTime(2026, 1, 1), comment: null),
     ],
   ),
 ];
 
-Future<void> _waitUntilLoaded(ProviderContainer container, {
+Future<void> _waitUntilLoaded(
+  ProviderContainer container, {
   required int taskId,
 }) async {
   final completer = Completer<void>();
-  final sub = container.listen(editorViewModelProvider(taskId: taskId), (_,
-      next,) {
+  final sub = container.listen(editorViewModelProvider(taskId: taskId), (
+    _,
+    next,
+  ) {
     if (!next.isLoading && !completer.isCompleted) completer.complete();
   }, fireImmediately: true);
   await completer.future;

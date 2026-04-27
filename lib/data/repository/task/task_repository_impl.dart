@@ -26,9 +26,8 @@ class TaskRepositoryImpl implements TaskRepository {
   TaskRepositoryImpl({
     required AppDatabase db,
     required FuriganaTranslate furiganaTranslate,
-  })
-      : _db = db,
-        _furiganaTranslate = furiganaTranslate;
+  }) : _db = db,
+       _furiganaTranslate = furiganaTranslate;
 
   final AppDatabase _db;
   final FuriganaTranslate _furiganaTranslate;
@@ -79,8 +78,7 @@ class TaskRepositoryImpl implements TaskRepository {
         _db.taskExecutions,
         _db.taskExecutions.taskDefinitionId.equalsExp(_db.taskDefinitions.id),
       ),
-    ])
-      ..orderBy([OrderingTerm.asc(_db.taskExecutions.executedAt)]);
+    ])..orderBy([OrderingTerm.asc(_db.taskExecutions.executedAt)]);
     if (where != null) {
       query.where(where);
     }
@@ -89,10 +87,7 @@ class TaskRepositoryImpl implements TaskRepository {
 
   List<TaskItem> _buildAllTaskItemsFromRows(List<TypedResult> rows) {
     final grouped = rows.groupListsBy(
-          (row) =>
-      row
-          .readTable(_db.taskDefinitions)
-          .id,
+      (row) => row.readTable(_db.taskDefinitions).id,
     );
 
     final items = grouped.values.map(_buildTaskItemFromRows).toList();
@@ -115,47 +110,44 @@ class TaskRepositoryImpl implements TaskRepository {
         .map((r) => r.readTableOrNull(_db.taskExecutions))
         .nonNulls
         .map(
-          (e) =>
-          TaskHistory(
+          (e) => TaskHistory(
             id: e.id,
             executedAt: e.executedAt,
             comment: e.comment,
           ),
-    )
+        )
         .toList();
 
     return switch (def.taskType) {
-      TaskType.irregular =>
-          TaskItem.irregular(
-            id: def.id,
-            name: def.name,
-            furigana: def.furigana,
-            icon: def.icon,
-            color: def.color,
-            taskHistory: taskHistory,
-          ),
-      TaskType.period =>
-          TaskItem.period(
-            id: def.id,
-            name: def.name,
-            furigana: def.furigana,
-            icon: def.icon,
-            color: def.color,
-            taskHistory: taskHistory,
-          ),
-      TaskType.scheduled =>
-      config != null
-          ? TaskItem.scheduled(
+      TaskType.irregular => TaskItem.irregular(
         id: def.id,
         name: def.name,
         furigana: def.furigana,
         icon: def.icon,
         color: def.color,
-        scheduleValue: config.scheduleValue,
-        scheduleUnit: config.scheduleUnit,
         taskHistory: taskHistory,
-      )
-          : throw TaskNotFoundException(taskId: def.id),
+      ),
+      TaskType.period => TaskItem.period(
+        id: def.id,
+        name: def.name,
+        furigana: def.furigana,
+        icon: def.icon,
+        color: def.color,
+        taskHistory: taskHistory,
+      ),
+      TaskType.scheduled =>
+        config != null
+            ? TaskItem.scheduled(
+                id: def.id,
+                name: def.name,
+                furigana: def.furigana,
+                icon: def.icon,
+                color: def.color,
+                scheduleValue: config.scheduleValue,
+                scheduleUnit: config.scheduleUnit,
+                taskHistory: taskHistory,
+              )
+            : throw TaskNotFoundException(taskId: def.id),
     };
   }
 
@@ -181,33 +173,33 @@ class TaskRepositoryImpl implements TaskRepository {
         final id = await _db
             .into(_db.taskDefinitions)
             .insert(
-          TaskDefinitionsCompanion.insert(
-            taskType: taskType,
-            name: name,
-            furigana: furigana,
-            icon: icon,
-            color: color,
-          ),
-        );
+              TaskDefinitionsCompanion.insert(
+                taskType: taskType,
+                name: name,
+                furigana: furigana,
+                icon: icon,
+                color: color,
+              ),
+            );
         if (taskType == TaskType.scheduled) {
           await _db
               .into(_db.taskScheduledConfigs)
               .insert(
-            TaskScheduledConfigsCompanion.insert(
-              taskDefinitionId: Value(id),
-              scheduleValue: scheduleValue!,
-              scheduleUnit: scheduleUnit!,
-            ),
-          );
+                TaskScheduledConfigsCompanion.insert(
+                  taskDefinitionId: Value(id),
+                  scheduleValue: scheduleValue!,
+                  scheduleUnit: scheduleUnit!,
+                ),
+              );
         }
         await _db
             .into(_db.taskExecutions)
             .insert(
-          TaskExecutionsCompanion.insert(
-            taskDefinitionId: id,
-            executedAt: executedAt,
-          ),
-        );
+              TaskExecutionsCompanion.insert(
+                taskDefinitionId: id,
+                executedAt: executedAt,
+              ),
+            );
         return id;
       });
     } catch (e) {
@@ -216,7 +208,8 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<TaskHistory> recordExecution(int taskId, {
+  Future<TaskHistory> recordExecution(
+    int taskId, {
     required DateTime executedAt,
     String? comment,
   }) async {
@@ -224,12 +217,12 @@ class TaskRepositoryImpl implements TaskRepository {
       final id = await _db
           .into(_db.taskExecutions)
           .insert(
-        TaskExecutionsCompanion.insert(
-          taskDefinitionId: taskId,
-          executedAt: executedAt,
-          comment: Value(comment),
-        ),
-      );
+            TaskExecutionsCompanion.insert(
+              taskDefinitionId: taskId,
+              executedAt: executedAt,
+              comment: Value(comment),
+            ),
+          );
       return TaskHistory(id: id, executedAt: executedAt, comment: comment);
     } catch (e) {
       throw TaskSaveException(e.toString());
@@ -237,14 +230,15 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> updateExecution(int executionId, {
+  Future<void> updateExecution(
+    int executionId, {
     required DateTime executedAt,
     String? comment,
   }) async {
     try {
-      await (_db.update(_db.taskExecutions)
-        ..where((t) => t.id.equals(executionId)))
-          .write(
+      await (_db.update(
+        _db.taskExecutions,
+      )..where((t) => t.id.equals(executionId))).write(
         TaskExecutionsCompanion(
           executedAt: Value(executedAt),
           comment: Value(comment),
@@ -260,8 +254,7 @@ class TaskRepositoryImpl implements TaskRepository {
     try {
       await (_db.delete(
         _db.taskExecutions,
-      )
-        ..where((t) => t.id.equals(executionId))).go();
+      )..where((t) => t.id.equals(executionId))).go();
     } catch (e) {
       throw TaskDeleteException(e.toString());
     }
@@ -282,8 +275,7 @@ class TaskRepositoryImpl implements TaskRepository {
       await _db.transaction(() async {
         await (_db.update(
           _db.taskDefinitions,
-        )
-          ..where((t) => t.id.equals(taskId))).write(
+        )..where((t) => t.id.equals(taskId))).write(
           TaskDefinitionsCompanion(
             taskType: Value(taskType),
             name: Value(name),
@@ -297,8 +289,7 @@ class TaskRepositoryImpl implements TaskRepository {
           case TaskType.period:
             await (_db.delete(
               _db.taskScheduledConfigs,
-            )
-              ..where((t) => t.taskDefinitionId.equals(taskId))).go();
+            )..where((t) => t.taskDefinitionId.equals(taskId))).go();
           case TaskType.scheduled:
             if (scheduleValue == null || scheduleUnit == null) {
               throw const TaskInvalidArgumentException(
@@ -308,12 +299,12 @@ class TaskRepositoryImpl implements TaskRepository {
             await _db
                 .into(_db.taskScheduledConfigs)
                 .insertOnConflictUpdate(
-              TaskScheduledConfigsCompanion.insert(
-                taskDefinitionId: Value(taskId),
-                scheduleValue: scheduleValue,
-                scheduleUnit: scheduleUnit,
-              ),
-            );
+                  TaskScheduledConfigsCompanion.insert(
+                    taskDefinitionId: Value(taskId),
+                    scheduleValue: scheduleValue,
+                    scheduleUnit: scheduleUnit,
+                  ),
+                );
         }
       });
     } on TaskRepositoryException {
@@ -328,8 +319,7 @@ class TaskRepositoryImpl implements TaskRepository {
     try {
       await (_db.delete(
         _db.taskDefinitions,
-      )
-        ..where((t) => t.id.equals(taskId))).go();
+      )..where((t) => t.id.equals(taskId))).go();
       // task_executions / task_scheduled_configs はカスケード削除
     } catch (e) {
       throw TaskDeleteException(e.toString());
@@ -343,35 +333,34 @@ class TaskRepositoryImpl implements TaskRepository {
         final id = await _db
             .into(_db.taskDefinitions)
             .insert(
-          TaskDefinitionsCompanion.insert(
-            taskType: taskItem.taskType,
-            name: taskItem.name,
-            furigana: taskItem.furigana,
-            icon: taskItem.icon,
-            color: taskItem.color,
-          ),
-        );
+              TaskDefinitionsCompanion.insert(
+                taskType: taskItem.taskType,
+                name: taskItem.name,
+                furigana: taskItem.furigana,
+                icon: taskItem.icon,
+                color: taskItem.color,
+              ),
+            );
         if (taskItem.taskType == TaskType.scheduled) {
           await _db
               .into(_db.taskScheduledConfigs)
               .insert(
-            TaskScheduledConfigsCompanion.insert(
-              taskDefinitionId: Value(id),
-              scheduleValue: taskItem.scheduleValueOrDefault,
-              scheduleUnit: taskItem.scheduleUnitOrDefault,
-            ),
-          );
+                TaskScheduledConfigsCompanion.insert(
+                  taskDefinitionId: Value(id),
+                  scheduleValue: taskItem.scheduleValueOrDefault,
+                  scheduleUnit: taskItem.scheduleUnitOrDefault,
+                ),
+              );
         }
         await _db.batch((batch) {
           batch.insertAll(
             _db.taskExecutions,
             taskItem.taskHistory.map(
-                  (history) =>
-                  TaskExecutionsCompanion.insert(
-                    taskDefinitionId: id,
-                    executedAt: history.executedAt,
-                    comment: Value(history.comment),
-                  ),
+              (history) => TaskExecutionsCompanion.insert(
+                taskDefinitionId: id,
+                executedAt: history.executedAt,
+                comment: Value(history.comment),
+              ),
             ),
           );
         });

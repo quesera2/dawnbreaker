@@ -43,71 +43,62 @@ sealed class TaskItem with _$TaskItem {
   DateTime? get lastExecutedAt =>
       taskHistory.isEmpty ? null : taskHistory.last.executedAt;
 
-  DateTime? get scheduledAt =>
-      switch (this) {
-        IrregularTaskItem() => null,
-        PeriodTaskItem() =>
-            _computePeriodNextAt(
-              executionIntervalDays,
-              taskHistory,
-            ),
-        ScheduledTaskItem(
-            :final taskHistory,
-            :final scheduleValue,
-            :final scheduleUnit,
-        ) =>
-        taskHistory.isEmpty
-            ? null
-            : scheduleUnit.addTo(taskHistory.last.executedAt, scheduleValue),
-      };
+  DateTime? get scheduledAt => switch (this) {
+    IrregularTaskItem() => null,
+    PeriodTaskItem() => _computePeriodNextAt(
+      executionIntervalDays,
+      taskHistory,
+    ),
+    ScheduledTaskItem(
+      :final taskHistory,
+      :final scheduleValue,
+      :final scheduleUnit,
+    ) =>
+      taskHistory.isEmpty
+          ? null
+          : scheduleUnit.addTo(taskHistory.last.executedAt, scheduleValue),
+  };
 
-  TaskProgress computeProgress([DateTime? now]) =>
-      TaskProgress.from(
-        lastExecutedAt: lastExecutedAt,
-        scheduledAt: scheduledAt,
-        now: now ?? DateTime.now(),
-      );
+  TaskProgress computeProgress([DateTime? now]) => TaskProgress.from(
+    lastExecutedAt: lastExecutedAt,
+    scheduledAt: scheduledAt,
+    now: now ?? DateTime.now(),
+  );
 
-  TaskType get taskType =>
-      switch (this) {
-        IrregularTaskItem() => TaskType.irregular,
-        PeriodTaskItem() => TaskType.period,
-        ScheduledTaskItem() => TaskType.scheduled,
-      };
+  TaskType get taskType => switch (this) {
+    IrregularTaskItem() => TaskType.irregular,
+    PeriodTaskItem() => TaskType.period,
+    ScheduledTaskItem() => TaskType.scheduled,
+  };
 
-  int get scheduleValueOrDefault =>
-      switch (this) {
-        IrregularTaskItem() => 1,
-        PeriodTaskItem() => 1,
-        ScheduledTaskItem(:final scheduleValue) => scheduleValue,
-      };
+  int get scheduleValueOrDefault => switch (this) {
+    IrregularTaskItem() => 1,
+    PeriodTaskItem() => 1,
+    ScheduledTaskItem(:final scheduleValue) => scheduleValue,
+  };
 
-  ScheduleUnit get scheduleUnitOrDefault =>
-      switch (this) {
-        IrregularTaskItem() => ScheduleUnit.week,
-        PeriodTaskItem() => ScheduleUnit.week,
-        ScheduledTaskItem(:final scheduleUnit) => scheduleUnit,
-      };
+  ScheduleUnit get scheduleUnitOrDefault => switch (this) {
+    IrregularTaskItem() => ScheduleUnit.week,
+    PeriodTaskItem() => ScheduleUnit.week,
+    ScheduledTaskItem(:final scheduleUnit) => scheduleUnit,
+  };
 
   List<int> get executionIntervalDays {
     if (taskHistory.length < 2) return [];
-    return taskHistory
-        .skip(1)
-        .indexed
-        .map((item) {
+    return taskHistory.skip(1).indexed.map((item) {
       final (index, current) = item;
       final a = taskHistory[index].executedAt;
       final b = current.executedAt;
       final aDate = DateTime(a.year, a.month, a.day);
       final bDate = DateTime(b.year, b.month, b.day);
-      return bDate
-          .difference(aDate)
-          .inDays;
+      return bDate.difference(aDate).inDays;
     }).toList();
   }
 
-  static DateTime? _computePeriodNextAt(List<int> intervals,
-      List<TaskHistory> taskHistory,) {
+  static DateTime? _computePeriodNextAt(
+    List<int> intervals,
+    List<TaskHistory> taskHistory,
+  ) {
     if (intervals.isEmpty) return null;
     final avgDays = intervals.reduce((a, b) => a + b) / intervals.length;
     return taskHistory.last.executedAt.add(Duration(days: avgDays.round()));

@@ -9,8 +9,7 @@ final appRouter = GoRouter(
     GoRoute(path: '/', builder: (context, _) => const HomeScreen()),
     GoRoute(
       path: '/app-detail',
-      builder: (_, state) =>
-          AppDetailScreen(taskId: state.extra as int),
+      builder: (_, state) => AppDetailScreen(taskId: state.extra as int),
     ),
     GoRoute(
       path: '/editor',

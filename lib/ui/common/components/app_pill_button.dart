@@ -44,9 +44,9 @@ class AppPillButton extends StatelessWidget {
     );
 
     return ElevatedButton(
-        onPressed: onPressed,
-        style: style,
-        child: _buttonContent()
+      onPressed: onPressed,
+      style: style,
+      child: _buttonContent(),
     );
   }
 
@@ -55,10 +55,7 @@ class AppPillButton extends StatelessWidget {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconTheme.merge(
-            data: const IconThemeData(size: 11),
-            child: leading!,
-          ),
+          IconTheme.merge(data: const IconThemeData(size: 11), child: leading!),
           const SizedBox(width: 4),
           Text(label),
         ],
