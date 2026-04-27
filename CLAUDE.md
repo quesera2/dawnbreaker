@@ -64,6 +64,71 @@ lib/
 - `messages_mixin.dart` の `_snackText` / `_snackActionLabel` スイッチに新しい型を追加すること
 - SnackBar に取り消しアクションを付ける場合は `handler` に処理を渡す
 
+## テスト方針
+
+### テスト名の書き方
+
+グループ名・テスト名には実装の詳細を混入させず、振る舞いを自然言語で記述する。
+
+| Don't  | Do |
+| --- | --- |
+| null の場合 | コメントなしの場合<br />（nullの意味を説明） |
+| `TaskSaveException`が throw されること | タスクが保存されないこと<br />（例外の結果が意味することを説明） |
+| `taskScheduledConfigs` テーブルにレコードがない場合 | DBが異常な場合<br />（その状態が意味することを説明） |
+
+### group の構成ルール
+
+**Repository テスト**
+
+前提状態が異なるテスト群は group をネストし、各 setUp で前提を作る。
+
+```dart
+group('updateExecution', () {
+  late int taskId;
+
+  setUp(() async {
+    taskId = await repository.addTask(...);
+  });
+
+  group('コメントなしの場合', () {
+    late TaskHistory history;
+
+    setUp(() async {
+      history = await repository.recordExecution(taskId, comment: null);
+    });
+
+    test('コメントを追加できる', () async { ... });
+  });
+
+  group('コメントありの場合', () {
+    late TaskHistory history;
+
+    setUp(() async {
+      history = await repository.recordExecution(taskId, comment: '元のコメント');
+    });
+
+    test('コメントを削除できる', () async { ... });
+  });
+});
+```
+
+**ViewModel テスト**
+
+```dart
+group('XxxViewModel') {
+  group('初期状態') { test(...) }   // ロード前
+  group('ロード後') {               // ロード後に共通する全テストをここに置く
+    group('メソッド名') {
+      group('正常系') {
+        // 入力バリエーションは for でまとめて検証する
+        // 要因ごとに group を分けない（複合要因のバグが検出されなくなるため）
+      }
+      group('異常系') { test(...) }
+    }
+  }
+}
+```
+
 ## エラーハンドリング
 
 - Repository の例外は `sealed class TaskRepositoryException` のサブクラスとして定義（`lib/data/repository/task/task_repository_exception.dart`）
