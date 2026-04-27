@@ -120,5 +120,23 @@
       "unit": { "type": "String" }
     }
   },
-  "appDetailUpdateHistorySuccess": "履歴を更新しました"
+  "appDetailUpdateHistorySuccess": "履歴を更新しました",
+
+  "onboardingPage1Title": "いつやるんだっけ？　の悩みをなくす",
+  "onboardingPage1Body": "洗車、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。",
+  "onboardingPage2Title": "次はいつごろだっけ？　の悩みをなくす",
+  "onboardingPage2Body": "過去の登録から間隔を算出して、どのくらいの頻度でやっているのかを可視化します。",
+  "onboardingPage3Title": "色でまとめると、見つけやすくなります",
+  "onboardingPage3Body": "カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。",
+  "onboardingColorRed": "キッチン",
+  "onboardingColorBlue": "エアコン",
+  "onboardingColorGreen": "庭",
+  "onboardingColorOrange": "ベランダ",
+  "onboardingColorYellow": "食品",
+  "onboardingColorNone": "車両",
+  "onboardingDemoTask1": "ベランダの虫除け",
+  "onboardingDemoTask2": "オイル交換",
+  "onboardingDemoTask3": "歯ブラシ交換",
+  "onboardingDemoTask4": "お風呂の防カビ剤",
+  "onboardingDemoTask5": "スニーカーの洗濯"
 }

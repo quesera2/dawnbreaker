@@ -1,5 +1,6 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
+import 'package:dawnbreaker/ui/onboarding/widget/onboarding_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -14,12 +15,6 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   late final PageController _pageController;
   int _currentPage = 0;
-  final List<Widget> _pages = [
-    Text('Page 1'),
-    Text('Page 2'),
-    Text('Page 3'),
-    Text('Page 4'),
-  ];
 
   @override
   void initState() {
@@ -36,12 +31,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.appColorScheme;
-    final colors = [
-      Color.lerp(colorScheme.danger, colorScheme.dangerSoft, 0.6)!,
-      Color.lerp(colorScheme.warning, colorScheme.warningSoft, 0.6)!,
-      Color.lerp(colorScheme.success, colorScheme.successSoft, 0.6)!,
-      Color.lerp(colorScheme.info, colorScheme.infoSoft, 0.6)!,
-    ];
+    final pages = buildOnboardingPages(context);
+    final colors = pages.map((page) => page.backgroundColor).toList();
 
     return AnimatedBuilder(
       animation: _pageController,
@@ -75,12 +66,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: PageView(
                   controller: _pageController,
                   onPageChanged: (page) => setState(() => _currentPage = page),
-                  children: _pages,
+                  children: pages,
                 ),
               ),
               SmoothPageIndicator(
                 controller: _pageController,
-                count: _pages.length,
+                count: pages.length,
                 effect: ExpandingDotsEffect(
                   dotHeight: 10,
                   dotWidth: 10,
@@ -89,7 +80,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
                 onDotClicked: (index) => _pageController.jumpToPage(index),
               ),
-              _buttonArea,
+              _buttonArea(isLastPage: _currentPage == pages.length - 1),
             ],
           ),
         ),
@@ -97,8 +88,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget get _buttonArea {
-    final isLastPage = _currentPage == _pages.length - 1;
+  Widget _buttonArea({required bool isLastPage}) {
     return Padding(
       padding: const EdgeInsetsGeometry.symmetric(horizontal: 20, vertical: 16),
       child: Column(

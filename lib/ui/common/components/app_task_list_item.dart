@@ -9,17 +9,17 @@ import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:dawnbreaker/core/date_util.dart';
 
-class TaskListItem extends StatelessWidget {
-  const TaskListItem({
+class AppTaskListItem extends StatelessWidget {
+  const AppTaskListItem({
     super.key,
     required this.task,
-    required this.onTap,
-    required this.onComplete,
+    this.onTap,
+    this.onComplete,
   });
 
   final TaskItem task;
-  final VoidCallback onTap;
-  final VoidCallback onComplete;
+  final VoidCallback? onTap;
+  final VoidCallback? onComplete;
 
   @override
   Widget build(BuildContext context) {

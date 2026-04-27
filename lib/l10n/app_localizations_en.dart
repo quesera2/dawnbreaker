@@ -248,4 +248,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appDetailUpdateHistorySuccess => 'History updated';
+
+  @override
+  String get onboardingPage1Title =>
+      'Never forget \"when was I supposed to do this?\"';
+
+  @override
+  String get onboardingPage1Body =>
+      'Car wash, filter cleaning, toothbrush replacement... just register things you tend to forget.';
+
+  @override
+  String get onboardingPage2Title =>
+      'Never wonder \"when should I do this next?\"';
+
+  @override
+  String get onboardingPage2Body =>
+      'Intervals are calculated from past records to visualize how often you\'re actually doing each task.';
+
+  @override
+  String get onboardingPage3Title => 'Group by color to find tasks faster';
+
+  @override
+  String get onboardingPage3Body =>
+      'Color-code tasks by category or location to make your list easy to scan at a glance.';
+
+  @override
+  String get onboardingColorRed => 'Kitchen';
+
+  @override
+  String get onboardingColorBlue => 'AC';
+
+  @override
+  String get onboardingColorGreen => 'Garden';
+
+  @override
+  String get onboardingColorOrange => 'Balcony';
+
+  @override
+  String get onboardingColorYellow => 'Food';
+
+  @override
+  String get onboardingColorNone => 'Vehicle';
+
+  @override
+  String get onboardingDemoTask1 => 'Balcony bug repellent';
+
+  @override
+  String get onboardingDemoTask2 => 'Oil change';
+
+  @override
+  String get onboardingDemoTask3 => 'Toothbrush replacement';
+
+  @override
+  String get onboardingDemoTask4 => 'Bath mold spray';
+
+  @override
+  String get onboardingDemoTask5 => 'Sneaker wash';
 }

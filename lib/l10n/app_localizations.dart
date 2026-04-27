@@ -541,6 +541,108 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'履歴を更新しました'**
   String get appDetailUpdateHistorySuccess;
+
+  /// No description provided for @onboardingPage1Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'いつやるんだっけ？　の悩みをなくす'**
+  String get onboardingPage1Title;
+
+  /// No description provided for @onboardingPage1Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'洗車、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。'**
+  String get onboardingPage1Body;
+
+  /// No description provided for @onboardingPage2Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'次はいつごろだっけ？　の悩みをなくす'**
+  String get onboardingPage2Title;
+
+  /// No description provided for @onboardingPage2Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'過去の登録から間隔を算出して、どのくらいの頻度でやっているのかを可視化します。'**
+  String get onboardingPage2Body;
+
+  /// No description provided for @onboardingPage3Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'色でまとめると、見つけやすくなります'**
+  String get onboardingPage3Title;
+
+  /// No description provided for @onboardingPage3Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。'**
+  String get onboardingPage3Body;
+
+  /// No description provided for @onboardingColorRed.
+  ///
+  /// In ja, this message translates to:
+  /// **'キッチン'**
+  String get onboardingColorRed;
+
+  /// No description provided for @onboardingColorBlue.
+  ///
+  /// In ja, this message translates to:
+  /// **'エアコン'**
+  String get onboardingColorBlue;
+
+  /// No description provided for @onboardingColorGreen.
+  ///
+  /// In ja, this message translates to:
+  /// **'庭'**
+  String get onboardingColorGreen;
+
+  /// No description provided for @onboardingColorOrange.
+  ///
+  /// In ja, this message translates to:
+  /// **'ベランダ'**
+  String get onboardingColorOrange;
+
+  /// No description provided for @onboardingColorYellow.
+  ///
+  /// In ja, this message translates to:
+  /// **'食品'**
+  String get onboardingColorYellow;
+
+  /// No description provided for @onboardingColorNone.
+  ///
+  /// In ja, this message translates to:
+  /// **'車両'**
+  String get onboardingColorNone;
+
+  /// No description provided for @onboardingDemoTask1.
+  ///
+  /// In ja, this message translates to:
+  /// **'ベランダの虫除け'**
+  String get onboardingDemoTask1;
+
+  /// No description provided for @onboardingDemoTask2.
+  ///
+  /// In ja, this message translates to:
+  /// **'オイル交換'**
+  String get onboardingDemoTask2;
+
+  /// No description provided for @onboardingDemoTask3.
+  ///
+  /// In ja, this message translates to:
+  /// **'歯ブラシ交換'**
+  String get onboardingDemoTask3;
+
+  /// No description provided for @onboardingDemoTask4.
+  ///
+  /// In ja, this message translates to:
+  /// **'お風呂の防カビ剤'**
+  String get onboardingDemoTask4;
+
+  /// No description provided for @onboardingDemoTask5.
+  ///
+  /// In ja, this message translates to:
+  /// **'スニーカーの洗濯'**
+  String get onboardingDemoTask5;
 }
 
 class _AppLocalizationsDelegate

@@ -24,17 +24,19 @@ class IntervalBarChart extends StatelessWidget {
     required this.intervals,
     required this.averageInterval,
     required this.taskColor,
+    this.barAreaHeight = _barAreaHeight,
   });
 
   final List<int> intervals;
   final double averageInterval;
   final TaskColor taskColor;
+  final double barAreaHeight;
 
   @override
   Widget build(BuildContext context) {
     final c = context.appColorScheme;
     return SizedBox(
-      height: _barAreaHeight + _labelAreaHeight,
+      height: barAreaHeight + _labelAreaHeight,
       width: double.infinity,
       child: CustomPaint(
         painter: _BarChartPainter(
@@ -46,6 +48,7 @@ class IntervalBarChart extends StatelessWidget {
           primaryColor: c.primary,
           primaryOnColor: c.primaryOn,
           dayUnit: context.l10n.appDetailStatsDay,
+          barAreaHeight: barAreaHeight,
         ),
       ),
     );
@@ -62,6 +65,7 @@ class _BarChartPainter extends CustomPainter {
     required this.primaryColor,
     required this.primaryOnColor,
     required this.dayUnit,
+    required this.barAreaHeight,
   });
 
   final List<int> intervals;
@@ -72,6 +76,7 @@ class _BarChartPainter extends CustomPainter {
   final Color primaryColor;
   final Color primaryOnColor;
   final String dayUnit;
+  final double barAreaHeight;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -81,8 +86,7 @@ class _BarChartPainter extends CustomPainter {
     final maxVal = intervals.reduce(max).toDouble();
     if (maxVal == 0) return;
 
-    // バーエリアはラベル領域の下に配置
-    final chartHeight = size.height - _labelAreaHeight;
+    final chartHeight = barAreaHeight;
 
     final graphWidth = size.width - _barHorizontalMargin * 2;
     // 1本辺りに使える幅
@@ -225,5 +229,6 @@ class _BarChartPainter extends CustomPainter {
       averageInterval != old.averageInterval ||
       primaryColor != old.primaryColor ||
       primaryOnColor != old.primaryOnColor ||
-      dayUnit != old.dayUnit;
+      dayUnit != old.dayUnit ||
+      barAreaHeight != old.barAreaHeight;
 }
