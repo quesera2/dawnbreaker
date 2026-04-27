@@ -71,17 +71,13 @@ final class AppSectionHeaderShowCase extends StatelessWidget {
           spacing: 16,
           children: [
             AppSectionHeader(title: Text('タイトルのみ')),
-            AppSectionHeader(
-              title: Text(
-                  'タイトルのみ長い文章長い文章長い文章長い文章長い文章長い文章長い文章'),
-            ),
+            AppSectionHeader(title: Text('タイトルのみ長い文章長い文章長い文章長い文章長い文章長い文章長い文章')),
             AppSectionHeader(
               title: Text('タイトルとサブタイトル'),
               subTitle: Text('サブタイトル'),
             ),
             AppSectionHeader(
-              title: Text(
-                  '前景色・背景色指定', style: TextStyle(color: Colors.white)),
+              title: Text('前景色・背景色指定', style: TextStyle(color: Colors.white)),
               backgroundColor: Colors.red,
             ),
           ],

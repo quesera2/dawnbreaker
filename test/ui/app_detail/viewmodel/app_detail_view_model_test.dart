@@ -78,8 +78,7 @@ void main() {
         );
       });
 
-      test(
-          'インターバル計算には2件以上の履歴が必要なため平均インターバルは算出されない', () {
+      test('インターバル計算には2件以上の履歴が必要なため平均インターバルは算出されない', () {
         expect(
           container
               .read(appDetailViewModelProvider(taskId: _taskNoHistory.id))
@@ -113,8 +112,7 @@ void main() {
         );
       });
 
-      test(
-          'インターバル計算には2件以上の履歴が必要なため平均インターバルは算出されない', () {
+      test('インターバル計算には2件以上の履歴が必要なため平均インターバルは算出されない', () {
         expect(
           container
               .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
@@ -248,11 +246,12 @@ void main() {
       test('成功時はエラーなし', () async {
         await container
             .read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+              appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+            )
             .updateExecution(
-          _taskOneHistory.taskHistory.first,
-          executedAt: DateTime(2026, 2, 1),
-        );
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
         expect(
           container
               .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
@@ -264,12 +263,13 @@ void main() {
       test('コメントありで更新してもエラーなし', () async {
         await container
             .read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+              appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+            )
             .updateExecution(
-          _taskOneHistory.taskHistory.first,
-          executedAt: DateTime(2026, 2, 1),
-          comment: '更新コメント',
-        );
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+              comment: '更新コメント',
+            );
         expect(
           container
               .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
@@ -278,15 +278,15 @@ void main() {
         );
       });
 
-      test(
-          '成功時に TaskExecutionUpdateSuccessSnackMessage がセットされる', () async {
+      test('成功時に TaskExecutionUpdateSuccessSnackMessage がセットされる', () async {
         await container
             .read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+              appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+            )
             .updateExecution(
-          _taskOneHistory.taskHistory.first,
-          executedAt: DateTime(2026, 2, 1),
-        );
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
         expect(
           container
               .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
@@ -295,17 +295,17 @@ void main() {
         );
       });
 
-      test(
-          'snackBarMessage の handler を呼び出すと元の日時・コメントで再更新される', () async {
+      test('snackBarMessage の handler を呼び出すと元の日時・コメントで再更新される', () async {
         final original = _taskOneHistory.taskHistory.first;
         await container
             .read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+              appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+            )
             .updateExecution(
-          original,
-          executedAt: DateTime(2026, 2, 1),
-          comment: '変更後',
-        );
+              original,
+              executedAt: DateTime(2026, 2, 1),
+              comment: '変更後',
+            );
 
         final handler = container
             .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
@@ -340,11 +340,12 @@ void main() {
       test('失敗時に TaskUpdateErrorMessage がセットされる', () async {
         await container
             .read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+              appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+            )
             .updateExecution(
-          _taskOneHistory.taskHistory.first,
-          executedAt: DateTime(2026, 2, 1),
-        );
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
         expect(
           container
               .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
@@ -356,11 +357,12 @@ void main() {
       test('失敗時の errorMessage に retry handler がある', () async {
         await container
             .read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+              appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+            )
             .updateExecution(
-          _taskOneHistory.taskHistory.first,
-          executedAt: DateTime(2026, 2, 1),
-        );
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
         expect(
           container
               .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
@@ -380,7 +382,8 @@ void main() {
       test('前の画面に戻る', () async {
         await container
             .read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+              appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+            )
             .deleteTask();
         expect(
           container
@@ -393,7 +396,8 @@ void main() {
       test('削除成功の通知がタスク名付きで表示される', () async {
         await container
             .read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+              appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+            )
             .deleteTask();
         final msg = container
             .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
@@ -408,7 +412,8 @@ void main() {
       test('削除を取り消せる', () async {
         await container
             .read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+              appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+            )
             .deleteTask();
         expect(
           container
@@ -423,7 +428,8 @@ void main() {
       test('タスクデータがクリアされる', () async {
         await container
             .read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+              appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+            )
             .deleteTask();
         expect(
           container
@@ -433,11 +439,11 @@ void main() {
         );
       });
 
-      test(
-          'snackBarMessage の handler を呼び出すとタスクが復元される', () async {
+      test('snackBarMessage の handler を呼び出すとタスクが復元される', () async {
         await container
             .read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+              appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+            )
             .deleteTask();
 
         expect(fakeRepository.containsTask(_taskOneHistory.id), false);
@@ -469,7 +475,8 @@ void main() {
       test('削除失敗のエラーが通知される', () async {
         await container
             .read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+              appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+            )
             .deleteTask();
         expect(
           container
@@ -482,7 +489,8 @@ void main() {
       test('削除を再試行できる', () async {
         await container
             .read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier)
+              appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+            )
             .deleteTask();
         expect(
           container
@@ -513,7 +521,7 @@ final _taskOneHistory = TaskItem.period(
   icon: '📝',
   color: TaskColor.blue,
   taskHistory: [
-    TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null)
+    TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null),
   ],
 );
 
@@ -532,17 +540,17 @@ final _taskMultiHistory = TaskItem.period(
 
 final _testTasks = [_taskNoHistory, _taskOneHistory, _taskMultiHistory];
 
-Future<void> _waitUntilLoaded(ProviderContainer container, {
+Future<void> _waitUntilLoaded(
+  ProviderContainer container, {
   required int taskId,
 }) async {
   final completer = Completer<void>();
-  final sub = container.listen(
-    appDetailViewModelProvider(taskId: taskId),
-        (_, next) {
-      if (!next.isLoading && !completer.isCompleted) completer.complete();
-    },
-    fireImmediately: true,
-  );
+  final sub = container.listen(appDetailViewModelProvider(taskId: taskId), (
+    _,
+    next,
+  ) {
+    if (!next.isLoading && !completer.isCompleted) completer.complete();
+  }, fireImmediately: true);
   await completer.future;
   sub.close();
 }

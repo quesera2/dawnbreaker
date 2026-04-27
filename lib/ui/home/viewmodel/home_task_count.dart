@@ -19,14 +19,8 @@ class HomeTaskCount {
 
   final int irregular;
 
-  factory HomeTaskCount.from({
-    required List<TaskItem> tasks,
-    DateTime? now,
-  }) {
-    int overdue = 0,
-        today = 0,
-        week = 0,
-        irregular = 0;
+  factory HomeTaskCount.from({required List<TaskItem> tasks, DateTime? now}) {
+    int overdue = 0, today = 0, week = 0, irregular = 0;
 
     for (final task in tasks) {
       final p = task.computeProgress(now);

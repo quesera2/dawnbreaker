@@ -15,8 +15,8 @@ class TaskHistoryStats {
       historyAndInterval: reversedHistory
           .mapIndexed(
             (index, history) =>
-        (history, reversedIntervals.elementAtOrNull(index)),
-      )
+                (history, reversedIntervals.elementAtOrNull(index)),
+          )
           .toList(),
       averageIntervalDays: reversedIntervals.isEmpty
           ? null

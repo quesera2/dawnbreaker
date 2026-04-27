@@ -35,8 +35,7 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
   @override
   void initState() {
     super.initState();
-    _selectedDate =
-        (widget.initialDate ?? DateTime.now()).truncateTime;
+    _selectedDate = (widget.initialDate ?? DateTime.now()).truncateTime;
     if (widget.initialComment case final comment?) {
       _commentController.text = comment;
     }
@@ -50,17 +49,17 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final safeBottom = MediaQuery
-        .paddingOf(context)
-        .bottom;
-    final keyboardBottom = MediaQuery
-        .viewInsetsOf(context)
-        .bottom;
+    final safeBottom = MediaQuery.paddingOf(context).bottom;
+    final keyboardBottom = MediaQuery.viewInsetsOf(context).bottom;
 
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.fromLTRB(
-            20, 0, 20, 16 + safeBottom + keyboardBottom),
+          20,
+          0,
+          20,
+          16 + safeBottom + keyboardBottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -128,11 +127,10 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
     );
   }
 
-  Widget get _commentArea =>
-      AppTextInput(
-        controller: _commentController,
-        hintText: context.l10n.homeCompleteCommentPlaceholder,
-      );
+  Widget get _commentArea => AppTextInput(
+    controller: _commentController,
+    hintText: context.l10n.homeCompleteCommentPlaceholder,
+  );
 
   Widget get _buttonArea {
     return Row(
@@ -159,10 +157,7 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
             onPressed: () {
               Navigator.of(context).pop();
               final comment = _commentController.text.trim();
-              widget.onConfirm(
-                _selectedDate,
-                comment.isEmpty ? null : comment,
-              );
+              widget.onConfirm(_selectedDate, comment.isEmpty ? null : comment);
             },
           ),
         ),

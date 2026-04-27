@@ -28,8 +28,5 @@ abstract class EditorUiState with _$EditorUiState implements BaseUiState {
     @Default(false) bool isSaved,
   }) = _EditorUiState;
 
-  bool get canSave =>
-      name
-          .trim()
-          .isNotEmpty;
+  bool get canSave => name.trim().isNotEmpty;
 }

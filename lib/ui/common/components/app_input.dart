@@ -55,7 +55,9 @@ class _AppTextInputState extends State<AppTextInput> {
         filled: true,
         fillColor: c.surface,
         contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14, vertical: 12),
+          horizontal: 14,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: BorderSide(color: c.border),

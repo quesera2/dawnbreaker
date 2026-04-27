@@ -129,22 +129,25 @@ class _BarChartPainter extends CustomPainter {
 
     // 最大値ラベルを描画
     _drawMaxLabel(
-        canvas,
-        size,
-        maxVal.toInt(),
-        count,
-        unitWidth,
-        barWidth,
-        startX);
+      canvas,
+      size,
+      maxVal.toInt(),
+      count,
+      unitWidth,
+      barWidth,
+      startX,
+    );
   }
 
-  void _drawMaxLabel(Canvas canvas,
-      Size size,
-      int maxValue,
-      int count,
-      double slotWidth,
-      double barWidth,
-      double startX,) {
+  void _drawMaxLabel(
+    Canvas canvas,
+    Size size,
+    int maxValue,
+    int count,
+    double slotWidth,
+    double barWidth,
+    double startX,
+  ) {
     // 最大値バーの描画インデックス（最新のものを選択）
     var maxDrawI = 0;
     for (var i = 0; i < count; i++) {
@@ -154,8 +157,10 @@ class _BarChartPainter extends CustomPainter {
     }
 
     final maxBarCenterX =
-        startX + maxDrawI * slotWidth + (slotWidth - barWidth) / 2 +
-            barWidth / 2;
+        startX +
+        maxDrawI * slotWidth +
+        (slotWidth - barWidth) / 2 +
+        barWidth / 2;
 
     final tp = TextPainter(
       text: TextSpan(
@@ -163,8 +168,7 @@ class _BarChartPainter extends CustomPainter {
         style: AppTextStyle.overline.copyWith(color: primaryOnColor),
       ),
       textDirection: TextDirection.ltr,
-    )
-      ..layout();
+    )..layout();
 
     const hPad = 6.0;
     const vPad = 2.0;
@@ -184,8 +188,7 @@ class _BarChartPainter extends CustomPainter {
         ),
         const Radius.circular(AppRadius.xs),
       ),
-      Paint()
-        ..color = primaryColor,
+      Paint()..color = primaryColor,
     );
 
     tp.paint(
@@ -231,12 +234,12 @@ class _BarChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(_BarChartPainter old) =>
       !const ListEquality<int>().equals(intervals, old.intervals) ||
-          baseColor != old.baseColor ||
-          softColor != old.softColor ||
-          onColor != old.onColor ||
-          averageInterval != old.averageInterval ||
-          primaryColor != old.primaryColor ||
-          primaryOnColor != old.primaryOnColor ||
-          dayUnit != old.dayUnit ||
-          barAreaHeight != old.barAreaHeight;
+      baseColor != old.baseColor ||
+      softColor != old.softColor ||
+      onColor != old.onColor ||
+      averageInterval != old.averageInterval ||
+      primaryColor != old.primaryColor ||
+      primaryOnColor != old.primaryOnColor ||
+      dayUnit != old.dayUnit ||
+      barAreaHeight != old.barAreaHeight;
 }

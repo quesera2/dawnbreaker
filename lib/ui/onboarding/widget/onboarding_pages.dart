@@ -14,9 +14,11 @@ import 'package:flutter/material.dart';
 List<OnboardingPage> buildOnboardingPages(BuildContext context) {
   final c = context.appColorScheme;
   final l10n = context.l10n;
-  final pageColors = [c.danger, c.warning, c.success]
-      .map((color) => Color.lerp(color, c.surface, 0.65)!)
-      .toList();
+  final pageColors = [
+    c.danger,
+    c.warning,
+    c.success,
+  ].map((color) => Color.lerp(color, c.surface, 0.65)!).toList();
   return [
     OnboardingPage(
       pageTitle: l10n.onboardingPage1Title,
@@ -187,9 +189,7 @@ class _OnboardingPage1Description extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tasks = _demoTasks(DateTime
-        .now()
-        .truncateTime, context);
+    final tasks = _demoTasks(DateTime.now().truncateTime, context);
     return Padding(
       padding: EdgeInsets.only(bottom: (tasks.length - 1) * _offsetStep),
       child: Stack(

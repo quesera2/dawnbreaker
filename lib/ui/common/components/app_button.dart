@@ -26,27 +26,23 @@ class AppButton extends StatelessWidget {
   final Widget? leading;
   final bool fullWidth;
 
-  (double, EdgeInsets, TextStyle) get _sizeConfig =>
-      switch (size) {
-        AppButtonSize.small =>
-        (
-        32.0,
-        const EdgeInsets.symmetric(horizontal: 12),
-        AppTextStyle.caption,
-        ),
-        AppButtonSize.medium =>
-        (
-        40.0,
-        const EdgeInsets.symmetric(horizontal: 16),
-        AppTextStyle.body,
-        ),
-        AppButtonSize.large =>
-        (
-        52.0,
-        const EdgeInsets.symmetric(horizontal: 22),
-        AppTextStyle.headline,
-        ),
-      };
+  (double, EdgeInsets, TextStyle) get _sizeConfig => switch (size) {
+    AppButtonSize.small => (
+      32.0,
+      const EdgeInsets.symmetric(horizontal: 12),
+      AppTextStyle.caption,
+    ),
+    AppButtonSize.medium => (
+      40.0,
+      const EdgeInsets.symmetric(horizontal: 16),
+      AppTextStyle.body,
+    ),
+    AppButtonSize.large => (
+      52.0,
+      const EdgeInsets.symmetric(horizontal: 22),
+      AppTextStyle.headline,
+    ),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -57,71 +53,69 @@ class AppButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppRadius.md),
     );
     final ts = textStyle.copyWith(
-        fontWeight: FontWeight.w600, letterSpacing: 0.1);
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.1,
+    );
 
     final child = leading != null
         ? Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [leading!, const SizedBox(width: 6), Text(label)],
-    )
+            mainAxisSize: MainAxisSize.min,
+            children: [leading!, const SizedBox(width: 6), Text(label)],
+          )
         : Text(label);
 
     return switch (variant) {
-      AppButtonVariant.primary =>
-          FilledButton(
-            onPressed: onPressed,
-            style: FilledButton.styleFrom(
-              backgroundColor: c.primary,
-              foregroundColor: c.primaryOn,
-              minimumSize: minSize,
-              padding: padding,
-              shape: shape,
-              textStyle: ts,
-              elevation: 1,
-              shadowColor: c.shadow,
-            ),
-            child: child,
-          ),
-      AppButtonVariant.secondary =>
-          OutlinedButton(
-            onPressed: onPressed,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: c.text,
-              minimumSize: minSize,
-              padding: padding,
-              shape: shape,
-              side: BorderSide(color: c.borderStrong),
-              textStyle: ts,
-            ),
-            child: child,
-          ),
-      AppButtonVariant.ghost =>
-          TextButton(
-            onPressed: onPressed,
-            style: TextButton.styleFrom(
-              foregroundColor: c.text,
-              minimumSize: minSize,
-              padding: padding,
-              shape: shape,
-              textStyle: ts,
-            ),
-            child: child,
-          ),
-      AppButtonVariant.danger =>
-          FilledButton(
-            onPressed: onPressed,
-            style: FilledButton.styleFrom(
-              backgroundColor: c.danger,
-              foregroundColor: c.primaryOn,
-              minimumSize: minSize,
-              padding: padding,
-              shape: shape,
-              textStyle: ts,
-              elevation: 1,
-              shadowColor: c.shadow,
-            ),
-            child: child,
-          ),
+      AppButtonVariant.primary => FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: c.primary,
+          foregroundColor: c.primaryOn,
+          minimumSize: minSize,
+          padding: padding,
+          shape: shape,
+          textStyle: ts,
+          elevation: 1,
+          shadowColor: c.shadow,
+        ),
+        child: child,
+      ),
+      AppButtonVariant.secondary => OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: c.text,
+          minimumSize: minSize,
+          padding: padding,
+          shape: shape,
+          side: BorderSide(color: c.borderStrong),
+          textStyle: ts,
+        ),
+        child: child,
+      ),
+      AppButtonVariant.ghost => TextButton(
+        onPressed: onPressed,
+        style: TextButton.styleFrom(
+          foregroundColor: c.text,
+          minimumSize: minSize,
+          padding: padding,
+          shape: shape,
+          textStyle: ts,
+        ),
+        child: child,
+      ),
+      AppButtonVariant.danger => FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: c.danger,
+          foregroundColor: c.primaryOn,
+          minimumSize: minSize,
+          padding: padding,
+          shape: shape,
+          textStyle: ts,
+          elevation: 1,
+          shadowColor: c.shadow,
+        ),
+        child: child,
+      ),
     };
   }
 }
@@ -189,7 +183,9 @@ final class ButtonShowCase extends StatelessWidget {
             children: [
               AppButton(label: 'Primary'),
               AppButton(
-                  label: 'Secondary', variant: AppButtonVariant.secondary),
+                label: 'Secondary',
+                variant: AppButtonVariant.secondary,
+              ),
               AppButton(label: 'Danger', variant: AppButtonVariant.danger),
             ],
           ),

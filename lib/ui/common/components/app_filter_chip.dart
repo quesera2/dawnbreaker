@@ -88,8 +88,7 @@ final class FilterChipShowCase extends StatelessWidget {
             onTap: () {},
             count: 12,
           ),
-          AppFilterChip(
-              label: '超過', isSelected: false, onTap: () {}, count: 3),
+          AppFilterChip(label: '超過', isSelected: false, onTap: () {}, count: 3),
           AppFilterChip(label: '今日', isSelected: false, onTap: () {}),
           AppFilterChip(label: '7日以内', isSelected: false, onTap: () {}),
         ],

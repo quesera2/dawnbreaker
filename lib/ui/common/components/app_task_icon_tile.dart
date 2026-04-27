@@ -61,10 +61,7 @@ class AppTaskIconTile extends StatelessWidget {
             ),
 
             Center(
-              child: Text(
-                emoji,
-                style: TextStyle(fontSize: fontSize),
-              ),
+              child: Text(emoji, style: TextStyle(fontSize: fontSize)),
             ),
           ],
         ),
