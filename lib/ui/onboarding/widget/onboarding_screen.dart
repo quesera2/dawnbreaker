@@ -1,4 +1,5 @@
 import 'package:dawnbreaker/app/app_colors.dart';
+import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_pages.dart';
 import 'package:flutter/material.dart';
@@ -14,12 +15,21 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   late final PageController _pageController;
+  late List<OnboardingPage> _pages;
+  late List<Color> _colors;
   int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _pages = buildOnboardingPages(context);
+    _colors = _pages.map((page) => page.backgroundColor).toList();
   }
 
   @override
@@ -31,8 +41,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.appColorScheme;
-    final pages = buildOnboardingPages(context);
-    final colors = pages.map((page) => page.backgroundColor).toList();
 
     return AnimatedBuilder(
       animation: _pageController,
@@ -41,15 +49,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
         if (_pageController.hasClients) {
           final page = _pageController.page ?? 0.0;
-          final fromIndex = page.floor().clamp(0, colors.length - 2);
+          final fromIndex = page.floor().clamp(0, _colors.length - 2);
           final t = (page - fromIndex).clamp(0.0, 1.0);
           backgroundColor = Color.lerp(
-            colors[fromIndex],
-            colors[fromIndex + 1],
+            _colors[fromIndex],
+            _colors[fromIndex + 1],
             Curves.easeInOut.transform(t),
           )!;
         } else {
-          backgroundColor = colors[0];
+          backgroundColor = _colors[0];
         }
 
         return DecoratedBox(
@@ -66,12 +74,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: PageView(
                   controller: _pageController,
                   onPageChanged: (page) => setState(() => _currentPage = page),
-                  children: pages,
+                  children: _pages,
                 ),
               ),
               SmoothPageIndicator(
                 controller: _pageController,
-                count: pages.length,
+                count: _pages.length,
                 effect: ExpandingDotsEffect(
                   dotHeight: 10,
                   dotWidth: 10,
@@ -80,7 +88,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
                 onDotClicked: (index) => _pageController.jumpToPage(index),
               ),
-              _buttonArea(isLastPage: _currentPage == pages.length - 1),
+              _buttonArea(context, isLastPage: _currentPage == _pages.length - 1),
             ],
           ),
         ),
@@ -88,14 +96,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buttonArea({required bool isLastPage}) {
+  Widget _buttonArea(BuildContext context, {required bool isLastPage}) {
+    final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsetsGeometry.symmetric(horizontal: 20, vertical: 16),
       child: Column(
         spacing: 8,
         children: [
           AppButton(
-            label: isLastPage ? '最初のタスクを登録する' : '次へ',
+            label: isLastPage ? l10n.onboardingStart : l10n.onboardingNext,
             onPressed: () => _pageController.nextPage(
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeInOut,
@@ -104,8 +113,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             size: AppButtonSize.large,
           ),
           AppButton(
-            label: 'スキップ',
-            onPressed: () => {},
+            label: l10n.onboardingSkip,
+            onPressed: () {},
             fullWidth: true,
             size: AppButtonSize.large,
             variant: AppButtonVariant.ghost,

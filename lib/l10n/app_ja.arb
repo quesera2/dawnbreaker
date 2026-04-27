@@ -138,5 +138,8 @@
   "onboardingDemoTask2": "オイル交換",
   "onboardingDemoTask3": "歯ブラシ交換",
   "onboardingDemoTask4": "お風呂の防カビ剤",
-  "onboardingDemoTask5": "スニーカーの洗濯"
+  "onboardingDemoTask5": "スニーカーの洗濯",
+  "onboardingNext": "次へ",
+  "onboardingSkip": "スキップ",
+  "onboardingStart": "最初のタスクを登録する"
 }

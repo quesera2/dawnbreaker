@@ -299,4 +299,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get onboardingDemoTask5 => 'スニーカーの洗濯';
+
+  @override
+  String get onboardingNext => '次へ';
+
+  @override
+  String get onboardingSkip => 'スキップ';
+
+  @override
+  String get onboardingStart => '最初のタスクを登録する';
 }

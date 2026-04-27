@@ -304,4 +304,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingDemoTask5 => 'Sneaker wash';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingStart => 'Register your first task';
 }

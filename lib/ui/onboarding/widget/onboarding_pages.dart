@@ -63,7 +63,7 @@ class OnboardingPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: Container(alignment: Alignment.center, child: pageDetail),
+            child: Align(alignment: Alignment.center, child: pageDetail),
           ),
           ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 100),
@@ -272,11 +272,12 @@ class _OnboardingPage3Description extends StatelessWidget {
     required TaskColor color,
     required String name,
   }) {
+    final onColor = color.onColor(context);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: color.softColor(context),
         borderRadius: BorderRadius.circular(AppRadius.s2xl),
-        border: Border.all(color: color.onColor(context), width: 2),
+        border: Border.all(color: onColor, width: 2),
       ),
       child: Padding(
         padding: const EdgeInsets.only(bottom: 12),
@@ -284,7 +285,7 @@ class _OnboardingPage3Description extends StatelessWidget {
           alignment: Alignment.bottomCenter,
           child: Text(
             name,
-            style: AppTextStyle.caption.copyWith(color: color.onColor(context)),
+            style: AppTextStyle.caption.copyWith(color: onColor),
           ),
         ),
       ),

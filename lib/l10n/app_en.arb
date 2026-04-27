@@ -138,5 +138,8 @@
   "onboardingDemoTask2": "Oil change",
   "onboardingDemoTask3": "Toothbrush replacement",
   "onboardingDemoTask4": "Bath mold spray",
-  "onboardingDemoTask5": "Sneaker wash"
+  "onboardingDemoTask5": "Sneaker wash",
+  "onboardingNext": "Next",
+  "onboardingSkip": "Skip",
+  "onboardingStart": "Register your first task"
 }

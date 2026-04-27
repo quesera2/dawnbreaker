@@ -643,6 +643,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'スニーカーの洗濯'**
   String get onboardingDemoTask5;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In ja, this message translates to:
+  /// **'次へ'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In ja, this message translates to:
+  /// **'スキップ'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingStart.
+  ///
+  /// In ja, this message translates to:
+  /// **'最初のタスクを登録する'**
+  String get onboardingStart;
 }
 
 class _AppLocalizationsDelegate
