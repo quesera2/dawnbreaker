@@ -1,37 +1,40 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
+import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/core/date_util.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
-import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_list_item.dart';
 import 'package:flutter/material.dart';
 
 List<OnboardingPage> buildOnboardingPages(BuildContext context) {
   final c = context.appColorScheme;
   final l10n = context.l10n;
+  final pageColors = [c.danger, c.warning, c.success]
+      .map((color) => Color.lerp(color, c.surface, 0.65)!)
+      .toList();
   return [
     OnboardingPage(
       pageTitle: l10n.onboardingPage1Title,
       pageDescription: l10n.onboardingPage1Body,
-      pageDetail: const _OnboardingPage1Description(),
-      backgroundColor: Color.lerp(c.danger, c.surface, 0.65)!,
+      backgroundColor: pageColors[0],
+      pageDetail: _OnboardingPage1Description(backgroundColor: pageColors[0]),
     ),
     OnboardingPage(
       pageTitle: l10n.onboardingPage2Title,
       pageDescription: l10n.onboardingPage2Body,
+      backgroundColor: pageColors[1],
       pageDetail: const _OnboardingPage2Description(),
-      backgroundColor: Color.lerp(c.warning, c.surface, 0.65)!,
     ),
     OnboardingPage(
       pageTitle: l10n.onboardingPage3Title,
       pageDescription: l10n.onboardingPage3Body,
+      backgroundColor: pageColors[2],
       pageDetail: const _OnboardingPage3Description(),
-      backgroundColor: Color.lerp(c.success, c.surface, 0.65)!,
     ),
   ];
 }
@@ -83,7 +86,9 @@ class OnboardingPage extends StatelessWidget {
 }
 
 class _OnboardingPage1Description extends StatelessWidget {
-  const _OnboardingPage1Description();
+  const _OnboardingPage1Description({required this.backgroundColor});
+
+  final Color backgroundColor;
 
   static List<TaskItem> _demoTasks(DateTime now, BuildContext context) {
     final l10n = context.l10n;
@@ -171,9 +176,14 @@ class _OnboardingPage1Description extends StatelessWidget {
     ];
   }
 
+  /// 背面にいくほど小さくなる係数
   static const _scaleStep = 0.04;
+
+  /// リスト1列ごとのマージン
   static const _offsetStep = 56.0;
-  static const _dimStep = 0.05;
+
+  /// 背面を透過する処理の係数
+  static const _dimStep = 0.12;
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +207,7 @@ class _OnboardingPage1Description extends StatelessWidget {
         scale: 1.0 - depth * _scaleStep,
         child: ColorFiltered(
           colorFilter: ColorFilter.mode(
-            Colors.black.withValues(alpha: depth * _dimStep),
+            backgroundColor.withValues(alpha: depth * _dimStep),
             BlendMode.srcATop,
           ),
           child: AppTaskListItem(task: task),
@@ -216,7 +226,7 @@ class _OnboardingPage2Description extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: context.appColorScheme.bgSubtle,
+      color: context.appColorScheme.surface,
       child: const Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 32),
         child: IntervalBarChart(
