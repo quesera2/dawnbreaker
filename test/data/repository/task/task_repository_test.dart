@@ -32,7 +32,7 @@ void main() {
   tearDown(() => db.close());
 
   group('scheduled タスクで config がないとき', () {
-    test('allTaskItems が TaskNotFoundException をストリームエラーとして emit する', () async {
+    test('タスク一覧の取得がエラーになる', () async {
       // DB に直接 scheduled タスクを挿入（taskScheduledConfigs なし）
       await db.into(db.taskDefinitions).insert(
         TaskDefinitionsCompanion.insert(
@@ -51,13 +51,13 @@ void main() {
     });
   });
 
-  group('DB エラー時の異常系', () {
+  group('データベースエラー時の異常系', () {
     setUp(() async {
       await db.select(db.taskDefinitions).get();
       await db.close();
     });
 
-    test('addTask: TaskSaveException を投げる', () async {
+    test('addTask: タスクの追加が失敗する', () async {
       await expectLater(
         () => repository.addTask(
           taskType: TaskType.period,
@@ -70,35 +70,35 @@ void main() {
       );
     });
 
-    test('findTaskById: TaskLoadException を投げる', () async {
+    test('findTaskById: タスクの取得が失敗する', () async {
       await expectLater(
         () => repository.findTaskById(1),
         throwsA(isA<TaskLoadException>()),
       );
     });
 
-    test('recordExecution: TaskSaveException を投げる', () async {
+    test('recordExecution: 実行の記録が失敗する', () async {
       await expectLater(
         () => repository.recordExecution(1, executedAt: DateTime.now()),
         throwsA(isA<TaskSaveException>()),
       );
     });
 
-    test('updateExecution: TaskUpdateException を投げる', () async {
+    test('updateExecution: 実行の更新が失敗する', () async {
       await expectLater(
         () => repository.updateExecution(1, executedAt: DateTime.now()),
         throwsA(isA<TaskUpdateException>()),
       );
     });
 
-    test('deleteExecution: TaskDeleteException を投げる', () async {
+    test('deleteExecution: 実行の削除が失敗する', () async {
       await expectLater(
         () => repository.deleteExecution(1),
         throwsA(isA<TaskDeleteException>()),
       );
     });
 
-    test('updateTask: TaskUpdateException を投げる', () async {
+    test('updateTask: タスクの更新が失敗する', () async {
       await expectLater(
         () => repository.updateTask(
           taskId: 1,
@@ -111,14 +111,14 @@ void main() {
       );
     });
 
-    test('deleteTask: TaskDeleteException を投げる', () async {
+    test('deleteTask: タスクの削除が失敗する', () async {
       await expectLater(
         () => repository.deleteTask(1),
         throwsA(isA<TaskDeleteException>()),
       );
     });
 
-    test('restoreTask: TaskSaveException を投げる', () async {
+    test('restoreTask: タスクの復元が失敗する', () async {
       const task = TaskItem.period(
         id: 1,
         name: 'x',
@@ -135,7 +135,7 @@ void main() {
   });
 
   group('allTaskItems ソート順', () {
-    test('scheduledAt が早いタスクが先に来る', () async {
+    test('次回予定日が早いタスクが先に来る', () async {
       // 後の scheduledAt を先に追加して、ソートで前に来ることを確認
       await repository.addTask(
         taskType: TaskType.scheduled,
@@ -161,7 +161,7 @@ void main() {
       expect(tasks[1].name, 'タスクB'); // scheduledAt=1/22 が後
     });
 
-    test('scheduledAt が null のタスクは末尾に来る', () async {
+    test('次回予定日がないタスクは末尾に来る', () async {
       // PeriodTask 履歴1件 → scheduledAt=null
       await repository.addTask(
         taskType: TaskType.period,
@@ -185,7 +185,7 @@ void main() {
       expect(tasks[1].name, '不定期タスク'); // scheduledAt=null → 末尾
     });
 
-    test('scheduledAt が null のタスクが複数あるとき全て末尾に集まる', () async {
+    test('次回予定日がないタスクが複数あるとき全て末尾に集まる', () async {
       await repository.addTask(
         taskType: TaskType.scheduled,
         name: '定期タスク',
@@ -220,7 +220,7 @@ void main() {
   });
 
   group('addTask', () {
-    test('period タスクが追加され PeriodTaskItem として取得できる', () async {
+    test('period タスクを追加できる', () async {
       await repository.addTask(
         taskType: TaskType.period,
         name: '散髪',
@@ -239,7 +239,7 @@ void main() {
       expect(task.taskHistory, hasLength(1));
     });
 
-    test('scheduled タスクが追加され ScheduledTaskItem として取得できる', () async {
+    test('scheduled タスクを追加できる', () async {
       await repository.addTask(
         taskType: TaskType.scheduled,
         name: '虫避け交換',
@@ -260,7 +260,7 @@ void main() {
       expect(task.taskHistory, hasLength(1));
     });
 
-    test('irregular タスクが追加され IrregularTaskItem として取得できる', () async {
+    test('irregular タスクを追加できる', () async {
       await repository.addTask(
         taskType: TaskType.irregular,
         name: '散髪',
@@ -278,7 +278,7 @@ void main() {
     });
 
     test(
-      'scheduled タイプで scheduleValue/scheduleUnit が null のとき例外を投げる',
+      'scheduled タイプでスケジュール設定がないとき例外を投げる',
       () async {
         expect(
           () => repository.addTask(
@@ -365,7 +365,7 @@ void main() {
       expect(tasks.first.scheduledAt, isNotNull);
     });
 
-    test('コメントなしで記録すると戻り値の comment は null になる', () async {
+    test('コメントなしで記録すると戻り値にコメントは含まれない', () async {
       final id = await repository.addTask(
         taskType: TaskType.period,
         name: '散髪',
@@ -381,7 +381,7 @@ void main() {
       expect(history.comment, isNull);
     });
 
-    test('コメントなしで記録した履歴を取得すると comment は null になる', () async {
+    test('コメントなしで記録した履歴を取得するとコメントは保存されない', () async {
       final id = await repository.addTask(
         taskType: TaskType.period,
         name: '散髪',
@@ -399,7 +399,7 @@ void main() {
       expect(recorded.comment, isNull);
     });
 
-    test('コメントありで記録すると戻り値の comment が保存される', () async {
+    test('コメントありで記録すると戻り値にコメントが含まれる', () async {
       final id = await repository.addTask(
         taskType: TaskType.period,
         name: '散髪',
@@ -416,7 +416,7 @@ void main() {
       expect(history.comment, '良い感じ');
     });
 
-    test('コメントありで記録した履歴を取得すると comment が保持されている', () async {
+    test('コメントありで記録した履歴を取得するとコメントが保持されている', () async {
       final id = await repository.addTask(
         taskType: TaskType.period,
         name: '散髪',
@@ -437,76 +437,94 @@ void main() {
   });
 
   group('updateExecution', () {
-    Future<({int taskId, TaskHistory history})> _setup({
-      DateTime? executedAt,
-      String? comment,
-    }) async {
-      final id = await repository.addTask(
+    late int taskId;
+
+    setUp(() async {
+      taskId = await repository.addTask(
         taskType: TaskType.period,
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
         executedAt: DateTime(2025, 1, 1),
       );
-      final history = await repository.recordExecution(
-        id,
-        executedAt: executedAt ?? DateTime(2025, 6, 1),
-        comment: comment,
-      );
-      return (taskId: id, history: history);
-    }
-
-    test('日付を更新できる', () async {
-      final (:taskId, :history) = await _setup();
-      await repository.updateExecution(
-        history.id,
-        executedAt: DateTime(2025, 7, 1),
-      );
-
-      final task = await repository.findTaskById(taskId);
-      final updated = task.taskHistory.firstWhere((h) => h.id == history.id);
-      expect(updated.executedAt, DateTime(2025, 7, 1));
     });
 
-    test('コメントを追加できる（null → 文字列）', () async {
-      final (:taskId, :history) = await _setup();
-      await repository.updateExecution(
-        history.id,
-        executedAt: history.executedAt,
-        comment: '更新コメント',
-      );
+    group('コメントなしの場合', () {
+      late TaskHistory history;
 
-      final task = await repository.findTaskById(taskId);
-      final updated = task.taskHistory.firstWhere((h) => h.id == history.id);
-      expect(updated.comment, '更新コメント');
+      setUp(() async {
+        history = await repository.recordExecution(
+          taskId,
+          executedAt: DateTime(2025, 6, 1),
+          comment: null,
+        );
+      });
+
+      test('日付を更新できる', () async {
+        await repository.updateExecution(
+          history.id,
+          executedAt: DateTime(2025, 7, 1),
+        );
+
+        final task = await repository.findTaskById(taskId);
+        final updated = task.taskHistory.firstWhere((h) => h.id == history.id);
+        expect(updated.executedAt, DateTime(2025, 7, 1));
+      });
+
+      test('コメントを追加できる', () async {
+        expect(history.comment, isNull);
+
+        await repository.updateExecution(
+          history.id,
+          executedAt: history.executedAt,
+          comment: '更新コメント',
+        );
+
+        final task = await repository.findTaskById(taskId);
+        final updated = task.taskHistory.firstWhere((h) => h.id == history.id);
+        expect(updated.comment, '更新コメント');
+      });
+
+      test('他の履歴には影響しない', () async {
+        final other = await repository.recordExecution(
+          taskId,
+          executedAt: DateTime(2025, 9, 1),
+        );
+        await repository.updateExecution(
+          history.id,
+          executedAt: DateTime(2025, 7, 1),
+        );
+
+        final task = await repository.findTaskById(taskId);
+        final otherUpdated =
+            task.taskHistory.firstWhere((h) => h.id == other.id);
+        expect(otherUpdated.executedAt, DateTime(2025, 9, 1));
+      });
     });
 
-    test('コメントを削除できる（文字列 → null）', () async {
-      final (:taskId, :history) = await _setup(comment: '元のコメント');
-      await repository.updateExecution(
-        history.id,
-        executedAt: history.executedAt,
-      );
+    group('コメントありの場合', () {
+      late TaskHistory history;
 
-      final task = await repository.findTaskById(taskId);
-      final updated = task.taskHistory.firstWhere((h) => h.id == history.id);
-      expect(updated.comment, isNull);
-    });
+      setUp(() async {
+        history = await repository.recordExecution(
+          taskId,
+          executedAt: DateTime(2025, 6, 1),
+          comment: '元のコメント',
+        );
+      });
 
-    test('他の履歴には影響しない', () async {
-      final (:taskId, :history) = await _setup();
-      final other = await repository.recordExecution(
-        taskId,
-        executedAt: DateTime(2025, 9, 1),
-      );
-      await repository.updateExecution(
-        history.id,
-        executedAt: DateTime(2025, 7, 1),
-      );
+      test('コメントを削除できる', () async {
+        expect(history.comment, '元のコメント');
 
-      final task = await repository.findTaskById(taskId);
-      final otherUpdated = task.taskHistory.firstWhere((h) => h.id == other.id);
-      expect(otherUpdated.executedAt, DateTime(2025, 9, 1));
+        await repository.updateExecution(
+          history.id,
+          executedAt: history.executedAt,
+        );
+
+        final task = await repository.findTaskById(taskId);
+        final updated = task.taskHistory.firstWhere((h) => h.id == history.id);
+        expect(updated.comment, isNull);
+      });
     });
   });
 
@@ -535,7 +553,7 @@ void main() {
       expect(task.color, TaskColor.blue);
     });
 
-    test('scheduled タスクの scheduleValue/scheduleUnit を更新できる', () async {
+    test('scheduled タスクのスケジュール設定を更新できる', () async {
       final id = await repository.addTask(
         taskType: TaskType.scheduled,
         name: '虫避け交換',
@@ -560,7 +578,7 @@ void main() {
       expect(task.scheduleUnit, ScheduleUnit.month);
     });
 
-    test('scheduled から period に変更すると taskScheduledConfigs が削除される', () async {
+    test('period タイプに変更するとスケジュール設定が削除される', () async {
       final id = await repository.addTask(
         taskType: TaskType.scheduled,
         name: '虫避け交換',
@@ -582,7 +600,7 @@ void main() {
       expect(configs, isEmpty);
     });
 
-    test('period から scheduled に変更すると taskScheduledConfigs が追加される', () async {
+    test('scheduled タイプに変更するとスケジュール設定が追加される', () async {
       final id = await repository.addTask(
         taskType: TaskType.period,
         name: '散髪',
@@ -607,7 +625,7 @@ void main() {
     });
 
     test(
-      'scheduled タイプで scheduleValue/scheduleUnit が null のとき例外を投げる',
+      'scheduled タイプでスケジュール設定がないとき例外を投げる',
       () async {
         final id = await repository.addTask(
           taskType: TaskType.scheduled,
