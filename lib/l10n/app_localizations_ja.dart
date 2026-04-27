@@ -247,4 +247,65 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get appDetailUpdateHistorySuccess => '履歴を更新しました';
+
+  @override
+  String get onboardingPage1Title => 'いつやるんだっけ？　の悩みをなくす';
+
+  @override
+  String get onboardingPage1Body =>
+      '洗車、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。';
+
+  @override
+  String get onboardingPage2Title => '次はいつごろだっけ？　の悩みをなくす';
+
+  @override
+  String get onboardingPage2Body => '過去の登録から間隔を算出して、どのくらいの頻度でやっているのかを可視化します。';
+
+  @override
+  String get onboardingPage3Title => '色でまとめると、見つけやすくなります';
+
+  @override
+  String get onboardingPage3Body => 'カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。';
+
+  @override
+  String get onboardingColorRed => 'キッチン';
+
+  @override
+  String get onboardingColorBlue => 'エアコン';
+
+  @override
+  String get onboardingColorGreen => '庭';
+
+  @override
+  String get onboardingColorOrange => 'ベランダ';
+
+  @override
+  String get onboardingColorYellow => '食品';
+
+  @override
+  String get onboardingColorNone => '車両';
+
+  @override
+  String get onboardingDemoTask1 => 'ベランダの虫除け';
+
+  @override
+  String get onboardingDemoTask2 => 'オイル交換';
+
+  @override
+  String get onboardingDemoTask3 => '歯ブラシ交換';
+
+  @override
+  String get onboardingDemoTask4 => 'お風呂の防カビ剤';
+
+  @override
+  String get onboardingDemoTask5 => 'スニーカーの洗濯';
+
+  @override
+  String get onboardingNext => '次へ';
+
+  @override
+  String get onboardingSkip => 'スキップ';
+
+  @override
+  String get onboardingStart => '最初のタスクを登録する';
 }

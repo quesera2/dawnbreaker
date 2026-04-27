@@ -7,13 +7,13 @@ import 'package:dawnbreaker/ui/common/components/app_filter_chip.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_input.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
+import 'package:dawnbreaker/ui/common/components/app_task_list_item.dart';
 import 'package:dawnbreaker/ui/common/default_sticky_header.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_task_list.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_view_model.dart';
 import 'package:dawnbreaker/ui/home/widgets/task_complete_sheet.dart';
-import 'package:dawnbreaker/ui/home/widgets/task_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -131,8 +131,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       ];
     }
 
-    final entries = taskList.taskItemMap.entries
-        .where((e) => e.value.isNotEmpty);
+    final entries = taskList.taskItemMap.entries.where(
+      (e) => e.value.isNotEmpty,
+    );
 
     return [
       for (final (index, entry) in entries.indexed)
@@ -171,15 +172,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           sliver: SliverImplicitlyAnimatedList<TaskItem>(
             items: tasks,
             areItemsTheSame: (a, b) => a.id == b.id,
-            itemBuilder: (context, animation, item, index) => SizeFadeTransition(
-              curve: Curves.easeInOut,
-              animation: animation,
-              child: TaskListItem(
-                task: item,
-                onTap: () => context.push('/app-detail', extra: item.id),
-                onComplete: () => _showCompleteSheet(context, item),
-              ),
-            ),
+            itemBuilder: (context, animation, item, index) =>
+                SizeFadeTransition(
+                  curve: Curves.easeInOut,
+                  animation: animation,
+                  child: AppTaskListItem(
+                    task: item,
+                    onTap: () => context.push('/app-detail', extra: item.id),
+                    onComplete: () => _showCompleteSheet(context, item),
+                  ),
+                ),
           ),
         ),
       ],

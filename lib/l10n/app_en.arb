@@ -120,5 +120,26 @@
       "unit": { "type": "String" }
     }
   },
-  "appDetailUpdateHistorySuccess": "History updated"
+  "appDetailUpdateHistorySuccess": "History updated",
+
+  "onboardingPage1Title": "Never forget \"when was I supposed to do this?\"",
+  "onboardingPage1Body": "Car wash, filter cleaning, toothbrush replacement... just register things you tend to forget.",
+  "onboardingPage2Title": "Never wonder \"when should I do this next?\"",
+  "onboardingPage2Body": "Intervals are calculated from past records to visualize how often you're actually doing each task.",
+  "onboardingPage3Title": "Group by color to find tasks faster",
+  "onboardingPage3Body": "Color-code tasks by category or location to make your list easy to scan at a glance.",
+  "onboardingColorRed": "Kitchen",
+  "onboardingColorBlue": "AC",
+  "onboardingColorGreen": "Garden",
+  "onboardingColorOrange": "Balcony",
+  "onboardingColorYellow": "Food",
+  "onboardingColorNone": "Vehicle",
+  "onboardingDemoTask1": "Balcony bug repellent",
+  "onboardingDemoTask2": "Oil change",
+  "onboardingDemoTask3": "Toothbrush replacement",
+  "onboardingDemoTask4": "Bath mold spray",
+  "onboardingDemoTask5": "Sneaker wash",
+  "onboardingNext": "Next",
+  "onboardingSkip": "Skip",
+  "onboardingStart": "Register your first task"
 }
