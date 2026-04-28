@@ -73,7 +73,6 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
                       label: context.l10n.appDetailEdit,
                       onTap: () => context.push('/editor', extra: task.id),
                     ),
-                    const SizedBox(width: 4),
                     AppIconButton(
                       icon: Icons.delete,
                       tone: AppIconTone.destruction,
