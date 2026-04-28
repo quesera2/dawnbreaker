@@ -5,6 +5,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'onboarding_ui_state.freezed.dart';
 
+enum OnboardingDestination { home, newTask, pop }
+
 @freezed
 abstract class OnboardingUiState
     with _$OnboardingUiState
@@ -12,7 +14,8 @@ abstract class OnboardingUiState
   const OnboardingUiState._();
 
   const factory OnboardingUiState({
-    @Default(false) bool isCompleting,
+    @Default(false) bool isLoading,
+    OnboardingDestination? destination,
     ErrorMessage? errorMessage,
     SnackBarMessage? snackBarMessage,
   }) = _OnboardingUiState;

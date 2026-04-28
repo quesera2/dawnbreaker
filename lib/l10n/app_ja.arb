@@ -27,6 +27,7 @@
   "commonUndo": "取り消し",
   "commonErrorTitle": "エラー",
   "commonErrorUnknown": "予期しないエラーが発生しました",
+  "commonClose": "閉じる",
   "commonUnitDay": "日",
   "commonUnitWeek": "週",
   "commonUnitMonth": "ヶ月",

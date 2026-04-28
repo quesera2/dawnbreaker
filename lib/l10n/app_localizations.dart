@@ -230,6 +230,12 @@ abstract class AppLocalizations {
   /// **'予期しないエラーが発生しました'**
   String get commonErrorUnknown;
 
+  /// No description provided for @commonClose.
+  ///
+  /// In ja, this message translates to:
+  /// **'閉じる'**
+  String get commonClose;
+
   /// No description provided for @commonUnitDay.
   ///
   /// In ja, this message translates to:

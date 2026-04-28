@@ -77,6 +77,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commonErrorUnknown => '予期しないエラーが発生しました';
 
   @override
+  String get commonClose => '閉じる';
+
+  @override
   String get commonUnitDay => '日';
 
   @override
