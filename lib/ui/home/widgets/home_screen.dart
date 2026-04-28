@@ -178,7 +178,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   animation: animation,
                   child: AppTaskListItem(
                     task: item,
-                    onTap: () => context.push('/app-detail', extra: item.id),
+                    onTap: () => context.push('/app-detail/${item.id}'),
                     onComplete: () => _showCompleteSheet(context, item),
                   ),
                 ),
@@ -208,7 +208,10 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       toolbarHeight: 48,
       actions: [
-        AppIconButton(onTap: () => context.push('/editor'), icon: Icons.add),
+        AppIconButton(
+          onTap: () => context.push('/home/new_task'),
+          icon: Icons.add,
+        ),
         AppIconButton(
           onTap: () => context.push('/onboarding'),
           icon: Icons.settings_outlined,
