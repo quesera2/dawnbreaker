@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
+import 'package:dawnbreaker/ui/common/extend_hit_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
@@ -25,22 +26,20 @@ class AppIconButton extends StatelessWidget {
     final colors = context.appColorScheme;
     final borderRadius = BorderRadius.circular(AppRadius.md);
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: borderRadius,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-        child: Center(
-          child: Ink(
-            height: 36,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: colors.appIconBackGroundColor(tone),
-              border: Border.all(color: colors.appIconBorderColor(tone)),
-              borderRadius: borderRadius,
-            ),
-            child: Center(widthFactor: 1.0, child: _buttonContent(colors)),
+    return ExpandHitTest(
+      expandArea: const EdgeInsets.all(6),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: borderRadius,
+        child: Ink(
+          height: 36,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: colors.appIconBackGroundColor(tone),
+            border: Border.all(color: colors.appIconBorderColor(tone)),
+            borderRadius: borderRadius,
           ),
+          child: Center(widthFactor: 1.0, child: _buttonContent(colors)),
         ),
       ),
     );
