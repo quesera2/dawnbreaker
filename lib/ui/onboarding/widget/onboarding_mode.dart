@@ -1,0 +1,1 @@
+enum OnboardingMode { initial, fromSettings }

@@ -77,6 +77,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commonErrorUnknown => '予期しないエラーが発生しました';
 
   @override
+  String get commonClose => '閉じる';
+
+  @override
   String get commonUnitDay => '日';
 
   @override
@@ -112,6 +115,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get taskErrorInvalidArgument => '入力内容が正しくありません';
+
+  @override
+  String get onboardingErrorSaveFailed => '設定の保存に失敗しました';
 
   @override
   String get editorTitleNew => '新規タスクを追加';

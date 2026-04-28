@@ -230,6 +230,12 @@ abstract class AppLocalizations {
   /// **'予期しないエラーが発生しました'**
   String get commonErrorUnknown;
 
+  /// No description provided for @commonClose.
+  ///
+  /// In ja, this message translates to:
+  /// **'閉じる'**
+  String get commonClose;
+
   /// No description provided for @commonUnitDay.
   ///
   /// In ja, this message translates to:
@@ -295,6 +301,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'入力内容が正しくありません'**
   String get taskErrorInvalidArgument;
+
+  /// No description provided for @onboardingErrorSaveFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定の保存に失敗しました'**
+  String get onboardingErrorSaveFailed;
 
   /// No description provided for @editorTitleNew.
   ///

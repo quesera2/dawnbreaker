@@ -32,6 +32,10 @@ class TaskInvalidArgumentErrorMessage extends ErrorMessage {
   TaskInvalidArgumentErrorMessage() : super();
 }
 
+class OnboardingSaveErrorMessage extends ErrorMessage {
+  OnboardingSaveErrorMessage() : super();
+}
+
 class UnknownErrorMessage extends ErrorMessage {
   UnknownErrorMessage() : super();
 }

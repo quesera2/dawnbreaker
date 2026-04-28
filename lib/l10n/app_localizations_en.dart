@@ -77,6 +77,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonErrorUnknown => 'An unexpected error occurred';
 
   @override
+  String get commonClose => 'Close';
+
+  @override
   String get commonUnitDay => 'd';
 
   @override
@@ -112,6 +115,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get taskErrorInvalidArgument => 'Invalid input';
+
+  @override
+  String get onboardingErrorSaveFailed => 'Failed to save settings';
 
   @override
   String get editorTitleNew => 'Add Task';

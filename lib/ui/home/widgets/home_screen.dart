@@ -14,6 +14,7 @@ import 'package:dawnbreaker/ui/home/viewmodel/home_task_list.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_view_model.dart';
 import 'package:dawnbreaker/ui/home/widgets/task_complete_sheet.dart';
+import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -178,7 +179,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   animation: animation,
                   child: AppTaskListItem(
                     task: item,
-                    onTap: () => context.push('/app-detail', extra: item.id),
+                    onTap: () => context.push('/app-detail/${item.id}'),
                     onComplete: () => _showCompleteSheet(context, item),
                   ),
                 ),
@@ -208,9 +209,13 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       toolbarHeight: 48,
       actions: [
-        AppIconButton(onTap: () => context.push('/editor'), icon: Icons.add),
         AppIconButton(
-          onTap: () => context.push('/onboarding'),
+          onTap: () => context.push('/home/new_task'),
+          icon: Icons.add,
+        ),
+        AppIconButton(
+          onTap: () =>
+              context.push('/onboarding', extra: OnboardingMode.fromSettings),
           icon: Icons.settings_outlined,
         ),
       ],

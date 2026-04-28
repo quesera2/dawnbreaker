@@ -15,9 +15,9 @@ List<OnboardingPage> buildOnboardingPages(BuildContext context) {
   final c = context.appColorScheme;
   final l10n = context.l10n;
   final pageColors = [
-    c.danger,
+    c.info,
     c.warning,
-    c.success,
+    c.successSoft,
   ].map((color) => Color.lerp(color, c.surface, 0.65)!).toList();
   return [
     OnboardingPage(
@@ -234,7 +234,7 @@ class _OnboardingPage2Description extends StatelessWidget {
         child: IntervalBarChart(
           intervals: _demoIntervals,
           averageInterval: _averageInterval,
-          taskColor: TaskColor.orange,
+          taskColor: TaskColor.blue,
           barAreaHeight: 160,
         ),
       ),
@@ -274,12 +274,11 @@ class _OnboardingPage3Description extends StatelessWidget {
     required TaskColor color,
     required String name,
   }) {
-    final onColor = color.onColor(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: color.softColor(context),
+        color: color.baseColor(context),
         borderRadius: BorderRadius.circular(AppRadius.s2xl),
-        border: Border.all(color: onColor, width: 2),
+        border: Border.all(color: color.onColor(context), width: 2),
       ),
       child: Padding(
         padding: const EdgeInsets.only(bottom: 12),
@@ -287,7 +286,9 @@ class _OnboardingPage3Description extends StatelessWidget {
           alignment: Alignment.bottomCenter,
           child: Text(
             name,
-            style: AppTextStyle.caption.copyWith(color: onColor),
+            style: AppTextStyle.caption.copyWith(
+              color: color.softColor(context),
+            ),
           ),
         ),
       ),

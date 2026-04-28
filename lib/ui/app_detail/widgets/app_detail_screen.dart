@@ -71,7 +71,8 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
                     AppIconButton(
                       icon: Icons.edit_outlined,
                       label: context.l10n.appDetailEdit,
-                      onTap: () => context.push('/editor', extra: task.id),
+                      onTap: () =>
+                          context.push('/app-detail/${widget.taskId}/edit'),
                     ),
                     AppIconButton(
                       icon: Icons.delete,

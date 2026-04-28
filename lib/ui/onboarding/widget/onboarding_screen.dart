@@ -1,28 +1,43 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
+import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
+import 'package:dawnbreaker/ui/common/messages_mixin.dart';
+import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_view_model.dart';
+import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
-  const OnboardingScreen({super.key});
+  const OnboardingScreen({super.key, required this.mode});
+
+  final OnboardingMode mode;
 
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
+    with MessagesListenMixin {
   late final PageController _pageController;
+  late final OnboardingViewModelProvider _viewState;
+  late final OnboardingViewModel _viewModel;
+
   late List<OnboardingPage> _pages;
   late List<Color> _colors;
   int _currentPage = 0;
+
+  bool get _isLastPage => _currentPage == _pages.length - 1;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    _viewState = onboardingViewModelProvider(mode: widget.mode);
+    _viewModel = ref.read(_viewState.notifier);
   }
 
   @override
@@ -41,6 +56,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.appColorScheme;
+    listenMessages(_viewState);
+    final isCompleting = ref.watch(_viewState.select((s) => s.isLoading));
+
+    ref.listen(_viewState.select((s) => s.destination), (_, destination) {
+      if (destination == null) return;
+      switch (destination) {
+        case .home:
+          context.go('/home');
+        case .newTask:
+          context.go('/home/new_task');
+        case .pop:
+          context.pop();
+      }
+    });
 
     return AnimatedBuilder(
       animation: _pageController,
@@ -70,6 +99,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         body: SafeArea(
           child: Column(
             children: [
+              if (widget.mode == .fromSettings)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 4, 0, 0),
+                    child: AppIconButton(
+                      icon: Icons.close,
+                      onTap: () => context.pop(),
+                    ),
+                  ),
+                ),
               Expanded(
                 child: PageView(
                   controller: _pageController,
@@ -88,9 +128,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
                 onDotClicked: (index) => _pageController.jumpToPage(index),
               ),
-              _buttonArea(
-                context,
-                isLastPage: _currentPage == _pages.length - 1,
+              _ButtonArea(
+                isLastPage: _isLastPage,
+                mode: widget.mode,
+                isCompleting: isCompleting,
+                onPrimary: _isLastPage
+                    ? _viewModel.onClickDone
+                    : () => _pageController.nextPage(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                      ),
+                onSkip: _viewModel.onClickSkip,
               ),
             ],
           ),
@@ -98,8 +146,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ),
     );
   }
+}
 
-  Widget _buttonArea(BuildContext context, {required bool isLastPage}) {
+class _ButtonArea extends StatelessWidget {
+  const _ButtonArea({
+    required this.isLastPage,
+    required this.mode,
+    required this.isCompleting,
+    required this.onPrimary,
+    required this.onSkip,
+  });
+
+  final bool isLastPage;
+  final OnboardingMode mode;
+  final bool isCompleting;
+  final VoidCallback onPrimary;
+  final VoidCallback onSkip;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsetsGeometry.symmetric(horizontal: 20, vertical: 16),
@@ -107,21 +172,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         spacing: 8,
         children: [
           AppButton(
-            label: isLastPage ? l10n.onboardingStart : l10n.onboardingNext,
-            onPressed: () => _pageController.nextPage(
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
+            label: switch ((isLastPage, mode)) {
+              (false, _) => l10n.onboardingNext,
+              (true, .initial) => l10n.onboardingStart,
+              (true, .fromSettings) => l10n.commonClose,
+            },
+            onPressed: isCompleting ? null : onPrimary,
+            fullWidth: true,
+            size: AppButtonSize.large,
+          ),
+          if (mode == .initial)
+            AppButton(
+              label: l10n.onboardingSkip,
+              onPressed: isCompleting ? null : onSkip,
+              fullWidth: true,
+              size: AppButtonSize.large,
+              variant: AppButtonVariant.ghost,
             ),
-            fullWidth: true,
-            size: AppButtonSize.large,
-          ),
-          AppButton(
-            label: l10n.onboardingSkip,
-            onPressed: () {},
-            fullWidth: true,
-            size: AppButtonSize.large,
-            variant: AppButtonVariant.ghost,
-          ),
         ],
       ),
     );

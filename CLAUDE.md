@@ -29,6 +29,22 @@ fvm flutter pub run build_runner build --delete-conflicting-outputs
 画面・ウィジェットを作成・変更する際は必ず `material-3-skill` をロードしてから実装すること。
 コンポーネントやトークンの仕様は `DESIGN.md` を参照すること。
 
+## Dart スタイル
+
+Dart 3.7 以降の構文を積極的に使う：
+
+- **enum 省略記法**: 型が推論できる文脈では `EnumClass.value` でなく `.value` と書く
+  ```dart
+  // Good
+  state.copyWith(destination: .home)
+  switch (mode) { .initial => ..., .fromSettings => ... }
+  if (mode == .initial)
+
+  // Avoid
+  state.copyWith(destination: OnboardingDestination.home)
+  ```
+- **ワイルドカード**: 使わない引数は `(_, _)` と書く（`__` は古い書き方）
+
 ## アーキテクチャ
 
 ```
