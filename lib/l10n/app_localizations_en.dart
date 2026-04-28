@@ -117,6 +117,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taskErrorInvalidArgument => 'Invalid input';
 
   @override
+  String get onboardingErrorSaveFailed => 'Failed to save settings';
+
+  @override
   String get editorTitleNew => 'Add Task';
 
   @override

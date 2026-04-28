@@ -302,6 +302,12 @@ abstract class AppLocalizations {
   /// **'入力内容が正しくありません'**
   String get taskErrorInvalidArgument;
 
+  /// No description provided for @onboardingErrorSaveFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定の保存に失敗しました'**
+  String get onboardingErrorSaveFailed;
+
   /// No description provided for @editorTitleNew.
   ///
   /// In ja, this message translates to:

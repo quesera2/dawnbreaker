@@ -117,6 +117,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get taskErrorInvalidArgument => '入力内容が正しくありません';
 
   @override
+  String get onboardingErrorSaveFailed => '設定の保存に失敗しました';
+
+  @override
   String get editorTitleNew => '新規タスクを追加';
 
   @override

@@ -1,5 +1,7 @@
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
+import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
+import 'package:dawnbreaker/ui/common/error_message.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_ui_state.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -18,7 +20,16 @@ class OnboardingViewModel extends _$OnboardingViewModel {
 
   Future<void> onClickDone() async {
     state = state.copyWith(isLoading: true);
-    await _repository.complete();
+    try {
+      await _repository.saveCompletion();
+    } on OnboardingRepositoryException {
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: OnboardingSaveErrorMessage(),
+      );
+      return;
+    }
     state = state.copyWith(
       destination: switch (mode) {
         .initial => .newTask,
@@ -33,7 +44,16 @@ class OnboardingViewModel extends _$OnboardingViewModel {
     }
 
     state = state.copyWith(isLoading: true);
-    await _repository.complete();
+    try {
+      await _repository.saveCompletion();
+    } on OnboardingRepositoryException {
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: OnboardingSaveErrorMessage(),
+      );
+      return;
+    }
     state = state.copyWith(destination: .home);
   }
 }

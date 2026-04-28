@@ -2,6 +2,7 @@ import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
+import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_view_model.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_pages.dart';
@@ -19,7 +20,8 @@ class OnboardingScreen extends ConsumerStatefulWidget {
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
+    with MessagesListenMixin {
   late final PageController _pageController;
   late final OnboardingViewModelProvider _viewState;
   late final OnboardingViewModel _viewModel;
@@ -54,6 +56,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.appColorScheme;
+    listenMessages(_viewState);
     final isCompleting = ref.watch(_viewState.select((s) => s.isLoading));
 
     ref.listen(_viewState.select((s) => s.destination), (_, destination) {

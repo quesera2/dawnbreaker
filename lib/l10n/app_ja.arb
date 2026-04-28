@@ -49,6 +49,7 @@
   "taskErrorUpdateFailed": "更新に失敗しました",
   "taskErrorDeleteFailed": "削除に失敗しました",
   "taskErrorInvalidArgument": "入力内容が正しくありません",
+  "onboardingErrorSaveFailed": "設定の保存に失敗しました",
   "editorTitleNew": "新規タスクを追加",
   "editorTitleEdit": "タスクを編集",
   "editorSectionBasic": "基本情報",

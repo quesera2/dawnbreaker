@@ -49,6 +49,7 @@
   "taskErrorUpdateFailed": "Failed to update",
   "taskErrorDeleteFailed": "Failed to delete",
   "taskErrorInvalidArgument": "Invalid input",
+  "onboardingErrorSaveFailed": "Failed to save settings",
   "editorTitleNew": "Add Task",
   "editorTitleEdit": "Edit Task",
   "editorSectionBasic": "Basic info",

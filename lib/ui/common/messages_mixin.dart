@@ -77,10 +77,10 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
   };
 
   String _snackActionLabel(BuildContext ctx, SnackBarMessage m) => switch (m) {
-    TaskCompleteSuccessSnackMessage() => ctx.l10n.commonUndo,
-    TaskCreateSuccessSnackMessage() => ctx.l10n.commonUndo,
-    TaskUpdateSuccessSnackMessage() => ctx.l10n.commonUndo,
-    TaskDeleteSuccessSnackMessage() => ctx.l10n.commonUndo,
+    TaskCompleteSuccessSnackMessage() ||
+    TaskCreateSuccessSnackMessage() ||
+    TaskUpdateSuccessSnackMessage() ||
+    TaskDeleteSuccessSnackMessage() ||
     TaskExecutionUpdateSuccessSnackMessage() => ctx.l10n.commonUndo,
   };
 
@@ -91,6 +91,7 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
     TaskUpdateErrorMessage() => ctx.l10n.taskErrorUpdateFailed,
     TaskDeleteErrorMessage() => ctx.l10n.taskErrorDeleteFailed,
     TaskInvalidArgumentErrorMessage() => ctx.l10n.taskErrorInvalidArgument,
+    OnboardingSaveErrorMessage() => ctx.l10n.onboardingErrorSaveFailed,
     UnknownErrorMessage() => ctx.l10n.commonErrorUnknown,
   };
 }
