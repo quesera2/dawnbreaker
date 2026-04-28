@@ -20,12 +20,9 @@ GoRouter appRouter(Ref ref) {
     routes: [
       GoRoute(
         path: '/home',
-        builder: (_, __) => const HomeScreen(),
+        builder: (_, _) => const HomeScreen(),
         routes: [
-          GoRoute(
-            path: 'new_task',
-            builder: (_, __) => const EditorScreen(taskId: null),
-          ),
+          GoRoute(path: 'new_task', builder: (_, _) => const EditorScreen()),
         ],
       ),
       GoRoute(
