@@ -23,14 +23,8 @@ jobs:
       - name: Generate code
         run: flutter pub run build_runner build --delete-conflicting-outputs
 
-      - name: Install lcov
-        run: sudo apt-get install -y lcov
-
       - name: Run tests
         run: flutter test --coverage
-
-      - name: Remove generated files from coverage
-        run: lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' -o coverage/lcov.info
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v6
