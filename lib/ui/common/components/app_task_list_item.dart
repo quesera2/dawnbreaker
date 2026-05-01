@@ -35,9 +35,11 @@ class AppTaskListItem extends StatelessWidget {
             Expanded(
               child: InkWell(
                 highlightColor: task.color
-                    .softColor(context)
-                    .withValues(alpha: 0.2),
-                splashColor: task.color.softColor(context),
+                    .baseColor(context)
+                    .withValues(alpha: 0.08),
+                splashColor: task.color
+                    .baseColor(context)
+                    .withValues(alpha: 0.1),
                 onTap: onTap,
                 child: Ink(
                   child: Padding(
