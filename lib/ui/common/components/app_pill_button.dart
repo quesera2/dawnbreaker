@@ -1,5 +1,6 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
+import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
@@ -12,20 +13,26 @@ class AppPillButton extends StatelessWidget {
     this.onPressed,
     this.variant = AppPillButtonVariant.primary,
     this.leading,
+    this.tintColor,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final AppPillButtonVariant variant;
   final Widget? leading;
+  final TaskColor? tintColor;
 
   @override
   Widget build(BuildContext context) {
     final c = context.appColorScheme;
 
     final (bg, fg) = switch (variant) {
-      AppPillButtonVariant.primary => (c.primary, c.primaryOn),
-      AppPillButtonVariant.secondary => (c.surface, c.text),
+      .primary when tintColor is TaskColor => (
+        tintColor!.softColor(context),
+        tintColor!.onColor(context),
+      ),
+      .primary => (c.primary, c.primaryOn),
+      .secondary => (c.surface, c.text),
     };
 
     final style = ElevatedButton.styleFrom(
