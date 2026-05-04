@@ -152,15 +152,15 @@ void main() {
   });
 
   group('TaskItem.computeProgress', () {
-    test('履歴が空のとき NoDueDate を返す', () {
+    test('履歴が空のとき 期日が未定になる', () {
       expect(
         _periodTask().computeProgress(DateTime(2025, 2, 1)),
         isA<NoDueDate>(),
       );
     });
 
-    test('scheduledAt が null のとき NoDueDate を返す', () {
-      // PeriodTask で履歴1件 → scheduledAt が null
+    test('履歴が1件のとき 期日が未定になる', () {
+      // PeriodTask で履歴1件 → 間隔が計算できず期日未定
       final task = _periodTask(
         taskHistory: [
           TaskHistory(id: 1, executedAt: DateTime(2025, 1, 1), comment: null),
@@ -169,7 +169,7 @@ void main() {
       expect(task.computeProgress(DateTime(2025, 2, 1)), isA<NoDueDate>());
     });
 
-    test('期限前: DueDate で isOverdue=false, daysRemaining が正', () {
+    test('期限前: 超過していない、残日数がある', () {
       // lastExecutedAt=1/1, scheduledAt=3/4(+62日), now=2/1(+31日) → progress=0.5
       final task = _periodTask(
         taskHistory: [
@@ -185,7 +185,7 @@ void main() {
       expect(dueDate.daysRemaining, greaterThan(0));
     });
 
-    test('期限超過: DueDate で isOverdue=true, daysRemaining が負', () {
+    test('期限超過: 超過している、残日数が負', () {
       final task = _scheduledTask(
         scheduleValue: 30,
         scheduleUnit: ScheduleUnit.day,
@@ -201,7 +201,7 @@ void main() {
       expect(dueDate.daysRemaining, lessThan(0));
     });
 
-    test('totalDays が 0 のとき DueDate で progress は 0.0', () {
+    test('スケジュール間隔が0日のとき 進捗は0.0', () {
       // lastExecutedAt と scheduledAt が同じ日
       final task = _scheduledTask(
         scheduleValue: 0,
@@ -216,8 +216,8 @@ void main() {
     });
 
     group('翌日期限タスクが今日と誤判定されない', () {
-      // 毎日スケジュール: 4/23実行 → scheduledAt=4/24, 4/24実行 → scheduledAt=4/25
-      test('scheduledAt=4/24, now=4/24 14:00: isToday=true', () {
+      // 毎日スケジュール: 4/23実行 → 期日=4/24, 4/24実行 → 期日=4/25
+      test('期日当日14:00: 当日扱いになる', () {
         final task = _scheduledTask(
           scheduleValue: 1,
           scheduleUnit: ScheduleUnit.day,
@@ -234,32 +234,28 @@ void main() {
         expect(p.daysRemaining, 0);
       });
 
-      test(
-        'scheduledAt=4/25, now=4/24 14:00: isToday=false, daysRemaining=1',
-        () {
-          final task = _scheduledTask(
-            scheduleValue: 1,
-            scheduleUnit: ScheduleUnit.day,
-            taskHistory: [
-              TaskHistory(
-                id: 1,
-                executedAt: DateTime(2026, 4, 24),
-                comment: null,
-              ),
-            ],
-          );
-          final p =
-              task.computeProgress(DateTime(2026, 4, 24, 14, 0)) as DueDate;
-          expect(p.isToday, false);
-          expect(p.daysRemaining, 1);
-        },
-      );
+      test('翌日が期日の14:00: 当日扱いにならない', () {
+        final task = _scheduledTask(
+          scheduleValue: 1,
+          scheduleUnit: ScheduleUnit.day,
+          taskHistory: [
+            TaskHistory(
+              id: 1,
+              executedAt: DateTime(2026, 4, 24),
+              comment: null,
+            ),
+          ],
+        );
+        final p = task.computeProgress(DateTime(2026, 4, 24, 14, 0)) as DueDate;
+        expect(p.isToday, false);
+        expect(p.daysRemaining, 1);
+      });
     });
 
-    group('lastExecutedAt に時刻が含まれていても progress が正しく計算される', () {
-      // 30日スケジュール, 1/1 14:00に実行 → scheduledAt=1/31
-      // totalDays は 30日のはず。1/16 00:00 時点で elapsed=15日 → progress≈0.5
-      test('14:00実行でも totalDays=30, elapsed=15 → progress=0.5', () {
+    group('実行時刻を含む場合でも進捗が正しく計算される', () {
+      // 30日スケジュール, 1/1 14:00に実行 → 期日=1/31
+      // 総日数は 30日のはず。1/16 00:00 時点で経過=15日 → progress≈0.5
+      test('14:00実行でも進捗0.5が正しく算出される', () {
         final task = _scheduledTask(
           scheduleValue: 30,
           scheduleUnit: ScheduleUnit.day,
@@ -277,8 +273,8 @@ void main() {
       });
     });
 
-    group('isOverdue / isToday 境界値', () {
-      // scheduledAt = 1/31 (30日スケジュール, 実行日 1/1)
+    group('超過・当日の境界値', () {
+      // 期日 = 1/31 (30日スケジュール, 実行日 1/1)
       TaskItem task30() => _scheduledTask(
         scheduleValue: 30,
         scheduleUnit: ScheduleUnit.day,
@@ -287,35 +283,35 @@ void main() {
         ],
       );
 
-      test('scheduledAt の前日: isOverdue=false, daysRemaining=1', () {
+      test('期日の前日: 超過していない、残1日', () {
         final p = task30().computeProgress(DateTime(2025, 1, 30)) as DueDate;
         expect(p.isOverdue, false);
         expect(p.daysRemaining, 1);
         expect(p.isToday, false);
       });
 
-      test('scheduledAt 当日の 00:00: isOverdue=false, isToday=true', () {
+      test('期日当日 00:00: 超過していない、当日扱い', () {
         final p =
             task30().computeProgress(DateTime(2025, 1, 31, 0, 0)) as DueDate;
         expect(p.isOverdue, false);
         expect(p.isToday, true);
       });
 
-      test('scheduledAt 当日の 12:00: isOverdue=false, isToday=true', () {
+      test('期日当日 12:00: 超過していない、当日扱い', () {
         final p =
             task30().computeProgress(DateTime(2025, 1, 31, 12, 0)) as DueDate;
         expect(p.isOverdue, false);
         expect(p.isToday, true);
       });
 
-      test('scheduledAt 当日の 23:59: isOverdue=false, isToday=true', () {
+      test('期日当日 23:59: 超過していない、当日扱い', () {
         final p =
             task30().computeProgress(DateTime(2025, 1, 31, 23, 59)) as DueDate;
         expect(p.isOverdue, false);
         expect(p.isToday, true);
       });
 
-      test('scheduledAt の翌日: isOverdue=true, daysRemaining=-1', () {
+      test('期日の翌日: 超過している、残-1日', () {
         final p = task30().computeProgress(DateTime(2025, 2, 1)) as DueDate;
         expect(p.isOverdue, true);
         expect(p.daysRemaining, -1);

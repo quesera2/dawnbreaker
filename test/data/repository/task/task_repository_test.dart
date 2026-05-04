@@ -31,7 +31,7 @@ void main() {
 
   tearDown(() => db.close());
 
-  group('scheduled タスクで config がないとき', () {
+  group('DBが異常な場合', () {
     test('タスク一覧の取得がエラーになる', () async {
       // DB に直接 scheduled タスクを挿入（taskScheduledConfigs なし）
       await db
@@ -59,80 +59,96 @@ void main() {
       await db.close();
     });
 
-    test('addTask: タスクの追加が失敗する', () async {
-      await expectLater(
-        () => repository.addTask(
-          taskType: TaskType.period,
+    group('addTask', () {
+      test('タスクを追加できない', () async {
+        await expectLater(
+          () => repository.addTask(
+            taskType: TaskType.period,
+            name: 'x',
+            icon: '📝',
+            color: TaskColor.none,
+            executedAt: DateTime.now(),
+          ),
+          throwsA(isA<TaskSaveException>()),
+        );
+      });
+    });
+
+    group('findTaskById', () {
+      test('タスクを取得できない', () async {
+        await expectLater(
+          () => repository.findTaskById(1),
+          throwsA(isA<TaskLoadException>()),
+        );
+      });
+    });
+
+    group('recordExecution', () {
+      test('実行を記録できない', () async {
+        await expectLater(
+          () => repository.recordExecution(1, executedAt: DateTime.now()),
+          throwsA(isA<TaskSaveException>()),
+        );
+      });
+    });
+
+    group('updateExecution', () {
+      test('実行を更新できない', () async {
+        await expectLater(
+          () => repository.updateExecution(1, executedAt: DateTime.now()),
+          throwsA(isA<TaskUpdateException>()),
+        );
+      });
+    });
+
+    group('deleteExecution', () {
+      test('実行を削除できない', () async {
+        await expectLater(
+          () => repository.deleteExecution(1),
+          throwsA(isA<TaskDeleteException>()),
+        );
+      });
+    });
+
+    group('updateTask', () {
+      test('タスクを更新できない', () async {
+        await expectLater(
+          () => repository.updateTask(
+            taskId: 1,
+            taskType: TaskType.period,
+            name: 'x',
+            icon: '📝',
+            color: TaskColor.none,
+          ),
+          throwsA(isA<TaskUpdateException>()),
+        );
+      });
+    });
+
+    group('deleteTask', () {
+      test('タスクを削除できない', () async {
+        await expectLater(
+          () => repository.deleteTask(1),
+          throwsA(isA<TaskDeleteException>()),
+        );
+      });
+    });
+
+    group('restoreTask', () {
+      test('タスクを復元できない', () async {
+        const task = TaskItem.period(
+          id: 1,
           name: 'x',
+          furigana: '',
           icon: '📝',
           color: TaskColor.none,
-          executedAt: DateTime.now(),
-        ),
-        throwsA(isA<TaskSaveException>()),
-      );
-    });
-
-    test('findTaskById: タスクの取得が失敗する', () async {
-      await expectLater(
-        () => repository.findTaskById(1),
-        throwsA(isA<TaskLoadException>()),
-      );
-    });
-
-    test('recordExecution: 実行の記録が失敗する', () async {
-      await expectLater(
-        () => repository.recordExecution(1, executedAt: DateTime.now()),
-        throwsA(isA<TaskSaveException>()),
-      );
-    });
-
-    test('updateExecution: 実行の更新が失敗する', () async {
-      await expectLater(
-        () => repository.updateExecution(1, executedAt: DateTime.now()),
-        throwsA(isA<TaskUpdateException>()),
-      );
-    });
-
-    test('deleteExecution: 実行の削除が失敗する', () async {
-      await expectLater(
-        () => repository.deleteExecution(1),
-        throwsA(isA<TaskDeleteException>()),
-      );
-    });
-
-    test('updateTask: タスクの更新が失敗する', () async {
-      await expectLater(
-        () => repository.updateTask(
-          taskId: 1,
-          taskType: TaskType.period,
-          name: 'x',
-          icon: '📝',
-          color: TaskColor.none,
-        ),
-        throwsA(isA<TaskUpdateException>()),
-      );
-    });
-
-    test('deleteTask: タスクの削除が失敗する', () async {
-      await expectLater(
-        () => repository.deleteTask(1),
-        throwsA(isA<TaskDeleteException>()),
-      );
-    });
-
-    test('restoreTask: タスクの復元が失敗する', () async {
-      const task = TaskItem.period(
-        id: 1,
-        name: 'x',
-        furigana: '',
-        icon: '📝',
-        color: TaskColor.none,
-        taskHistory: [],
-      );
-      await expectLater(
-        () => repository.restoreTask(task),
-        throwsA(isA<TaskSaveException>()),
-      );
+          taskHistory: [],
+        );
+        await expectLater(
+          () => repository.restoreTask(task),
+          throwsA(isA<TaskSaveException>()),
+        );
+      });
     });
   });
 
@@ -276,7 +292,7 @@ void main() {
       expect(task.scheduledAt, isNull);
     });
 
-    test('scheduled タイプでスケジュール設定がないとき例外を投げる', () async {
+    test('scheduled タイプでスケジュール設定がないとき追加できない', () async {
       expect(
         () => repository.addTask(
           taskType: TaskType.scheduled,
@@ -324,7 +340,7 @@ void main() {
       expect(task.scheduleUnit, ScheduleUnit.week);
     });
 
-    test('存在しない ID を指定すると TaskRepositoryException を投げる', () async {
+    test('存在しないタスクは取得できない', () async {
       expect(
         () => repository.findTaskById(999),
         throwsA(isA<TaskRepositoryException>()),
@@ -621,7 +637,7 @@ void main() {
       expect(configs.first.scheduleUnit, ScheduleUnit.month);
     });
 
-    test('scheduled タイプでスケジュール設定がないとき例外を投げる', () async {
+    test('scheduled タイプでスケジュール設定がないとき更新できない', () async {
       final id = await repository.addTask(
         taskType: TaskType.scheduled,
         name: '虫避け交換',
