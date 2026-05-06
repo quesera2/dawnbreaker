@@ -8,7 +8,7 @@ import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
-import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_ui_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -46,7 +46,7 @@ class EditorViewModel extends _$EditorViewModel {
       if (!ref.mounted) return;
       state = state.copyWith(
         isLoading: false,
-        errorMessage: TaskLoadErrorMessage(handler: () => _loadTask(taskId)),
+        dialogMessage: TaskLoadErrorMessage(handler: () => _loadTask(taskId)),
       );
     }
   }
@@ -67,7 +67,7 @@ class EditorViewModel extends _$EditorViewModel {
 
   Future<void> save() async {
     if (!state.canSave) return;
-    state = state.copyWith(isSaving: true, errorMessage: null);
+    state = state.copyWith(isSaving: true, dialogMessage: null);
     try {
       final EditorUiState newState;
       if (taskId == null) {
@@ -81,7 +81,7 @@ class EditorViewModel extends _$EditorViewModel {
       if (!ref.mounted) return;
       state = state.copyWith(
         isSaving: false,
-        errorMessage: TaskSaveErrorMessage(handler: save),
+        dialogMessage: TaskSaveErrorMessage(handler: save),
       );
     }
   }
@@ -99,7 +99,7 @@ class EditorViewModel extends _$EditorViewModel {
     return state.copyWith(
       isSaving: false,
       isSaved: true,
-      snackBarMessage: TaskCreateSuccessSnackMessage(
+      snackBarMessage: TaskCreateSuccess(
         taskName: state.name,
         handler: () => _repository.deleteTask(newId),
       ),
@@ -120,7 +120,7 @@ class EditorViewModel extends _$EditorViewModel {
     return state.copyWith(
       isSaving: false,
       isSaved: true,
-      snackBarMessage: TaskUpdateSuccessSnackMessage(
+      snackBarMessage: TaskUpdateSuccess(
         taskName: state.name,
         handler: () => _revertTask(originalTask),
       ),

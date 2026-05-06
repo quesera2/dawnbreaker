@@ -1,7 +1,7 @@
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
-import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_ui_state.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -26,7 +26,7 @@ class OnboardingViewModel extends _$OnboardingViewModel {
       if (!ref.mounted) return;
       state = state.copyWith(
         isLoading: false,
-        errorMessage: OnboardingSaveErrorMessage(),
+        dialogMessage: OnboardingSaveErrorMessage(),
       );
       return;
     }
@@ -50,7 +50,7 @@ class OnboardingViewModel extends _$OnboardingViewModel {
       if (!ref.mounted) return;
       state = state.copyWith(
         isLoading: false,
-        errorMessage: OnboardingSaveErrorMessage(),
+        dialogMessage: OnboardingSaveErrorMessage(),
       );
       return;
     }

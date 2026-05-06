@@ -7,30 +7,30 @@ sealed class SnackBarMessage {
   final AsyncCallback? handler;
 }
 
-class TaskCompleteSuccessSnackMessage extends SnackBarMessage {
-  TaskCompleteSuccessSnackMessage({required this.taskName, super.handler});
+class TaskCompleteSuccess extends SnackBarMessage {
+  TaskCompleteSuccess({required this.taskName, super.handler});
 
   final String taskName;
 }
 
-class TaskCreateSuccessSnackMessage extends SnackBarMessage {
-  TaskCreateSuccessSnackMessage({required this.taskName, super.handler});
+class TaskCreateSuccess extends SnackBarMessage {
+  TaskCreateSuccess({required this.taskName, super.handler});
 
   final String taskName;
 }
 
-class TaskUpdateSuccessSnackMessage extends SnackBarMessage {
-  TaskUpdateSuccessSnackMessage({required this.taskName, super.handler});
+class TaskUpdateSuccess extends SnackBarMessage {
+  TaskUpdateSuccess({required this.taskName, super.handler});
 
   final String taskName;
 }
 
-class TaskDeleteSuccessSnackMessage extends SnackBarMessage {
-  TaskDeleteSuccessSnackMessage({required this.taskName, super.handler});
+class TaskDeleteSuccess extends SnackBarMessage {
+  TaskDeleteSuccess({required this.taskName, super.handler});
 
   final String taskName;
 }
 
-class TaskExecutionUpdateSuccessSnackMessage extends SnackBarMessage {
-  TaskExecutionUpdateSuccessSnackMessage({super.handler});
+class TaskExecutionUpdateSuccess extends SnackBarMessage {
+  TaskExecutionUpdateSuccess({super.handler});
 }

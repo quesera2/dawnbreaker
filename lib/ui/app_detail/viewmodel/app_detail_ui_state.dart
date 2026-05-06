@@ -2,7 +2,7 @@ import 'package:dawnbreaker/core/date_util.dart';
 import 'package:dawnbreaker/data/model/task_history_stats.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
-import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -19,7 +19,7 @@ abstract class AppDetailUiState with _$AppDetailUiState implements BaseUiState {
     int? daysSinceLastExecution,
     int? averageIntervalDays,
     @Default(false) bool shouldPop,
-    @override ErrorMessage? errorMessage,
+    @override DialogMessage? dialogMessage,
     @override SnackBarMessage? snackBarMessage,
   }) = _AppDetailUiState;
 

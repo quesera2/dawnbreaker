@@ -229,7 +229,7 @@ void main() {
                 .read(homeViewModelProvider.notifier)
                 .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
 
-            expect(container.read(homeViewModelProvider).errorMessage, isNull);
+            expect(container.read(homeViewModelProvider).dialogMessage, isNull);
           });
 
           test('成功時に実行完了の通知がセットされる', () async {
@@ -238,11 +238,8 @@ void main() {
                 .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
 
             final msg = container.read(homeViewModelProvider).snackBarMessage;
-            expect(msg, isA<TaskCompleteSuccessSnackMessage>());
-            expect(
-              (msg as TaskCompleteSuccessSnackMessage).taskName,
-              _testTasks[0].name,
-            );
+            expect(msg, isA<TaskCompleteSuccess>());
+            expect((msg as TaskCompleteSuccess).taskName, _testTasks[0].name);
           });
 
           test('成功時の通知に undo ハンドラがある', () async {
@@ -267,7 +264,7 @@ void main() {
 
             await handler!();
 
-            expect(container.read(homeViewModelProvider).errorMessage, isNull);
+            expect(container.read(homeViewModelProvider).dialogMessage, isNull);
           });
 
           for (final (comment, expectedComment, description) in [
@@ -286,14 +283,14 @@ void main() {
               expect(fakeRepository.lastRecordedComment, expectedComment);
               expect(
                 container.read(homeViewModelProvider).snackBarMessage,
-                isA<TaskCompleteSuccessSnackMessage>(),
+                isA<TaskCompleteSuccess>(),
               );
             });
           }
         });
 
         group('異常系', () {
-          test('リポジトリがエラーを返すと errorMessage がセットされる', () async {
+          test('リポジトリがエラーを返すと dialogMessage がセットされる', () async {
             final throwingRepo = FakeTaskRepository(shouldThrow: true);
             final c = ProviderContainer(
               overrides: [
@@ -310,7 +307,7 @@ void main() {
                 .read(homeViewModelProvider.notifier)
                 .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
 
-            expect(c.read(homeViewModelProvider).errorMessage, isNotNull);
+            expect(c.read(homeViewModelProvider).dialogMessage, isNotNull);
           });
         });
       });

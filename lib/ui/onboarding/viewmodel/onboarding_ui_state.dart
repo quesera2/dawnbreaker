@@ -1,5 +1,5 @@
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
-import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -16,7 +16,7 @@ abstract class OnboardingUiState
   const factory OnboardingUiState({
     @Default(false) bool isLoading,
     OnboardingDestination? destination,
-    ErrorMessage? errorMessage,
+    DialogMessage? dialogMessage,
     SnackBarMessage? snackBarMessage,
   }) = _OnboardingUiState;
 }

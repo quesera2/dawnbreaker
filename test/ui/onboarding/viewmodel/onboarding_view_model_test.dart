@@ -1,5 +1,5 @@
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
-import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_ui_state.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_view_model.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
@@ -45,7 +45,7 @@ void main() {
         final state = container.read(
           onboardingViewModelProvider(mode: .initial),
         );
-        expect(state.errorMessage, isNull);
+        expect(state.dialogMessage, isNull);
       });
     });
 
@@ -95,7 +95,7 @@ void main() {
           final state = container.read(
             onboardingViewModelProvider(mode: .initial),
           );
-          expect(state.errorMessage, isA<OnboardingSaveErrorMessage>());
+          expect(state.dialogMessage, isA<OnboardingSaveErrorMessage>());
         });
 
         test('ボタンが操作可能な状態に戻る', () async {
@@ -151,7 +151,7 @@ void main() {
           final state = container.read(
             onboardingViewModelProvider(mode: .initial),
           );
-          expect(state.errorMessage, isA<OnboardingSaveErrorMessage>());
+          expect(state.dialogMessage, isA<OnboardingSaveErrorMessage>());
         });
 
         test('ボタンが操作可能な状態に戻る', () async {

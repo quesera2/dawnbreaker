@@ -7,7 +7,7 @@ import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_view_model.dart';
-import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -259,7 +259,7 @@ void main() {
             expect(
               container
                   .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .errorMessage,
+                  .dialogMessage,
               isNull,
             );
           });
@@ -279,7 +279,7 @@ void main() {
             expect(
               container
                   .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .errorMessage,
+                  .dialogMessage,
               isNull,
             );
           });
@@ -299,7 +299,7 @@ void main() {
               container
                   .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
                   .snackBarMessage,
-              isA<TaskExecutionUpdateSuccessSnackMessage>(),
+              isA<TaskExecutionUpdateSuccess>(),
             );
           });
 
@@ -327,7 +327,7 @@ void main() {
             expect(
               container
                   .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .errorMessage,
+                  .dialogMessage,
               isNull,
             );
           });
@@ -361,7 +361,7 @@ void main() {
             expect(
               container
                   .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .errorMessage,
+                  .dialogMessage,
               isA<TaskUpdateErrorMessage>(),
             );
           });
@@ -380,7 +380,7 @@ void main() {
             expect(
               container
                   .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .errorMessage
+                  .dialogMessage
                   ?.handler,
               isNotNull,
             );
@@ -422,11 +422,8 @@ void main() {
             final msg = container
                 .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
                 .snackBarMessage;
-            expect(msg, isA<TaskDeleteSuccessSnackMessage>());
-            expect(
-              (msg as TaskDeleteSuccessSnackMessage).taskName,
-              _taskOneHistory.name,
-            );
+            expect(msg, isA<TaskDeleteSuccess>());
+            expect((msg as TaskDeleteSuccess).taskName, _taskOneHistory.name);
           });
 
           test('削除を取り消せる', () async {
@@ -509,7 +506,7 @@ void main() {
             expect(
               container
                   .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .errorMessage,
+                  .dialogMessage,
               isA<TaskDeleteErrorMessage>(),
             );
           });
@@ -525,7 +522,7 @@ void main() {
             expect(
               container
                   .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .errorMessage
+                  .dialogMessage
                   ?.handler,
               isNotNull,
             );

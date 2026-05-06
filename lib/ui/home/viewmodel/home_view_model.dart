@@ -2,7 +2,7 @@ import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
-import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -50,14 +50,14 @@ class HomeViewModel extends _$HomeViewModel {
       );
       if (!ref.mounted) return;
       state = state.copyWith(
-        snackBarMessage: TaskCompleteSuccessSnackMessage(
+        snackBarMessage: TaskCompleteSuccess(
           taskName: task.name,
           handler: () => _repository.deleteExecution(history.id),
         ),
       );
     } on TaskRepositoryException {
       if (!ref.mounted) return;
-      state = state.copyWith(errorMessage: TaskSaveErrorMessage());
+      state = state.copyWith(dialogMessage: TaskSaveErrorMessage());
     }
   }
 }
