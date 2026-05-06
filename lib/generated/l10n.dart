@@ -189,6 +189,16 @@ class S {
     return Intl.message('取り消し', name: 'commonUndo', desc: '', args: []);
   }
 
+  /// `削除`
+  String get commonDelete {
+    return Intl.message('削除', name: 'commonDelete', desc: '', args: []);
+  }
+
+  /// `確認`
+  String get commonConfirmTitle {
+    return Intl.message('確認', name: 'commonConfirmTitle', desc: '', args: []);
+  }
+
   /// `エラー`
   String get commonErrorTitle {
     return Intl.message('エラー', name: 'commonErrorTitle', desc: '', args: []);
@@ -576,6 +586,16 @@ class S {
       name: 'appDetailUpdateHistorySuccess',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `タスク「{name}」を削除しますか？`
+  String appDetailTaskDeleteConfirm(String name) {
+    return Intl.message(
+      'タスク「$name」を削除しますか？',
+      name: 'appDetailTaskDeleteConfirm',
+      desc: '',
+      args: [name],
     );
   }
 

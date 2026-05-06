@@ -5,6 +5,7 @@ import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_ui_state.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_detail_view_model.g.dart';
@@ -75,6 +76,19 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     }
   }
 
+  void showDeleteTaskDialog() {
+    final task = state.task;
+    if (task == null) return;
+
+    state = state.copyWith(
+      dialogMessage: DeleteTaskConfirmMessage(
+        task.name,
+        handler: () => deleteTask(),
+      ),
+    );
+  }
+
+  @visibleForTesting
   Future<void> deleteTask() async {
     final task = state.task;
     if (task == null) return;

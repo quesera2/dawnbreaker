@@ -388,6 +388,59 @@ void main() {
         });
       });
 
+      group('showDeleteTaskDialog', () {
+        setUp(() async {
+          setUpContainer();
+          await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+        });
+
+        test('確認ダイアログが表示される', () {
+          container
+              .read(
+                appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+              )
+              .showDeleteTaskDialog();
+          expect(
+            container
+                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                .dialogMessage,
+            isA<DeleteTaskConfirmMessage>(),
+          );
+        });
+
+        test('ダイアログにタスク名が表示される', () {
+          container
+              .read(
+                appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+              )
+              .showDeleteTaskDialog();
+          final msg =
+              container
+                      .read(
+                        appDetailViewModelProvider(taskId: _taskOneHistory.id),
+                      )
+                      .dialogMessage
+                  as DeleteTaskConfirmMessage?;
+          expect(msg?.taskName, _taskOneHistory.name);
+        });
+
+        test('ダイアログのハンドラを呼び出すとタスクが削除される', () async {
+          container
+              .read(
+                appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
+              )
+              .showDeleteTaskDialog();
+          final handler = container
+              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+              .dialogMessage
+              ?.handler;
+          expect(handler, isNotNull);
+          handler!();
+          await Future.microtask(() {});
+          expect(fakeRepository.containsTask(_taskOneHistory.id), false);
+        });
+      });
+
       group('deleteTask', () {
         group('正常系', () {
           setUp(() async {

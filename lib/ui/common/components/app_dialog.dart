@@ -1,7 +1,7 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/generated/l10n.dart';
-import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
+import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
@@ -25,12 +25,14 @@ class AppDialog extends StatelessWidget {
     );
   }
 
-  static AppDialog create(BuildContext context, DialogMessage message) =>
-      AppDialog(
-        title: S.of(context).commonErrorTitle,
-        message: _messageText(context, message),
-        actions: _buildActions(context, message),
-      );
+  static AppDialog create(BuildContext context, DialogMessage message) {
+    final (:title, :messageText, :actionLabel) = _labels(context, message);
+    return AppDialog(
+      title: title,
+      message: messageText,
+      actions: _buildActions(context, message, actionLabel),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,18 +44,62 @@ class AppDialog extends StatelessWidget {
   }
 }
 
-String _messageText(BuildContext context, DialogMessage msg) => switch (msg) {
-  TaskNotFoundErrorMessage() => S.of(context).taskErrorNotFound,
-  TaskLoadErrorMessage() => S.of(context).taskErrorLoadFailed,
-  TaskSaveErrorMessage() => S.of(context).taskErrorSaveFailed,
-  TaskUpdateErrorMessage() => S.of(context).taskErrorUpdateFailed,
-  TaskDeleteErrorMessage() => S.of(context).taskErrorDeleteFailed,
-  TaskInvalidArgumentErrorMessage() => S.of(context).taskErrorInvalidArgument,
-  OnboardingSaveErrorMessage() => S.of(context).onboardingErrorSaveFailed,
-  UnknownErrorMessage() => S.of(context).commonErrorUnknown,
+({String title, String messageText, String actionLabel}) _labels(
+  BuildContext context,
+  DialogMessage msg,
+) => switch (msg) {
+  TaskLoadErrorMessage() => (
+    title: S.of(context).commonErrorTitle,
+    messageText: S.of(context).taskErrorLoadFailed,
+    actionLabel: S.of(context).commonUndo,
+  ),
+  TaskSaveErrorMessage() => (
+    title: S.of(context).commonErrorTitle,
+    messageText: S.of(context).taskErrorSaveFailed,
+    actionLabel: S.of(context).commonUndo,
+  ),
+  TaskUpdateErrorMessage() => (
+    title: S.of(context).commonErrorTitle,
+    messageText: S.of(context).taskErrorUpdateFailed,
+    actionLabel: S.of(context).commonUndo,
+  ),
+  TaskDeleteErrorMessage() => (
+    title: S.of(context).commonErrorTitle,
+    messageText: S.of(context).taskErrorDeleteFailed,
+    actionLabel: S.of(context).commonUndo,
+  ),
+  DeleteTaskConfirmMessage(:final taskName) => (
+    title: S.of(context).commonConfirmTitle,
+    messageText: S.of(context).appDetailTaskDeleteConfirm(taskName),
+    actionLabel: S.of(context).commonDelete,
+  ),
+  TaskNotFoundErrorMessage() => (
+    title: '',
+    messageText: S.of(context).taskErrorNotFound,
+    actionLabel: '',
+  ),
+  TaskInvalidArgumentErrorMessage() => (
+    title: '',
+    messageText: S.of(context).taskErrorInvalidArgument,
+    actionLabel: '',
+  ),
+  OnboardingSaveErrorMessage() => (
+    title: '',
+    messageText: S.of(context).onboardingErrorSaveFailed,
+    actionLabel: '',
+  ),
+  UnknownErrorMessage() => (
+    title: '',
+    messageText: S.of(context).commonErrorUnknown,
+    actionLabel: '',
+  ),
 };
 
-List<Widget> _buildActions(BuildContext context, DialogMessage message) {
+List<Widget> _buildActions(
+  BuildContext context,
+  DialogMessage message,
+  String actionLabel,
+) {
   void close() => Navigator.of(context).pop();
 
   if (message.handler == null) {
@@ -83,7 +129,7 @@ List<Widget> _buildActions(BuildContext context, DialogMessage message) {
         close();
         message.handler!();
       },
-      label: message.actionLabel ?? S.of(context).commonRetry,
+      label: actionLabel,
       variant: variant,
       size: .medium,
     ),

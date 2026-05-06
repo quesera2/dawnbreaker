@@ -17,7 +17,9 @@
   "homeCompleteSuccess": "「{name}」の完了を記録しました",
   "@homeCompleteSuccess": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "commonToday": "今日",
@@ -25,6 +27,8 @@
   "commonCancel": "キャンセル",
   "commonRetry": "再試行",
   "commonUndo": "取り消し",
+  "commonDelete": "削除",
+  "commonConfirmTitle": "確認",
   "commonErrorTitle": "エラー",
   "commonErrorUnknown": "予期しないエラーが発生しました",
   "commonClose": "閉じる",
@@ -34,13 +38,17 @@
   "homeDaysOverdue": "{days}日超過",
   "@homeDaysOverdue": {
     "placeholders": {
-      "days": { "type": "int" }
+      "days": {
+        "type": "int"
+      }
     }
   },
   "homeDaysRemaining": "残り{days}日",
   "@homeDaysRemaining": {
     "placeholders": {
-      "days": { "type": "int" }
+      "days": {
+        "type": "int"
+      }
     }
   },
   "taskErrorLoadFailed": "読み込みに失敗しました",
@@ -66,8 +74,12 @@
   "editorSpanLabel": "{value}{unit}ごと",
   "@editorSpanLabel": {
     "placeholders": {
-      "value": { "type": "String" },
-      "unit": { "type": "String" }
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
     }
   },
   "editorSaveNew": "登録する",
@@ -75,13 +87,17 @@
   "editorSaveNewSuccess": "「{name}」を登録しました",
   "@editorSaveNewSuccess": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "editorSaveEditSuccess": "「{name}」を更新しました",
   "@editorSaveEditSuccess": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "editorColorNote": "色でタスクをグループ分けできます",
@@ -92,7 +108,9 @@
   "appDetailDeleteSuccess": "「{name}」を削除しました",
   "@appDetailDeleteSuccess": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "appDetailStatsDaysSince": "前回から",
@@ -101,7 +119,9 @@
   "appDetailDaysInterval": "前回から{days}日",
   "@appDetailDaysInterval": {
     "placeholders": {
-      "days": { "type": "int" }
+      "days": {
+        "type": "int"
+      }
     }
   },
   "appDetailTypeBadgeIrregular": "不定期",
@@ -109,12 +129,23 @@
   "appDetailTypeBadgeScheduled": "定期 {value}{unit}",
   "@appDetailTypeBadgeScheduled": {
     "placeholders": {
-      "value": { "type": "int" },
-      "unit": { "type": "String" }
+      "value": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
     }
   },
   "appDetailUpdateHistorySuccess": "履歴を更新しました",
-
+  "appDetailTaskDeleteConfirm": "タスク「{name}」を削除しますか？",
+  "@appDetailTaskDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "onboardingPage1Title": "いつやるんだっけ？　の悩みをなくす",
   "onboardingPage1Body": "洗車、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。",
   "onboardingPage2Title": "次はいつごろだっけ？　の悩みをなくす",

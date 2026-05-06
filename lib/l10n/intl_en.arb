@@ -1,5 +1,12 @@
 {
   "@@locale": "en",
+  "@daysOverdue": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "title": "Dawnbreaker",
   "homeSearchHint": "Search tasks",
   "homeNoTasksYet": "No tasks yet",
@@ -17,7 +24,9 @@
   "homeCompleteSuccess": "Marked \"{name}\" as complete",
   "@homeCompleteSuccess": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "commonToday": "Today",
@@ -25,6 +34,8 @@
   "commonCancel": "Cancel",
   "commonRetry": "Retry",
   "commonUndo": "Undo",
+  "commonDelete": "Delete",
+  "commonConfirmTitle": "Confirm",
   "commonErrorTitle": "Error",
   "commonErrorUnknown": "An unexpected error occurred",
   "commonClose": "Close",
@@ -32,15 +43,12 @@
   "commonUnitWeek": "weeks",
   "commonUnitMonth": "months",
   "homeDaysOverdue": "{days}d overdue",
-  "@daysOverdue": {
-    "placeholders": {
-      "days": { "type": "int" }
-    }
-  },
   "homeDaysRemaining": "{days}d remaining",
   "@homeDaysRemaining": {
     "placeholders": {
-      "days": { "type": "int" }
+      "days": {
+        "type": "int"
+      }
     }
   },
   "taskErrorLoadFailed": "Failed to load",
@@ -66,8 +74,12 @@
   "editorSpanLabel": "Every {value} {unit}",
   "@editorSpanLabel": {
     "placeholders": {
-      "value": { "type": "String" },
-      "unit": { "type": "String" }
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
     }
   },
   "editorSaveNew": "Register",
@@ -75,13 +87,17 @@
   "editorSaveNewSuccess": "\"{name}\" registered",
   "@editorSaveNewSuccess": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "editorSaveEditSuccess": "\"{name}\" updated",
   "@editorSaveEditSuccess": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "editorColorNote": "Use colors to group your tasks",
@@ -92,7 +108,9 @@
   "appDetailDeleteSuccess": "Deleted \"{name}\"",
   "@appDetailDeleteSuccess": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "appDetailStatsDaysSince": "Days since",
@@ -101,7 +119,9 @@
   "appDetailDaysInterval": "{days}d from prev",
   "@appDetailDaysInterval": {
     "placeholders": {
-      "days": { "type": "int" }
+      "days": {
+        "type": "int"
+      }
     }
   },
   "appDetailTypeBadgeIrregular": "Irregular",
@@ -109,12 +129,23 @@
   "appDetailTypeBadgeScheduled": "Every {value} {unit}",
   "@appDetailTypeBadgeScheduled": {
     "placeholders": {
-      "value": { "type": "int" },
-      "unit": { "type": "String" }
+      "value": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
     }
   },
   "appDetailUpdateHistorySuccess": "History updated",
-
+  "appDetailTaskDeleteConfirm": "Delete task “{name}”?",
+  "@appDetailTaskDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "onboardingPage1Title": "Never forget \"when was I supposed to do this?\"",
   "onboardingPage1Body": "Car wash, filter cleaning, toothbrush replacement... just register things you tend to forget.",
   "onboardingPage2Title": "Never wonder \"when should I do this next?\"",
