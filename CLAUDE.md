@@ -50,7 +50,8 @@ Dart 3.7 以降の構文を積極的に使う：
 ```
 lib/
   app/          # App ウィジェット、テーマ定義
-  core/         # 汎用ユーティリティ（context_extension 等）
+  core/         # 汎用ユーティリティ
+  generated/    # 生成コード（手動変更しない）
   data/
     model/      # Freezed モデル
     repository/ # Repository インターフェースと実装
@@ -67,7 +68,10 @@ lib/
 
 ## ローカライズ
 
-- `context.l10n.xxx` でアクセス（`lib/core/context_extension.dart` の extension）
+- `flutter_intl` IDE プラグイン（Localizely）を使用
+- ARB ファイル（`lib/l10n/intl_ja.arb`）を保存すると IDE が `lib/generated/` を自動生成する
+- 生成ファイルはビルド成果物ではなく通常のソースファイルとしてコミット済み（`pubspec.yaml` に `generate: true` が不要な理由）
+- Widget の `build` 内では `S.of(context).xxx`、Widget ツリー外では `S.current.xxx` でアクセス
 - ARB キーの命名規則: **プレフィクスを必ずつける**
   - 画面固有の文言: `画面名Xxx`（例: `homeNoTasksYet`）
   - Repository エラー文言: `リポジトリ名ErrorXxx`（例: `taskErrorLoadFailed`）

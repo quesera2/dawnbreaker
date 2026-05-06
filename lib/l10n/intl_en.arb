@@ -86,8 +86,9 @@
   },
   "editorColorNote": "Use colors to group your tasks",
   "editorNameHint": "Enter task name",
-  "appDetailTitle": "History",
+  "appDetailTitle": "Task Detail",
   "appDetailEdit": "Edit",
+  "appDetailDelete": "Delete",
   "appDetailDeleteSuccess": "Deleted \"{name}\"",
   "@appDetailDeleteSuccess": {
     "placeholders": {

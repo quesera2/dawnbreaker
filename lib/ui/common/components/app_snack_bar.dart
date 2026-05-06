@@ -1,7 +1,6 @@
 import 'dart:async' show unawaited;
 
-import 'package:dawnbreaker/core/context_extension.dart';
-import 'package:dawnbreaker/l10n/app_localizations.dart';
+import 'package:dawnbreaker/generated/l10n.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:flutter/material.dart';
 
@@ -10,12 +9,12 @@ abstract final class AppSnackBar {
     final SnackBar snackBar;
     if (message.handler != null) {
       snackBar = createWithAction(
-        message: _messageText(context.l10n, message),
-        actionLabel: context.l10n.commonUndo,
+        message: _messageText(context, message),
+        actionLabel: S.of(context).commonUndo,
         onAction: () => unawaited(message.handler!()),
       );
     } else {
-      snackBar = create(message: _messageText(context.l10n, message));
+      snackBar = create(message: _messageText(context, message));
     }
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
@@ -34,13 +33,14 @@ abstract final class AppSnackBar {
   );
 }
 
-String _messageText(
-  AppLocalizations l10n,
-  SnackBarMessage msg,
-) => switch (msg) {
-  TaskCompleteSuccess(:final taskName) => l10n.homeCompleteSuccess(taskName),
-  TaskCreateSuccess(:final taskName) => l10n.editorSaveNewSuccess(taskName),
-  TaskUpdateSuccess(:final taskName) => l10n.editorSaveEditSuccess(taskName),
-  TaskDeleteSuccess(:final taskName) => l10n.appDetailDeleteSuccess(taskName),
-  TaskExecutionUpdateSuccess() => l10n.appDetailUpdateHistorySuccess,
+String _messageText(BuildContext context, SnackBarMessage msg) => switch (msg) {
+  TaskCompleteSuccess(:final taskName) =>
+    S.of(context).homeCompleteSuccess(taskName),
+  TaskCreateSuccess(:final taskName) =>
+    S.of(context).editorSaveNewSuccess(taskName),
+  TaskUpdateSuccess(:final taskName) =>
+    S.of(context).editorSaveEditSuccess(taskName),
+  TaskDeleteSuccess(:final taskName) =>
+    S.of(context).appDetailDeleteSuccess(taskName),
+  TaskExecutionUpdateSuccess() => S.of(context).appDetailUpdateHistorySuccess,
 };

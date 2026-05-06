@@ -1,6 +1,6 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_theme.dart';
-import 'package:dawnbreaker/core/context_extension.dart';
+import 'package:dawnbreaker/generated/l10n.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +27,7 @@ class AppDialog extends StatelessWidget {
 
   static AppDialog create(BuildContext context, DialogMessage message) =>
       AppDialog(
-        title: context.l10n.commonErrorTitle,
+        title: S.of(context).commonErrorTitle,
         message: _messageText(context, message),
         actions: _buildActions(context, message),
       );
@@ -43,14 +43,14 @@ class AppDialog extends StatelessWidget {
 }
 
 String _messageText(BuildContext context, DialogMessage msg) => switch (msg) {
-  TaskNotFoundErrorMessage() => context.l10n.taskErrorNotFound,
-  TaskLoadErrorMessage() => context.l10n.taskErrorLoadFailed,
-  TaskSaveErrorMessage() => context.l10n.taskErrorSaveFailed,
-  TaskUpdateErrorMessage() => context.l10n.taskErrorUpdateFailed,
-  TaskDeleteErrorMessage() => context.l10n.taskErrorDeleteFailed,
-  TaskInvalidArgumentErrorMessage() => context.l10n.taskErrorInvalidArgument,
-  OnboardingSaveErrorMessage() => context.l10n.onboardingErrorSaveFailed,
-  UnknownErrorMessage() => context.l10n.commonErrorUnknown,
+  TaskNotFoundErrorMessage() => S.of(context).taskErrorNotFound,
+  TaskLoadErrorMessage() => S.of(context).taskErrorLoadFailed,
+  TaskSaveErrorMessage() => S.of(context).taskErrorSaveFailed,
+  TaskUpdateErrorMessage() => S.of(context).taskErrorUpdateFailed,
+  TaskDeleteErrorMessage() => S.of(context).taskErrorDeleteFailed,
+  TaskInvalidArgumentErrorMessage() => S.of(context).taskErrorInvalidArgument,
+  OnboardingSaveErrorMessage() => S.of(context).onboardingErrorSaveFailed,
+  UnknownErrorMessage() => S.of(context).commonErrorUnknown,
 };
 
 List<Widget> _buildActions(BuildContext context, DialogMessage message) {
@@ -60,7 +60,7 @@ List<Widget> _buildActions(BuildContext context, DialogMessage message) {
     return [
       AppButton(
         onPressed: close,
-        label: context.l10n.commonOk,
+        label: S.of(context).commonOk,
         variant: .secondary,
         size: .medium,
       ),
@@ -74,7 +74,7 @@ List<Widget> _buildActions(BuildContext context, DialogMessage message) {
   return [
     AppButton(
       onPressed: close,
-      label: context.l10n.commonCancel,
+      label: S.of(context).commonCancel,
       variant: .secondary,
       size: .medium,
     ),
@@ -83,7 +83,7 @@ List<Widget> _buildActions(BuildContext context, DialogMessage message) {
         close();
         message.handler!();
       },
-      label: message.actionLabel ?? context.l10n.commonRetry,
+      label: message.actionLabel ?? S.of(context).commonRetry,
       variant: variant,
       size: .medium,
     ),

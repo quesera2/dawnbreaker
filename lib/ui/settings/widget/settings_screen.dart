@@ -1,6 +1,6 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
-import 'package:dawnbreaker/core/context_extension.dart';
+import 'package:dawnbreaker/generated/l10n.dart';
 import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
@@ -19,7 +19,7 @@ class SettingsScreen extends ConsumerWidget {
     final padding = MediaQuery.paddingOf(context);
     return Scaffold(
       appBar: AppAppBar(
-        title: context.l10n.settingsTitle,
+        title: S.of(context).settingsTitle,
         onBack: () => context.pop(),
       ),
       body: SingleChildScrollView(
@@ -37,13 +37,13 @@ class SettingsScreen extends ConsumerWidget {
     final divider = Divider(height: 1, color: colorScheme.divider);
     return [
       AppSectionHeader(
-        title: Text(context.l10n.settingsSectionInfo),
+        title: Text(S.of(context).settingsSectionInfo),
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       AppListCell(
         type: .top,
         child: ListTile(
-          title: Text(context.l10n.settingsVersion),
+          title: Text(S.of(context).settingsVersion),
           trailing: Text(version, style: AppTextStyle.caption),
         ),
       ),
@@ -52,7 +52,7 @@ class SettingsScreen extends ConsumerWidget {
         type: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          title: Text(context.l10n.settingsTutorial),
+          title: Text(S.of(context).settingsTutorial),
           trailing: Icon(
             Icons.arrow_forward_ios,
             size: 16,
@@ -67,7 +67,7 @@ class SettingsScreen extends ConsumerWidget {
         type: .bottom,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          title: Text(context.l10n.settingsLicense),
+          title: Text(S.of(context).settingsLicense),
           trailing: Icon(
             Icons.arrow_forward_ios,
             size: 16,

@@ -1,8 +1,8 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
-import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
+import 'package:dawnbreaker/generated/l10n.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,7 +24,7 @@ class SpanPickerButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.appColorScheme;
-    final label = context.l10n.editorSpanLabel('$value', unit.label(context));
+    final label = S.of(context).editorSpanLabel('$value', unit.label(context));
     return OutlinedButton(
       onPressed: () => _showPicker(context),
       style: OutlinedButton.styleFrom(
@@ -151,7 +151,7 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
         Expanded(
           flex: 2,
           child: AppButton(
-            label: context.l10n.commonCancel,
+            label: S.of(context).commonCancel,
             variant: AppButtonVariant.secondary,
             size: AppButtonSize.large,
             fullWidth: true,
@@ -162,7 +162,7 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
         Expanded(
           flex: 3,
           child: AppButton(
-            label: context.l10n.commonOk,
+            label: S.of(context).commonOk,
             size: AppButtonSize.large,
             fullWidth: true,
             onPressed: () =>
@@ -185,7 +185,7 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            context.l10n.editorSpanPickerTitle,
+            S.of(context).editorSpanPickerTitle,
             style: AppTextStyle.headline,
           ),
           const SizedBox(height: 16),
