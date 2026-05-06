@@ -31,6 +31,7 @@ class AppSectionHeader extends StatelessWidget {
             Flexible(
               child: DefaultTextStyle(
                 style: AppTextStyle.overline.copyWith(
+                  fontWeight: .w700,
                   color: colors.textMuted,
                   overflow: TextOverflow.ellipsis,
                 ),
