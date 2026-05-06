@@ -14,7 +14,6 @@ import 'package:dawnbreaker/ui/home/viewmodel/home_task_list.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_view_model.dart';
 import 'package:dawnbreaker/ui/home/widgets/task_complete_sheet.dart';
-import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -214,8 +213,7 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
           icon: Icons.add,
         ),
         AppIconButton(
-          onTap: () =>
-              context.push('/onboarding', extra: OnboardingMode.fromSettings),
+          onTap: () => context.push('/settings'),
           icon: Icons.settings_outlined,
         ),
       ],
