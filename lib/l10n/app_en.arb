@@ -133,5 +133,10 @@
   "onboardingDemoTask5": "Sneaker wash",
   "onboardingNext": "Next",
   "onboardingSkip": "Skip",
-  "onboardingStart": "Register your first task"
+  "onboardingStart": "Register your first task",
+  "settingsTitle": "Settings",
+  "settingsSectionInfo": "Info",
+  "settingsVersion": "Version",
+  "settingsTutorial": "Tutorial",
+  "settingsLicense": "Open Source Licenses"
 }

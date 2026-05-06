@@ -133,5 +133,10 @@
   "onboardingDemoTask5": "スニーカーの洗濯",
   "onboardingNext": "次へ",
   "onboardingSkip": "スキップ",
-  "onboardingStart": "最初のタスクを登録する"
+  "onboardingStart": "最初のタスクを登録する",
+  "settingsTitle": "設定",
+  "settingsSectionInfo": "情報",
+  "settingsVersion": "バージョン",
+  "settingsTutorial": "チュートリアル",
+  "settingsLicense": "オープンソースライセンス"
 }

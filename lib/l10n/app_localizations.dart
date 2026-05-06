@@ -613,6 +613,36 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'最初のタスクを登録する'**
   String get onboardingStart;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsSectionInfo.
+  ///
+  /// In ja, this message translates to:
+  /// **'情報'**
+  String get settingsSectionInfo;
+
+  /// No description provided for @settingsVersion.
+  ///
+  /// In ja, this message translates to:
+  /// **'バージョン'**
+  String get settingsVersion;
+
+  /// No description provided for @settingsTutorial.
+  ///
+  /// In ja, this message translates to:
+  /// **'チュートリアル'**
+  String get settingsTutorial;
+
+  /// No description provided for @settingsLicense.
+  ///
+  /// In ja, this message translates to:
+  /// **'オープンソースライセンス'**
+  String get settingsLicense;
 }
 
 class _AppLocalizationsDelegate
