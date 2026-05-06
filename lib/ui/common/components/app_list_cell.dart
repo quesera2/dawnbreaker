@@ -29,12 +29,12 @@ enum AppListCellType {
   BoxDecoration boxDecoration({
     required Color backgroundColor,
     required Color borderColor,
-    required Radius radius,
+    required BorderRadius? borderRadius,
   }) {
     final side = BorderSide(color: borderColor);
     return BoxDecoration(
       color: backgroundColor,
-      borderRadius: borderRadius(radius),
+      borderRadius: borderRadius,
       border: _border(side),
     );
   }
@@ -55,7 +55,7 @@ class AppListCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    const borderRadius = Radius.circular(AppRadius.lg);
+    final borderRadius = type.borderRadius(const Radius.circular(AppRadius.lg));
 
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 48),
@@ -63,11 +63,11 @@ class AppListCell extends StatelessWidget {
         decoration: type.boxDecoration(
           backgroundColor: colors.surface,
           borderColor: colors.border,
-          radius: borderRadius,
+          borderRadius: borderRadius,
         ),
         child: InkWell(
           onTap: onTap,
-          borderRadius: type.borderRadius(borderRadius),
+          borderRadius: borderRadius,
           child: Align(alignment: Alignment.centerLeft, child: child),
         ),
       ),

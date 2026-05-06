@@ -435,7 +435,7 @@ class _HistoryItem extends StatelessWidget {
                 if (entry.comment case final comment?)
                   Padding(
                     padding: const EdgeInsets.only(top: 8, left: _dotSize + 12),
-                    child: _HistoryComment(comment: comment, colors: colors),
+                    child: _HistoryComment(comment: comment),
                   ),
               ],
             ),
@@ -447,13 +447,13 @@ class _HistoryItem extends StatelessWidget {
 }
 
 class _HistoryComment extends StatelessWidget {
-  const _HistoryComment({required this.comment, required this.colors});
+  const _HistoryComment({required this.comment});
 
   final String comment;
-  final AppColorScheme colors;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border.all(color: colors.border),
