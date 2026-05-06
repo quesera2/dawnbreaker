@@ -289,4 +289,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingStart => 'Register your first task';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsSectionInfo => 'Info';
+
+  @override
+  String get settingsVersion => 'Version';
+
+  @override
+  String get settingsTutorial => 'Tutorial';
+
+  @override
+  String get settingsLicense => 'Open Source Licenses';
 }

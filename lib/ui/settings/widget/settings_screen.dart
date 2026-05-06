@@ -1,4 +1,5 @@
 import 'package:dawnbreaker/app/app_colors.dart';
+import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
@@ -21,7 +22,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final state = ref.watch(settingsViewModelProvider);
     final padding = MediaQuery.paddingOf(context);
     return Scaffold(
-      appBar: AppAppBar(title: '設定', onBack: () => context.pop()),
+      appBar: AppAppBar(
+        title: context.l10n.settingsTitle,
+        onBack: () => context.pop(),
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(20, 8, 20, padding.bottom + 16),
         child: Column(
@@ -37,19 +41,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final divider = Divider(height: 1, color: colorScheme.divider);
     return [
       AppSectionHeader(
-        title: Text('情報'),
+        title: Text(context.l10n.settingsSectionInfo),
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       AppListCell(
         type: .top,
-        child: ListTile(title: Text('バージョン'), trailing: Text(version)),
+        child: ListTile(
+          title: Text(context.l10n.settingsVersion),
+          trailing: Text(version),
+        ),
       ),
       divider,
       AppListCell(
         type: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          title: Text('チュートリアル'),
+          title: Text(context.l10n.settingsTutorial),
           trailing: Icon(
             Icons.arrow_forward_ios,
             size: 16,
@@ -64,7 +71,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         type: .bottom,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          title: Text('オープンソースライセンス'),
+          title: Text(context.l10n.settingsLicense),
           trailing: Icon(
             Icons.arrow_forward_ios,
             size: 16,

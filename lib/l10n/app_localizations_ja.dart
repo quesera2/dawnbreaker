@@ -284,4 +284,19 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get onboardingStart => '最初のタスクを登録する';
+
+  @override
+  String get settingsTitle => '設定';
+
+  @override
+  String get settingsSectionInfo => '情報';
+
+  @override
+  String get settingsVersion => 'バージョン';
+
+  @override
+  String get settingsTutorial => 'チュートリアル';
+
+  @override
+  String get settingsLicense => 'オープンソースライセンス';
 }
