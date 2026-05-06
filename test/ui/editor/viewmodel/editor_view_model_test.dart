@@ -50,7 +50,7 @@ void main() {
         expect(state.type, TaskType.period);
         expect(state.color, TaskColor.none);
         expect(state.isSaved, false);
-        expect(state.errorMessage, isNull);
+        expect(state.dialogMessage, isNull);
       });
 
       test('name が空のとき canSave は false', () {
@@ -122,11 +122,8 @@ void main() {
           viewModel.updateName('散髪');
           await viewModel.save();
           final state = container.read(editorViewModelProvider());
-          expect(state.snackBarMessage, isA<TaskCreateSuccessSnackMessage>());
-          expect(
-            (state.snackBarMessage as TaskCreateSuccessSnackMessage).taskName,
-            '散髪',
-          );
+          expect(state.snackBarMessage, isA<TaskCreateSuccess>());
+          expect((state.snackBarMessage as TaskCreateSuccess).taskName, '散髪');
           expect(state.snackBarMessage!.handler, isNotNull);
         },
       );
@@ -137,7 +134,7 @@ void main() {
         final snackMsg = container
             .read(editorViewModelProvider())
             .snackBarMessage;
-        expect(snackMsg, isA<TaskCreateSuccessSnackMessage>());
+        expect(snackMsg, isA<TaskCreateSuccess>());
 
         // undo 前はタスクが存在する
         expect(fakeRepository.containsTask(100), true);
@@ -164,7 +161,7 @@ void main() {
         final state = c.read(editorViewModelProvider());
         expect(state.isSaved, false);
         expect(state.isSaving, false);
-        expect(state.errorMessage, isNotNull);
+        expect(state.dialogMessage, isNotNull);
       });
     });
 
@@ -210,7 +207,7 @@ void main() {
           await _waitUntilLoaded(container, taskId: 999);
           final state = container.read(editorViewModelProvider(taskId: 999));
           expect(state.isLoading, false);
-          expect(state.errorMessage, isNotNull);
+          expect(state.dialogMessage, isNotNull);
         });
 
         group('save', () {
@@ -236,13 +233,9 @@ void main() {
               notifier.updateName('新しい名前');
               await notifier.save();
               final state = container.read(editorViewModelProvider(taskId: 1));
+              expect(state.snackBarMessage, isA<TaskUpdateSuccess>());
               expect(
-                state.snackBarMessage,
-                isA<TaskUpdateSuccessSnackMessage>(),
-              );
-              expect(
-                (state.snackBarMessage as TaskUpdateSuccessSnackMessage)
-                    .taskName,
+                (state.snackBarMessage as TaskUpdateSuccess).taskName,
                 '新しい名前',
               );
               expect(state.snackBarMessage!.handler, isNotNull);
@@ -261,7 +254,7 @@ void main() {
               final snackMsg = container
                   .read(editorViewModelProvider(taskId: 1))
                   .snackBarMessage;
-              expect(snackMsg, isA<TaskUpdateSuccessSnackMessage>());
+              expect(snackMsg, isA<TaskUpdateSuccess>());
 
               // undo 前は更新後の値
               expect(fakeRepository.taskById(1)?.name, '新しい名前');

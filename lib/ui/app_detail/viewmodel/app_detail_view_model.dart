@@ -3,7 +3,7 @@ import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_ui_state.dart';
-import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -53,7 +53,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       );
       if (!ref.mounted) return;
       state = state.copyWith(
-        snackBarMessage: TaskExecutionUpdateSuccessSnackMessage(
+        snackBarMessage: TaskExecutionUpdateSuccess(
           handler: () => updateExecution(
             history,
             executedAt: history.executedAt,
@@ -64,7 +64,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     } on TaskRepositoryException {
       if (!ref.mounted) return;
       state = state.copyWith(
-        errorMessage: TaskUpdateErrorMessage(
+        dialogMessage: TaskUpdateErrorMessage(
           handler: () => updateExecution(
             history,
             executedAt: executedAt,
@@ -83,7 +83,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       await _repository.deleteTask(task.id);
       if (!ref.mounted) return;
       state = state.copyWith(
-        snackBarMessage: TaskDeleteSuccessSnackMessage(
+        snackBarMessage: TaskDeleteSuccess(
           taskName: task.name,
           handler: () => _repository.restoreTask(task),
         ),
@@ -92,7 +92,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     } on TaskRepositoryException {
       if (!ref.mounted) return;
       state = state.copyWith(
-        errorMessage: TaskDeleteErrorMessage(handler: deleteTask),
+        dialogMessage: TaskDeleteErrorMessage(handler: deleteTask),
       );
     }
   }

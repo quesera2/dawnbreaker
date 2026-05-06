@@ -3,7 +3,7 @@ import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
-import 'package:dawnbreaker/ui/common/error_message.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -22,7 +22,7 @@ abstract class EditorUiState with _$EditorUiState implements BaseUiState {
     @Default(1) int scheduleValue,
     @Default(ScheduleUnit.week) ScheduleUnit scheduleUnit,
     @Default([]) List<TaskHistory> taskHistory,
-    ErrorMessage? errorMessage,
+    DialogMessage? dialogMessage,
     SnackBarMessage? snackBarMessage,
     @Default(false) bool isSaving,
     @Default(false) bool isSaved,
