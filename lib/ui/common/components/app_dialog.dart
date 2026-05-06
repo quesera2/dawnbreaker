@@ -1,6 +1,6 @@
 import 'package:dawnbreaker/app/app_colors.dart';
-import 'package:dawnbreaker/app/app_theme.dart';
 import 'package:dawnbreaker/generated/l10n.dart';
+import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:flutter/material.dart';
@@ -99,8 +99,7 @@ final class DialogShowCase extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.appColorScheme;
-    return Theme(
-      data: createThemeData(context),
+    return PreviewWrapper(
       child: Container(
         color: c.bg,
         padding: const EdgeInsets.all(24),

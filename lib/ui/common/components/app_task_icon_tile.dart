@@ -1,5 +1,6 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
@@ -79,38 +80,40 @@ final class TaskIconTileShowCase extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bg = context.appColorScheme.bg;
-    return Container(
-      color: bg,
-      padding: const EdgeInsets.all(24),
-      child: const Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 16,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 8,
-            children: [
-              AppTaskIconTile(emoji: '🚗', color: TaskColor.none),
-              AppTaskIconTile(emoji: '🌿', color: TaskColor.red),
-              AppTaskIconTile(emoji: '❄️', color: TaskColor.blue),
-              AppTaskIconTile(emoji: '🐝', color: TaskColor.yellow),
-              AppTaskIconTile(emoji: '🪴', color: TaskColor.green),
-              AppTaskIconTile(emoji: '🧺', color: TaskColor.orange),
-            ],
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: 8,
-            children: [
-              AppTaskIconTile(emoji: '🚗', color: TaskColor.none, size: 32),
-              AppTaskIconTile(emoji: '🚗', color: TaskColor.none),
-              AppTaskIconTile(emoji: '🚗', color: TaskColor.none, size: 48),
-              AppTaskIconTile(emoji: '🚗', color: TaskColor.none, size: 52),
-            ],
-          ),
-        ],
+    return PreviewWrapper(
+      child: Container(
+        color: bg,
+        padding: const EdgeInsets.all(24),
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 16,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 8,
+              children: [
+                AppTaskIconTile(emoji: '🚗', color: TaskColor.none),
+                AppTaskIconTile(emoji: '🌿', color: TaskColor.red),
+                AppTaskIconTile(emoji: '❄️', color: TaskColor.blue),
+                AppTaskIconTile(emoji: '🐝', color: TaskColor.yellow),
+                AppTaskIconTile(emoji: '🪴', color: TaskColor.green),
+                AppTaskIconTile(emoji: '🧺', color: TaskColor.orange),
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 8,
+              children: [
+                AppTaskIconTile(emoji: '🚗', color: TaskColor.none, size: 32),
+                AppTaskIconTile(emoji: '🚗', color: TaskColor.none),
+                AppTaskIconTile(emoji: '🚗', color: TaskColor.none, size: 48),
+                AppTaskIconTile(emoji: '🚗', color: TaskColor.none, size: 52),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
