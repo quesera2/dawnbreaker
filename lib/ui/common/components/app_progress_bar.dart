@@ -1,5 +1,6 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
+import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
@@ -288,23 +289,25 @@ final class ProgressBarShowCase extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.appColorScheme;
-    return Container(
-      color: c.bg,
-      padding: const EdgeInsets.all(24),
-      child: const SizedBox(
-        width: 320,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          spacing: 16,
-          children: [
-            AppProgressBar(value: 0.15),
-            AppProgressBar(value: 0.25),
-            AppProgressBar(value: 0.55),
-            AppProgressBar(value: 0.85),
-            AppProgressBar(value: 1.0, isOverdue: false),
-            AppProgressBar(value: 1.0, isOverdue: true),
-          ],
+    return PreviewWrapper(
+      child: Container(
+        color: c.bg,
+        padding: const EdgeInsets.all(24),
+        child: const SizedBox(
+          width: 320,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            spacing: 16,
+            children: [
+              AppProgressBar(value: 0.15),
+              AppProgressBar(value: 0.25),
+              AppProgressBar(value: 0.55),
+              AppProgressBar(value: 0.85),
+              AppProgressBar(value: 1.0, isOverdue: false),
+              AppProgressBar(value: 1.0, isOverdue: true),
+            ],
+          ),
         ),
       ),
     );

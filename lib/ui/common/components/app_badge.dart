@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
+import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
@@ -61,21 +62,23 @@ final class LabelShowCase extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.appColorScheme;
-    return Container(
-      color: colorScheme.bg,
-      padding: const EdgeInsets.all(18),
-      alignment: Alignment.center,
-      child: const Row(
-        spacing: 6,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AppBadge(label: '中立', tone: AppBadgeTone.neutral),
-          AppBadge(label: '11日超過', tone: AppBadgeTone.danger),
-          AppBadge(label: '今日', tone: AppBadgeTone.warning),
-          AppBadge(label: '完了', tone: AppBadgeTone.success),
-          AppBadge(label: '情報', tone: AppBadgeTone.info),
-          AppBadge(label: '残り6日', tone: AppBadgeTone.primary),
-        ],
+    return PreviewWrapper(
+      child: Container(
+        color: colorScheme.bg,
+        padding: const EdgeInsets.all(18),
+        alignment: Alignment.center,
+        child: const Row(
+          spacing: 6,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AppBadge(label: '中立', tone: AppBadgeTone.neutral),
+            AppBadge(label: '11日超過', tone: AppBadgeTone.danger),
+            AppBadge(label: '今日', tone: AppBadgeTone.warning),
+            AppBadge(label: '完了', tone: AppBadgeTone.success),
+            AppBadge(label: '情報', tone: AppBadgeTone.info),
+            AppBadge(label: '残り6日', tone: AppBadgeTone.primary),
+          ],
+        ),
       ),
     );
   }

@@ -5,61 +5,60 @@ import 'app_radius.dart';
 import 'app_typography.dart';
 
 ThemeData createThemeData(BuildContext context) {
-  final colorScheme = context.appColorScheme;
+  final brightness = MediaQuery.platformBrightnessOf(context);
+  final c = brightness == Brightness.dark
+      ? AppColorScheme.dark
+      : AppColorScheme.light;
   return ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: colorScheme.primary,
-      brightness: MediaQuery.platformBrightnessOf(context),
+      seedColor: c.primary,
+      brightness: brightness,
     ),
-    scaffoldBackgroundColor: colorScheme.bg,
-    canvasColor: colorScheme.bg,
-    hintColor: colorScheme.textMuted,
-    iconTheme: IconThemeData(color: colorScheme.text),
+    scaffoldBackgroundColor: c.bg,
+    canvasColor: c.bg,
+    hintColor: c.textMuted,
+    iconTheme: IconThemeData(color: c.text),
     appBarTheme: AppBarTheme(
-      backgroundColor: colorScheme.bg,
-      foregroundColor: colorScheme.text,
-      iconTheme: IconThemeData(color: colorScheme.text),
+      backgroundColor: c.bg,
+      foregroundColor: c.text,
+      iconTheme: IconThemeData(color: c.text),
       titleTextStyle: AppTextStyle.body.copyWith(
-        color: colorScheme.text,
+        color: c.text,
         fontWeight: FontWeight.w700,
       ),
       elevation: 0,
       scrolledUnderElevation: 0,
     ),
     cardTheme: CardThemeData(
-      color: colorScheme.surface,
+      color: c.surface,
       elevation: 1,
-      shadowColor: colorScheme.shadow,
+      shadowColor: c.shadow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        side: BorderSide(color: colorScheme.border),
+        side: BorderSide(color: c.border),
       ),
     ),
-    dividerTheme: DividerThemeData(color: colorScheme.divider),
+    dividerTheme: DividerThemeData(color: c.divider),
     bottomSheetTheme: BottomSheetThemeData(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: c.surface,
       surfaceTintColor: Colors.transparent,
-      dragHandleColor: colorScheme.borderStrong,
+      dragHandleColor: c.borderStrong,
     ),
     dialogTheme: DialogThemeData(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: c.surface,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        side: BorderSide(color: colorScheme.border),
+        side: BorderSide(color: c.border),
       ),
-      titleTextStyle: AppTextStyle.headline.copyWith(color: colorScheme.text),
-      contentTextStyle: AppTextStyle.caption.copyWith(
-        color: colorScheme.textMuted,
-      ),
+      titleTextStyle: AppTextStyle.headline.copyWith(color: c.text),
+      contentTextStyle: AppTextStyle.caption.copyWith(color: c.textMuted),
     ),
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: colorScheme.text,
-      contentTextStyle: AppTextStyle.body.copyWith(
-        color: colorScheme.textInverse,
-      ),
-      actionTextColor: colorScheme.primaryInverse,
+      backgroundColor: c.text,
+      contentTextStyle: AppTextStyle.body.copyWith(color: c.textInverse),
+      actionTextColor: c.primaryInverse,
     ),
   );
 }

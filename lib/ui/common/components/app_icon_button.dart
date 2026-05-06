@@ -2,6 +2,7 @@ import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/ui/common/extend_hit_test.dart';
+import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
@@ -94,17 +95,19 @@ final class IconButtonShowCase extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.appColorScheme;
-    return Container(
-      color: colorScheme.bg,
-      padding: const EdgeInsets.all(18),
-      alignment: Alignment.center,
-      child: Row(
-        spacing: 6,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AppIconButton(icon: Icons.add_ic_call_outlined, onTap: () {}),
-          AppIconButton(icon: Icons.edit, label: '編集', onTap: () {}),
-        ],
+    return PreviewWrapper(
+      child: Container(
+        color: colorScheme.bg,
+        padding: const EdgeInsets.all(18),
+        alignment: Alignment.center,
+        child: Row(
+          spacing: 6,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AppIconButton(icon: Icons.add_ic_call_outlined, onTap: () {}),
+            AppIconButton(icon: Icons.edit, label: '編集', onTap: () {}),
+          ],
+        ),
       ),
     );
   }

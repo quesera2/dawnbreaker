@@ -358,12 +358,12 @@ extension TaskColorContext on TaskColor {
 
 extension AppColors on BuildContext {
   AppColorScheme get appColorScheme =>
-      MediaQuery.platformBrightnessOf(this) == Brightness.dark
+      Theme.of(this).brightness == Brightness.dark
       ? AppColorScheme.dark
       : AppColorScheme.light;
 
   AppTaskColorScheme get appTaskColorScheme =>
-      MediaQuery.platformBrightnessOf(this) == Brightness.dark
+      Theme.of(this).brightness == Brightness.dark
       ? AppTaskColorScheme.dark
       : AppTaskColorScheme.light;
 }
