@@ -1,18 +1,18 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
-import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/core/date_util.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_history_stats.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/generated/l10n.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_view_model.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
 import 'package:dawnbreaker/ui/common/components/app_badge.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
-import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
+import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/home/widgets/task_complete_sheet.dart';
@@ -66,17 +66,18 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
                 onTap: () => context.pop(),
               ),
             ),
-            title: Text(context.l10n.appDetailTitle),
+            title: Text(S.of(context).appDetailTitle),
             actions: task != null
                 ? [
                     AppIconButton(
                       icon: Icons.edit_outlined,
-                      label: context.l10n.appDetailEdit,
+                      label: S.of(context).appDetailEdit,
                       onTap: () =>
                           context.push('/app-detail/${widget.taskId}/edit'),
                     ),
                     AppIconButton(
                       icon: Icons.delete,
+                      label: S.of(context).appDetailDelete,
                       tone: AppIconTone.destruction,
                       onTap: viewModel.deleteTask,
                     ),
@@ -104,7 +105,9 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
             ),
             SliverToBoxAdapter(
               child: AppSectionHeader(
-                title: Text(context.l10n.appDetailHistorySection.toUpperCase()),
+                title: Text(
+                  S.of(context).appDetailHistorySection.toUpperCase(),
+                ),
                 subTitle: Text(historyAndInterval.length.toString()),
               ),
             ),
@@ -191,18 +194,20 @@ class _TypeBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (task) {
       IrregularTaskItem() => AppBadge(
-        label: context.l10n.appDetailTypeBadgeIrregular,
+        label: S.of(context).appDetailTypeBadgeIrregular,
         tone: AppBadgeTone.neutral,
       ),
       PeriodTaskItem() => AppBadge(
-        label: context.l10n.appDetailTypeBadgePeriod,
+        label: S.of(context).appDetailTypeBadgePeriod,
         tone: AppBadgeTone.success,
       ),
       ScheduledTaskItem(:final scheduleValue, :final scheduleUnit) => AppBadge(
-        label: context.l10n.appDetailTypeBadgeScheduled(
-          scheduleValue,
-          scheduleUnit.label(context),
-        ),
+        label: S
+            .of(context)
+            .appDetailTypeBadgeScheduled(
+              scheduleValue,
+              scheduleUnit.label(context),
+            ),
         tone: AppBadgeTone.info,
       ),
     };
@@ -242,9 +247,9 @@ class _StatsAndChartCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _StatCell(
-                      label: context.l10n.appDetailStatsDaysSince,
+                      label: S.of(context).appDetailStatsDaysSince,
                       value: daysSinceLastExecution,
-                      unit: context.l10n.commonUnitDay,
+                      unit: S.of(context).commonUnitDay,
                     ),
                   ),
                   VerticalDivider(
@@ -254,9 +259,9 @@ class _StatsAndChartCard extends StatelessWidget {
                   ),
                   Expanded(
                     child: _StatCell(
-                      label: context.l10n.appDetailStatsAvgInterval,
+                      label: S.of(context).appDetailStatsAvgInterval,
                       value: averageIntervalDays,
-                      unit: context.l10n.commonUnitDay,
+                      unit: S.of(context).commonUnitDay,
                     ),
                   ),
                 ],
@@ -424,8 +429,10 @@ class _HistoryItem extends StatelessWidget {
                     if (intervalDays != null)
                       Text(
                         intervalDays! == 0
-                            ? context.l10n.commonToday
-                            : context.l10n.appDetailDaysInterval(intervalDays!),
+                            ? S.of(context).commonToday
+                            : S
+                                  .of(context)
+                                  .appDetailDaysInterval(intervalDays!),
                         style: AppTextStyle.caption.copyWith(
                           color: colors.textMuted,
                         ),

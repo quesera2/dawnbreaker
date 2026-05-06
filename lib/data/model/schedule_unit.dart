@@ -1,4 +1,4 @@
-import 'package:dawnbreaker/core/context_extension.dart';
+import 'package:dawnbreaker/generated/l10n.dart';
 import 'package:flutter/widgets.dart';
 
 enum ScheduleUnit {
@@ -21,8 +21,8 @@ enum ScheduleUnit {
   };
 
   String label(BuildContext context) => switch (this) {
-    ScheduleUnit.day => context.l10n.commonUnitDay,
-    ScheduleUnit.week => context.l10n.commonUnitWeek,
-    ScheduleUnit.month => context.l10n.commonUnitMonth,
+    ScheduleUnit.day => S.of(context).commonUnitDay,
+    ScheduleUnit.week => S.of(context).commonUnitWeek,
+    ScheduleUnit.month => S.of(context).commonUnitMonth,
   };
 }

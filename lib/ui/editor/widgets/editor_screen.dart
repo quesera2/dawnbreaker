@@ -1,10 +1,10 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
-import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
+import 'package:dawnbreaker/generated/l10n.dart';
 import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_input.dart';
@@ -63,8 +63,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
     return Scaffold(
       appBar: AppAppBar(
         title: isNew
-            ? context.l10n.editorTitleNew
-            : context.l10n.editorTitleEdit,
+            ? S.of(context).editorTitleNew
+            : S.of(context).editorTitleEdit,
         onBack: () => context.pop(),
       ),
       body: uiState.isLoading
@@ -114,7 +114,7 @@ class _EditorBody extends StatelessWidget {
     final appColorScheme = context.appColorScheme;
     return [
       AppSectionHeader(
-        title: Text(context.l10n.editorSectionBasic),
+        title: Text(S.of(context).editorSectionBasic),
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       Container(
@@ -134,14 +134,14 @@ class _EditorBody extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             AppTextInput(
-              hintText: context.l10n.editorNameHint,
+              hintText: S.of(context).editorNameHint,
               controller: nameController,
               onChanged: viewModel.updateName,
             ),
             const SizedBox(height: 16),
             // 色選択
             Text(
-              context.l10n.editorLabelColor,
+              S.of(context).editorLabelColor,
               style: AppTextStyle.caption.copyWith(
                 color: appColorScheme.textMuted,
                 fontWeight: FontWeight.w600,
@@ -154,7 +154,7 @@ class _EditorBody extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              context.l10n.editorColorNote,
+              S.of(context).editorColorNote,
               style: AppTextStyle.caption.copyWith(
                 color: appColorScheme.textSubtle,
               ),
@@ -168,7 +168,7 @@ class _EditorBody extends StatelessWidget {
   List<Widget> _taskTypeSection(BuildContext context) {
     return [
       AppSectionHeader(
-        title: Text(context.l10n.editorLabelType),
+        title: Text(S.of(context).editorLabelType),
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       _TypeSelector(
@@ -201,7 +201,7 @@ class _IconArea extends StatelessWidget {
         AppTaskIconTile(emoji: icon, color: color, size: 64),
         const SizedBox(width: 16),
         AppButton(
-          label: context.l10n.editorChangeIcon,
+          label: S.of(context).editorChangeIcon,
           variant: AppButtonVariant.secondary,
           onPressed: () => _showEmojiPicker(context),
         ),
@@ -267,24 +267,24 @@ class _TypeSelector extends StatelessWidget {
     return Column(
       children: [
         _TypeCard(
-          title: context.l10n.editorTypeIrregular,
-          description: context.l10n.editorTypeIrregularDesc,
+          title: S.of(context).editorTypeIrregular,
+          description: S.of(context).editorTypeIrregularDesc,
           icon: Icons.event_busy_outlined,
           isSelected: selected == TaskType.irregular,
           onTap: () => onChanged(TaskType.irregular),
         ),
         const SizedBox(height: 8),
         _TypeCard(
-          title: context.l10n.editorTypePeriod,
-          description: context.l10n.editorTypePeriodDesc,
+          title: S.of(context).editorTypePeriod,
+          description: S.of(context).editorTypePeriodDesc,
           icon: Icons.auto_graph_outlined,
           isSelected: selected == TaskType.period,
           onTap: () => onChanged(TaskType.period),
         ),
         const SizedBox(height: 8),
         _TypeCard(
-          title: context.l10n.editorTypeScheduled,
-          description: context.l10n.editorTypeScheduledDesc,
+          title: S.of(context).editorTypeScheduled,
+          description: S.of(context).editorTypeScheduledDesc,
           icon: Icons.repeat_outlined,
           isSelected: selected == TaskType.scheduled,
           onTap: () => onChanged(TaskType.scheduled),
@@ -549,7 +549,9 @@ class _SaveBar extends StatelessWidget {
         border: Border(top: BorderSide(color: c.divider)),
       ),
       child: AppButton(
-        label: isNew ? context.l10n.editorSaveNew : context.l10n.editorSaveEdit,
+        label: isNew
+            ? S.of(context).editorSaveNew
+            : S.of(context).editorSaveEdit,
         onPressed: enabled ? onSave : null,
         fullWidth: true,
         size: AppButtonSize.large,

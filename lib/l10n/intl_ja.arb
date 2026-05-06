@@ -86,8 +86,9 @@
   },
   "editorColorNote": "色でタスクをグループ分けできます",
   "editorNameHint": "タスク名を入力",
-  "appDetailTitle": "実行履歴",
+  "appDetailTitle": "タスク詳細",
   "appDetailEdit": "編集",
+  "appDetailDelete": "削除",
   "appDetailDeleteSuccess": "「{name}」を削除しました",
   "@appDetailDeleteSuccess": {
     "placeholders": {

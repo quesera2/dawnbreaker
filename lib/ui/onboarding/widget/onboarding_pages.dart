@@ -1,19 +1,18 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
-import 'package:dawnbreaker/core/context_extension.dart';
 import 'package:dawnbreaker/core/date_util.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/generated/l10n.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_list_item.dart';
 import 'package:flutter/material.dart';
 
 List<OnboardingPage> buildOnboardingPages(BuildContext context) {
   final c = context.appColorScheme;
-  final l10n = context.l10n;
   final pageColors = [
     c.info,
     c.warning,
@@ -21,20 +20,20 @@ List<OnboardingPage> buildOnboardingPages(BuildContext context) {
   ].map((color) => Color.lerp(color, c.surface, 0.65)!).toList();
   return [
     OnboardingPage(
-      pageTitle: l10n.onboardingPage1Title,
-      pageDescription: l10n.onboardingPage1Body,
+      pageTitle: S.of(context).onboardingPage1Title,
+      pageDescription: S.of(context).onboardingPage1Body,
       backgroundColor: pageColors[0],
       pageDetail: _OnboardingPage1Description(backgroundColor: pageColors[0]),
     ),
     OnboardingPage(
-      pageTitle: l10n.onboardingPage2Title,
-      pageDescription: l10n.onboardingPage2Body,
+      pageTitle: S.of(context).onboardingPage2Title,
+      pageDescription: S.of(context).onboardingPage2Body,
       backgroundColor: pageColors[1],
       pageDetail: const _OnboardingPage2Description(),
     ),
     OnboardingPage(
-      pageTitle: l10n.onboardingPage3Title,
-      pageDescription: l10n.onboardingPage3Body,
+      pageTitle: S.of(context).onboardingPage3Title,
+      pageDescription: S.of(context).onboardingPage3Body,
       backgroundColor: pageColors[2],
       pageDetail: const _OnboardingPage3Description(),
     ),
@@ -93,11 +92,10 @@ class _OnboardingPage1Description extends StatelessWidget {
   final Color backgroundColor;
 
   static List<TaskItem> _demoTasks(DateTime now, BuildContext context) {
-    final l10n = context.l10n;
     return [
       TaskItem.scheduled(
         id: 0,
-        name: l10n.onboardingDemoTask1,
+        name: S.of(context).onboardingDemoTask1,
         furigana: '',
         icon: '🐝',
         color: TaskColor.yellow,
@@ -113,7 +111,7 @@ class _OnboardingPage1Description extends StatelessWidget {
       ),
       TaskItem.scheduled(
         id: 0,
-        name: l10n.onboardingDemoTask2,
+        name: S.of(context).onboardingDemoTask2,
         furigana: '',
         icon: '🚗',
         color: TaskColor.red,
@@ -129,7 +127,7 @@ class _OnboardingPage1Description extends StatelessWidget {
       ),
       TaskItem.scheduled(
         id: 0,
-        name: l10n.onboardingDemoTask3,
+        name: S.of(context).onboardingDemoTask3,
         furigana: '',
         icon: '🪥',
         color: TaskColor.orange,
@@ -145,7 +143,7 @@ class _OnboardingPage1Description extends StatelessWidget {
       ),
       TaskItem.scheduled(
         id: 0,
-        name: l10n.onboardingDemoTask4,
+        name: S.of(context).onboardingDemoTask4,
         furigana: '',
         icon: '🧪',
         color: TaskColor.green,
@@ -161,7 +159,7 @@ class _OnboardingPage1Description extends StatelessWidget {
       ),
       TaskItem.scheduled(
         id: 0,
-        name: l10n.onboardingDemoTask5,
+        name: S.of(context).onboardingDemoTask5,
         furigana: '',
         icon: '👟',
         color: TaskColor.blue,
@@ -247,14 +245,13 @@ class _OnboardingPage3Description extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final items = [
-      (color: TaskColor.red, name: l10n.onboardingColorRed),
-      (color: TaskColor.blue, name: l10n.onboardingColorBlue),
-      (color: TaskColor.green, name: l10n.onboardingColorGreen),
-      (color: TaskColor.orange, name: l10n.onboardingColorOrange),
-      (color: TaskColor.yellow, name: l10n.onboardingColorYellow),
-      (color: TaskColor.none, name: l10n.onboardingColorNone),
+      (color: TaskColor.red, name: S.of(context).onboardingColorRed),
+      (color: TaskColor.blue, name: S.of(context).onboardingColorBlue),
+      (color: TaskColor.green, name: S.of(context).onboardingColorGreen),
+      (color: TaskColor.orange, name: S.of(context).onboardingColorOrange),
+      (color: TaskColor.yellow, name: S.of(context).onboardingColorYellow),
+      (color: TaskColor.none, name: S.of(context).onboardingColorNone),
     ];
     return GridView.count(
       crossAxisCount: 3,

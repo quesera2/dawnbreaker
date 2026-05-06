@@ -1,5 +1,5 @@
 import 'package:dawnbreaker/app/app_colors.dart';
-import 'package:dawnbreaker/core/context_extension.dart';
+import 'package:dawnbreaker/generated/l10n.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
@@ -165,7 +165,6 @@ class _ButtonArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsetsGeometry.symmetric(horizontal: 20, vertical: 16),
       child: Column(
@@ -173,9 +172,9 @@ class _ButtonArea extends StatelessWidget {
         children: [
           AppButton(
             label: switch ((isLastPage, mode)) {
-              (false, _) => l10n.onboardingNext,
-              (true, .initial) => l10n.onboardingStart,
-              (true, .fromSettings) => l10n.commonClose,
+              (false, _) => S.of(context).onboardingNext,
+              (true, .initial) => S.of(context).onboardingStart,
+              (true, .fromSettings) => S.of(context).commonClose,
             },
             onPressed: isCompleting ? null : onPrimary,
             fullWidth: true,
@@ -183,7 +182,7 @@ class _ButtonArea extends StatelessWidget {
           ),
           if (mode == .initial)
             AppButton(
-              label: l10n.onboardingSkip,
+              label: S.of(context).onboardingSkip,
               onPressed: isCompleting ? null : onSkip,
               fullWidth: true,
               size: AppButtonSize.large,
