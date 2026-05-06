@@ -4,7 +4,7 @@ import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
-enum AppTableCellType {
+enum AppListCellType {
   top,
   middle,
   bottom,
@@ -40,15 +40,15 @@ enum AppTableCellType {
   }
 }
 
-class AppTableCell extends StatelessWidget {
-  const AppTableCell({
+class AppListCell extends StatelessWidget {
+  const AppListCell({
     super.key,
     required this.type,
     required this.child,
     this.onTap,
   });
 
-  final AppTableCellType type;
+  final AppListCellType type;
   final Widget child;
   final VoidCallback? onTap;
 
@@ -80,7 +80,7 @@ class AppTableCell extends StatelessWidget {
     double borderHeight = 1,
   }) {
     return (_, index) {
-      if (items[index] is AppTableCell && items[index + 1] is AppTableCell) {
+      if (items[index] is AppListCell && items[index + 1] is AppListCell) {
         return Divider(height: borderHeight, color: borderColor);
       }
       return const SizedBox.shrink();
@@ -89,15 +89,15 @@ class AppTableCell extends StatelessWidget {
 }
 
 @Preview()
-Widget previewAppTableCell() => const AppTableCellShowCase();
+Widget previewAppListCell() => const AppListCellShowCase();
 
-final class AppTableCellShowCase extends StatelessWidget {
-  const AppTableCellShowCase({super.key});
+final class AppListCellShowCase extends StatelessWidget {
+  const AppListCellShowCase({super.key});
 
   @override
   Widget build(BuildContext context) {
     final c = context.appColorScheme;
-    Widget cell(AppTableCellType type, String label) => AppTableCell(
+    Widget cell(AppListCellType type, String label) => AppListCell(
       type: type,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -121,7 +121,7 @@ final class AppTableCellShowCase extends StatelessWidget {
         child: ListView.separated(
           itemCount: items.length,
           itemBuilder: (context, index) => items[index],
-          separatorBuilder: AppTableCell.buildSeparator(
+          separatorBuilder: AppListCell.buildSeparator(
             items,
             borderColor: c.border,
           ),
