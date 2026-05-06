@@ -12,6 +12,7 @@ import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
 import 'package:dawnbreaker/ui/common/components/app_badge.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
+import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/home/widgets/task_complete_sheet.dart';
@@ -357,31 +358,12 @@ class _HistoryItem extends StatelessWidget {
   static const _dotBottomY = _dotTopY + _dotSize;
   static const _lineLeft = _paddingH + _dotSize / 2 - _lineWidth / 2;
 
-  BorderRadius? _borderRadius() {
-    const radius = Radius.circular(AppRadius.lg);
-    return switch ((isFirst, isLast)) {
-      (true, true) => const BorderRadius.all(radius),
-      (true, false) => const BorderRadius.vertical(top: radius),
-      (false, true) => const BorderRadius.vertical(bottom: radius),
-      _ => null,
-    };
-  }
-
-  Border _border(BorderSide side) => switch ((isFirst, isLast)) {
-    (true, true) => Border.fromBorderSide(side),
-    (true, false) => Border(top: side, left: side, right: side),
-    (false, true) => Border(bottom: side, left: side, right: side),
-    _ => Border(left: side, right: side),
+  AppListCellType get _type => switch ((isFirst, isLast)) {
+    (true, true) => .single,
+    (true, false) => .top,
+    (false, true) => .bottom,
+    _ => .middle,
   };
-
-  BoxDecoration _containerDecoration(AppColorScheme colors) {
-    final side = BorderSide(color: colors.border);
-    return BoxDecoration(
-      color: colors.surface,
-      borderRadius: _borderRadius(),
-      border: _border(side),
-    );
-  }
 
   BoxDecoration _dotDecoration(Color dotColor, Color surface) => isFirst
       ? BoxDecoration(color: dotColor, shape: BoxShape.circle)
@@ -396,90 +378,82 @@ class _HistoryItem extends StatelessWidget {
     final colors = context.appColorScheme;
     final dotColor = taskColor.baseColor(context);
 
-    return Ink(
-      decoration: _containerDecoration(colors),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: _borderRadius(),
-        child: Stack(
-          children: [
-            if (!isFirst || !isLast)
-              Positioned(
-                left: _lineLeft,
-                width: _lineWidth,
-                top: isFirst ? _dotBottomY : 0,
-                bottom: isLast ? null : 0,
-                height: isLast ? _dotTopY : null,
-                child: ColoredBox(color: colors.divider),
-              ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                _paddingH,
-                _paddingV,
-                _paddingH,
-                entry.comment == null ? _paddingV : 8,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: _dotSize,
-                        height: _dotSize,
-                        decoration: _dotDecoration(dotColor, colors.surface),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          DateUtil.format(context, entry.executedAt),
-                          style: AppTextStyle.body.copyWith(
-                            color: colors.text,
-                            fontWeight: isFirst
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                      if (intervalDays != null)
-                        Text(
-                          intervalDays! == 0
-                              ? context.l10n.commonToday
-                              : context.l10n.appDetailDaysInterval(
-                                  intervalDays!,
-                                ),
-                          style: AppTextStyle.caption.copyWith(
-                            color: colors.textMuted,
-                          ),
-                        ),
-                    ],
-                  ),
-                  if (entry.comment case final comment?)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: 8,
-                        left: _dotSize + 12,
-                      ),
-                      child: _HistoryComment(comment: comment, colors: colors),
-                    ),
-                ],
-              ),
+    return AppListCell(
+      type: _type,
+      onTap: onTap,
+      child: Stack(
+        children: [
+          if (!isFirst || !isLast)
+            Positioned(
+              left: _lineLeft,
+              width: _lineWidth,
+              top: isFirst ? _dotBottomY : 0,
+              bottom: isLast ? null : 0,
+              height: isLast ? _dotTopY : null,
+              child: ColoredBox(color: colors.divider),
             ),
-          ],
-        ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              _paddingH,
+              _paddingV,
+              _paddingH,
+              entry.comment == null ? _paddingV : 8,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: _dotSize,
+                      height: _dotSize,
+                      decoration: _dotDecoration(dotColor, colors.surface),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        DateUtil.format(context, entry.executedAt),
+                        style: AppTextStyle.body.copyWith(
+                          color: colors.text,
+                          fontWeight: isFirst
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                    if (intervalDays != null)
+                      Text(
+                        intervalDays! == 0
+                            ? context.l10n.commonToday
+                            : context.l10n.appDetailDaysInterval(intervalDays!),
+                        style: AppTextStyle.caption.copyWith(
+                          color: colors.textMuted,
+                        ),
+                      ),
+                  ],
+                ),
+                if (entry.comment case final comment?)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, left: _dotSize + 12),
+                    child: _HistoryComment(comment: comment),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
 class _HistoryComment extends StatelessWidget {
-  const _HistoryComment({required this.comment, required this.colors});
+  const _HistoryComment({required this.comment});
 
   final String comment;
-  final AppColorScheme colors;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border.all(color: colors.border),
