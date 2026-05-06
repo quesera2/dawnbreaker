@@ -247,7 +247,7 @@ class _BlinkBarState extends State<_BlinkBar>
           t,
         )!;
         // base側（t=1, 強烈な色）でグロー最大
-        final glowAlpha = t * 0.5;
+        final glowAlpha = t * 0.25;
 
         return Container(
           height: widget.thickness,
