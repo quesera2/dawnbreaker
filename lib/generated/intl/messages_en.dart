@@ -24,19 +24,21 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m1(name) => "Deleted \"${name}\"";
 
-  static String m2(value, unit) => "Every ${value} ${unit}";
+  static String m2(name) => "Delete task “${name}”?";
 
-  static String m3(name) => "\"${name}\" updated";
+  static String m3(value, unit) => "Every ${value} ${unit}";
 
-  static String m4(name) => "\"${name}\" registered";
+  static String m4(name) => "\"${name}\" updated";
 
-  static String m5(value, unit) => "Every ${value} ${unit}";
+  static String m5(name) => "\"${name}\" registered";
 
-  static String m6(name) => "Marked \"${name}\" as complete";
+  static String m6(value, unit) => "Every ${value} ${unit}";
 
-  static String m7(days) => "${days}d overdue";
+  static String m7(name) => "Marked \"${name}\" as complete";
 
-  static String m8(days) => "${days}d remaining";
+  static String m8(days) => "${days}d overdue";
+
+  static String m9(days) => "${days}d remaining";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -51,6 +53,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "appDetailStatsDaysSince": MessageLookupByLibrary.simpleMessage(
       "Days since",
     ),
+    "appDetailTaskDeleteConfirm": m2,
     "appDetailTitle": MessageLookupByLibrary.simpleMessage("Task Detail"),
     "appDetailTypeBadgeIrregular": MessageLookupByLibrary.simpleMessage(
       "Irregular",
@@ -58,12 +61,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "appDetailTypeBadgePeriod": MessageLookupByLibrary.simpleMessage(
       "Auto interval",
     ),
-    "appDetailTypeBadgeScheduled": m2,
+    "appDetailTypeBadgeScheduled": m3,
     "appDetailUpdateHistorySuccess": MessageLookupByLibrary.simpleMessage(
       "History updated",
     ),
     "commonCancel": MessageLookupByLibrary.simpleMessage("Cancel"),
     "commonClose": MessageLookupByLibrary.simpleMessage("Close"),
+    "commonConfirmTitle": MessageLookupByLibrary.simpleMessage("Confirm"),
+    "commonDelete": MessageLookupByLibrary.simpleMessage("Delete"),
     "commonErrorTitle": MessageLookupByLibrary.simpleMessage("Error"),
     "commonErrorUnknown": MessageLookupByLibrary.simpleMessage(
       "An unexpected error occurred",
@@ -83,11 +88,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "editorLabelType": MessageLookupByLibrary.simpleMessage("Task type"),
     "editorNameHint": MessageLookupByLibrary.simpleMessage("Enter task name"),
     "editorSaveEdit": MessageLookupByLibrary.simpleMessage("Update"),
-    "editorSaveEditSuccess": m3,
+    "editorSaveEditSuccess": m4,
     "editorSaveNew": MessageLookupByLibrary.simpleMessage("Register"),
-    "editorSaveNewSuccess": m4,
+    "editorSaveNewSuccess": m5,
     "editorSectionBasic": MessageLookupByLibrary.simpleMessage("Basic info"),
-    "editorSpanLabel": m5,
+    "editorSpanLabel": m6,
     "editorSpanPickerTitle": MessageLookupByLibrary.simpleMessage(
       "Repeat interval",
     ),
@@ -117,9 +122,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "homeCompleteSheetTitle": MessageLookupByLibrary.simpleMessage(
       "Complete task",
     ),
-    "homeCompleteSuccess": m6,
-    "homeDaysOverdue": m7,
-    "homeDaysRemaining": m8,
+    "homeCompleteSuccess": m7,
+    "homeDaysOverdue": m8,
+    "homeDaysRemaining": m9,
     "homeFilterAll": MessageLookupByLibrary.simpleMessage("All"),
     "homeFilterIrregular": MessageLookupByLibrary.simpleMessage("Irregular"),
     "homeFilterToday": MessageLookupByLibrary.simpleMessage("Today"),

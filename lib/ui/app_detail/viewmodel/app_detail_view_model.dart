@@ -75,6 +75,18 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     }
   }
 
+  void showDeleteTaskDialog() {
+    final task = state.task;
+    if (task == null) return;
+
+    state = state.copyWith(
+      dialogMessage: DeleteTaskConfirmMessage(
+        task.name,
+        handler: () => deleteTask(),
+      ),
+    );
+  }
+
   Future<void> deleteTask() async {
     final task = state.task;
     if (task == null) return;

@@ -79,7 +79,7 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
                       icon: Icons.delete,
                       label: S.of(context).appDetailDelete,
                       tone: AppIconTone.destruction,
-                      onTap: viewModel.deleteTask,
+                      onTap: viewModel.showDeleteTaskDialog,
                     ),
                     const SizedBox(width: 12),
                   ]
