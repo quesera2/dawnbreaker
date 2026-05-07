@@ -530,6 +530,12 @@ abstract class AppLocalizations {
   /// **'定期 {value}{unit}'**
   String appDetailTypeBadgeScheduled(int value, String unit);
 
+  /// No description provided for @appDetailRecordCompletion.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスクの完了を登録する'**
+  String get appDetailRecordCompletion;
+
   /// No description provided for @appDetailUpdateHistorySuccess.
   ///
   /// In ja, this message translates to:

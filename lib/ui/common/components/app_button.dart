@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
+import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
@@ -18,6 +19,7 @@ class AppButton extends StatelessWidget {
     this.size = AppButtonSize.medium,
     this.leading,
     this.fullWidth = false,
+    this.tintColor,
   });
 
   final String label;
@@ -26,6 +28,7 @@ class AppButton extends StatelessWidget {
   final AppButtonSize size;
   final Widget? leading;
   final bool fullWidth;
+  final TaskColor? tintColor;
 
   (double, EdgeInsets, TextStyle) get _sizeConfig => switch (size) {
     AppButtonSize.small => (
@@ -66,7 +69,21 @@ class AppButton extends StatelessWidget {
         : Text(label);
 
     return switch (variant) {
-      AppButtonVariant.primary => FilledButton(
+      .primary when tintColor is TaskColor => FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: tintColor!.baseColor(context),
+          foregroundColor: c.primaryOn,
+          minimumSize: minSize,
+          padding: padding,
+          shape: shape,
+          textStyle: ts,
+          elevation: 1,
+          shadowColor: c.shadow,
+        ),
+        child: child,
+      ),
+      .primary => FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
           backgroundColor: c.primary,
@@ -80,7 +97,7 @@ class AppButton extends StatelessWidget {
         ),
         child: child,
       ),
-      AppButtonVariant.secondary => OutlinedButton(
+      .secondary => OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           foregroundColor: c.text,
@@ -92,7 +109,7 @@ class AppButton extends StatelessWidget {
         ),
         child: child,
       ),
-      AppButtonVariant.ghost => TextButton(
+      .ghost => TextButton(
         onPressed: onPressed,
         style: TextButton.styleFrom(
           foregroundColor: c.text,
@@ -103,7 +120,7 @@ class AppButton extends StatelessWidget {
         ),
         child: child,
       ),
-      AppButtonVariant.danger => FilledButton(
+      .danger => FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
           backgroundColor: c.danger,
@@ -158,6 +175,49 @@ final class ButtonShowCase extends StatelessWidget {
                   label: 'Danger',
                   variant: AppButtonVariant.danger,
                   onPressed: () {},
+                ),
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 8,
+              children: [
+                AppButton(
+                  label: 'Tint',
+                  variant: AppButtonVariant.primary,
+                  onPressed: () {},
+                  tintColor: TaskColor.red,
+                ),
+                AppButton(
+                  label: 'Tint',
+                  variant: AppButtonVariant.primary,
+                  onPressed: () {},
+                  tintColor: TaskColor.blue,
+                ),
+                AppButton(
+                  label: 'Tint',
+                  variant: AppButtonVariant.primary,
+                  onPressed: () {},
+                  tintColor: TaskColor.orange,
+                ),
+                AppButton(
+                  label: 'Tint',
+                  variant: AppButtonVariant.primary,
+                  onPressed: () {},
+                  tintColor: TaskColor.yellow,
+                ),
+                AppButton(
+                  label: 'Tint',
+                  variant: AppButtonVariant.primary,
+                  onPressed: () {},
+                  tintColor: TaskColor.green,
+                ),
+                AppButton(
+                  label: 'Tint',
+                  variant: AppButtonVariant.primary,
+                  onPressed: () {},
+                  tintColor: TaskColor.none,
                 ),
               ],
             ),

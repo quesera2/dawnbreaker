@@ -10,6 +10,7 @@ import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_view_model.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
 import 'package:dawnbreaker/ui/common/components/app_badge.dart';
+import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
@@ -47,10 +48,21 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
     final task = uiState.task;
     final historyStats = uiState.historyStats;
     final historyAndInterval = historyStats?.historyAndInterval ?? [];
-    final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
       backgroundColor: colors.bg,
+      bottomNavigationBar: _RecordExecutionBar(
+        tintColor: task?.color ?? TaskColor.none,
+        onTap: () {
+          if (task == null) return;
+          TaskCompleteSheet.show(
+            context,
+            task: task,
+            onConfirm: (date, comment) =>
+                viewModel.recordExecution(task, date, comment),
+          );
+        },
+      ),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -126,7 +138,7 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
                 },
               ),
             ),
-            SliverPadding(padding: EdgeInsets.only(bottom: 20 + bottomPadding)),
+            const SliverPadding(padding: EdgeInsets.only(bottom: 20)),
           ],
         ],
       ),
@@ -134,18 +146,14 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
   }
 
   void _showEditSheet(TaskItem task, TaskHistory entry) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (_) => TaskCompleteSheet(
-        task: task,
-        initialDate: entry.executedAt,
-        initialComment: entry.comment,
-        onConfirm: (date, comment) => ref
-            .read(appDetailViewModelProvider(taskId: widget.taskId).notifier)
-            .updateExecution(entry, executedAt: date, comment: comment),
-      ),
+    TaskCompleteSheet.show(
+      context,
+      task: task,
+      initialDate: entry.executedAt,
+      initialComment: entry.comment,
+      onConfirm: (date, comment) => ref
+          .read(appDetailViewModelProvider(taskId: widget.taskId).notifier)
+          .updateExecution(entry, executedAt: date, comment: comment),
     );
   }
 }
@@ -329,6 +337,33 @@ class _StatCell extends StatelessWidget {
               style: AppTextStyle.body.copyWith(color: colors.textMuted),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _RecordExecutionBar extends StatelessWidget {
+  const _RecordExecutionBar({required this.tintColor, required this.onTap});
+
+  final VoidCallback onTap;
+  final TaskColor tintColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.appColorScheme;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    return Container(
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomPadding),
+      decoration: BoxDecoration(
+        color: c.bg,
+        border: Border(top: BorderSide(color: c.divider)),
+      ),
+      child: AppButton(
+        label: context.l10n.appDetailRecordCompletion,
+        onPressed: onTap,
+        fullWidth: true,
+        size: AppButtonSize.large,
+        tintColor: tintColor,
       ),
     );
   }

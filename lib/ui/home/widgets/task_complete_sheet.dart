@@ -9,6 +9,7 @@ import 'package:dawnbreaker/ui/common/components/app_input.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class TaskCompleteSheet extends StatefulWidget {
@@ -24,6 +25,24 @@ class TaskCompleteSheet extends StatefulWidget {
   final void Function(DateTime date, String? comment) onConfirm;
   final DateTime? initialDate;
   final String? initialComment;
+
+  static Future<void> show(
+    BuildContext context, {
+    required TaskItem task,
+    required void Function(DateTime date, String? comment) onConfirm,
+    DateTime? initialDate,
+    String? initialComment,
+  }) => showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    builder: (_) => TaskCompleteSheet(
+      task: task,
+      onConfirm: onConfirm,
+      initialDate: initialDate,
+      initialComment: initialComment,
+    ),
+  );
 
   @override
   State<TaskCompleteSheet> createState() => _TaskCompleteSheetState();
@@ -170,6 +189,7 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
               final comment = _commentController.text.trim();
               widget.onConfirm(_selectedDate, comment.isEmpty ? null : comment);
             },
+            tintColor: widget.task.color,
           ),
         ),
       ],

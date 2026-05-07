@@ -141,6 +141,7 @@
       }
     }
   },
+  "appDetailRecordCompletion": "タスクの完了を登録する",
   "appDetailUpdateHistorySuccess": "履歴を更新しました",
   "appDetailTaskDeleteConfirm": "タスク「{name}」を削除しますか？",
   "@appDetailTaskDeleteConfirm": {

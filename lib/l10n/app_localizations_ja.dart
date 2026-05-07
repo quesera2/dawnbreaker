@@ -243,6 +243,9 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get appDetailRecordCompletion => 'タスクの完了を登録する';
+
+  @override
   String get appDetailUpdateHistorySuccess => '履歴を更新しました';
 
   @override

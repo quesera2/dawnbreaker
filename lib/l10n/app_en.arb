@@ -141,6 +141,7 @@
       }
     }
   },
+  "appDetailRecordCompletion": "Record task completion",
   "appDetailUpdateHistorySuccess": "History updated",
   "appDetailTaskDeleteConfirm": "Delete task “{name}”?",
   "@appDetailTaskDeleteConfirm": {

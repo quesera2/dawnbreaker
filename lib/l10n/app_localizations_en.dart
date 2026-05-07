@@ -244,6 +244,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get appDetailRecordCompletion => 'Record task completion';
+
+  @override
   String get appDetailUpdateHistorySuccess => 'History updated';
 
   @override
