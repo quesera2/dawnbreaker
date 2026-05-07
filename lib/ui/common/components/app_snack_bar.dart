@@ -36,6 +36,24 @@ abstract final class AppSnackBar {
   );
 }
 
+String _messageText(BuildContext context, SnackBarMessage msg) => switch (msg) {
+  TaskCompleteSuccess(:final taskName) => context.l10n.homeCompleteSuccess(
+    taskName,
+  ),
+  TaskCreateSuccess(:final taskName) => context.l10n.editorSaveNewSuccess(
+    taskName,
+  ),
+  TaskUpdateSuccess(:final taskName) => context.l10n.editorSaveEditSuccess(
+    taskName,
+  ),
+  TaskDeleteSuccess(:final taskName) => context.l10n.appDetailDeleteSuccess(
+    taskName,
+  ),
+  TaskExecutionUpdateSuccess() => context.l10n.appDetailUpdateHistorySuccess,
+  DebugDummyTasksGeneratedMessage() =>
+    context.l10n.settingsDebugDummyTasksGenerated,
+};
+
 @Preview()
 Widget previewSnackBar() => const SnackBarShowCase();
 
@@ -78,19 +96,3 @@ final class SnackBarShowCase extends StatelessWidget {
     );
   }
 }
-
-String _messageText(BuildContext context, SnackBarMessage msg) => switch (msg) {
-  TaskCompleteSuccess(:final taskName) => context.l10n.homeCompleteSuccess(
-    taskName,
-  ),
-  TaskCreateSuccess(:final taskName) => context.l10n.editorSaveNewSuccess(
-    taskName,
-  ),
-  TaskUpdateSuccess(:final taskName) => context.l10n.editorSaveEditSuccess(
-    taskName,
-  ),
-  TaskDeleteSuccess(:final taskName) => context.l10n.appDetailDeleteSuccess(
-    taskName,
-  ),
-  TaskExecutionUpdateSuccess() => context.l10n.appDetailUpdateHistorySuccess,
-};

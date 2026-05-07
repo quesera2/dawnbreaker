@@ -667,6 +667,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'オープンソースライセンス'**
   String get settingsLicense;
+
+  /// No description provided for @settingsSectionDebug.
+  ///
+  /// In ja, this message translates to:
+  /// **'デバッグ'**
+  String get settingsSectionDebug;
+
+  /// No description provided for @settingsDebugGenerateDummyTasks.
+  ///
+  /// In ja, this message translates to:
+  /// **'ダミータスクを生成'**
+  String get settingsDebugGenerateDummyTasks;
+
+  /// No description provided for @settingsDebugDummyTasksGenerated.
+  ///
+  /// In ja, this message translates to:
+  /// **'ダミータスクを生成しました'**
+  String get settingsDebugDummyTasksGenerated;
 }
 
 class _AppLocalizationsDelegate

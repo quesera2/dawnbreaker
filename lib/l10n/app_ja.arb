@@ -170,5 +170,8 @@
   "settingsSectionInfo": "情報",
   "settingsVersion": "バージョン",
   "settingsTutorial": "チュートリアル",
-  "settingsLicense": "オープンソースライセンス"
+  "settingsLicense": "オープンソースライセンス",
+  "settingsSectionDebug": "デバッグ",
+  "settingsDebugGenerateDummyTasks": "ダミータスクを生成",
+  "settingsDebugDummyTasksGenerated": "ダミータスクを生成しました"
 }

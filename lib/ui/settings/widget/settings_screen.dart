@@ -4,17 +4,26 @@ import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
+import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_view_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen>
+    with MessagesListenMixin<SettingsScreen> {
+  @override
+  Widget build(BuildContext context) {
+    listenMessages(settingsViewModelProvider);
     final viewState = ref.watch(settingsViewModelProvider);
     final padding = MediaQuery.paddingOf(context);
     return Scaffold(
@@ -26,7 +35,10 @@ class SettingsScreen extends ConsumerWidget {
         padding: EdgeInsets.fromLTRB(20, 8, 20, padding.bottom + 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [..._infoSection(context, viewState.version)],
+          children: [
+            ..._infoSection(context, viewState.version),
+            if (kDebugMode) ..._debugSection(context),
+          ],
         ),
       ),
     );
@@ -75,6 +87,31 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
         onTap: () => context.push('/settings/licenses'),
+      ),
+    ];
+  }
+
+  List<Widget> _debugSection(BuildContext context) {
+    final colorScheme = context.appColorScheme;
+    return [
+      const SizedBox(height: 24),
+      AppSectionHeader(
+        title: Text(context.l10n.settingsSectionDebug),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+      ),
+      AppListCell(
+        type: .single,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(context.l10n.settingsDebugGenerateDummyTasks),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: colorScheme.textMuted,
+          ),
+        ),
+        onTap: () =>
+            ref.read(settingsViewModelProvider.notifier).generateDummyTasks(),
       ),
     ];
   }

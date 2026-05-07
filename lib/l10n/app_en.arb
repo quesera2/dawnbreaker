@@ -170,5 +170,8 @@
   "settingsSectionInfo": "Info",
   "settingsVersion": "Version",
   "settingsTutorial": "Tutorial",
-  "settingsLicense": "Open Source Licenses"
+  "settingsLicense": "Open Source Licenses",
+  "settingsSectionDebug": "Debug",
+  "settingsDebugGenerateDummyTasks": "Generate dummy tasks",
+  "settingsDebugDummyTasksGenerated": "Dummy tasks generated"
 }

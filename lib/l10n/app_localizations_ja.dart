@@ -313,4 +313,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsLicense => 'オープンソースライセンス';
+
+  @override
+  String get settingsSectionDebug => 'デバッグ';
+
+  @override
+  String get settingsDebugGenerateDummyTasks => 'ダミータスクを生成';
+
+  @override
+  String get settingsDebugDummyTasksGenerated => 'ダミータスクを生成しました';
 }
