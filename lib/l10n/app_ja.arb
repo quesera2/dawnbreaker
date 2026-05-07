@@ -1,6 +1,8 @@
 {
   "@@locale": "ja",
   "title": "Dawnbreaker",
+  "homeBarAdd": "追加",
+  "homeBarSettings": "設定",
   "homeSearchHint": "タスクを検索",
   "homeNoTasksYet": "タスクがまだありません",
   "homeNoTasksFound": "一致するタスクが見つかりません",
@@ -13,6 +15,8 @@
   "homeComplete": "完了",
   "homeCompleteSheetTitle": "タスクを完了",
   "homeCompleteRecord": "完了を記録",
+  "homeCompleteDateLabel": "完了日",
+  "homeCompleteCommentLabel": "コメント",
   "homeCompleteCommentPlaceholder": "コメントを入力（任意）",
   "homeCompleteSuccess": "「{name}」の完了を記録しました",
   "@homeCompleteSuccess": {
@@ -137,6 +141,7 @@
       }
     }
   },
+  "appDetailRecordCompletion": "タスクの完了を登録する",
   "appDetailUpdateHistorySuccess": "履歴を更新しました",
   "appDetailTaskDeleteConfirm": "タスク「{name}」を削除しますか？",
   "@appDetailTaskDeleteConfirm": {

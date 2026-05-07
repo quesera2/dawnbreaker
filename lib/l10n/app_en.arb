@@ -8,6 +8,8 @@
     }
   },
   "title": "Dawnbreaker",
+  "homeBarAdd": "Add",
+  "homeBarSettings": "Settings",
   "homeSearchHint": "Search tasks",
   "homeNoTasksYet": "No tasks yet",
   "homeNoTasksFound": "No matching tasks found",
@@ -20,6 +22,8 @@
   "homeComplete": "Done",
   "homeCompleteSheetTitle": "Complete task",
   "homeCompleteRecord": "Record completion",
+  "homeCompleteDateLabel": "Completion date",
+  "homeCompleteCommentLabel": "Comment",
   "homeCompleteCommentPlaceholder": "Add a comment (optional)",
   "homeCompleteSuccess": "Marked \"{name}\" as complete",
   "@homeCompleteSuccess": {
@@ -137,6 +141,7 @@
       }
     }
   },
+  "appDetailRecordCompletion": "Record task completion",
   "appDetailUpdateHistorySuccess": "History updated",
   "appDetailTaskDeleteConfirm": "Delete task “{name}”?",
   "@appDetailTaskDeleteConfirm": {

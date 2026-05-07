@@ -104,6 +104,18 @@ abstract class AppLocalizations {
   /// **'Dawnbreaker'**
   String get title;
 
+  /// No description provided for @homeBarAdd.
+  ///
+  /// In ja, this message translates to:
+  /// **'追加'**
+  String get homeBarAdd;
+
+  /// No description provided for @homeBarSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定'**
+  String get homeBarSettings;
+
   /// No description provided for @homeSearchHint.
   ///
   /// In ja, this message translates to:
@@ -175,6 +187,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'完了を記録'**
   String get homeCompleteRecord;
+
+  /// No description provided for @homeCompleteDateLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了日'**
+  String get homeCompleteDateLabel;
+
+  /// No description provided for @homeCompleteCommentLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'コメント'**
+  String get homeCompleteCommentLabel;
 
   /// No description provided for @homeCompleteCommentPlaceholder.
   ///
@@ -505,6 +529,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'定期 {value}{unit}'**
   String appDetailTypeBadgeScheduled(int value, String unit);
+
+  /// No description provided for @appDetailRecordCompletion.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスクの完了を登録する'**
+  String get appDetailRecordCompletion;
 
   /// No description provided for @appDetailUpdateHistorySuccess.
   ///

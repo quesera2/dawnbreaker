@@ -12,6 +12,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get title => 'Dawnbreaker';
 
   @override
+  String get homeBarAdd => '追加';
+
+  @override
+  String get homeBarSettings => '設定';
+
+  @override
   String get homeSearchHint => 'タスクを検索';
 
   @override
@@ -46,6 +52,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeCompleteRecord => '完了を記録';
+
+  @override
+  String get homeCompleteDateLabel => '完了日';
+
+  @override
+  String get homeCompleteCommentLabel => 'コメント';
 
   @override
   String get homeCompleteCommentPlaceholder => 'コメントを入力（任意）';
@@ -229,6 +241,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String appDetailTypeBadgeScheduled(int value, String unit) {
     return '定期 $value$unit';
   }
+
+  @override
+  String get appDetailRecordCompletion => 'タスクの完了を登録する';
 
   @override
   String get appDetailUpdateHistorySuccess => '履歴を更新しました';

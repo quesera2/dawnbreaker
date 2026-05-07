@@ -12,6 +12,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get title => 'Dawnbreaker';
 
   @override
+  String get homeBarAdd => 'Add';
+
+  @override
+  String get homeBarSettings => 'Settings';
+
+  @override
   String get homeSearchHint => 'Search tasks';
 
   @override
@@ -46,6 +52,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeCompleteRecord => 'Record completion';
+
+  @override
+  String get homeCompleteDateLabel => 'Completion date';
+
+  @override
+  String get homeCompleteCommentLabel => 'Comment';
 
   @override
   String get homeCompleteCommentPlaceholder => 'Add a comment (optional)';
@@ -230,6 +242,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String appDetailTypeBadgeScheduled(int value, String unit) {
     return 'Every $value $unit';
   }
+
+  @override
+  String get appDetailRecordCompletion => 'Record task completion';
 
   @override
   String get appDetailUpdateHistorySuccess => 'History updated';

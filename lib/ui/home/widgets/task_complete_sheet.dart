@@ -6,8 +6,10 @@ import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_input.dart';
+import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class TaskCompleteSheet extends StatefulWidget {
@@ -23,6 +25,24 @@ class TaskCompleteSheet extends StatefulWidget {
   final void Function(DateTime date, String? comment) onConfirm;
   final DateTime? initialDate;
   final String? initialComment;
+
+  static Future<void> show(
+    BuildContext context, {
+    required TaskItem task,
+    required void Function(DateTime date, String? comment) onConfirm,
+    DateTime? initialDate,
+    String? initialComment,
+  }) => showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    builder: (_) => TaskCompleteSheet(
+      task: task,
+      onConfirm: onConfirm,
+      initialDate: initialDate,
+      initialComment: initialComment,
+    ),
+  );
 
   @override
   State<TaskCompleteSheet> createState() => _TaskCompleteSheetState();
@@ -51,25 +71,21 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
   Widget build(BuildContext context) {
     final safeBottom = MediaQuery.paddingOf(context).bottom;
     final keyboardBottom = MediaQuery.viewInsetsOf(context).bottom;
+    final bottom = 16 + safeBottom + keyboardBottom;
 
     return SingleChildScrollView(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          0,
-          20,
-          16 + safeBottom + keyboardBottom,
-        ),
+        padding: EdgeInsets.fromLTRB(20, 0, 20, bottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _titleArea,
-            const SizedBox(height: 20),
-            _calendar,
             const SizedBox(height: 16),
-            _commentArea,
+            ..._calendarArea,
             const SizedBox(height: 16),
+            ..._commentArea,
+            const SizedBox(height: 24),
             _buttonArea,
           ],
         ),
@@ -104,33 +120,47 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
     );
   }
 
-  Widget get _calendar {
+  List<Widget> get _calendarArea {
     final c = context.appColorScheme;
-    return Container(
-      height: 240,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: c.bgSubtle,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: c.border),
+    return [
+      AppSectionHeader(
+        title: Text(context.l10n.homeCompleteDateLabel),
+        padding: const EdgeInsets.symmetric(vertical: 8),
       ),
-      child: CupertinoDatePicker(
-        mode: CupertinoDatePickerMode.date,
-        initialDateTime: _selectedDate,
-        minimumDate: DateTime(2000),
-        maximumDate: DateTime.now(),
-        onDateTimeChanged: (date) {
-          HapticFeedback.selectionClick();
-          setState(() => _selectedDate = date);
-        },
+      Container(
+        height: 200,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: c.bgSubtle,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: c.border),
+        ),
+        child: CupertinoDatePicker(
+          mode: CupertinoDatePickerMode.date,
+          initialDateTime: _selectedDate,
+          minimumDate: DateTime(2000),
+          maximumDate: DateTime.now(),
+          onDateTimeChanged: (date) {
+            HapticFeedback.selectionClick();
+            setState(() => _selectedDate = date);
+          },
+        ),
       ),
-    );
+    ];
   }
 
-  Widget get _commentArea => AppTextInput(
-    controller: _commentController,
-    hintText: context.l10n.homeCompleteCommentPlaceholder,
-  );
+  List<Widget> get _commentArea {
+    return [
+      AppSectionHeader(
+        title: Text(context.l10n.homeCompleteCommentLabel),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+      ),
+      AppTextInput(
+        controller: _commentController,
+        hintText: context.l10n.homeCompleteCommentPlaceholder,
+      ),
+    ];
+  }
 
   Widget get _buttonArea {
     return Row(
@@ -159,6 +189,7 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
               final comment = _commentController.text.trim();
               widget.onConfirm(_selectedDate, comment.isEmpty ? null : comment);
             },
+            tintColor: widget.task.color,
           ),
         ),
       ],
