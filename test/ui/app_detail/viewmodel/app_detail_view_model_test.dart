@@ -388,6 +388,166 @@ void main() {
         });
       });
 
+      group('recordExecution', () {
+        group('正常系', () {
+          setUp(() async {
+            setUpContainer();
+            await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+          });
+
+          test('成功時はエラーなし', () async {
+            await container
+                .read(
+                  appDetailViewModelProvider(
+                    taskId: _taskOneHistory.id,
+                  ).notifier,
+                )
+                .recordExecution(_taskOneHistory, DateTime(2026, 4, 1), null);
+
+            expect(
+              container
+                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                  .dialogMessage,
+              isNull,
+            );
+          });
+
+          test('成功時に実行完了の通知がセットされる', () async {
+            await container
+                .read(
+                  appDetailViewModelProvider(
+                    taskId: _taskOneHistory.id,
+                  ).notifier,
+                )
+                .recordExecution(_taskOneHistory, DateTime(2026, 4, 1), null);
+
+            final msg = container
+                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                .snackBarMessage;
+            expect(msg, isA<TaskCompleteSuccess>());
+            expect((msg as TaskCompleteSuccess).taskName, _taskOneHistory.name);
+          });
+
+          test('成功時の通知に undo ハンドラがある', () async {
+            await container
+                .read(
+                  appDetailViewModelProvider(
+                    taskId: _taskOneHistory.id,
+                  ).notifier,
+                )
+                .recordExecution(_taskOneHistory, DateTime(2026, 4, 1), null);
+
+            final msg = container
+                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                .snackBarMessage;
+            expect(msg?.handler, isNotNull);
+          });
+
+          test('undo ハンドラを呼び出してもエラーが発生しない', () async {
+            await container
+                .read(
+                  appDetailViewModelProvider(
+                    taskId: _taskOneHistory.id,
+                  ).notifier,
+                )
+                .recordExecution(_taskOneHistory, DateTime(2026, 4, 1), null);
+
+            final handler = container
+                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                .snackBarMessage
+                ?.handler;
+            expect(handler, isNotNull);
+            await handler!();
+
+            expect(
+              container
+                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                  .dialogMessage,
+              isNull,
+            );
+          });
+
+          for (final (comment, expectedComment, description) in [
+            (null, null, 'コメントなし'),
+            ('良い感じ', '良い感じ', 'コメントあり'),
+          ]) {
+            test('$descriptionで記録するとリポジトリにコメントが渡される', () async {
+              await container
+                  .read(
+                    appDetailViewModelProvider(
+                      taskId: _taskOneHistory.id,
+                    ).notifier,
+                  )
+                  .recordExecution(
+                    _taskOneHistory,
+                    DateTime(2026, 4, 1),
+                    comment,
+                  );
+
+              expect(fakeRepository.lastRecordedComment, expectedComment);
+              expect(
+                container
+                    .read(
+                      appDetailViewModelProvider(taskId: _taskOneHistory.id),
+                    )
+                    .snackBarMessage,
+                isA<TaskCompleteSuccess>(),
+              );
+            });
+          }
+        });
+
+        group('異常系', () {
+          setUp(() async {
+            fakeRepository = FakeTaskRepository(
+              initialTasks: _testTasks,
+              shouldThrow: true,
+            );
+            container = ProviderContainer(
+              overrides: [
+                taskRepositoryProvider.overrideWith((_) => fakeRepository),
+              ],
+            );
+            await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+          });
+
+          test('リポジトリがエラーを返すと dialogMessage がセットされる', () async {
+            await container
+                .read(
+                  appDetailViewModelProvider(
+                    taskId: _taskOneHistory.id,
+                  ).notifier,
+                )
+                .recordExecution(_taskOneHistory, DateTime(2026, 4, 1), null);
+
+            expect(
+              container
+                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                  .dialogMessage,
+              isA<TaskSaveErrorMessage>(),
+            );
+          });
+
+          test('失敗時に再試行できる', () async {
+            await container
+                .read(
+                  appDetailViewModelProvider(
+                    taskId: _taskOneHistory.id,
+                  ).notifier,
+                )
+                .recordExecution(_taskOneHistory, DateTime(2026, 4, 1), null);
+
+            expect(
+              container
+                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                  .dialogMessage
+                  ?.handler,
+              isNotNull,
+            );
+          });
+        });
+      });
+
       group('showDeleteTaskDialog', () {
         setUp(() async {
           setUpContainer();
