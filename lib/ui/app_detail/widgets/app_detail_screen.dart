@@ -2,17 +2,16 @@ import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
-import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_history_stats.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_view_model.dart';
+import 'package:dawnbreaker/ui/app_detail/widgets/app_detail_history_item.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
 import 'package:dawnbreaker/ui/common/components/app_badge.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
-import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
@@ -43,105 +42,148 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
 
     final uiState = ref.watch(provider);
     final viewModel = ref.read(provider.notifier);
-
-    final colors = context.appColorScheme;
     final task = uiState.task;
     final historyStats = uiState.historyStats;
-    final historyAndInterval = historyStats?.historyAndInterval ?? [];
 
     return Scaffold(
-      backgroundColor: colors.bg,
-      bottomNavigationBar: _RecordExecutionBar(
-        tintColor: task?.color ?? TaskColor.none,
-        onTap: () {
-          if (task == null) return;
-          TaskCompleteSheet.show(
-            context,
-            task: task,
-            onConfirm: (date, comment) =>
-                viewModel.recordExecution(task, date, comment),
-          );
-        },
-      ),
+      backgroundColor: context.appColorScheme.bg,
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            pinned: true,
-            surfaceTintColor: Colors.transparent,
-            scrolledUnderElevation: 3.0,
-            shadowColor: colors.shadow.withValues(alpha: 0.2),
-            automaticallyImplyLeading: false,
-            leading: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 4, 0, 4),
-              child: AppIconButton(
-                icon: Icons.arrow_back_ios_new,
-                onTap: () => context.pop(),
-              ),
+          _buildAppBar(task, viewModel),
+          if (!uiState.isLoading && task != null && historyStats != null)
+            ..._buildContentAreas(
+              task,
+              historyStats,
+              uiState.daysSinceLastExecution,
+              uiState.averageIntervalDays,
+              viewModel,
             ),
-            title: Text(context.l10n.appDetailTitle),
-            actions: task != null
-                ? [
-                    AppIconButton(
-                      icon: Icons.edit_outlined,
-                      label: context.l10n.appDetailEdit,
-                      onTap: () =>
-                          context.push('/app-detail/${widget.taskId}/edit'),
-                    ),
-                    AppIconButton(
-                      icon: Icons.delete,
-                      label: context.l10n.appDetailDelete,
-                      tone: AppIconTone.destruction,
-                      onTap: viewModel.showDeleteTaskDialog,
-                    ),
-                    const SizedBox(width: 12),
-                  ]
-                : null,
-            bottom: task != null
-                ? PreferredSize(
-                    preferredSize: const Size.fromHeight(76),
-                    child: _TaskHeader(task: task),
-                  )
-                : null,
-          ),
-          if (!uiState.isLoading && task != null && historyStats != null) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: _StatsAndChartCard(
-                  taskColor: task.color,
-                  daysSinceLastExecution: uiState.daysSinceLastExecution,
-                  averageIntervalDays: uiState.averageIntervalDays,
-                  historyStats: historyStats,
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: AppSectionHeader(
-                title: Text(context.l10n.appDetailHistorySection.toUpperCase()),
-                subTitle: Text(historyAndInterval.length.toString()),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList.builder(
-                itemCount: historyAndInterval.length,
-                itemBuilder: (context, i) {
-                  final (entry, intervalDays) = historyAndInterval[i];
-                  return _HistoryItem(
-                    entry: entry,
-                    isFirst: i == 0,
-                    isLast: i == historyAndInterval.length - 1,
-                    taskColor: task.color,
-                    intervalDays: intervalDays,
-                    onTap: () => _showEditSheet(task, entry),
-                  );
-                },
-              ),
-            ),
-            const SliverPadding(padding: EdgeInsets.only(bottom: 20)),
-          ],
         ],
       ),
+      bottomNavigationBar: task != null
+          ? _RecordExecutionBar(
+              tintColor: task.color,
+              onTap: () => TaskCompleteSheet.show(
+                context,
+                task: task,
+                onConfirm: (date, comment) =>
+                    viewModel.recordExecution(task, date, comment),
+              ),
+            )
+          : null,
+    );
+  }
+
+  Widget _buildAppBar(TaskItem? task, AppDetailViewModel viewModel) {
+    final colors = context.appColorScheme;
+    return SliverAppBar(
+      pinned: true,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 3.0,
+      shadowColor: colors.shadow.withValues(alpha: 0.2),
+      automaticallyImplyLeading: false,
+      leading: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 4, 0, 4),
+        child: AppIconButton(
+          icon: Icons.arrow_back_ios_new,
+          onTap: () => context.pop(),
+        ),
+      ),
+      title: Text(context.l10n.appDetailTitle),
+      actions: task != null
+          ? [
+              AppIconButton(
+                icon: Icons.edit_outlined,
+                label: context.l10n.appDetailEdit,
+                onTap: () => context.push('/app-detail/${widget.taskId}/edit'),
+              ),
+              AppIconButton(
+                icon: Icons.delete,
+                label: context.l10n.appDetailDelete,
+                tone: AppIconTone.destruction,
+                onTap: viewModel.showDeleteTaskDialog,
+              ),
+              const SizedBox(width: 12),
+            ]
+          : null,
+      bottom: task != null
+          ? PreferredSize(
+              preferredSize: const Size.fromHeight(76),
+              child: _TaskHeader(task: task),
+            )
+          : null,
+    );
+  }
+
+  List<Widget> _buildContentAreas(
+    TaskItem task,
+    TaskHistoryStats historyStats,
+    int? daysSinceLastExecution,
+    int? averageIntervalDays,
+    AppDetailViewModel viewModel,
+  ) {
+    return [
+      _statsArea(
+        task,
+        historyStats,
+        daysSinceLastExecution,
+        averageIntervalDays,
+      ),
+      _historyArea(task, historyStats.historyAndInterval, viewModel),
+      const SliverPadding(padding: EdgeInsets.only(bottom: 20)),
+    ];
+  }
+
+  Widget _statsArea(
+    TaskItem task,
+    TaskHistoryStats historyStats,
+    int? daysSinceLastExecution,
+    int? averageIntervalDays,
+  ) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: _StatsAndChartCard(
+          taskColor: task.color,
+          daysSinceLastExecution: daysSinceLastExecution,
+          averageIntervalDays: averageIntervalDays,
+          historyStats: historyStats,
+        ),
+      ),
+    );
+  }
+
+  Widget _historyArea(
+    TaskItem task,
+    List<(TaskHistory, int?)> historyAndInterval,
+    AppDetailViewModel viewModel,
+  ) {
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverToBoxAdapter(
+          child: AppSectionHeader(
+            title: Text(context.l10n.appDetailHistorySection.toUpperCase()),
+            subTitle: Text(historyAndInterval.length.toString()),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          sliver: SliverList.builder(
+            itemCount: historyAndInterval.length,
+            itemBuilder: (context, i) {
+              final (entry, intervalDays) = historyAndInterval[i];
+              return AppDetailHistoryItem(
+                entry: entry,
+                isFirst: i == 0,
+                isLast: i == historyAndInterval.length - 1,
+                taskColor: task.color,
+                intervalDays: intervalDays,
+                onTap: () => _showEditSheet(task, entry),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -364,143 +406,6 @@ class _RecordExecutionBar extends StatelessWidget {
         fullWidth: true,
         size: AppButtonSize.large,
         tintColor: tintColor,
-      ),
-    );
-  }
-}
-
-class _HistoryItem extends StatelessWidget {
-  const _HistoryItem({
-    required this.entry,
-    required this.isFirst,
-    required this.isLast,
-    required this.taskColor,
-    required this.intervalDays,
-    this.onTap,
-  });
-
-  final TaskHistory entry;
-  final bool isFirst;
-  final bool isLast;
-  final TaskColor taskColor;
-  final int? intervalDays;
-  final VoidCallback? onTap;
-
-  static const _dotSize = 10.0;
-  static const _lineWidth = 1.5;
-  static const _paddingH = 20.0;
-  static const _paddingV = 14.0;
-  static const _dotTopY = _paddingV + 4.0;
-  static const _dotBottomY = _dotTopY + _dotSize;
-  static const _lineLeft = _paddingH + _dotSize / 2 - _lineWidth / 2;
-
-  AppListCellType get _type => switch ((isFirst, isLast)) {
-    (true, true) => .single,
-    (true, false) => .top,
-    (false, true) => .bottom,
-    _ => .middle,
-  };
-
-  BoxDecoration _dotDecoration(Color dotColor, Color surface) => isFirst
-      ? BoxDecoration(color: dotColor, shape: BoxShape.circle)
-      : BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: dotColor, width: _lineWidth),
-          color: surface,
-        );
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColorScheme;
-    final dotColor = taskColor.baseColor(context);
-
-    return AppListCell(
-      type: _type,
-      onTap: onTap,
-      child: Stack(
-        children: [
-          if (!isFirst || !isLast)
-            Positioned(
-              left: _lineLeft,
-              width: _lineWidth,
-              top: isFirst ? _dotBottomY : 0,
-              bottom: isLast ? null : 0,
-              height: isLast ? _dotTopY : null,
-              child: ColoredBox(color: colors.divider),
-            ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              _paddingH,
-              _paddingV,
-              _paddingH,
-              entry.comment == null ? _paddingV : 8,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: _dotSize,
-                      height: _dotSize,
-                      decoration: _dotDecoration(dotColor, colors.surface),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        DateUtil.format(context, entry.executedAt),
-                        style: AppTextStyle.body.copyWith(
-                          color: colors.text,
-                          fontWeight: isFirst
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                        ),
-                      ),
-                    ),
-                    if (intervalDays != null)
-                      Text(
-                        intervalDays! == 0
-                            ? context.l10n.commonToday
-                            : context.l10n.appDetailDaysInterval(intervalDays!),
-                        style: AppTextStyle.caption.copyWith(
-                          color: colors.textMuted,
-                        ),
-                      ),
-                  ],
-                ),
-                if (entry.comment case final comment?)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8, left: _dotSize + 12),
-                    child: _HistoryComment(comment: comment),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HistoryComment extends StatelessWidget {
-  const _HistoryComment({required this.comment});
-
-  final String comment;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border.all(color: colors.border),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: Text(
-          comment,
-          style: AppTextStyle.caption.copyWith(color: colors.textSubtle),
-        ),
       ),
     );
   }
