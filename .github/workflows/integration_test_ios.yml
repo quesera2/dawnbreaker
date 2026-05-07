@@ -1,0 +1,35 @@
+name: Integration Test (iOS)
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  integration-test-ios:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Boot iOS Simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j \
+            | jq -r '.devices | to_entries[].value[] | select(.name | test("iPhone")) | .udid' \
+            | head -1)
+          xcrun simctl boot "$UDID"
+          echo "SIM_UDID=$UDID" >> $GITHUB_ENV
+
+      - name: Run integration tests
+        run: flutter test integration_test/ -d $SIM_UDID
