@@ -51,6 +51,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: generated-files
+          path: lib/
 
       - name: Install junitreport
         run: dart pub global activate junitreport
@@ -91,6 +92,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: generated-files
+          path: lib/
 
       - name: Boot iOS Simulator
         run: |
@@ -131,6 +133,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: generated-files
+          path: lib/
 
       - name: Enable KVM
         run: |
