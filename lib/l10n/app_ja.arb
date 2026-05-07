@@ -173,5 +173,7 @@
   "settingsLicense": "オープンソースライセンス",
   "settingsSectionDebug": "デバッグ",
   "settingsDebugGenerateDummyTasks": "ダミータスクを生成",
-  "settingsDebugDummyTasksGenerated": "ダミータスクを生成しました"
+  "settingsDebugDummyTasksGenerated": "ダミータスクを生成しました",
+  "settingsDebugDeleteAllTasks": "すべてのタスクを削除",
+  "settingsDebugAllTasksDeleted": "すべてのタスクを削除しました"
 }

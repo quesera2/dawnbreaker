@@ -65,6 +65,10 @@ abstract final class AppSnackBar {
     text: context.l10n.settingsDebugDummyTasksGenerated,
     actionLabel: '',
   ),
+  AllTasksDeletedMessage() => (
+    text: context.l10n.settingsDebugAllTasksDeleted,
+    actionLabel: '',
+  ),
 };
 
 @Preview()

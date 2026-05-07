@@ -327,4 +327,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDebugDummyTasksGenerated => 'Dummy tasks generated';
+
+  @override
+  String get settingsDebugDeleteAllTasks => 'Delete all tasks';
+
+  @override
+  String get settingsDebugAllTasksDeleted => 'All tasks deleted';
 }

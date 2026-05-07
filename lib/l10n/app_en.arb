@@ -173,5 +173,7 @@
   "settingsLicense": "Open Source Licenses",
   "settingsSectionDebug": "Debug",
   "settingsDebugGenerateDummyTasks": "Generate dummy tasks",
-  "settingsDebugDummyTasksGenerated": "Dummy tasks generated"
+  "settingsDebugDummyTasksGenerated": "Dummy tasks generated",
+  "settingsDebugDeleteAllTasks": "Delete all tasks",
+  "settingsDebugAllTasksDeleted": "All tasks deleted"
 }

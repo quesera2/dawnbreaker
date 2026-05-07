@@ -25,55 +25,18 @@ class SettingsViewModel extends _$SettingsViewModel {
 
   Future<void> generateDummyTasks() async {
     final repository = ref.read(taskRepositoryProvider);
-    final random = Random();
-    final now = DateTime.now();
-    final oneYearAgo = DateTime(now.year - 1, now.month, now.day);
-
-    for (final def in dummyTaskDefs) {
-      final dates = _generateDates(
-        start: oneYearAgo,
-        baseIntervalDays: def.baseIntervalDays,
-        varianceDays: def.varianceDays,
-        until: now,
-        random: random,
-      );
-      if (dates.isEmpty) continue;
-
-      final taskId = await repository.addTask(
-        taskType: def.taskType,
-        name: def.name,
-        icon: def.icon,
-        color: def.color,
-        executedAt: dates.first,
-        scheduleValue: def.scheduleValue,
-        scheduleUnit: def.scheduleUnit,
-      );
-
-      for (final date in dates.skip(1)) {
-        await repository.recordExecution(taskId, executedAt: date);
-      }
+    await repository.deleteAllTasks();
+    for (final task in buildDummyTasks(now: DateTime.now(), random: Random())) {
+      await repository.restoreTask(task);
     }
-
     if (!ref.mounted) return;
     state = state.copyWith(snackBarMessage: DebugDummyTasksGeneratedMessage());
   }
 
-  List<DateTime> _generateDates({
-    required DateTime start,
-    required int baseIntervalDays,
-    required int varianceDays,
-    required DateTime until,
-    required Random random,
-  }) {
-    final dates = <DateTime>[];
-    var current = start;
-    while (!current.isAfter(until)) {
-      dates.add(current);
-      final variance = varianceDays > 0
-          ? random.nextInt(varianceDays * 2 + 1) - varianceDays
-          : 0;
-      current = current.add(Duration(days: baseIntervalDays + variance));
-    }
-    return dates;
+  Future<void> deleteAllTasks() async {
+    final repository = ref.read(taskRepositoryProvider);
+    await repository.deleteAllTasks();
+    if (!ref.mounted) return;
+    state = state.copyWith(snackBarMessage: AllTasksDeletedMessage());
   }
 }

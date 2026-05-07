@@ -322,4 +322,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsDebugDummyTasksGenerated => 'ダミータスクを生成しました';
+
+  @override
+  String get settingsDebugDeleteAllTasks => 'すべてのタスクを削除';
+
+  @override
+  String get settingsDebugAllTasksDeleted => 'すべてのタスクを削除しました';
 }

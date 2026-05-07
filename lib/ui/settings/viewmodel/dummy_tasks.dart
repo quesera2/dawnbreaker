@@ -1,19 +1,91 @@
+// coverage:ignore-file
+import 'dart:math';
+
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_history.dart';
+import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 
-typedef DummyTaskDef = ({
-  String name,
-  String icon,
-  TaskColor color,
-  TaskType taskType,
-  int? scheduleValue,
-  ScheduleUnit? scheduleUnit,
-  int baseIntervalDays,
-  int varianceDays,
-});
+List<TaskItem> buildDummyTasks({
+  required DateTime now,
+  required Random random,
+}) {
+  final oneYearAgo = DateTime(now.year - 1, now.month, now.day);
+  final items = <TaskItem>[];
+  var taskId = 1;
 
-const dummyTaskDefs = <DummyTaskDef>[
+  for (final def in _dummyTaskDefinition) {
+    final dates = _generateDates(
+      start: oneYearAgo,
+      baseIntervalDays: def.baseIntervalDays,
+      varianceDays: def.varianceDays,
+      until: now,
+      random: random,
+    );
+    if (dates.isEmpty) continue;
+
+    final history = [
+      for (final (index, date) in dates.indexed)
+        TaskHistory(id: index + 1, executedAt: date, comment: null),
+    ];
+
+    final item = switch (def.taskType) {
+      TaskType.irregular => TaskItem.irregular(
+        id: taskId,
+        name: def.name,
+        furigana: '',
+        icon: def.icon,
+        color: def.color,
+        taskHistory: history,
+      ),
+      TaskType.period => TaskItem.period(
+        id: taskId,
+        name: def.name,
+        furigana: '',
+        icon: def.icon,
+        color: def.color,
+        taskHistory: history,
+      ),
+      TaskType.scheduled => TaskItem.scheduled(
+        id: taskId,
+        name: def.name,
+        furigana: '',
+        icon: def.icon,
+        color: def.color,
+        scheduleValue: def.scheduleValue!,
+        scheduleUnit: def.scheduleUnit!,
+        taskHistory: history,
+      ),
+    };
+
+    items.add(item);
+    taskId++;
+  }
+
+  return items;
+}
+
+List<DateTime> _generateDates({
+  required DateTime start,
+  required int baseIntervalDays,
+  required int varianceDays,
+  required DateTime until,
+  required Random random,
+}) {
+  final dates = <DateTime>[];
+  var current = start;
+  while (!current.isAfter(until)) {
+    dates.add(current);
+    final variance = varianceDays > 0
+        ? random.nextInt(varianceDays * 2 + 1) - varianceDays
+        : 0;
+    current = current.add(Duration(days: baseIntervalDays + variance));
+  }
+  return dates;
+}
+
+const _dummyTaskDefinition = [
   (
     name: '歯ブラシ交換',
     icon: '🪥',
@@ -139,8 +211,8 @@ const dummyTaskDefs = <DummyTaskDef>[
     icon: '✂️',
     color: TaskColor.none,
     taskType: TaskType.period,
-    scheduleValue: 1,
-    scheduleUnit: ScheduleUnit.month,
+    scheduleValue: null,
+    scheduleUnit: null,
     baseIntervalDays: 40,
     varianceDays: 5,
   ),

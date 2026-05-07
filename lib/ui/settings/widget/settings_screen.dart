@@ -24,7 +24,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   @override
   Widget build(BuildContext context) {
     listenMessages(settingsViewModelProvider);
+    final viewModel = ref.read(settingsViewModelProvider.notifier);
     final viewState = ref.watch(settingsViewModelProvider);
+
     final padding = MediaQuery.paddingOf(context);
     return Scaffold(
       appBar: AppAppBar(
@@ -37,7 +39,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ..._infoSection(context, viewState.version),
-            if (kDebugMode) ..._debugSection(context),
+            if (kDebugMode) ..._debugSection(context, viewModel),
           ],
         ),
       ),
@@ -91,8 +93,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     ];
   }
 
-  List<Widget> _debugSection(BuildContext context) {
+  List<Widget> _debugSection(
+    BuildContext context,
+    SettingsViewModel viewModel,
+  ) {
     final colorScheme = context.appColorScheme;
+    final divider = Divider(height: 1, color: colorScheme.divider);
     return [
       const SizedBox(height: 24),
       AppSectionHeader(
@@ -100,7 +106,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       AppListCell(
-        type: .single,
+        type: .top,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugGenerateDummyTasks),
@@ -110,8 +116,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             color: colorScheme.textMuted,
           ),
         ),
-        onTap: () =>
-            ref.read(settingsViewModelProvider.notifier).generateDummyTasks(),
+        onTap: () => viewModel.generateDummyTasks(),
+      ),
+      divider,
+      AppListCell(
+        type: .bottom,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(context.l10n.settingsDebugDeleteAllTasks),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: colorScheme.textMuted,
+          ),
+        ),
+        onTap: () => viewModel.deleteAllTasks(),
       ),
     ];
   }

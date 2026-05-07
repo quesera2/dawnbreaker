@@ -38,3 +38,7 @@ class TaskExecutionUpdateSuccess extends SnackBarMessage {
 class DebugDummyTasksGeneratedMessage extends SnackBarMessage {
   DebugDummyTasksGeneratedMessage();
 }
+
+class AllTasksDeletedMessage extends SnackBarMessage {
+  AllTasksDeletedMessage();
+}
