@@ -85,7 +85,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               onFilterChanged: viewModel.updateFilter,
             ),
           ),
-          ..._buildContentSlivers(context, uiState.hasTasks, taskList),
+          ..._buildContentSlivers(
+            context,
+            uiState.hasTasks,
+            taskList,
+            viewModel,
+          ),
           SliverPadding(
             padding: EdgeInsets.only(
               bottom: 8 + MediaQuery.paddingOf(context).bottom,
@@ -96,24 +101,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  void _showCompleteSheet(BuildContext context, TaskItem task) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (_) => TaskCompleteSheet(
-        task: task,
-        onConfirm: (date, comment) => ref
-            .read(homeViewModelProvider.notifier)
-            .recordExecution(task, date, comment),
-      ),
-    );
-  }
-
   List<Widget> _buildContentSlivers(
     BuildContext context,
     bool hasTasks,
     HomeTaskList taskList,
+    HomeViewModel viewModel,
   ) {
     if (taskList.isEmpty) {
       final colors = context.appColorScheme;
@@ -141,6 +133,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           context,
           entry.key,
           entry.value,
+          viewModel,
           addTopPadding: index > 0,
         ),
     ];
@@ -149,7 +142,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget _buildSectionSliver(
     BuildContext context,
     HomeTaskListType type,
-    List<TaskItem> tasks, {
+    List<TaskItem> tasks,
+    HomeViewModel viewModel, {
     required bool addTopPadding,
   }) {
     final colors = context.appColorScheme;
@@ -179,7 +173,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   child: AppTaskListItem(
                     task: item,
                     onTap: () => context.push('/app-detail/${item.id}'),
-                    onComplete: () => _showCompleteSheet(context, item),
+                    onComplete: () => TaskCompleteSheet.show(
+                      context,
+                      task: item,
+                      onConfirm: (date, comment) =>
+                          viewModel.recordExecution(item, date, comment),
+                    ),
                   ),
                 ),
           ),
@@ -210,10 +209,12 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         AppIconButton(
           onTap: () => context.push('/home/new_task'),
+          label: context.l10n.homeBarAdd,
           icon: Icons.add,
         ),
         AppIconButton(
           onTap: () => context.push('/settings'),
+          label: context.l10n.homeBarSettings,
           icon: Icons.settings_outlined,
         ),
       ],
