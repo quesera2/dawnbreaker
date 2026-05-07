@@ -210,10 +210,12 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         AppIconButton(
           onTap: () => context.push('/home/new_task'),
+          label: context.l10n.homeBarAdd,
           icon: Icons.add,
         ),
         AppIconButton(
           onTap: () => context.push('/settings'),
+          label: context.l10n.homeBarSettings,
           icon: Icons.settings_outlined,
         ),
       ],

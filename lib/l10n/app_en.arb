@@ -8,6 +8,8 @@
     }
   },
   "title": "Dawnbreaker",
+  "homeBarAdd": "Add",
+  "homeBarSettings": "Settings",
   "homeSearchHint": "Search tasks",
   "homeNoTasksYet": "No tasks yet",
   "homeNoTasksFound": "No matching tasks found",

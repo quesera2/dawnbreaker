@@ -1,6 +1,8 @@
 {
   "@@locale": "ja",
   "title": "Dawnbreaker",
+  "homeBarAdd": "追加",
+  "homeBarSettings": "設定",
   "homeSearchHint": "タスクを検索",
   "homeNoTasksYet": "タスクがまだありません",
   "homeNoTasksFound": "一致するタスクが見つかりません",

@@ -62,6 +62,10 @@ class AppIconButton extends StatelessWidget {
               color: buttonColor,
               fontWeight: FontWeight.w700,
             ),
+            strutStyle: StrutStyle(
+              fontSize: AppTextStyle.caption.fontSize,
+              height: 1.3,
+            ),
           ),
         ],
       );

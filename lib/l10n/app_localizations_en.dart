@@ -12,6 +12,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get title => 'Dawnbreaker';
 
   @override
+  String get homeBarAdd => 'Add';
+
+  @override
+  String get homeBarSettings => 'Settings';
+
+  @override
   String get homeSearchHint => 'Search tasks';
 
   @override

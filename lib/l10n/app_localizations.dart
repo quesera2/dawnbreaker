@@ -104,6 +104,18 @@ abstract class AppLocalizations {
   /// **'Dawnbreaker'**
   String get title;
 
+  /// No description provided for @homeBarAdd.
+  ///
+  /// In ja, this message translates to:
+  /// **'追加'**
+  String get homeBarAdd;
+
+  /// No description provided for @homeBarSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定'**
+  String get homeBarSettings;
+
   /// No description provided for @homeSearchHint.
   ///
   /// In ja, this message translates to:
