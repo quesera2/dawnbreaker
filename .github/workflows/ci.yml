@@ -24,7 +24,7 @@ jobs:
         run: flutter pub run build_runner build --delete-conflicting-outputs
 
       - name: Upload generated files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: generated-files
           path: |
@@ -48,7 +48,7 @@ jobs:
         run: flutter pub get
 
       - name: Download generated files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: generated-files
           path: lib/
@@ -89,7 +89,7 @@ jobs:
         run: flutter pub get
 
       - name: Download generated files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: generated-files
           path: lib/
@@ -130,7 +130,7 @@ jobs:
         run: flutter pub get
 
       - name: Download generated files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: generated-files
           path: lib/
