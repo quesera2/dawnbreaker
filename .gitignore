@@ -24,4 +24,8 @@ coverage/
 *.env.*
 
 # claude code
-.claude/
+.claude/*
+!.claude/rules/
+
+# devtools
+devtools_options.yaml
