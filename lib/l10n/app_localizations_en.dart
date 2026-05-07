@@ -318,4 +318,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsLicense => 'Open Source Licenses';
+
+  @override
+  String get settingsSectionDebug => 'Debug';
+
+  @override
+  String get settingsDebugGenerateDummyTasks => 'Generate dummy tasks';
+
+  @override
+  String get settingsDebugDummyTasksGenerated => 'Dummy tasks generated';
+
+  @override
+  String get settingsDebugDeleteAllTasks => 'Delete all tasks';
+
+  @override
+  String get settingsDebugAllTasksDeleted => 'All tasks deleted';
 }

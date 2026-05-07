@@ -313,4 +313,19 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsLicense => 'オープンソースライセンス';
+
+  @override
+  String get settingsSectionDebug => 'デバッグ';
+
+  @override
+  String get settingsDebugGenerateDummyTasks => 'ダミータスクを生成';
+
+  @override
+  String get settingsDebugDummyTasksGenerated => 'ダミータスクを生成しました';
+
+  @override
+  String get settingsDebugDeleteAllTasks => 'すべてのタスクを削除';
+
+  @override
+  String get settingsDebugAllTasksDeleted => 'すべてのタスクを削除しました';
 }

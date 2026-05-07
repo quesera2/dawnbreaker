@@ -136,6 +136,13 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
+  Future<void> deleteAllTasks() async {
+    if (shouldThrow) throw const TaskDeleteException('テストエラー');
+    _tasks.clear();
+    _notify();
+  }
+
+  @override
   Future<void> restoreTask(TaskItem taskItem) async {
     if (shouldThrow) throw const TaskSaveException('テストエラー');
     _tasks.add(taskItem);

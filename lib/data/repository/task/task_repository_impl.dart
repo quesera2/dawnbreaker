@@ -327,6 +327,15 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
+  Future<void> deleteAllTasks() async {
+    try {
+      await _db.delete(_db.taskDefinitions).go();
+    } catch (e) {
+      throw TaskDeleteException(e.toString());
+    }
+  }
+
+  @override
   Future<void> restoreTask(TaskItem taskItem) async {
     try {
       await _db.transaction(() async {
