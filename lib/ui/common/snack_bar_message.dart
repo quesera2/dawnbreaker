@@ -8,31 +8,31 @@ sealed class SnackBarMessage {
 }
 
 class TaskCompleteSuccess extends SnackBarMessage {
-  TaskCompleteSuccess({required this.taskName, super.handler});
+  TaskCompleteSuccess({required this.taskName, required super.handler});
 
   final String taskName;
 }
 
 class TaskCreateSuccess extends SnackBarMessage {
-  TaskCreateSuccess({required this.taskName, super.handler});
+  TaskCreateSuccess({required this.taskName, required super.handler});
 
   final String taskName;
 }
 
 class TaskUpdateSuccess extends SnackBarMessage {
-  TaskUpdateSuccess({required this.taskName, super.handler});
+  TaskUpdateSuccess({required this.taskName, required super.handler});
 
   final String taskName;
 }
 
 class TaskDeleteSuccess extends SnackBarMessage {
-  TaskDeleteSuccess({required this.taskName, super.handler});
+  TaskDeleteSuccess({required this.taskName, required super.handler});
 
   final String taskName;
 }
 
 class TaskExecutionUpdateSuccess extends SnackBarMessage {
-  TaskExecutionUpdateSuccess({super.handler});
+  TaskExecutionUpdateSuccess({required super.handler});
 }
 
 class DebugDummyTasksGeneratedMessage extends SnackBarMessage {

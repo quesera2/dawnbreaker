@@ -51,22 +51,22 @@ class AppDialog extends StatelessWidget {
   TaskLoadErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.taskErrorLoadFailed,
-    actionLabel: context.l10n.commonUndo,
+    actionLabel: context.l10n.commonRetry,
   ),
   TaskSaveErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.taskErrorSaveFailed,
-    actionLabel: context.l10n.commonUndo,
+    actionLabel: context.l10n.commonRetry,
   ),
   TaskUpdateErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.taskErrorUpdateFailed,
-    actionLabel: context.l10n.commonUndo,
+    actionLabel: context.l10n.commonRetry,
   ),
   TaskDeleteErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.taskErrorDeleteFailed,
-    actionLabel: context.l10n.commonUndo,
+    actionLabel: context.l10n.commonRetry,
   ),
   DeleteTaskConfirmMessage(:final taskName) => (
     title: context.l10n.commonConfirmTitle,
@@ -74,22 +74,22 @@ class AppDialog extends StatelessWidget {
     actionLabel: context.l10n.commonDelete,
   ),
   TaskNotFoundErrorMessage() => (
-    title: '',
+    title: context.l10n.commonErrorTitle,
     messageText: context.l10n.taskErrorNotFound,
     actionLabel: '',
   ),
   TaskInvalidArgumentErrorMessage() => (
-    title: '',
+    title: context.l10n.commonErrorTitle,
     messageText: context.l10n.taskErrorInvalidArgument,
     actionLabel: '',
   ),
   OnboardingSaveErrorMessage() => (
-    title: '',
+    title: context.l10n.commonErrorTitle,
     messageText: context.l10n.onboardingErrorSaveFailed,
     actionLabel: '',
   ),
   UnknownErrorMessage() => (
-    title: '',
+    title: context.l10n.commonErrorTitle,
     messageText: context.l10n.commonErrorUnknown,
     actionLabel: '',
   ),

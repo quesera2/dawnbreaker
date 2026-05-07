@@ -57,7 +57,11 @@ class HomeViewModel extends _$HomeViewModel {
       );
     } on TaskRepositoryException {
       if (!ref.mounted) return;
-      state = state.copyWith(dialogMessage: TaskSaveErrorMessage());
+      state = state.copyWith(
+        dialogMessage: TaskSaveErrorMessage(
+          handler: () => recordExecution(task, executedAt, comment),
+        ),
+      );
     }
   }
 }

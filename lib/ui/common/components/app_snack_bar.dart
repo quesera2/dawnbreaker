@@ -9,15 +9,16 @@ import 'package:flutter/widget_previews.dart';
 
 abstract final class AppSnackBar {
   static void show(BuildContext context, SnackBarMessage message) {
+    final (:text, :actionLabel) = _labels(context, message);
     final SnackBar snackBar;
     if (message.handler != null) {
       snackBar = createWithAction(
-        message: _messageText(context, message),
-        actionLabel: context.l10n.commonUndo,
+        message: text,
+        actionLabel: actionLabel,
         onAction: () => unawaited(message.handler!()),
       );
     } else {
-      snackBar = create(message: _messageText(context, message));
+      snackBar = create(message: text);
     }
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
@@ -36,22 +37,34 @@ abstract final class AppSnackBar {
   );
 }
 
-String _messageText(BuildContext context, SnackBarMessage msg) => switch (msg) {
-  TaskCompleteSuccess(:final taskName) => context.l10n.homeCompleteSuccess(
-    taskName,
+({String text, String actionLabel}) _labels(
+  BuildContext context,
+  SnackBarMessage msg,
+) => switch (msg) {
+  TaskCompleteSuccess(:final taskName) => (
+    text: context.l10n.homeCompleteSuccess(taskName),
+    actionLabel: context.l10n.commonUndo,
   ),
-  TaskCreateSuccess(:final taskName) => context.l10n.editorSaveNewSuccess(
-    taskName,
+  TaskCreateSuccess(:final taskName) => (
+    text: context.l10n.editorSaveNewSuccess(taskName),
+    actionLabel: context.l10n.commonUndo,
   ),
-  TaskUpdateSuccess(:final taskName) => context.l10n.editorSaveEditSuccess(
-    taskName,
+  TaskUpdateSuccess(:final taskName) => (
+    text: context.l10n.editorSaveEditSuccess(taskName),
+    actionLabel: context.l10n.commonUndo,
   ),
-  TaskDeleteSuccess(:final taskName) => context.l10n.appDetailDeleteSuccess(
-    taskName,
+  TaskDeleteSuccess(:final taskName) => (
+    text: context.l10n.appDetailDeleteSuccess(taskName),
+    actionLabel: context.l10n.commonUndo,
   ),
-  TaskExecutionUpdateSuccess() => context.l10n.appDetailUpdateHistorySuccess,
-  DebugDummyTasksGeneratedMessage() =>
-    context.l10n.settingsDebugDummyTasksGenerated,
+  TaskExecutionUpdateSuccess() => (
+    text: context.l10n.appDetailUpdateHistorySuccess,
+    actionLabel: context.l10n.commonUndo,
+  ),
+  DebugDummyTasksGeneratedMessage() => (
+    text: context.l10n.settingsDebugDummyTasksGenerated,
+    actionLabel: '',
+  ),
 };
 
 @Preview()

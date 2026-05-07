@@ -16,15 +16,18 @@ class TaskNotFoundErrorMessage extends DialogMessage {
 }
 
 class TaskLoadErrorMessage extends DialogMessage {
-  TaskLoadErrorMessage({super.handler}) : super(type: DialogType.error);
+  TaskLoadErrorMessage({required super.handler})
+    : super(type: DialogType.error);
 }
 
 class TaskSaveErrorMessage extends DialogMessage {
-  TaskSaveErrorMessage({super.handler}) : super(type: DialogType.error);
+  TaskSaveErrorMessage({required super.handler})
+    : super(type: DialogType.error);
 }
 
 class TaskUpdateErrorMessage extends DialogMessage {
-  TaskUpdateErrorMessage({super.handler}) : super(type: DialogType.error);
+  TaskUpdateErrorMessage({required super.handler})
+    : super(type: DialogType.error);
 }
 
 class TaskDeleteErrorMessage extends DialogMessage {
@@ -40,7 +43,7 @@ class OnboardingSaveErrorMessage extends DialogMessage {
 }
 
 class DeleteTaskConfirmMessage extends DialogMessage {
-  DeleteTaskConfirmMessage(this.taskName, {super.handler})
+  DeleteTaskConfirmMessage(this.taskName, {required super.handler})
     : super(type: DialogType.destruction);
 
   final String taskName;
