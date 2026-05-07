@@ -1,4 +1,4 @@
-import 'package:dawnbreaker/core/date_util.dart';
+import 'package:dawnbreaker/core/util/date_util.dart';
 
 sealed class TaskProgress {
   const TaskProgress();

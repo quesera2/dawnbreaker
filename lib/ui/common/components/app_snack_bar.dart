@@ -1,6 +1,6 @@
 import 'dart:async' show unawaited;
 
-import 'package:dawnbreaker/generated/l10n.dart';
+import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
@@ -13,7 +13,7 @@ abstract final class AppSnackBar {
     if (message.handler != null) {
       snackBar = createWithAction(
         message: _messageText(context, message),
-        actionLabel: S.of(context).commonUndo,
+        actionLabel: context.l10n.commonUndo,
         onAction: () => unawaited(message.handler!()),
       );
     } else {
@@ -80,13 +80,17 @@ final class SnackBarShowCase extends StatelessWidget {
 }
 
 String _messageText(BuildContext context, SnackBarMessage msg) => switch (msg) {
-  TaskCompleteSuccess(:final taskName) =>
-    S.of(context).homeCompleteSuccess(taskName),
-  TaskCreateSuccess(:final taskName) =>
-    S.of(context).editorSaveNewSuccess(taskName),
-  TaskUpdateSuccess(:final taskName) =>
-    S.of(context).editorSaveEditSuccess(taskName),
-  TaskDeleteSuccess(:final taskName) =>
-    S.of(context).appDetailDeleteSuccess(taskName),
-  TaskExecutionUpdateSuccess() => S.of(context).appDetailUpdateHistorySuccess,
+  TaskCompleteSuccess(:final taskName) => context.l10n.homeCompleteSuccess(
+    taskName,
+  ),
+  TaskCreateSuccess(:final taskName) => context.l10n.editorSaveNewSuccess(
+    taskName,
+  ),
+  TaskUpdateSuccess(:final taskName) => context.l10n.editorSaveEditSuccess(
+    taskName,
+  ),
+  TaskDeleteSuccess(:final taskName) => context.l10n.appDetailDeleteSuccess(
+    taskName,
+  ),
+  TaskExecutionUpdateSuccess() => context.l10n.appDetailUpdateHistorySuccess,
 };

@@ -1,4 +1,4 @@
-import 'package:dawnbreaker/core/date_util.dart';
+import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/data/model/task_history_stats.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';

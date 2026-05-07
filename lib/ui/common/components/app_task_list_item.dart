@@ -1,8 +1,8 @@
 import 'package:dawnbreaker/app/app_colors.dart';
-import 'package:dawnbreaker/core/date_util.dart';
+import 'package:dawnbreaker/core/util/context_extension.dart';
+import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_progress.dart';
-import 'package:dawnbreaker/generated/l10n.dart';
 import 'package:dawnbreaker/ui/common/components/app_badge.dart';
 import 'package:dawnbreaker/ui/common/components/app_pill_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_progress_bar.dart';
@@ -87,7 +87,7 @@ class AppTaskListItem extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         AppPillButton(
-                          label: S.of(context).homeComplete,
+                          label: context.l10n.homeComplete,
                           onPressed: onComplete,
                           leading: const Icon(
                             Icons.check,
@@ -123,15 +123,15 @@ class _DateRow extends StatelessWidget {
 
     if (taskProgress.isOverdue) {
       tone = AppBadgeTone.danger;
-      badgeText = S
-          .of(context)
-          .homeDaysOverdue(taskProgress.daysRemaining.abs());
+      badgeText = context.l10n.homeDaysOverdue(
+        taskProgress.daysRemaining.abs(),
+      );
     } else if (taskProgress.daysRemaining == 0) {
       tone = AppBadgeTone.warning;
-      badgeText = S.of(context).commonToday;
+      badgeText = context.l10n.commonToday;
     } else {
       tone = AppBadgeTone.neutral;
-      badgeText = S.of(context).homeDaysRemaining(taskProgress.daysRemaining);
+      badgeText = context.l10n.homeDaysRemaining(taskProgress.daysRemaining);
     }
 
     return Row(

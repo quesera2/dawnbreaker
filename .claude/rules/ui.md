@@ -11,10 +11,10 @@ paths:
 
 ## ローカライズ
 
-- `flutter_intl` IDE プラグイン（Localizely）を使用
-- ARB ファイル（`lib/l10n/intl_ja.arb`）を保存すると IDE が `lib/generated/` を自動生成する
-- 生成ファイルはビルド成果物ではなく通常のソースファイルとしてコミット済み（`pubspec.yaml` に `generate: true` が不要な理由）
-- Widget の `build` 内では `S.of(context).xxx`、Widget ツリー外では `S.current.xxx` でアクセス
+- Flutter 標準の `flutter gen-l10n` を使用（`l10n.yaml` で設定済み）
+- ARB ファイル: `lib/l10n/app_ja.arb`（テンプレート）、`lib/l10n/app_en.arb`
+- 生成ファイル（`lib/l10n/app_localizations*.dart`）はソースとしてコミット済み
+- アクセスは `context.l10n.xxx`（`lib/core/util/context_extension.dart` の extension 経由）
 - ARB キーの命名規則: **プレフィクスを必ずつける**
   - 画面固有の文言: `画面名Xxx`（例: `homeNoTasksYet`）
   - Repository エラー文言: `リポジトリ名ErrorXxx`（例: `taskErrorLoadFailed`）
