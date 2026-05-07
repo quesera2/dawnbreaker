@@ -1,8 +1,8 @@
 import 'package:animated_list_plus/animated_list_plus.dart';
 import 'package:animated_list_plus/transitions.dart';
 import 'package:dawnbreaker/app/app_colors.dart';
+import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
-import 'package:dawnbreaker/generated/l10n.dart';
 import 'package:dawnbreaker/ui/common/components/app_filter_chip.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_input.dart';
@@ -65,7 +65,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                     child: AppSearchInput(
-                      placeholder: S.of(context).homeSearchHint,
+                      placeholder: context.l10n.homeSearchHint,
                       controller: _searchController,
                       showClear: uiState.searchQuery.isNotEmpty,
                       onChanged: viewModel.updateSearchQuery,
@@ -122,8 +122,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           child: Center(
             child: Text(
               hasTasks
-                  ? S.of(context).homeNoTasksFound
-                  : S.of(context).homeNoTasksYet,
+                  ? context.l10n.homeNoTasksFound
+                  : context.l10n.homeNoTasksYet,
               style: TextStyle(color: colors.textMuted),
             ),
           ),
@@ -236,28 +236,28 @@ class _FilterChipRow extends StatelessWidget {
       child: Row(
         children: [
           AppFilterChip(
-            label: S.of(context).homeFilterAll,
+            label: context.l10n.homeFilterAll,
             isSelected: uiState.selectedFilter == HomeFilter.all,
             onTap: () => onFilterChanged(HomeFilter.all),
             count: taskCount.all,
           ),
           const SizedBox(width: 6),
           AppFilterChip(
-            label: S.of(context).homeFilterToday,
+            label: context.l10n.homeFilterToday,
             isSelected: uiState.selectedFilter == HomeFilter.today,
             onTap: () => onFilterChanged(HomeFilter.today),
             count: taskCount.today,
           ),
           const SizedBox(width: 6),
           AppFilterChip(
-            label: S.of(context).homeFilterWeek,
+            label: context.l10n.homeFilterWeek,
             isSelected: uiState.selectedFilter == HomeFilter.week,
             onTap: () => onFilterChanged(HomeFilter.week),
             count: taskCount.week,
           ),
           const SizedBox(width: 6),
           AppFilterChip(
-            label: S.of(context).homeFilterIrregular,
+            label: context.l10n.homeFilterIrregular,
             isSelected: uiState.selectedFilter == HomeFilter.irregular,
             onTap: () => onFilterChanged(HomeFilter.irregular),
             count: taskCount.irregular,
@@ -270,7 +270,7 @@ class _FilterChipRow extends StatelessWidget {
 
 extension _HomeTaskListTypeLabel on HomeTaskListType {
   String label(BuildContext context) => switch (this) {
-    HomeTaskListType.overdueTasks => S.of(context).homeSectionOverdue,
-    HomeTaskListType.upcomingTasks => S.of(context).homeSectionUpcoming,
+    HomeTaskListType.overdueTasks => context.l10n.homeSectionOverdue,
+    HomeTaskListType.upcomingTasks => context.l10n.homeSectionUpcoming,
   };
 }

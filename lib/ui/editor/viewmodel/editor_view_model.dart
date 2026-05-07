@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:dawnbreaker/core/date_util.dart';
+import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';

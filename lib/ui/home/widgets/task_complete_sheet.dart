@@ -1,9 +1,9 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
-import 'package:dawnbreaker/core/date_util.dart';
+import 'package:dawnbreaker/core/util/context_extension.dart';
+import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
-import 'package:dawnbreaker/generated/l10n.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_input.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
@@ -91,7 +91,7 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              S.of(context).homeCompleteSheetTitle,
+              context.l10n.homeCompleteSheetTitle,
               style: AppTextStyle.caption.copyWith(color: c.textMuted),
             ),
             Text(
@@ -129,7 +129,7 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
 
   Widget get _commentArea => AppTextInput(
     controller: _commentController,
-    hintText: S.of(context).homeCompleteCommentPlaceholder,
+    hintText: context.l10n.homeCompleteCommentPlaceholder,
   );
 
   Widget get _buttonArea {
@@ -138,7 +138,7 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
         Expanded(
           flex: 2,
           child: AppButton(
-            label: S.of(context).commonCancel,
+            label: context.l10n.commonCancel,
             variant: AppButtonVariant.secondary,
             size: AppButtonSize.large,
             fullWidth: true,
@@ -150,8 +150,8 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
           flex: 3,
           child: AppButton(
             label: widget.initialDate != null
-                ? S.of(context).editorSaveEdit
-                : S.of(context).homeCompleteRecord,
+                ? context.l10n.editorSaveEdit
+                : context.l10n.homeCompleteRecord,
             size: AppButtonSize.large,
             fullWidth: true,
             onPressed: () {

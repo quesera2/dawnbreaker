@@ -1,5 +1,5 @@
 import 'package:dawnbreaker/app/app_colors.dart';
-import 'package:dawnbreaker/generated/l10n.dart';
+import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -49,48 +49,48 @@ class AppDialog extends StatelessWidget {
   DialogMessage msg,
 ) => switch (msg) {
   TaskLoadErrorMessage() => (
-    title: S.of(context).commonErrorTitle,
-    messageText: S.of(context).taskErrorLoadFailed,
-    actionLabel: S.of(context).commonUndo,
+    title: context.l10n.commonErrorTitle,
+    messageText: context.l10n.taskErrorLoadFailed,
+    actionLabel: context.l10n.commonUndo,
   ),
   TaskSaveErrorMessage() => (
-    title: S.of(context).commonErrorTitle,
-    messageText: S.of(context).taskErrorSaveFailed,
-    actionLabel: S.of(context).commonUndo,
+    title: context.l10n.commonErrorTitle,
+    messageText: context.l10n.taskErrorSaveFailed,
+    actionLabel: context.l10n.commonUndo,
   ),
   TaskUpdateErrorMessage() => (
-    title: S.of(context).commonErrorTitle,
-    messageText: S.of(context).taskErrorUpdateFailed,
-    actionLabel: S.of(context).commonUndo,
+    title: context.l10n.commonErrorTitle,
+    messageText: context.l10n.taskErrorUpdateFailed,
+    actionLabel: context.l10n.commonUndo,
   ),
   TaskDeleteErrorMessage() => (
-    title: S.of(context).commonErrorTitle,
-    messageText: S.of(context).taskErrorDeleteFailed,
-    actionLabel: S.of(context).commonUndo,
+    title: context.l10n.commonErrorTitle,
+    messageText: context.l10n.taskErrorDeleteFailed,
+    actionLabel: context.l10n.commonUndo,
   ),
   DeleteTaskConfirmMessage(:final taskName) => (
-    title: S.of(context).commonConfirmTitle,
-    messageText: S.of(context).appDetailTaskDeleteConfirm(taskName),
-    actionLabel: S.of(context).commonDelete,
+    title: context.l10n.commonConfirmTitle,
+    messageText: context.l10n.appDetailTaskDeleteConfirm(taskName),
+    actionLabel: context.l10n.commonDelete,
   ),
   TaskNotFoundErrorMessage() => (
     title: '',
-    messageText: S.of(context).taskErrorNotFound,
+    messageText: context.l10n.taskErrorNotFound,
     actionLabel: '',
   ),
   TaskInvalidArgumentErrorMessage() => (
     title: '',
-    messageText: S.of(context).taskErrorInvalidArgument,
+    messageText: context.l10n.taskErrorInvalidArgument,
     actionLabel: '',
   ),
   OnboardingSaveErrorMessage() => (
     title: '',
-    messageText: S.of(context).onboardingErrorSaveFailed,
+    messageText: context.l10n.onboardingErrorSaveFailed,
     actionLabel: '',
   ),
   UnknownErrorMessage() => (
     title: '',
-    messageText: S.of(context).commonErrorUnknown,
+    messageText: context.l10n.commonErrorUnknown,
     actionLabel: '',
   ),
 };
@@ -106,7 +106,7 @@ List<Widget> _buildActions(
     return [
       AppButton(
         onPressed: close,
-        label: S.of(context).commonOk,
+        label: context.l10n.commonOk,
         variant: .secondary,
         size: .medium,
       ),
@@ -120,7 +120,7 @@ List<Widget> _buildActions(
   return [
     AppButton(
       onPressed: close,
-      label: S.of(context).commonCancel,
+      label: context.l10n.commonCancel,
       variant: .secondary,
       size: .medium,
     ),

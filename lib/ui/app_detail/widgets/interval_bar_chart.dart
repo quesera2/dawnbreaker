@@ -4,8 +4,8 @@ import 'package:collection/collection.dart';
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
+import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
-import 'package:dawnbreaker/generated/l10n.dart';
 import 'package:flutter/material.dart';
 
 const double _barAreaHeight = 96.0;
@@ -47,7 +47,7 @@ class IntervalBarChart extends StatelessWidget {
           softColor: taskColor.softColor(context),
           primaryColor: c.primary,
           primaryOnColor: c.primaryOn,
-          dayUnit: S.of(context).commonUnitDay,
+          dayUnit: context.l10n.commonUnitDay,
           barAreaHeight: barAreaHeight,
         ),
       ),

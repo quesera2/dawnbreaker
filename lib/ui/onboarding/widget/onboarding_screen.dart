@@ -1,5 +1,5 @@
 import 'package:dawnbreaker/app/app_colors.dart';
-import 'package:dawnbreaker/generated/l10n.dart';
+import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
@@ -172,9 +172,9 @@ class _ButtonArea extends StatelessWidget {
         children: [
           AppButton(
             label: switch ((isLastPage, mode)) {
-              (false, _) => S.of(context).onboardingNext,
-              (true, .initial) => S.of(context).onboardingStart,
-              (true, .fromSettings) => S.of(context).commonClose,
+              (false, _) => context.l10n.onboardingNext,
+              (true, .initial) => context.l10n.onboardingStart,
+              (true, .fromSettings) => context.l10n.commonClose,
             },
             onPressed: isCompleting ? null : onPrimary,
             fullWidth: true,
@@ -182,7 +182,7 @@ class _ButtonArea extends StatelessWidget {
           ),
           if (mode == .initial)
             AppButton(
-              label: S.of(context).onboardingSkip,
+              label: context.l10n.onboardingSkip,
               onPressed: isCompleting ? null : onSkip,
               fullWidth: true,
               size: AppButtonSize.large,
