@@ -15,6 +15,23 @@ paths:
 | `TaskSaveException`が throw されること | タスクが保存されないこと<br />（例外の結果が意味することを説明） |
 | `taskScheduledConfigs` テーブルにレコードがない場合 | DBが異常な場合<br />（その状態が意味することを説明） |
 
+### 正常系の入力バリエーション
+
+同じ振る舞いを確認する入力バリエーションは `for` でまとめて検証する。要因ごとに `group` を分けない（複合要因のバグが検出されなくなるため）。
+
+```dart
+group('正常系', () {
+  for (final (input, expected) in [
+    ('掃除', 'そうじ'),
+    ('洗濯', 'せんたく'),
+  ]) {
+    test('$input → $expected', () async {
+      expect(await translate.translate(input), expected);
+    });
+  }
+});
+```
+
 ### group の構成ルール
 
 **Repository テスト**
@@ -58,10 +75,7 @@ group('XxxViewModel') {
   group('初期状態') { test(...) }   // ロード前
   group('ロード後') {               // ロード後に共通する全テストをここに置く
     group('メソッド名') {
-      group('正常系') {
-        // 入力バリエーションは for でまとめて検証する
-        // 要因ごとに group を分けない（複合要因のバグが検出されなくなるため）
-      }
+      group('正常系') { /* 入力バリエーションは for でまとめる */ }
       group('異常系') { test(...) }
     }
   }
