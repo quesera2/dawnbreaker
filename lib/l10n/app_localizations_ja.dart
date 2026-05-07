@@ -54,6 +54,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeCompleteRecord => '完了を記録';
 
   @override
+  String get homeCompleteDateLabel => '完了日';
+
+  @override
+  String get homeCompleteCommentLabel => 'コメント';
+
+  @override
   String get homeCompleteCommentPlaceholder => 'コメントを入力（任意）';
 
   @override

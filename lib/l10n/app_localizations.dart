@@ -188,6 +188,18 @@ abstract class AppLocalizations {
   /// **'完了を記録'**
   String get homeCompleteRecord;
 
+  /// No description provided for @homeCompleteDateLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了日'**
+  String get homeCompleteDateLabel;
+
+  /// No description provided for @homeCompleteCommentLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'コメント'**
+  String get homeCompleteCommentLabel;
+
   /// No description provided for @homeCompleteCommentPlaceholder.
   ///
   /// In ja, this message translates to:

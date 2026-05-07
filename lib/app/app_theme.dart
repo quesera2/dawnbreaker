@@ -44,6 +44,10 @@ ThemeData createThemeData(BuildContext context) {
       backgroundColor: c.surface,
       surfaceTintColor: Colors.transparent,
       dragHandleColor: c.borderStrong,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        side: BorderSide(color: c.border),
+      ),
     ),
     dialogTheme: DialogThemeData(
       backgroundColor: c.surface,

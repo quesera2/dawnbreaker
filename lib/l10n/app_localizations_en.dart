@@ -54,6 +54,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeCompleteRecord => 'Record completion';
 
   @override
+  String get homeCompleteDateLabel => 'Completion date';
+
+  @override
+  String get homeCompleteCommentLabel => 'Comment';
+
+  @override
   String get homeCompleteCommentPlaceholder => 'Add a comment (optional)';
 
   @override
