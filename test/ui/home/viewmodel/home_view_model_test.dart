@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
@@ -13,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_task_repository.dart';
+import '../../../helpers/riverpod_test_helper.dart';
 
 extension _HomeTaskListExt on HomeTaskList {
   List<TaskItem> get overdueTasks =>
@@ -131,7 +130,7 @@ void main() {
 
     group('ロード後', () {
       setUp(() async {
-        await _waitUntilLoaded(container);
+        await waitUntil(container, homeViewModelProvider, (s) => !s.isLoading);
       });
 
       test('タスクが読み込まれる', () {
@@ -301,7 +300,7 @@ void main() {
               c.dispose();
               throwingRepo.dispose();
             });
-            await _waitUntilLoaded(c);
+            await waitUntil(c, homeViewModelProvider, (s) => !s.isLoading);
 
             await c
                 .read(homeViewModelProvider.notifier)
@@ -321,7 +320,11 @@ void main() {
           classContainer = ProviderContainer(
             overrides: [taskRepositoryProvider.overrideWith((_) => classRepo)],
           );
-          await _waitUntilLoaded(classContainer);
+          await waitUntil(
+            classContainer,
+            homeViewModelProvider,
+            (s) => !s.isLoading,
+          );
         });
 
         tearDown(() {
@@ -395,7 +398,11 @@ void main() {
           countContainer = ProviderContainer(
             overrides: [taskRepositoryProvider.overrideWith((_) => countRepo)],
           );
-          await _waitUntilLoaded(countContainer);
+          await waitUntil(
+            countContainer,
+            homeViewModelProvider,
+            (s) => !s.isLoading,
+          );
         });
 
         tearDown(() {
@@ -455,12 +462,3 @@ final _testTasks = [
     ],
   ),
 ];
-
-Future<void> _waitUntilLoaded(ProviderContainer container) async {
-  final completer = Completer<void>();
-  final sub = container.listen(homeViewModelProvider, (_, next) {
-    if (!next.isLoading && !completer.isCompleted) completer.complete();
-  }, fireImmediately: true);
-  await completer.future;
-  sub.close();
-}
