@@ -5,6 +5,7 @@ import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
+import 'package:dawnbreaker/ui/editor/viewmodel/editor_ui_state.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,6 +19,25 @@ void main() {
   group('EditorViewModel', () {
     late ProviderContainer container;
     late FakeTaskRepository fakeRepository;
+    late EditorViewModel viewModel;
+    late EditorUiState viewState;
+
+    void setUpContainer() {
+      fakeRepository = FakeTaskRepository(initialTasks: _testTasks);
+      container = ProviderContainer(
+        overrides: [
+          taskRepositoryProvider.overrideWith((_) => fakeRepository),
+        ],
+      );
+    }
+
+    Future<void> setUpLoaded({int? taskId}) async {
+      setUpContainer();
+      final p = editorViewModelProvider(taskId: taskId);
+      await waitUntil(container, p, (s) => !s.isLoading);
+      viewModel = container.read(p.notifier);
+      container.listen(p, (_, next) => viewState = next, fireImmediately: true);
+    }
 
     tearDown(() {
       container.dispose();
@@ -25,86 +45,68 @@ void main() {
     });
 
     group('新規作成モード', () {
-      late ProviderSubscription<EditorViewModel> sub;
-      late EditorViewModel viewModel;
-
       setUp(() {
-        fakeRepository = FakeTaskRepository(initialTasks: _testTasks);
-        container = ProviderContainer(
-          overrides: [
-            taskRepositoryProvider.overrideWith((_) => fakeRepository),
-          ],
-        );
-        sub = container.listen(editorViewModelProvider().notifier, (_, _) {});
-        viewModel = container.read(editorViewModelProvider().notifier);
+        setUpContainer();
+        final p = editorViewModelProvider();
+        viewModel = container.read(p.notifier);
+        container.listen(p, (_, next) => viewState = next, fireImmediately: true);
       });
 
-      tearDown(() => sub.close());
-
       test('初期状態が正しい', () {
-        final state = container.read(editorViewModelProvider());
-        expect(state.isLoading, false);
-        expect(state.icon, '📝');
-        expect(state.name, '');
-        expect(state.type, TaskType.period);
-        expect(state.color, TaskColor.none);
-        expect(state.isSaved, false);
-        expect(state.dialogMessage, isNull);
+        expect(viewState.isLoading, false);
+        expect(viewState.icon, '📝');
+        expect(viewState.name, '');
+        expect(viewState.type, TaskType.period);
+        expect(viewState.color, TaskColor.none);
+        expect(viewState.isSaved, false);
+        expect(viewState.dialogMessage, isNull);
       });
 
       test('name が空のとき canSave は false', () {
-        expect(container.read(editorViewModelProvider()).canSave, false);
+        expect(viewState.canSave, false);
       });
 
-      test('updateName で name が更新され canSave が true になる', () {
+      test('名前を入力すると canSave が true になる', () {
         viewModel.updateName('散髪');
-        final state = container.read(editorViewModelProvider());
-        expect(state.name, '散髪');
-        expect(state.canSave, true);
+        expect(viewState.name, '散髪');
+        expect(viewState.canSave, true);
       });
 
-      test('updateIcon で icon が更新される', () {
+      test('アイコンを変更できる', () {
         viewModel.updateIcon('✂️');
-        expect(container.read(editorViewModelProvider()).icon, '✂️');
+        expect(viewState.icon, '✂️');
       });
 
-      test('updateType で type が更新される', () {
+      test('タスク種別を変更できる', () {
         viewModel.updateType(TaskType.scheduled);
-        expect(
-          container.read(editorViewModelProvider()).type,
-          TaskType.scheduled,
-        );
+        expect(viewState.type, TaskType.scheduled);
       });
 
-      test('updateColor で color が更新される', () {
+      test('カラーを変更できる', () {
         viewModel.updateColor(TaskColor.blue);
-        expect(container.read(editorViewModelProvider()).color, TaskColor.blue);
+        expect(viewState.color, TaskColor.blue);
       });
 
-      test('updateScheduleValue で scheduleValue が更新される', () {
+      test('スケジュール間隔を変更できる', () {
         viewModel.updateScheduleValue(3);
-        expect(container.read(editorViewModelProvider()).scheduleValue, 3);
+        expect(viewState.scheduleValue, 3);
       });
 
-      test('updateScheduleUnit で scheduleUnit が更新される', () {
+      test('スケジュール単位を変更できる', () {
         viewModel.updateScheduleUnit(ScheduleUnit.week);
-        expect(
-          container.read(editorViewModelProvider()).scheduleUnit,
-          ScheduleUnit.week,
-        );
+        expect(viewState.scheduleUnit, ScheduleUnit.week);
       });
 
       test('name が空のとき save() は何もしない', () async {
         await viewModel.save();
-        final state = container.read(editorViewModelProvider());
-        expect(state.isSaved, false);
-        expect(state.isLoading, false);
+        expect(viewState.isSaved, false);
+        expect(viewState.isLoading, false);
       });
 
       test('period タスクを save() すると isSaved: true になる', () async {
         viewModel.updateName('散髪');
         await viewModel.save();
-        expect(container.read(editorViewModelProvider()).isSaved, true);
+        expect(viewState.isSaved, true);
       });
 
       test('scheduled タスクを save() すると isSaved: true になる', () async {
@@ -112,33 +114,26 @@ void main() {
           ..updateName('虫避け交換')
           ..updateType(TaskType.scheduled);
         await viewModel.save();
-        expect(container.read(editorViewModelProvider()).isSaved, true);
+        expect(viewState.isSaved, true);
       });
 
-      test(
-        'save() 成功後に snackBarMessage が TaskCreateSuccessSnackMessage になる',
-        () async {
-          viewModel.updateName('散髪');
-          await viewModel.save();
-          final state = container.read(editorViewModelProvider());
-          expect(state.snackBarMessage, isA<TaskCreateSuccess>());
-          expect((state.snackBarMessage as TaskCreateSuccess).taskName, '散髪');
-          expect(state.snackBarMessage!.handler, isNotNull);
-        },
-      );
+      test('save() 成功後に作成完了の通知がセットされる', () async {
+        viewModel.updateName('散髪');
+        await viewModel.save();
+        expect(viewState.snackBarMessage, isA<TaskCreateSuccess>());
+        expect((viewState.snackBarMessage as TaskCreateSuccess).taskName, '散髪');
+        expect(viewState.snackBarMessage!.handler, isNotNull);
+      });
 
       test('create の undo ハンドラを実行するとタスクがリポジトリから削除される', () async {
         viewModel.updateName('散髪');
         await viewModel.save();
-        final snackMsg = container
-            .read(editorViewModelProvider())
-            .snackBarMessage;
-        expect(snackMsg, isA<TaskCreateSuccess>());
+        expect(viewState.snackBarMessage, isA<TaskCreateSuccess>());
 
         // undo 前はタスクが存在する
         expect(fakeRepository.containsTask(100), true);
 
-        await snackMsg!.handler!();
+        await viewState.snackBarMessage!.handler!();
 
         expect(fakeRepository.containsTask(100), false);
       });
@@ -148,33 +143,26 @@ void main() {
         final c = ProviderContainer(
           overrides: [taskRepositoryProvider.overrideWith((_) => throwingRepo)],
         );
-        final s = c.listen(editorViewModelProvider().notifier, (_, _) {});
+        final p = editorViewModelProvider();
+        EditorUiState? localState;
+        c.listen(p, (_, next) => localState = next, fireImmediately: true);
         addTearDown(() {
-          s.close();
           c.dispose();
           throwingRepo.dispose();
         });
-        final n = c.read(editorViewModelProvider().notifier);
+        final n = c.read(p.notifier);
         n.updateName('散髪');
         await n.save();
-        final state = c.read(editorViewModelProvider());
-        expect(state.isSaved, false);
-        expect(state.isSaving, false);
-        expect(state.dialogMessage, isNotNull);
+        expect(localState!.isSaved, false);
+        expect(localState!.isSaving, false);
+        expect(localState!.dialogMessage, isNotNull);
       });
     });
 
     group('編集モード', () {
-      setUp(() {
-        fakeRepository = FakeTaskRepository(initialTasks: _testTasks);
-        container = ProviderContainer(
-          overrides: [
-            taskRepositoryProvider.overrideWith((_) => fakeRepository),
-          ],
-        );
-      });
-
       group('初期状態', () {
+        setUp(setUpContainer);
+
         test('データ取得中である', () {
           final state = container.read(editorViewModelProvider(taskId: 1));
           expect(state.isLoading, true);
@@ -182,108 +170,72 @@ void main() {
       });
 
       group('ロード後', () {
-        test('period タスクの内容が反映される', () async {
-          await waitUntil(
-            container,
-            editorViewModelProvider(taskId: 1),
-            (s) => !s.isLoading,
-          );
-          final state = container.read(editorViewModelProvider(taskId: 1));
-          expect(state.isLoading, false);
-          expect(state.name, '歯ブラシ交換');
-          expect(state.icon, '🪥');
-          expect(state.type, TaskType.period);
-          expect(state.color, TaskColor.blue);
-          expect(state.taskHistory, hasLength(1));
+        group('period タスク', () {
+          setUp(() async => setUpLoaded(taskId: 1));
+
+          test('タスクの内容が反映される', () {
+            expect(viewState.isLoading, false);
+            expect(viewState.name, '歯ブラシ交換');
+            expect(viewState.icon, '🪥');
+            expect(viewState.type, TaskType.period);
+            expect(viewState.color, TaskColor.blue);
+            expect(viewState.taskHistory, hasLength(1));
+          });
         });
 
-        test('scheduled タスクのスケジュール設定が反映される', () async {
-          await waitUntil(
-            container,
-            editorViewModelProvider(taskId: 2),
-            (s) => !s.isLoading,
-          );
-          final state = container.read(editorViewModelProvider(taskId: 2));
-          expect(state.isLoading, false);
-          expect(state.type, TaskType.scheduled);
-          expect(state.scheduleValue, 2);
-          expect(state.scheduleUnit, ScheduleUnit.week);
+        group('scheduled タスク', () {
+          setUp(() async => setUpLoaded(taskId: 2));
+
+          test('スケジュール設定が反映される', () {
+            expect(viewState.isLoading, false);
+            expect(viewState.type, TaskType.scheduled);
+            expect(viewState.scheduleValue, 2);
+            expect(viewState.scheduleUnit, ScheduleUnit.week);
+          });
         });
 
-        test('存在しないタスクのとき errorMessage が設定される', () async {
-          await waitUntil(
-            container,
-            editorViewModelProvider(taskId: 999),
-            (s) => !s.isLoading,
-          );
-          final state = container.read(editorViewModelProvider(taskId: 999));
-          expect(state.isLoading, false);
-          expect(state.dialogMessage, isNotNull);
+        group('タスクが存在しない場合', () {
+          setUp(() async => setUpLoaded(taskId: 999));
+
+          test('読み込みエラーが通知される', () {
+            expect(viewState.isLoading, false);
+            expect(viewState.dialogMessage, isNotNull);
+          });
         });
 
         group('save', () {
+          setUp(() async => setUpLoaded(taskId: 1));
+
           group('正常系', () {
             test('編集内容を保存できる', () async {
-              await waitUntil(
-                container,
-                editorViewModelProvider(taskId: 1),
-                (s) => !s.isLoading,
-              );
-              final notifier = container.read(
-                editorViewModelProvider(taskId: 1).notifier,
-              );
-              notifier.updateColor(TaskColor.green);
-              await notifier.save();
-              expect(
-                container.read(editorViewModelProvider(taskId: 1)).isSaved,
-                true,
-              );
+              viewModel.updateColor(TaskColor.green);
+              await viewModel.save();
+              expect(viewState.isSaved, true);
             });
 
             test('保存成功後に更新完了の通知がセットされる', () async {
-              await waitUntil(
-                container,
-                editorViewModelProvider(taskId: 1),
-                (s) => !s.isLoading,
-              );
-              final notifier = container.read(
-                editorViewModelProvider(taskId: 1).notifier,
-              );
-              notifier.updateName('新しい名前');
-              await notifier.save();
-              final state = container.read(editorViewModelProvider(taskId: 1));
-              expect(state.snackBarMessage, isA<TaskUpdateSuccess>());
+              viewModel.updateName('新しい名前');
+              await viewModel.save();
+              expect(viewState.snackBarMessage, isA<TaskUpdateSuccess>());
               expect(
-                (state.snackBarMessage as TaskUpdateSuccess).taskName,
+                (viewState.snackBarMessage as TaskUpdateSuccess).taskName,
                 '新しい名前',
               );
-              expect(state.snackBarMessage!.handler, isNotNull);
+              expect(viewState.snackBarMessage!.handler, isNotNull);
             });
 
             test('undo ハンドラを実行すると元のタスクの状態に戻る', () async {
-              await waitUntil(
-                container,
-                editorViewModelProvider(taskId: 1),
-                (s) => !s.isLoading,
-              );
-              final notifier = container.read(
-                editorViewModelProvider(taskId: 1).notifier,
-              );
+              viewModel.updateName('新しい名前');
+              viewModel.updateColor(TaskColor.green);
+              await viewModel.save();
 
-              notifier.updateName('新しい名前');
-              notifier.updateColor(TaskColor.green);
-              await notifier.save();
-
-              final snackMsg = container
-                  .read(editorViewModelProvider(taskId: 1))
-                  .snackBarMessage;
-              expect(snackMsg, isA<TaskUpdateSuccess>());
+              expect(viewState.snackBarMessage, isA<TaskUpdateSuccess>());
 
               // undo 前は更新後の値
               expect(fakeRepository.taskById(1)?.name, '新しい名前');
               expect(fakeRepository.taskById(1)?.color, TaskColor.green);
 
-              await snackMsg!.handler!();
+              await viewState.snackBarMessage!.handler!();
 
               // undo 後は元の値に戻っている
               expect(fakeRepository.taskById(1)?.name, '歯ブラシ交換');

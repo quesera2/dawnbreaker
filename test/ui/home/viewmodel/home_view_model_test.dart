@@ -102,13 +102,26 @@ void main() {
   group('HomeViewModel', () {
     late ProviderContainer container;
     late FakeTaskRepository fakeRepository;
+    late HomeViewModel viewModel;
+    late HomeUiState viewState;
 
-    setUp(() {
-      fakeRepository = FakeTaskRepository(initialTasks: _testTasks);
+    void setUpContainer({List<TaskItem>? tasks}) {
+      fakeRepository = FakeTaskRepository(initialTasks: tasks ?? _testTasks);
       container = ProviderContainer(
         overrides: [taskRepositoryProvider.overrideWith((_) => fakeRepository)],
       );
-    });
+    }
+
+    Future<void> setUpLoaded({List<TaskItem>? tasks}) async {
+      setUpContainer(tasks: tasks);
+      await waitUntil(container, homeViewModelProvider, (s) => !s.isLoading);
+      viewModel = container.read(homeViewModelProvider.notifier);
+      container.listen(
+        homeViewModelProvider,
+        (_, next) => viewState = next,
+        fireImmediately: true,
+      );
+    }
 
     tearDown(() {
       container.dispose();
@@ -116,6 +129,8 @@ void main() {
     });
 
     group('初期状態', () {
+      setUp(setUpContainer);
+
       test('ローディング中でタスクが表示されない', () {
         final state = container.read(homeViewModelProvider);
         expect(state.isLoading, true);
@@ -129,94 +144,77 @@ void main() {
     });
 
     group('ロード後', () {
-      setUp(() async {
-        await waitUntil(container, homeViewModelProvider, (s) => !s.isLoading);
-      });
+      setUp(() async => setUpLoaded());
 
       test('タスクが読み込まれる', () {
-        final state = container.read(homeViewModelProvider);
-        expect(state.isLoading, false);
-        expect(state.tasks, _testTasks);
+        expect(viewState.isLoading, false);
+        expect(viewState.tasks, _testTasks);
       });
 
       test('hasTasks は true', () {
-        expect(container.read(homeViewModelProvider).hasTasks, true);
+        expect(viewState.hasTasks, true);
       });
 
       test('searchQuery が空のとき全タスクを返す', () {
-        final tl = container.read(homeViewModelProvider).taskList;
+        final tl = viewState.taskList;
         expect([...tl.overdueTasks, ...tl.upcomingTasks], _testTasks);
       });
 
-      test('updateSearchQuery で絞り込まれる', () {
-        container.read(homeViewModelProvider.notifier).updateSearchQuery('歯');
-        final tl = container.read(homeViewModelProvider).taskList;
-        final all = [...tl.overdueTasks, ...tl.upcomingTasks];
-        expect(all.isNotEmpty, true);
-        expect(all.every((t) => t.name.contains('歯')), true);
-      });
+      group('updateSearchQuery', () {
+        test('一致するタスクに絞り込まれる', () {
+          viewModel.updateSearchQuery('歯');
+          final tl = viewState.taskList;
+          final all = [...tl.overdueTasks, ...tl.upcomingTasks];
+          expect(all.isNotEmpty, true);
+          expect(all.every((t) => t.name.contains('歯')), true);
+        });
 
-      test('一致しない searchQuery のとき taskList は空', () {
-        container.read(homeViewModelProvider.notifier).updateSearchQuery('zzz');
-        final tl = container.read(homeViewModelProvider).taskList;
-        expect(tl.overdueTasks, isEmpty);
-        expect(tl.upcomingTasks, isEmpty);
-        expect(tl.isEmpty, true);
-      });
+        test('一致しない場合は taskList が空になる', () {
+          viewModel.updateSearchQuery('zzz');
+          final tl = viewState.taskList;
+          expect(tl.overdueTasks, isEmpty);
+          expect(tl.upcomingTasks, isEmpty);
+          expect(tl.isEmpty, true);
+        });
 
-      test('updateSearchQuery で searchQuery が更新される', () {
-        container.read(homeViewModelProvider.notifier).updateSearchQuery('歯');
-        expect(container.read(homeViewModelProvider).searchQuery, '歯');
-      });
+        test('検索クエリが更新される', () {
+          viewModel.updateSearchQuery('歯');
+          expect(viewState.searchQuery, '歯');
+        });
 
-      test('updateSearchQuery に同じ値を渡してもステートが変わらない', () {
-        container.read(homeViewModelProvider.notifier).updateSearchQuery('歯');
-        final stateBefore = container.read(homeViewModelProvider);
+        test('同じ値を渡してもステートが変わらない', () {
+          viewModel.updateSearchQuery('歯');
+          final stateBefore = viewState;
 
-        container.read(homeViewModelProvider.notifier).updateSearchQuery('歯');
-        final stateAfter = container.read(homeViewModelProvider);
+          viewModel.updateSearchQuery('歯');
+          final stateAfter = viewState;
 
-        expect(identical(stateBefore, stateAfter), true);
+          expect(identical(stateBefore, stateAfter), true);
+        });
       });
 
       group('updateFilter', () {
-        test('selectedFilter が変わる', () {
-          container
-              .read(homeViewModelProvider.notifier)
-              .updateFilter(HomeFilter.overdue);
-          expect(
-            container.read(homeViewModelProvider).selectedFilter,
-            HomeFilter.overdue,
-          );
+        test('フィルターが切り替わる', () {
+          viewModel.updateFilter(HomeFilter.overdue);
+          expect(viewState.selectedFilter, HomeFilter.overdue);
         });
 
         test('同じフィルタを渡してもステートが変わらない', () {
-          final before = container.read(homeViewModelProvider);
-          container
-              .read(homeViewModelProvider.notifier)
-              .updateFilter(HomeFilter.all);
-          expect(
-            identical(container.read(homeViewModelProvider), before),
-            true,
-          );
+          final before = viewState;
+          viewModel.updateFilter(HomeFilter.all);
+          expect(identical(viewState, before), true);
         });
 
         test('overdue フィルタ: 期日のないタスクは除外される', () {
-          // _testTasks は PeriodTask 履歴1件 → 期日未定なので overdue では空
-          container
-              .read(homeViewModelProvider.notifier)
-              .updateFilter(HomeFilter.overdue);
-          final tl = container.read(homeViewModelProvider).taskList;
+          viewModel.updateFilter(HomeFilter.overdue);
+          final tl = viewState.taskList;
           expect(tl.overdueTasks, isEmpty);
           expect(tl.upcomingTasks, isEmpty);
         });
 
         test('irregular フィルタ: 期日のないタスクが upcoming に返る', () {
-          // _testTasks はいずれも期日未定
-          container
-              .read(homeViewModelProvider.notifier)
-              .updateFilter(HomeFilter.irregular);
-          final tl = container.read(homeViewModelProvider).taskList;
+          viewModel.updateFilter(HomeFilter.irregular);
+          final tl = viewState.taskList;
           expect(tl.upcomingTasks, _testTasks);
         });
       });
@@ -224,46 +222,44 @@ void main() {
       group('recordExecution', () {
         group('正常系', () {
           test('成功時はエラーなし', () async {
-            await container
-                .read(homeViewModelProvider.notifier)
-                .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
-
-            expect(container.read(homeViewModelProvider).dialogMessage, isNull);
+            await viewModel.recordExecution(
+              _testTasks[0],
+              DateTime(2026, 4, 1),
+              null,
+            );
+            expect(viewState.dialogMessage, isNull);
           });
 
           test('成功時に実行完了の通知がセットされる', () async {
-            await container
-                .read(homeViewModelProvider.notifier)
-                .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
-
-            final msg = container.read(homeViewModelProvider).snackBarMessage;
+            await viewModel.recordExecution(
+              _testTasks[0],
+              DateTime(2026, 4, 1),
+              null,
+            );
+            final msg = viewState.snackBarMessage;
             expect(msg, isA<TaskCompleteSuccess>());
             expect((msg as TaskCompleteSuccess).taskName, _testTasks[0].name);
           });
 
           test('成功時の通知に undo ハンドラがある', () async {
-            await container
-                .read(homeViewModelProvider.notifier)
-                .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
-
-            final msg = container.read(homeViewModelProvider).snackBarMessage;
-            expect(msg?.handler, isNotNull);
+            await viewModel.recordExecution(
+              _testTasks[0],
+              DateTime(2026, 4, 1),
+              null,
+            );
+            expect(viewState.snackBarMessage?.handler, isNotNull);
           });
 
           test('undo ハンドラを呼び出してもエラーが発生しない', () async {
-            await container
-                .read(homeViewModelProvider.notifier)
-                .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
-
-            final handler = container
-                .read(homeViewModelProvider)
-                .snackBarMessage
-                ?.handler;
+            await viewModel.recordExecution(
+              _testTasks[0],
+              DateTime(2026, 4, 1),
+              null,
+            );
+            final handler = viewState.snackBarMessage?.handler;
             expect(handler, isNotNull);
-
             await handler!();
-
-            expect(container.read(homeViewModelProvider).dialogMessage, isNull);
+            expect(viewState.dialogMessage, isNull);
           });
 
           for (final (comment, expectedComment, description) in [
@@ -271,19 +267,13 @@ void main() {
             ('良い感じ', '良い感じ', 'コメントあり'),
           ]) {
             test('$descriptionで記録するとリポジトリにコメントが渡される', () async {
-              await container
-                  .read(homeViewModelProvider.notifier)
-                  .recordExecution(
-                    _testTasks[0],
-                    DateTime(2026, 4, 1),
-                    comment,
-                  );
-
-              expect(fakeRepository.lastRecordedComment, expectedComment);
-              expect(
-                container.read(homeViewModelProvider).snackBarMessage,
-                isA<TaskCompleteSuccess>(),
+              await viewModel.recordExecution(
+                _testTasks[0],
+                DateTime(2026, 4, 1),
+                comment,
               );
+              expect(fakeRepository.lastRecordedComment, expectedComment);
+              expect(viewState.snackBarMessage, isA<TaskCompleteSuccess>());
             });
           }
         });
@@ -310,131 +300,77 @@ void main() {
           });
         });
       });
+    });
 
-      group('taskList 分類', () {
-        late ProviderContainer classContainer;
-        late FakeTaskRepository classRepo;
+    group('taskList 分類', () {
+      setUp(() async => setUpLoaded(tasks: classificationTasks));
 
-        setUp(() async {
-          classRepo = FakeTaskRepository(initialTasks: classificationTasks);
-          classContainer = ProviderContainer(
-            overrides: [taskRepositoryProvider.overrideWith((_) => classRepo)],
-          );
-          await waitUntil(
-            classContainer,
-            homeViewModelProvider,
-            (s) => !s.isLoading,
-          );
-        });
-
-        tearDown(() {
-          classContainer.dispose();
-          classRepo.dispose();
-        });
-
-        test('all フィルタ: 超過タスクが overdue、それ以外が upcoming に入る', () {
-          final tl = classContainer.read(homeViewModelProvider).taskList;
-          expect(tl.overdueTasks.length, 1);
-          expect(tl.overdueTasks.first.name, '超過');
-          expect(tl.upcomingTasks.length, 4);
-        });
-
-        test('overdue フィルタ: 超過タスクのみ残る', () {
-          classContainer
-              .read(homeViewModelProvider.notifier)
-              .updateFilter(HomeFilter.overdue);
-          final tl = classContainer.read(homeViewModelProvider).taskList;
-          expect(tl.overdueTasks.map((t) => t.name), ['超過']);
-          expect(tl.upcomingTasks, isEmpty);
-        });
-
-        test('today フィルタ: 今日期限タスクのみ upcoming に入る', () {
-          classContainer
-              .read(homeViewModelProvider.notifier)
-              .updateFilter(HomeFilter.today);
-          final tl = classContainer.read(homeViewModelProvider).taskList;
-          expect(tl.overdueTasks, isEmpty);
-          expect(tl.upcomingTasks.map((t) => t.name), ['今日']);
-        });
-
-        test('week フィルタ: 今日を含む今週内タスクが upcoming に入る', () {
-          classContainer
-              .read(homeViewModelProvider.notifier)
-              .updateFilter(HomeFilter.week);
-          final tl = classContainer.read(homeViewModelProvider).taskList;
-          expect(tl.overdueTasks, isEmpty);
-          expect(tl.upcomingTasks.map((t) => t.name), ['今日', '今週']);
-        });
-
-        test('irregular フィルタ: 期日のないタスクのみ upcoming に入る', () {
-          classContainer
-              .read(homeViewModelProvider.notifier)
-              .updateFilter(HomeFilter.irregular);
-          final tl = classContainer.read(homeViewModelProvider).taskList;
-          expect(tl.overdueTasks, isEmpty);
-          expect(tl.upcomingTasks.map((t) => t.name), ['不定期']);
-        });
-
-        test('タスクがあるとき isEmpty は false', () {
-          final tl = classContainer.read(homeViewModelProvider).taskList;
-          expect(tl.isEmpty, isFalse);
-        });
-
-        test('一致しない検索クエリのとき isEmpty は true', () {
-          classContainer
-              .read(homeViewModelProvider.notifier)
-              .updateSearchQuery('zzz');
-          final tl = classContainer.read(homeViewModelProvider).taskList;
-          expect(tl.isEmpty, isTrue);
-        });
+      test('all フィルタ: 超過タスクが overdue、それ以外が upcoming に入る', () {
+        final tl = viewState.taskList;
+        expect(tl.overdueTasks.length, 1);
+        expect(tl.overdueTasks.first.name, '超過');
+        expect(tl.upcomingTasks.length, 4);
       });
 
-      group('taskCount', () {
-        late ProviderContainer countContainer;
-        late FakeTaskRepository countRepo;
+      test('overdue フィルタ: 超過タスクのみ残る', () {
+        viewModel.updateFilter(HomeFilter.overdue);
+        final tl = viewState.taskList;
+        expect(tl.overdueTasks.map((t) => t.name), ['超過']);
+        expect(tl.upcomingTasks, isEmpty);
+      });
 
-        setUp(() async {
-          countRepo = FakeTaskRepository(initialTasks: classificationTasks);
-          countContainer = ProviderContainer(
-            overrides: [taskRepositoryProvider.overrideWith((_) => countRepo)],
-          );
-          await waitUntil(
-            countContainer,
-            homeViewModelProvider,
-            (s) => !s.isLoading,
-          );
-        });
+      test('today フィルタ: 今日期限タスクのみ upcoming に入る', () {
+        viewModel.updateFilter(HomeFilter.today);
+        final tl = viewState.taskList;
+        expect(tl.overdueTasks, isEmpty);
+        expect(tl.upcomingTasks.map((t) => t.name), ['今日']);
+      });
 
-        tearDown(() {
-          countContainer.dispose();
-          countRepo.dispose();
-        });
+      test('week フィルタ: 今日を含む今週内タスクが upcoming に入る', () {
+        viewModel.updateFilter(HomeFilter.week);
+        final tl = viewState.taskList;
+        expect(tl.overdueTasks, isEmpty);
+        expect(tl.upcomingTasks.map((t) => t.name), ['今日', '今週']);
+      });
 
-        test('all は全タスク数を返す', () {
-          expect(countContainer.read(homeViewModelProvider).taskCount.all, 5);
-        });
+      test('irregular フィルタ: 期日のないタスクのみ upcoming に入る', () {
+        viewModel.updateFilter(HomeFilter.irregular);
+        final tl = viewState.taskList;
+        expect(tl.overdueTasks, isEmpty);
+        expect(tl.upcomingTasks.map((t) => t.name), ['不定期']);
+      });
 
-        test('overdue は超過タスクのみカウントする', () {
-          expect(
-            countContainer.read(homeViewModelProvider).taskCount.overdue,
-            1,
-          );
-        });
+      test('タスクがあるとき isEmpty は false', () {
+        expect(viewState.taskList.isEmpty, isFalse);
+      });
 
-        test('today は今日期限タスクのみカウントする', () {
-          expect(countContainer.read(homeViewModelProvider).taskCount.today, 1);
-        });
+      test('一致しない検索クエリのとき isEmpty は true', () {
+        viewModel.updateSearchQuery('zzz');
+        expect(viewState.taskList.isEmpty, isTrue);
+      });
+    });
 
-        test('week は today を含む今週内タスクをカウントする', () {
-          expect(countContainer.read(homeViewModelProvider).taskCount.week, 2);
-        });
+    group('taskCount', () {
+      setUp(() async => setUpLoaded(tasks: classificationTasks));
 
-        test('irregular は期日のないタスクのみカウントする', () {
-          expect(
-            countContainer.read(homeViewModelProvider).taskCount.irregular,
-            1,
-          );
-        });
+      test('all は全タスク数を返す', () {
+        expect(viewState.taskCount.all, 5);
+      });
+
+      test('overdue は超過タスクのみカウントする', () {
+        expect(viewState.taskCount.overdue, 1);
+      });
+
+      test('today は今日期限タスクのみカウントする', () {
+        expect(viewState.taskCount.today, 1);
+      });
+
+      test('week は today を含む今週内タスクをカウントする', () {
+        expect(viewState.taskCount.week, 2);
+      });
+
+      test('irregular は期日のないタスクのみカウントする', () {
+        expect(viewState.taskCount.irregular, 1);
       });
     });
   });
