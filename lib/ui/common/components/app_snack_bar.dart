@@ -2,7 +2,7 @@ import 'dart:async' show unawaited;
 
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
-import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
+import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
