@@ -742,6 +742,178 @@ void main() {
           });
         });
       });
+
+      group('deleteExecution', () {
+        group('正常系', () {
+          setUp(() async {
+            setUpContainer();
+            await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+          });
+
+          test('成功時はエラーなし', () async {
+            await container
+                .read(
+                  appDetailViewModelProvider(
+                    taskId: _taskOneHistory.id,
+                  ).notifier,
+                )
+                .deleteExecution(
+                  _taskOneHistory,
+                  _taskOneHistory.taskHistory.first,
+                );
+            expect(
+              container
+                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                  .dialogMessage,
+              isNull,
+            );
+          });
+
+          test('成功時に削除完了の通知がセットされる', () async {
+            await container
+                .read(
+                  appDetailViewModelProvider(
+                    taskId: _taskOneHistory.id,
+                  ).notifier,
+                )
+                .deleteExecution(
+                  _taskOneHistory,
+                  _taskOneHistory.taskHistory.first,
+                );
+            expect(
+              container
+                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                  .snackBarMessage,
+              isA<TaskExecutionDeleteSuccess>(),
+            );
+          });
+
+          test('成功時の通知に undo ハンドラがある', () async {
+            await container
+                .read(
+                  appDetailViewModelProvider(
+                    taskId: _taskOneHistory.id,
+                  ).notifier,
+                )
+                .deleteExecution(
+                  _taskOneHistory,
+                  _taskOneHistory.taskHistory.first,
+                );
+            expect(
+              container
+                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                  .snackBarMessage
+                  ?.handler,
+              isNotNull,
+            );
+          });
+
+          test('undo ハンドラを呼び出してもエラーが発生しない', () async {
+            await container
+                .read(
+                  appDetailViewModelProvider(
+                    taskId: _taskOneHistory.id,
+                  ).notifier,
+                )
+                .deleteExecution(
+                  _taskOneHistory,
+                  _taskOneHistory.taskHistory.first,
+                );
+            final handler = container
+                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                .snackBarMessage
+                ?.handler;
+            expect(handler, isNotNull);
+            await handler!();
+            expect(
+              container
+                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                  .dialogMessage,
+              isNull,
+            );
+          });
+
+          for (final (comment, expectedComment, description) in [
+            (null, null, 'コメントなし'),
+            ('メモあり', 'メモあり', 'コメントあり'),
+          ]) {
+            test('$descriptionの履歴を削除後 undo で元のコメントが再作成される', () async {
+              final history = TaskHistory(
+                id: 1,
+                executedAt: DateTime(2026, 1, 1),
+                comment: comment,
+              );
+              await container
+                  .read(
+                    appDetailViewModelProvider(
+                      taskId: _taskOneHistory.id,
+                    ).notifier,
+                  )
+                  .deleteExecution(_taskOneHistory, history);
+              final handler = container
+                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                  .snackBarMessage
+                  ?.handler;
+              await handler!();
+              expect(fakeRepository.lastRecordedComment, expectedComment);
+            });
+          }
+        });
+
+        group('異常系', () {
+          setUp(() async {
+            fakeRepository = FakeTaskRepository(
+              initialTasks: _testTasks,
+              shouldThrow: true,
+            );
+            container = ProviderContainer(
+              overrides: [
+                taskRepositoryProvider.overrideWith((_) => fakeRepository),
+              ],
+            );
+            await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+          });
+
+          test('失敗時に削除エラーの通知がセットされる', () async {
+            await container
+                .read(
+                  appDetailViewModelProvider(
+                    taskId: _taskOneHistory.id,
+                  ).notifier,
+                )
+                .deleteExecution(
+                  _taskOneHistory,
+                  _taskOneHistory.taskHistory.first,
+                );
+            expect(
+              container
+                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                  .dialogMessage,
+              isA<TaskExecutionDeleteErrorMessage>(),
+            );
+          });
+
+          test('失敗時に再試行できる', () async {
+            await container
+                .read(
+                  appDetailViewModelProvider(
+                    taskId: _taskOneHistory.id,
+                  ).notifier,
+                )
+                .deleteExecution(
+                  _taskOneHistory,
+                  _taskOneHistory.taskHistory.first,
+                );
+            expect(
+              container
+                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
+                  .dialogMessage
+                  ?.handler,
+              isNotNull,
+            );
+          });
+        });
+      });
     });
   });
 }
