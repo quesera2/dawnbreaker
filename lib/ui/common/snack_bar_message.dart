@@ -35,6 +35,10 @@ class TaskExecutionUpdateSuccess extends SnackBarMessage {
   TaskExecutionUpdateSuccess({required super.handler});
 }
 
+class TaskExecutionDeleteSuccess extends SnackBarMessage {
+  TaskExecutionDeleteSuccess({required super.handler});
+}
+
 class DebugDummyTasksGeneratedMessage extends SnackBarMessage {
   DebugDummyTasksGeneratedMessage();
 }

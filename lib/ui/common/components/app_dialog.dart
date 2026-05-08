@@ -67,6 +67,11 @@ class AppDialog extends StatelessWidget {
     messageText: context.l10n.taskErrorDeleteFailed,
     actionLabel: context.l10n.commonRetry,
   ),
+  TaskExecutionDeleteErrorMessage() => (
+    title: context.l10n.commonErrorTitle,
+    messageText: context.l10n.appDetailDeleteHistoryFailed,
+    actionLabel: context.l10n.commonRetry,
+  ),
   DeleteTaskConfirmMessage(:final taskName) => (
     title: context.l10n.commonConfirmTitle,
     messageText: context.l10n.appDetailTaskDeleteConfirm(taskName),

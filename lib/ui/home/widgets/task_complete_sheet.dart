@@ -224,7 +224,7 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
             tintColor: widget.task.color,
           ),
           AppLongPressButton(
-            label: '長押しで削除',
+            label: context.l10n.appDetailDeleteHistoryButton,
             size: AppButtonSize.large,
             onLongPress: onDelete,
           ),

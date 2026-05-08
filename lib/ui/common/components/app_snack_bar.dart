@@ -61,6 +61,10 @@ abstract final class AppSnackBar {
     text: context.l10n.appDetailUpdateHistorySuccess,
     actionLabel: context.l10n.commonUndo,
   ),
+  TaskExecutionDeleteSuccess() => (
+    text: context.l10n.appDetailDeleteHistorySuccess,
+    actionLabel: context.l10n.commonUndo,
+  ),
   DebugDummyTasksGeneratedMessage() => (
     text: context.l10n.settingsDebugDummyTasksGenerated,
     actionLabel: '',

@@ -34,6 +34,11 @@ class TaskDeleteErrorMessage extends DialogMessage {
   TaskDeleteErrorMessage({super.handler}) : super(type: DialogType.error);
 }
 
+class TaskExecutionDeleteErrorMessage extends DialogMessage {
+  TaskExecutionDeleteErrorMessage({super.handler})
+    : super(type: DialogType.error);
+}
+
 class TaskInvalidArgumentErrorMessage extends DialogMessage {
   TaskInvalidArgumentErrorMessage() : super(type: DialogType.error);
 }
