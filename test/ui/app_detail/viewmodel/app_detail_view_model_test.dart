@@ -6,6 +6,7 @@ import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
+import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_ui_state.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_view_model.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
@@ -20,11 +21,41 @@ void main() {
   group('AppDetailViewModel', () {
     late ProviderContainer container;
     late FakeTaskRepository fakeRepository;
+    late AppDetailViewModelProvider provider;
+    late AppDetailViewModel viewModel;
+    late AppDetailUiState viewState;
 
-    void setUpContainer() {
+    void setUpContainer({int? taskId}) {
       fakeRepository = FakeTaskRepository(initialTasks: _testTasks);
       container = ProviderContainer(
         overrides: [taskRepositoryProvider.overrideWith((_) => fakeRepository)],
+      );
+      provider = appDetailViewModelProvider(
+        taskId: taskId ?? _taskOneHistory.id,
+      );
+    }
+
+    Future<void> setUpLoaded({int? taskId}) async {
+      final id = taskId ?? _taskOneHistory.id;
+      setUpContainer(taskId: id);
+      await _waitUntilLoaded(container, taskId: id);
+      viewModel = container.read(provider.notifier);
+      container.listen(
+        provider,
+        (_, next) => viewState = next,
+        fireImmediately: true,
+      );
+    }
+
+    Future<void> setUpLoadedWithThrow() async {
+      setUpContainer();
+      fakeRepository.shouldThrow = true;
+      await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+      viewModel = container.read(provider.notifier);
+      container.listen(
+        provider,
+        (_, next) => viewState = next,
+        fireImmediately: true,
       );
     }
 
@@ -37,9 +68,7 @@ void main() {
       setUp(setUpContainer);
 
       test('データ取得前はローディング中でタスクは表示されない', () {
-        final state = container.read(
-          appDetailViewModelProvider(taskId: _taskOneHistory.id),
-        );
+        final state = container.read(provider);
         expect(state.isLoading, true);
         expect(state.task, isNull);
         expect(state.historyStats, isNull);
@@ -50,131 +79,75 @@ void main() {
     group('ロード後', () {
       group('履歴なしのタスク', () {
         setUp(() async {
-          setUpContainer();
-          await _waitUntilLoaded(container, taskId: _taskNoHistory.id);
+          await setUpLoaded(taskId: _taskNoHistory.id);
         });
 
         test('タスクの内容が表示できる状態になる', () {
-          final state = container.read(
-            appDetailViewModelProvider(taskId: _taskNoHistory.id),
-          );
-          expect(state.isLoading, false);
-          expect(state.task, _taskNoHistory);
+          expect(viewState.isLoading, false);
+          expect(viewState.task, _taskNoHistory);
         });
 
         test('履歴がないため実行記録が含まれない', () {
-          final stats = container
-              .read(appDetailViewModelProvider(taskId: _taskNoHistory.id))
-              .historyStats;
-          expect(stats, isNotNull);
-          expect(stats!.historyAndInterval, isEmpty);
+          expect(viewState.historyStats, isNotNull);
+          expect(viewState.historyStats!.historyAndInterval, isEmpty);
         });
 
         test('一度も実行されていないため経過日数は算出されない', () {
-          expect(
-            container
-                .read(appDetailViewModelProvider(taskId: _taskNoHistory.id))
-                .daysSinceLastExecution,
-            isNull,
-          );
+          expect(viewState.daysSinceLastExecution, isNull);
         });
 
         test('インターバル計算には2件以上の履歴が必要なため平均インターバルは算出されない', () {
-          expect(
-            container
-                .read(appDetailViewModelProvider(taskId: _taskNoHistory.id))
-                .averageIntervalDays,
-            isNull,
-          );
+          expect(viewState.averageIntervalDays, isNull);
         });
       });
 
       group('履歴1件のタスク', () {
         setUp(() async {
-          setUpContainer();
-          await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+          await setUpLoaded();
         });
 
         test('タスクの内容が表示できる状態になる', () {
-          expect(
-            container
-                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                .task,
-            _taskOneHistory,
-          );
+          expect(viewState.task, _taskOneHistory);
         });
 
         test('最終実行日からの経過日数が計算される', () {
-          expect(
-            container
-                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                .daysSinceLastExecution,
-            isNotNull,
-          );
+          expect(viewState.daysSinceLastExecution, isNotNull);
         });
 
         test('インターバル計算には2件以上の履歴が必要なため平均インターバルは算出されない', () {
-          expect(
-            container
-                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                .averageIntervalDays,
-            isNull,
-          );
+          expect(viewState.averageIntervalDays, isNull);
         });
 
         test('すべての履歴エントリが一覧に含まれる', () {
-          final stats = container
-              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-              .historyStats;
-          expect(stats!.historyAndInterval, hasLength(1));
+          expect(viewState.historyStats!.historyAndInterval, hasLength(1));
         });
       });
 
       group('複数履歴のタスク', () {
         setUp(() async {
-          setUpContainer();
-          await _waitUntilLoaded(container, taskId: _taskMultiHistory.id);
+          await setUpLoaded(taskId: _taskMultiHistory.id);
         });
 
         test('タスクの内容が表示できる状態になる', () {
-          expect(
-            container
-                .read(appDetailViewModelProvider(taskId: _taskMultiHistory.id))
-                .task,
-            _taskMultiHistory,
-          );
+          expect(viewState.task, _taskMultiHistory);
         });
 
         test('すべての履歴エントリが一覧に含まれる', () {
-          final stats = container
-              .read(appDetailViewModelProvider(taskId: _taskMultiHistory.id))
-              .historyStats;
-          expect(stats!.historyAndInterval, hasLength(3));
+          expect(viewState.historyStats!.historyAndInterval, hasLength(3));
         });
 
         test('実行インターバルの平均が正しく計算される', () {
-          expect(
-            container
-                .read(appDetailViewModelProvider(taskId: _taskMultiHistory.id))
-                .averageIntervalDays,
-            31,
-          );
+          expect(viewState.averageIntervalDays, 31);
         });
 
         test('最終実行日からの経過日数が計算される', () {
-          expect(
-            container
-                .read(appDetailViewModelProvider(taskId: _taskMultiHistory.id))
-                .daysSinceLastExecution,
-            isNotNull,
-          );
+          expect(viewState.daysSinceLastExecution, isNotNull);
         });
       });
 
       group('タスクが外部で更新されたとき', () {
         setUp(() async {
-          setUpContainer();
-          await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+          await setUpLoaded();
         });
 
         test('編集内容がリアルタイムで画面に反映される', () async {
@@ -185,12 +158,9 @@ void main() {
             icon: '✂️',
             color: TaskColor.green,
           );
-          final state = container.read(
-            appDetailViewModelProvider(taskId: _taskOneHistory.id),
-          );
-          expect(state.task?.name, '更新後の名前');
-          expect(state.task?.icon, '✂️');
-          expect(state.task?.color, TaskColor.green);
+          expect(viewState.task?.name, '更新後の名前');
+          expect(viewState.task?.icon, '✂️');
+          expect(viewState.task?.color, TaskColor.green);
         });
 
         test('タスク更新後も履歴情報が正しく表示される', () async {
@@ -201,189 +171,95 @@ void main() {
             icon: '📝',
             color: TaskColor.none,
           );
-          final stats = container
-              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-              .historyStats;
-          expect(stats, isNotNull);
-          expect(stats!.historyAndInterval, hasLength(1));
+          expect(viewState.historyStats, isNotNull);
+          expect(viewState.historyStats!.historyAndInterval, hasLength(1));
         });
       });
 
       group('タスクデータの取得中にエラーが発生したとき', () {
         setUp(() async {
-          setUpContainer();
-          await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+          await setUpLoaded();
         });
 
         test('画面を閉じる状態になる', () async {
           fakeRepository.emitError(const TaskLoadException('stream error'));
           await Future.microtask(() {});
-          expect(
-            container
-                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                .shouldPop,
-            true,
-          );
+          expect(viewState.shouldPop, true);
         });
 
         test('ローディング状態が解除される', () async {
           fakeRepository.emitError(const TaskLoadException('stream error'));
           await Future.microtask(() {});
-          expect(
-            container
-                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                .isLoading,
-            false,
-          );
+          expect(viewState.isLoading, false);
         });
       });
 
       group('updateExecution', () {
         group('正常系', () {
           setUp(() async {
-            setUpContainer();
-            await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+            await setUpLoaded();
           });
 
           test('成功時はエラーなし', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .updateExecution(
-                  _taskOneHistory.taskHistory.first,
-                  executedAt: DateTime(2026, 2, 1),
-                );
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage,
-              isNull,
+            await viewModel.updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
             );
+            expect(viewState.dialogMessage, isNull);
           });
 
           test('コメントありで更新してもエラーなし', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .updateExecution(
-                  _taskOneHistory.taskHistory.first,
-                  executedAt: DateTime(2026, 2, 1),
-                  comment: '更新コメント',
-                );
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage,
-              isNull,
+            await viewModel.updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+              comment: '更新コメント',
             );
+            expect(viewState.dialogMessage, isNull);
           });
 
           test('成功時に更新完了の通知がセットされる', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .updateExecution(
-                  _taskOneHistory.taskHistory.first,
-                  executedAt: DateTime(2026, 2, 1),
-                );
+            await viewModel.updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
             expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .snackBarMessage,
+              viewState.snackBarMessage,
               isA<TaskExecutionUpdateSuccess>(),
             );
           });
 
           test('undo ハンドラを呼び出すと元の日時・コメントで再更新される', () async {
-            final original = _taskOneHistory.taskHistory.first;
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .updateExecution(
-                  original,
-                  executedAt: DateTime(2026, 2, 1),
-                  comment: '変更後',
-                );
-
-            final handler = container
-                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                .snackBarMessage
-                ?.handler;
+            await viewModel.updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+              comment: '変更後',
+            );
+            final handler = viewState.snackBarMessage?.handler;
             expect(handler, isNotNull);
             await handler!();
-
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage,
-              isNull,
-            );
+            expect(viewState.dialogMessage, isNull);
           });
         });
 
         group('異常系', () {
           setUp(() async {
-            fakeRepository = FakeTaskRepository(
-              initialTasks: _testTasks,
-              shouldThrow: true,
-            );
-            container = ProviderContainer(
-              overrides: [
-                taskRepositoryProvider.overrideWith((_) => fakeRepository),
-              ],
-            );
-            await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+            await setUpLoadedWithThrow();
           });
 
           test('失敗時に更新エラーの通知がセットされる', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .updateExecution(
-                  _taskOneHistory.taskHistory.first,
-                  executedAt: DateTime(2026, 2, 1),
-                );
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage,
-              isA<TaskUpdateErrorMessage>(),
+            await viewModel.updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
             );
+            expect(viewState.dialogMessage, isA<TaskUpdateErrorMessage>());
           });
 
           test('失敗時に再試行できる', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .updateExecution(
-                  _taskOneHistory.taskHistory.first,
-                  executedAt: DateTime(2026, 2, 1),
-                );
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage
-                  ?.handler,
-              isNotNull,
+            await viewModel.updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
             );
+            expect(viewState.dialogMessage?.handler, isNotNull);
           });
         });
       });
@@ -391,80 +267,48 @@ void main() {
       group('recordExecution', () {
         group('正常系', () {
           setUp(() async {
-            setUpContainer();
-            await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+            await setUpLoaded();
           });
 
           test('成功時はエラーなし', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .recordExecution(_taskOneHistory, DateTime(2026, 4, 1), null);
-
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage,
-              isNull,
+            await viewModel.recordExecution(
+              _taskOneHistory,
+              DateTime(2026, 4, 1),
+              null,
             );
+            expect(viewState.dialogMessage, isNull);
           });
 
           test('成功時に実行完了の通知がセットされる', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .recordExecution(_taskOneHistory, DateTime(2026, 4, 1), null);
-
-            final msg = container
-                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                .snackBarMessage;
+            await viewModel.recordExecution(
+              _taskOneHistory,
+              DateTime(2026, 4, 1),
+              null,
+            );
+            final msg = viewState.snackBarMessage;
             expect(msg, isA<TaskCompleteSuccess>());
             expect((msg as TaskCompleteSuccess).taskName, _taskOneHistory.name);
           });
 
           test('成功時の通知に undo ハンドラがある', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .recordExecution(_taskOneHistory, DateTime(2026, 4, 1), null);
-
-            final msg = container
-                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                .snackBarMessage;
-            expect(msg?.handler, isNotNull);
+            await viewModel.recordExecution(
+              _taskOneHistory,
+              DateTime(2026, 4, 1),
+              null,
+            );
+            expect(viewState.snackBarMessage?.handler, isNotNull);
           });
 
           test('undo ハンドラを呼び出してもエラーが発生しない', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .recordExecution(_taskOneHistory, DateTime(2026, 4, 1), null);
-
-            final handler = container
-                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                .snackBarMessage
-                ?.handler;
+            await viewModel.recordExecution(
+              _taskOneHistory,
+              DateTime(2026, 4, 1),
+              null,
+            );
+            final handler = viewState.snackBarMessage?.handler;
             expect(handler, isNotNull);
             await handler!();
-
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage,
-              isNull,
-            );
+            expect(viewState.dialogMessage, isNull);
           });
 
           for (final (comment, expectedComment, description) in [
@@ -472,128 +316,61 @@ void main() {
             ('良い感じ', '良い感じ', 'コメントあり'),
           ]) {
             test('$descriptionで記録するとリポジトリにコメントが渡される', () async {
-              await container
-                  .read(
-                    appDetailViewModelProvider(
-                      taskId: _taskOneHistory.id,
-                    ).notifier,
-                  )
-                  .recordExecution(
-                    _taskOneHistory,
-                    DateTime(2026, 4, 1),
-                    comment,
-                  );
-
-              expect(fakeRepository.lastRecordedComment, expectedComment);
-              expect(
-                container
-                    .read(
-                      appDetailViewModelProvider(taskId: _taskOneHistory.id),
-                    )
-                    .snackBarMessage,
-                isA<TaskCompleteSuccess>(),
+              await viewModel.recordExecution(
+                _taskOneHistory,
+                DateTime(2026, 4, 1),
+                comment,
               );
+              expect(fakeRepository.lastRecordedComment, expectedComment);
+              expect(viewState.snackBarMessage, isA<TaskCompleteSuccess>());
             });
           }
         });
 
         group('異常系', () {
           setUp(() async {
-            fakeRepository = FakeTaskRepository(
-              initialTasks: _testTasks,
-              shouldThrow: true,
-            );
-            container = ProviderContainer(
-              overrides: [
-                taskRepositoryProvider.overrideWith((_) => fakeRepository),
-              ],
-            );
-            await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+            await setUpLoadedWithThrow();
           });
 
           test('リポジトリがエラーを返すと dialogMessage がセットされる', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .recordExecution(_taskOneHistory, DateTime(2026, 4, 1), null);
-
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage,
-              isA<TaskSaveErrorMessage>(),
+            await viewModel.recordExecution(
+              _taskOneHistory,
+              DateTime(2026, 4, 1),
+              null,
             );
+            expect(viewState.dialogMessage, isA<TaskSaveErrorMessage>());
           });
 
           test('失敗時に再試行できる', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .recordExecution(_taskOneHistory, DateTime(2026, 4, 1), null);
-
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage
-                  ?.handler,
-              isNotNull,
+            await viewModel.recordExecution(
+              _taskOneHistory,
+              DateTime(2026, 4, 1),
+              null,
             );
+            expect(viewState.dialogMessage?.handler, isNotNull);
           });
         });
       });
 
       group('showDeleteTaskDialog', () {
         setUp(() async {
-          setUpContainer();
-          await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+          await setUpLoaded();
         });
 
         test('確認ダイアログが表示される', () {
-          container
-              .read(
-                appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
-              )
-              .showDeleteTaskDialog();
-          expect(
-            container
-                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                .dialogMessage,
-            isA<DeleteTaskConfirmMessage>(),
-          );
+          viewModel.showDeleteTaskDialog();
+          expect(viewState.dialogMessage, isA<DeleteTaskConfirmMessage>());
         });
 
         test('ダイアログにタスク名が表示される', () {
-          container
-              .read(
-                appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
-              )
-              .showDeleteTaskDialog();
-          final msg =
-              container
-                      .read(
-                        appDetailViewModelProvider(taskId: _taskOneHistory.id),
-                      )
-                      .dialogMessage
-                  as DeleteTaskConfirmMessage?;
+          viewModel.showDeleteTaskDialog();
+          final msg = viewState.dialogMessage as DeleteTaskConfirmMessage?;
           expect(msg?.taskName, _taskOneHistory.name);
         });
 
         test('ダイアログのハンドラを呼び出すとタスクが削除される', () async {
-          container
-              .read(
-                appDetailViewModelProvider(taskId: _taskOneHistory.id).notifier,
-              )
-              .showDeleteTaskDialog();
-          final handler = container
-              .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-              .dialogMessage
-              ?.handler;
+          viewModel.showDeleteTaskDialog();
+          final handler = viewState.dialogMessage?.handler;
           expect(handler, isNotNull);
           handler!();
           await Future.microtask(() {});
@@ -604,141 +381,54 @@ void main() {
       group('deleteTask', () {
         group('正常系', () {
           setUp(() async {
-            setUpContainer();
-            await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+            await setUpLoaded();
           });
 
           test('前の画面に戻る', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .deleteTask();
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .shouldPop,
-              true,
-            );
+            await viewModel.deleteTask();
+            expect(viewState.shouldPop, true);
           });
 
           test('削除成功の通知がタスク名付きで表示される', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .deleteTask();
-            final msg = container
-                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                .snackBarMessage;
+            await viewModel.deleteTask();
+            final msg = viewState.snackBarMessage;
             expect(msg, isA<TaskDeleteSuccess>());
             expect((msg as TaskDeleteSuccess).taskName, _taskOneHistory.name);
           });
 
           test('削除を取り消せる', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .deleteTask();
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .snackBarMessage
-                  ?.handler,
-              isNotNull,
-            );
+            await viewModel.deleteTask();
+            expect(viewState.snackBarMessage?.handler, isNotNull);
           });
 
           // 削除によりストリームが null を流すため clearTaskItem が呼ばれる
           test('タスクデータがクリアされる', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .deleteTask();
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .task,
-              isNull,
-            );
+            await viewModel.deleteTask();
+            expect(viewState.task, isNull);
           });
 
           test('undo ハンドラを呼び出すとタスクが復元される', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .deleteTask();
-
+            await viewModel.deleteTask();
             expect(fakeRepository.containsTask(_taskOneHistory.id), false);
-
-            final handler = container
-                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                .snackBarMessage
-                ?.handler;
+            final handler = viewState.snackBarMessage?.handler;
             await handler!();
-
             expect(fakeRepository.containsTask(_taskOneHistory.id), true);
           });
         });
 
         group('異常系', () {
           setUp(() async {
-            fakeRepository = FakeTaskRepository(
-              initialTasks: _testTasks,
-              shouldThrow: true,
-            );
-            container = ProviderContainer(
-              overrides: [
-                taskRepositoryProvider.overrideWith((_) => fakeRepository),
-              ],
-            );
-            await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+            await setUpLoadedWithThrow();
           });
 
           test('削除失敗のエラーが通知される', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .deleteTask();
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage,
-              isA<TaskDeleteErrorMessage>(),
-            );
+            await viewModel.deleteTask();
+            expect(viewState.dialogMessage, isA<TaskDeleteErrorMessage>());
           });
 
           test('削除を再試行できる', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .deleteTask();
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage
-                  ?.handler,
-              isNotNull,
-            );
+            await viewModel.deleteTask();
+            expect(viewState.dialogMessage?.handler, isNotNull);
           });
         });
       });
@@ -746,91 +436,45 @@ void main() {
       group('deleteExecution', () {
         group('正常系', () {
           setUp(() async {
-            setUpContainer();
-            await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+            await setUpLoaded();
           });
 
           test('成功時はエラーなし', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .deleteExecution(
-                  _taskOneHistory,
-                  _taskOneHistory.taskHistory.first,
-                );
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage,
-              isNull,
+            await viewModel.deleteExecution(
+              _taskOneHistory,
+              _taskOneHistory.taskHistory.first,
             );
+            expect(viewState.dialogMessage, isNull);
           });
 
           test('成功時に削除完了の通知がセットされる', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .deleteExecution(
-                  _taskOneHistory,
-                  _taskOneHistory.taskHistory.first,
-                );
+            await viewModel.deleteExecution(
+              _taskOneHistory,
+              _taskOneHistory.taskHistory.first,
+            );
             expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .snackBarMessage,
+              viewState.snackBarMessage,
               isA<TaskExecutionDeleteSuccess>(),
             );
           });
 
           test('成功時の通知に undo ハンドラがある', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .deleteExecution(
-                  _taskOneHistory,
-                  _taskOneHistory.taskHistory.first,
-                );
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .snackBarMessage
-                  ?.handler,
-              isNotNull,
+            await viewModel.deleteExecution(
+              _taskOneHistory,
+              _taskOneHistory.taskHistory.first,
             );
+            expect(viewState.snackBarMessage?.handler, isNotNull);
           });
 
           test('undo ハンドラを呼び出してもエラーが発生しない', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .deleteExecution(
-                  _taskOneHistory,
-                  _taskOneHistory.taskHistory.first,
-                );
-            final handler = container
-                .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                .snackBarMessage
-                ?.handler;
+            await viewModel.deleteExecution(
+              _taskOneHistory,
+              _taskOneHistory.taskHistory.first,
+            );
+            final handler = viewState.snackBarMessage?.handler;
             expect(handler, isNotNull);
             await handler!();
-            expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage,
-              isNull,
-            );
+            expect(viewState.dialogMessage, isNull);
           });
 
           for (final (comment, expectedComment, description) in [
@@ -843,17 +487,8 @@ void main() {
                 executedAt: DateTime(2026, 1, 1),
                 comment: comment,
               );
-              await container
-                  .read(
-                    appDetailViewModelProvider(
-                      taskId: _taskOneHistory.id,
-                    ).notifier,
-                  )
-                  .deleteExecution(_taskOneHistory, history);
-              final handler = container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .snackBarMessage
-                  ?.handler;
+              await viewModel.deleteExecution(_taskOneHistory, history);
+              final handler = viewState.snackBarMessage?.handler;
               await handler!();
               expect(fakeRepository.lastRecordedComment, expectedComment);
             });
@@ -862,54 +497,43 @@ void main() {
 
         group('異常系', () {
           setUp(() async {
-            fakeRepository = FakeTaskRepository(
-              initialTasks: _testTasks,
-              shouldThrow: true,
-            );
-            container = ProviderContainer(
-              overrides: [
-                taskRepositoryProvider.overrideWith((_) => fakeRepository),
-              ],
-            );
-            await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+            await setUpLoadedWithThrow();
           });
 
           test('失敗時に削除エラーの通知がセットされる', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .deleteExecution(
-                  _taskOneHistory,
-                  _taskOneHistory.taskHistory.first,
-                );
+            await viewModel.deleteExecution(
+              _taskOneHistory,
+              _taskOneHistory.taskHistory.first,
+            );
             expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage,
+              viewState.dialogMessage,
               isA<TaskExecutionDeleteErrorMessage>(),
             );
           });
 
           test('失敗時に再試行できる', () async {
-            await container
-                .read(
-                  appDetailViewModelProvider(
-                    taskId: _taskOneHistory.id,
-                  ).notifier,
-                )
-                .deleteExecution(
-                  _taskOneHistory,
-                  _taskOneHistory.taskHistory.first,
-                );
+            await viewModel.deleteExecution(
+              _taskOneHistory,
+              _taskOneHistory.taskHistory.first,
+            );
+            expect(viewState.dialogMessage?.handler, isNotNull);
+          });
+
+          test('リトライハンドラを呼び出すと再度削除が試みられ成功する', () async {
+            await viewModel.deleteExecution(
+              _taskOneHistory,
+              _taskOneHistory.taskHistory.first,
+            );
+            final handler = viewState.dialogMessage?.handler;
+            expect(handler, isNotNull);
+
+            fakeRepository.shouldThrow = false;
+            handler!();
+            await Future.microtask(() {});
+
             expect(
-              container
-                  .read(appDetailViewModelProvider(taskId: _taskOneHistory.id))
-                  .dialogMessage
-                  ?.handler,
-              isNotNull,
+              viewState.snackBarMessage,
+              isA<TaskExecutionDeleteSuccess>(),
             );
           });
         });
