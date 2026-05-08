@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
@@ -12,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_task_repository.dart';
+import '../../../helpers/riverpod_test_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -184,7 +183,11 @@ void main() {
 
       group('ロード後', () {
         test('period タスクの内容が反映される', () async {
-          await _waitUntilLoaded(container, taskId: 1);
+          await waitUntil(
+            container,
+            editorViewModelProvider(taskId: 1),
+            (s) => !s.isLoading,
+          );
           final state = container.read(editorViewModelProvider(taskId: 1));
           expect(state.isLoading, false);
           expect(state.name, '歯ブラシ交換');
@@ -195,7 +198,11 @@ void main() {
         });
 
         test('scheduled タスクのスケジュール設定が反映される', () async {
-          await _waitUntilLoaded(container, taskId: 2);
+          await waitUntil(
+            container,
+            editorViewModelProvider(taskId: 2),
+            (s) => !s.isLoading,
+          );
           final state = container.read(editorViewModelProvider(taskId: 2));
           expect(state.isLoading, false);
           expect(state.type, TaskType.scheduled);
@@ -204,7 +211,11 @@ void main() {
         });
 
         test('存在しないタスクのとき errorMessage が設定される', () async {
-          await _waitUntilLoaded(container, taskId: 999);
+          await waitUntil(
+            container,
+            editorViewModelProvider(taskId: 999),
+            (s) => !s.isLoading,
+          );
           final state = container.read(editorViewModelProvider(taskId: 999));
           expect(state.isLoading, false);
           expect(state.dialogMessage, isNotNull);
@@ -213,7 +224,11 @@ void main() {
         group('save', () {
           group('正常系', () {
             test('編集内容を保存できる', () async {
-              await _waitUntilLoaded(container, taskId: 1);
+              await waitUntil(
+                container,
+                editorViewModelProvider(taskId: 1),
+                (s) => !s.isLoading,
+              );
               final notifier = container.read(
                 editorViewModelProvider(taskId: 1).notifier,
               );
@@ -226,7 +241,11 @@ void main() {
             });
 
             test('保存成功後に更新完了の通知がセットされる', () async {
-              await _waitUntilLoaded(container, taskId: 1);
+              await waitUntil(
+                container,
+                editorViewModelProvider(taskId: 1),
+                (s) => !s.isLoading,
+              );
               final notifier = container.read(
                 editorViewModelProvider(taskId: 1).notifier,
               );
@@ -242,7 +261,11 @@ void main() {
             });
 
             test('undo ハンドラを実行すると元のタスクの状態に戻る', () async {
-              await _waitUntilLoaded(container, taskId: 1);
+              await waitUntil(
+                container,
+                editorViewModelProvider(taskId: 1),
+                (s) => !s.isLoading,
+              );
               final notifier = container.read(
                 editorViewModelProvider(taskId: 1).notifier,
               );
@@ -297,18 +320,3 @@ final _testTasks = [
     ],
   ),
 ];
-
-Future<void> _waitUntilLoaded(
-  ProviderContainer container, {
-  required int taskId,
-}) async {
-  final completer = Completer<void>();
-  final sub = container.listen(editorViewModelProvider(taskId: taskId), (
-    _,
-    next,
-  ) {
-    if (!next.isLoading && !completer.isCompleted) completer.complete();
-  }, fireImmediately: true);
-  await completer.future;
-  sub.close();
-}

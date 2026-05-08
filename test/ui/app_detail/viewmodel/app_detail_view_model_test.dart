@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_task_repository.dart';
+import '../../../helpers/riverpod_test_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -38,7 +39,7 @@ void main() {
     Future<void> setUpLoaded({int? taskId}) async {
       final id = taskId ?? _taskOneHistory.id;
       setUpContainer(taskId: id);
-      await _waitUntilLoaded(container, taskId: id);
+      await waitUntil(container, provider, (s) => !s.isLoading);
       viewModel = container.read(provider.notifier);
       container.listen(
         provider,
@@ -50,7 +51,7 @@ void main() {
     Future<void> setUpLoadedWithThrow() async {
       setUpContainer();
       fakeRepository.shouldThrow = true;
-      await _waitUntilLoaded(container, taskId: _taskOneHistory.id);
+      await waitUntil(container, provider, (s) => !s.isLoading);
       viewModel = container.read(provider.notifier);
       container.listen(
         provider,
@@ -577,18 +578,3 @@ final _taskMultiHistory = TaskItem.period(
 );
 
 final _testTasks = [_taskNoHistory, _taskOneHistory, _taskMultiHistory];
-
-Future<void> _waitUntilLoaded(
-  ProviderContainer container, {
-  required int taskId,
-}) async {
-  final completer = Completer<void>();
-  final sub = container.listen(appDetailViewModelProvider(taskId: taskId), (
-    _,
-    next,
-  ) {
-    if (!next.isLoading && !completer.isCompleted) completer.complete();
-  }, fireImmediately: true);
-  await completer.future;
-  sub.close();
-}
