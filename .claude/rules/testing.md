@@ -81,3 +81,42 @@ group('XxxViewModel') {
   }
 }
 ```
+
+### ViewModel テストの状態アクセスパターン
+
+`container.read(provider)` を毎回インラインで書かず、`provider` / `viewModel` / `viewState` の3つを必要に応じて group スコープに宣言する。
+
+- `provider` (`setUpContainer` で設定）
+- `viewModel` (メソッド呼び出し用）
+- `viewState` (`container.listen` で自動更新）
+
+```dart
+group('XxxViewModel', () {
+  late ProviderContainer container;
+  late XxxViewModelProvider provider;
+  late XxxViewModel viewModel;
+  late XxxUiState viewState;
+
+  // ロード前の状態を検証する「初期状態」グループ用。container と provider だけ作る
+  void setUpContainer({int? taskId}) {
+    container = ProviderContainer(...);
+    provider = xxxViewModelProvider(taskId: taskId ?? defaultId);
+  }
+
+  // ロード完了後を検証する「ロード後」グループ用。viewModel / viewState も準備する
+  Future<void> setUpLoaded({int? taskId}) async {
+    final id = taskId ?? defaultId;
+    setUpContainer(taskId: id);
+    await waitUntil(container, provider, (s) => !s.isLoading);
+    viewModel = container.read(provider.notifier);
+    container.listen(provider, (_, next) => viewState = next, fireImmediately: true);
+  }
+
+  test('...', () async {
+    await viewModel.someAction();
+    expect(viewState.someField, expected);   // container.read 不要
+  });
+});
+```
+
+`waitUntil` は `test/helpers/riverpod_test_helper.dart` に定義済み。
