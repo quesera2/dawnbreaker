@@ -1,6 +1,6 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
-import 'package:dawnbreaker/app/app_typography.dart';
+import 'package:dawnbreaker/ui/common/components/app_button_size.dart';
 import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
@@ -11,11 +11,13 @@ class AppLongPressButton extends StatefulWidget {
     required this.label,
     this.onLongPress,
     this.duration = const Duration(milliseconds: 1000),
+    this.size = AppButtonSize.medium,
   });
 
   final String label;
   final VoidCallback? onLongPress;
   final Duration duration;
+  final AppButtonSize size;
 
   @override
   State<AppLongPressButton> createState() => _AppLongPressButtonState();
@@ -24,6 +26,7 @@ class AppLongPressButton extends StatefulWidget {
 class _AppLongPressButtonState extends State<AppLongPressButton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  bool _isFinished = false;
 
   @override
   void initState() {
@@ -32,6 +35,7 @@ class _AppLongPressButtonState extends State<AppLongPressButton>
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         widget.onLongPress?.call();
+        _isFinished = true;
       }
     });
   }
@@ -50,10 +54,13 @@ class _AppLongPressButtonState extends State<AppLongPressButton>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails _) => _controller.forward(from: 0);
+  void _onTapDown(TapDownDetails _) =>
+      _controller.forward(from: _controller.value);
 
   void _onEnd() {
-    _controller.animateTo(
+    if (_isFinished) return;
+
+    _controller.animateBack(
       0,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
@@ -63,6 +70,7 @@ class _AppLongPressButtonState extends State<AppLongPressButton>
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
+    final size = widget.size;
     final radius = BorderRadius.circular(AppRadius.md);
     return GestureDetector(
       onTapDown: _onTapDown,
@@ -89,13 +97,13 @@ class _AppLongPressButtonState extends State<AppLongPressButton>
                   ),
                 ),
                 ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 48),
+                  constraints: BoxConstraints(minHeight: size.height),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: size.padding,
                     child: Center(
                       child: Text(
                         widget.label,
-                        style: AppTextStyle.body.copyWith(
+                        style: size.textStyle.copyWith(
                           color: Color.lerp(
                             colors.danger,
                             colors.dangerSoft,
