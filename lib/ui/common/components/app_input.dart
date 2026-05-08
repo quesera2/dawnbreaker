@@ -1,7 +1,7 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
-import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
+import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
@@ -174,36 +174,21 @@ class _AppSearchInputState extends State<AppSearchInput> {
 @Preview()
 Widget previewInputs() => const InputShowCase();
 
-final class InputShowCase extends StatelessWidget {
+final class InputShowCase extends PreviewShowCase {
   const InputShowCase({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final c = context.appColorScheme;
-    return PreviewWrapper(
-      child: ColoredBox(
-        color: c.bg,
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: SizedBox(
-            width: 320,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 16,
-              children: [
-                const AppTextInput(hintText: 'タスク名を入力'),
-                const AppSearchInput(placeholder: 'タスクを検索'),
-                AppSearchInput(
-                  placeholder: '検索中…',
-                  showClear: true,
-                  onClear: () {},
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget buildPreview(BuildContext context) => const SizedBox(
+    width: 320,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 16,
+      children: [
+        AppTextInput(hintText: 'タスク名を入力'),
+        AppSearchInput(placeholder: 'タスクを検索'),
+        AppSearchInput(placeholder: '検索中…', showClear: true),
+      ],
+    ),
+  );
 }

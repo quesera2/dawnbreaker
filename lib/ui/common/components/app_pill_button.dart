@@ -1,7 +1,7 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
-import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
+import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
@@ -77,36 +77,27 @@ class AppPillButton extends StatelessWidget {
 @Preview()
 Widget previewPillButton() => const PillButtonShowCase();
 
-final class PillButtonShowCase extends StatelessWidget {
+final class PillButtonShowCase extends PreviewShowCase {
   const PillButtonShowCase({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final c = context.appColorScheme;
-    return PreviewWrapper(
-      child: Container(
-        color: c.bg,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 12,
-          children: [
-            AppPillButton(
-              label: '完了',
-              onPressed: () {},
-              leading: const Icon(Icons.check),
-            ),
-            AppPillButton(
-              label: '完了',
-              variant: AppPillButtonVariant.secondary,
-              onPressed: () {},
-              leading: const Icon(Icons.check),
-            ),
-            const AppPillButton(label: '完了 (disabled)'),
-          ],
-        ),
+  Widget buildPreview(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    spacing: 12,
+    children: [
+      AppPillButton(
+        label: '完了',
+        onPressed: () {},
+        leading: const Icon(Icons.check),
       ),
-    );
-  }
+      AppPillButton(
+        label: '完了',
+        variant: AppPillButtonVariant.secondary,
+        onPressed: () {},
+        leading: const Icon(Icons.check),
+      ),
+      const AppPillButton(label: '完了 (disabled)'),
+    ],
+  );
 }

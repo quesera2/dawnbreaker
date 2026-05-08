@@ -548,6 +548,24 @@ abstract class AppLocalizations {
   /// **'タスク「{name}」を削除しますか？'**
   String appDetailTaskDeleteConfirm(String name);
 
+  /// No description provided for @appDetailDeleteHistorySuccess.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了記録を削除しました'**
+  String get appDetailDeleteHistorySuccess;
+
+  /// No description provided for @appDetailDeleteHistoryFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'記録を削除できませんでした'**
+  String get appDetailDeleteHistoryFailed;
+
+  /// No description provided for @appDetailDeleteHistoryButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'長押しで削除'**
+  String get appDetailDeleteHistoryButton;
+
   /// No description provided for @onboardingPage1Title.
   ///
   /// In ja, this message translates to:

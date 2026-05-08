@@ -139,4 +139,27 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       );
     }
   }
+
+  Future<void> deleteExecution(TaskItem task, TaskHistory history) async {
+    try {
+      await _repository.deleteExecution(history.id);
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        snackBarMessage: TaskExecutionDeleteSuccess(
+          handler: () => _repository.recordExecution(
+            task.id,
+            executedAt: history.executedAt,
+            comment: history.comment,
+          ),
+        ),
+      );
+    } on TaskRepositoryException {
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        dialogMessage: TaskExecutionDeleteErrorMessage(
+          handler: () => deleteExecution(task, history),
+        ),
+      );
+    }
+  }
 }

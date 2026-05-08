@@ -2,7 +2,7 @@ import 'dart:async' show unawaited;
 
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
-import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
+import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
@@ -61,6 +61,10 @@ abstract final class AppSnackBar {
     text: context.l10n.appDetailUpdateHistorySuccess,
     actionLabel: context.l10n.commonUndo,
   ),
+  TaskExecutionDeleteSuccess() => (
+    text: context.l10n.appDetailDeleteHistorySuccess,
+    actionLabel: context.l10n.commonUndo,
+  ),
   DebugDummyTasksGeneratedMessage() => (
     text: context.l10n.settingsDebugDummyTasksGenerated,
     actionLabel: '',
@@ -74,42 +78,38 @@ abstract final class AppSnackBar {
 @Preview()
 Widget previewSnackBar() => const SnackBarShowCase();
 
-final class SnackBarShowCase extends StatelessWidget {
+final class SnackBarShowCase extends PreviewShowCase {
   const SnackBarShowCase({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return PreviewWrapper(
-      child: ScaffoldMessenger(
-        child: Scaffold(
-          body: Builder(
-            builder: (context) => Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 12,
-                children: [
-                  AppButton(
-                    label: '完了通知',
-                    onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                      AppSnackBar.create(message: '「オイル交換」の完了を記録しました'),
-                    ),
-                  ),
-                  AppButton(
-                    label: '登録通知（取り消しあり）',
-                    onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                      AppSnackBar.createWithAction(
-                        message: '「歯ブラシ交換」を登録しました',
-                        actionLabel: '取り消し',
-                        onAction: () {},
-                      ),
-                    ),
-                  ),
-                ],
+  Widget buildPreview(BuildContext context) => ScaffoldMessenger(
+    child: Scaffold(
+      body: Builder(
+        builder: (context) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 12,
+            children: [
+              AppButton(
+                label: '完了通知',
+                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                  AppSnackBar.create(message: '「オイル交換」の完了を記録しました'),
+                ),
               ),
-            ),
+              AppButton(
+                label: '登録通知（取り消しあり）',
+                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                  AppSnackBar.createWithAction(
+                    message: '「歯ブラシ交換」を登録しました',
+                    actionLabel: '取り消し',
+                    onAction: () {},
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

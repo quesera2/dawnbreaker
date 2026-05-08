@@ -251,8 +251,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String appDetailTaskDeleteConfirm(String name) {
-    return 'Delete task “$name”?';
+    return 'Delete task \"$name\"?';
   }
+
+  @override
+  String get appDetailDeleteHistorySuccess => 'Completion record deleted';
+
+  @override
+  String get appDetailDeleteHistoryFailed => 'Failed to delete record';
+
+  @override
+  String get appDetailDeleteHistoryButton => 'Hold to delete';
 
   @override
   String get onboardingPage1Title =>

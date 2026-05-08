@@ -1,7 +1,7 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
-import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
+import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
@@ -92,11 +92,11 @@ class AppListCell extends StatelessWidget {
 @Preview()
 Widget previewAppListCell() => const AppListCellShowCase();
 
-final class AppListCellShowCase extends StatelessWidget {
+final class AppListCellShowCase extends PreviewShowCase {
   const AppListCellShowCase({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildPreview(BuildContext context) {
     final c = context.appColorScheme;
     Widget cell(AppListCellType type, String label) => AppListCell(
       type: type,
@@ -115,19 +115,14 @@ final class AppListCellShowCase extends StatelessWidget {
       cell(.middle, '3rd line'),
       cell(.bottom, '4th line'),
     ];
-    return PreviewWrapper(
-      child: Material(
-        color: c.bg,
-        child: Padding(
-          padding: const EdgeInsetsGeometry.all(10),
-          child: ListView.separated(
-            itemCount: items.length,
-            itemBuilder: (context, index) => items[index],
-            separatorBuilder: AppListCell.buildSeparator(
-              items,
-              borderColor: c.border,
-            ),
-          ),
+    return Material(
+      type: MaterialType.transparency,
+      child: ListView.separated(
+        itemCount: items.length,
+        itemBuilder: (_, index) => items[index],
+        separatorBuilder: AppListCell.buildSeparator(
+          items,
+          borderColor: c.border,
         ),
       ),
     );

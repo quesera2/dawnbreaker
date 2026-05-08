@@ -178,7 +178,7 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
                 isLast: i == historyAndInterval.length - 1,
                 taskColor: task.color,
                 intervalDays: intervalDays,
-                onTap: () => _showEditSheet(task, entry),
+                onTap: () => _showEditSheet(task, entry, viewModel),
               );
             },
           ),
@@ -187,15 +187,19 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
     );
   }
 
-  void _showEditSheet(TaskItem task, TaskHistory entry) {
+  void _showEditSheet(
+    TaskItem task,
+    TaskHistory entry,
+    AppDetailViewModel viewModel,
+  ) {
     TaskCompleteSheet.show(
       context,
       task: task,
       initialDate: entry.executedAt,
       initialComment: entry.comment,
-      onConfirm: (date, comment) => ref
-          .read(appDetailViewModelProvider(taskId: widget.taskId).notifier)
-          .updateExecution(entry, executedAt: date, comment: comment),
+      onConfirm: (date, comment) =>
+          viewModel.updateExecution(entry, executedAt: date, comment: comment),
+      onDelete: () => viewModel.deleteExecution(task, entry),
     );
   }
 }

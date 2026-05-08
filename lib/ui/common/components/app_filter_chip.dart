@@ -1,7 +1,7 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
-import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
+import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
@@ -70,37 +70,18 @@ class AppFilterChip extends StatelessWidget {
 @Preview()
 Widget previewFilterChip() => const FilterChipShowCase();
 
-final class FilterChipShowCase extends StatelessWidget {
+final class FilterChipShowCase extends PreviewShowCase {
   const FilterChipShowCase({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final c = context.appColorScheme;
-    return PreviewWrapper(
-      child: Container(
-        color: c.bg,
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 6,
-          children: [
-            AppFilterChip(
-              label: 'すべて',
-              isSelected: true,
-              onTap: () {},
-              count: 12,
-            ),
-            AppFilterChip(
-              label: '超過',
-              isSelected: false,
-              onTap: () {},
-              count: 3,
-            ),
-            AppFilterChip(label: '今日', isSelected: false, onTap: () {}),
-            AppFilterChip(label: '7日以内', isSelected: false, onTap: () {}),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget buildPreview(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    spacing: 6,
+    children: [
+      AppFilterChip(label: 'すべて', isSelected: true, onTap: () {}, count: 12),
+      AppFilterChip(label: '超過', isSelected: false, onTap: () {}, count: 3),
+      AppFilterChip(label: '今日', isSelected: false, onTap: () {}),
+      AppFilterChip(label: '7日以内', isSelected: false, onTap: () {}),
+    ],
+  );
 }

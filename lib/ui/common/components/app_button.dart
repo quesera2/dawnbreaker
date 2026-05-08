@@ -1,14 +1,14 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
-import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
-import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
+import 'package:dawnbreaker/ui/common/components/app_button_size.dart';
+import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
-enum AppButtonVariant { primary, secondary, ghost, danger }
+export 'package:dawnbreaker/ui/common/components/app_button_size.dart';
 
-enum AppButtonSize { small, medium, large }
+enum AppButtonVariant { primary, secondary, ghost, danger }
 
 class AppButton extends StatelessWidget {
   const AppButton({
@@ -30,28 +30,12 @@ class AppButton extends StatelessWidget {
   final bool fullWidth;
   final TaskColor? tintColor;
 
-  (double, EdgeInsets, TextStyle) get _sizeConfig => switch (size) {
-    AppButtonSize.small => (
-      32.0,
-      const EdgeInsets.symmetric(horizontal: 12),
-      AppTextStyle.caption,
-    ),
-    AppButtonSize.medium => (
-      40.0,
-      const EdgeInsets.symmetric(horizontal: 16),
-      AppTextStyle.body,
-    ),
-    AppButtonSize.large => (
-      52.0,
-      const EdgeInsets.symmetric(horizontal: 22),
-      AppTextStyle.headline,
-    ),
-  };
-
   @override
   Widget build(BuildContext context) {
     final c = context.appColorScheme;
-    final (height, padding, textStyle) = _sizeConfig;
+    final height = size.height;
+    final padding = size.padding;
+    final textStyle = size.textStyle;
     final minSize = Size(fullWidth ? double.infinity : 0, height);
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadius.md),
@@ -141,124 +125,112 @@ class AppButton extends StatelessWidget {
 @Preview()
 Widget previewButton() => const ButtonShowCase();
 
-final class ButtonShowCase extends StatelessWidget {
+final class ButtonShowCase extends PreviewShowCase {
   const ButtonShowCase({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final c = context.appColorScheme;
-    return PreviewWrapper(
-      child: Container(
-        color: c.bg,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 16,
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 8,
-              children: [
-                AppButton(label: 'Primary', onPressed: () {}),
-                AppButton(
-                  label: 'Secondary',
-                  variant: AppButtonVariant.secondary,
-                  onPressed: () {},
-                ),
-                AppButton(
-                  label: 'Ghost',
-                  variant: AppButtonVariant.ghost,
-                  onPressed: () {},
-                ),
-                AppButton(
-                  label: 'Danger',
-                  variant: AppButtonVariant.danger,
-                  onPressed: () {},
-                ),
-              ],
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              spacing: 8,
-              children: [
-                AppButton(
-                  label: 'Tint',
-                  variant: AppButtonVariant.primary,
-                  onPressed: () {},
-                  tintColor: TaskColor.red,
-                ),
-                AppButton(
-                  label: 'Tint',
-                  variant: AppButtonVariant.primary,
-                  onPressed: () {},
-                  tintColor: TaskColor.blue,
-                ),
-                AppButton(
-                  label: 'Tint',
-                  variant: AppButtonVariant.primary,
-                  onPressed: () {},
-                  tintColor: TaskColor.orange,
-                ),
-                AppButton(
-                  label: 'Tint',
-                  variant: AppButtonVariant.primary,
-                  onPressed: () {},
-                  tintColor: TaskColor.yellow,
-                ),
-                AppButton(
-                  label: 'Tint',
-                  variant: AppButtonVariant.primary,
-                  onPressed: () {},
-                  tintColor: TaskColor.green,
-                ),
-                AppButton(
-                  label: 'Tint',
-                  variant: AppButtonVariant.primary,
-                  onPressed: () {},
-                  tintColor: TaskColor.none,
-                ),
-              ],
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              spacing: 8,
-              children: [
-                AppButton(
-                  label: 'Small',
-                  size: AppButtonSize.small,
-                  onPressed: () {},
-                ),
-                AppButton(label: 'Medium', onPressed: () {}),
-                AppButton(
-                  label: 'Large',
-                  size: AppButtonSize.large,
-                  onPressed: () {},
-                ),
-              ],
-            ),
-            const Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 8,
-              children: [
-                AppButton(label: 'Primary'),
-                AppButton(
-                  label: 'Secondary',
-                  variant: AppButtonVariant.secondary,
-                ),
-                AppButton(label: 'Danger', variant: AppButtonVariant.danger),
-              ],
-            ),
-            AppButton(
-              label: '完了',
-              onPressed: () {},
-              leading: const Icon(Icons.check, size: 16),
-            ),
-          ],
-        ),
+  Widget buildPreview(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    spacing: 16,
+    children: [
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 8,
+        children: [
+          AppButton(label: 'Primary', onPressed: () {}),
+          AppButton(
+            label: 'Secondary',
+            variant: AppButtonVariant.secondary,
+            onPressed: () {},
+          ),
+          AppButton(
+            label: 'Ghost',
+            variant: AppButtonVariant.ghost,
+            onPressed: () {},
+          ),
+          AppButton(
+            label: 'Danger',
+            variant: AppButtonVariant.danger,
+            onPressed: () {},
+          ),
+        ],
       ),
-    );
-  }
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        spacing: 8,
+        children: [
+          AppButton(
+            label: 'Tint',
+            variant: AppButtonVariant.primary,
+            onPressed: () {},
+            tintColor: TaskColor.red,
+          ),
+          AppButton(
+            label: 'Tint',
+            variant: AppButtonVariant.primary,
+            onPressed: () {},
+            tintColor: TaskColor.blue,
+          ),
+          AppButton(
+            label: 'Tint',
+            variant: AppButtonVariant.primary,
+            onPressed: () {},
+            tintColor: TaskColor.orange,
+          ),
+          AppButton(
+            label: 'Tint',
+            variant: AppButtonVariant.primary,
+            onPressed: () {},
+            tintColor: TaskColor.yellow,
+          ),
+          AppButton(
+            label: 'Tint',
+            variant: AppButtonVariant.primary,
+            onPressed: () {},
+            tintColor: TaskColor.green,
+          ),
+          AppButton(
+            label: 'Tint',
+            variant: AppButtonVariant.primary,
+            onPressed: () {},
+            tintColor: TaskColor.none,
+          ),
+        ],
+      ),
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        spacing: 8,
+        children: [
+          AppButton(
+            label: 'Small',
+            size: AppButtonSize.small,
+            onPressed: () {},
+          ),
+          AppButton(label: 'Medium', onPressed: () {}),
+          AppButton(
+            label: 'Large',
+            size: AppButtonSize.large,
+            onPressed: () {},
+          ),
+        ],
+      ),
+      const Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 8,
+        children: [
+          AppButton(label: 'Primary'),
+          AppButton(label: 'Secondary', variant: AppButtonVariant.secondary),
+          AppButton(label: 'Danger', variant: AppButtonVariant.danger),
+        ],
+      ),
+      AppButton(
+        label: '完了',
+        onPressed: () {},
+        leading: const Icon(Icons.check, size: 16),
+      ),
+    ],
+  );
 }

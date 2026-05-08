@@ -6,6 +6,7 @@ import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_input.dart';
+import 'package:dawnbreaker/ui/common/components/app_long_press_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:flutter/cupertino.dart';
@@ -17,12 +18,14 @@ class TaskCompleteSheet extends StatefulWidget {
     super.key,
     required this.task,
     required this.onConfirm,
+    this.onDelete,
     this.initialDate,
     this.initialComment,
   });
 
   final TaskItem task;
   final void Function(DateTime date, String? comment) onConfirm;
+  final VoidCallback? onDelete;
   final DateTime? initialDate;
   final String? initialComment;
 
@@ -30,15 +33,17 @@ class TaskCompleteSheet extends StatefulWidget {
     BuildContext context, {
     required TaskItem task,
     required void Function(DateTime date, String? comment) onConfirm,
+    VoidCallback? onDelete,
     DateTime? initialDate,
     String? initialComment,
   }) => showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (_) => TaskCompleteSheet(
+    builder: (ctx) => TaskCompleteSheet(
       task: task,
       onConfirm: onConfirm,
+      onDelete: onDelete,
       initialDate: initialDate,
       initialComment: initialComment,
     ),
@@ -86,7 +91,21 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
             const SizedBox(height: 16),
             ..._commentArea,
             const SizedBox(height: 24),
-            _buttonArea,
+            _buttonArea(
+              onConfirm: () {
+                Navigator.of(context).pop();
+                final comment = _commentController.text.trim();
+                widget.onConfirm(
+                  _selectedDate,
+                  comment.isEmpty ? null : comment,
+                );
+              },
+              onDelete: () {
+                Navigator.of(context).pop();
+                widget.onDelete?.call();
+              },
+              onCancel: () => Navigator.of(context).pop(),
+            ),
           ],
         ),
       ),
@@ -162,37 +181,62 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
     ];
   }
 
-  Widget get _buttonArea {
-    return Row(
-      children: [
-        Expanded(
-          flex: 2,
-          child: AppButton(
+  Widget _buttonArea({
+    required VoidCallback onConfirm,
+    required VoidCallback onDelete,
+    required VoidCallback onCancel,
+  }) {
+    if (widget.initialDate == null) {
+      return Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: AppButton(
+              label: context.l10n.commonCancel,
+              variant: AppButtonVariant.secondary,
+              size: AppButtonSize.large,
+              fullWidth: true,
+              onPressed: onCancel,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            flex: 3,
+            child: AppButton(
+              label: context.l10n.homeCompleteRecord,
+              size: AppButtonSize.large,
+              fullWidth: true,
+              onPressed: onConfirm,
+              tintColor: widget.task.color,
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        spacing: 8,
+        children: [
+          AppButton(
+            label: context.l10n.editorSaveEdit,
+            size: AppButtonSize.large,
+            fullWidth: true,
+            onPressed: onConfirm,
+            tintColor: widget.task.color,
+          ),
+          AppLongPressButton(
+            label: context.l10n.appDetailDeleteHistoryButton,
+            size: AppButtonSize.large,
+            onLongPress: onDelete,
+          ),
+          AppButton(
             label: context.l10n.commonCancel,
             variant: AppButtonVariant.secondary,
             size: AppButtonSize.large,
             fullWidth: true,
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: onCancel,
           ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          flex: 3,
-          child: AppButton(
-            label: widget.initialDate != null
-                ? context.l10n.editorSaveEdit
-                : context.l10n.homeCompleteRecord,
-            size: AppButtonSize.large,
-            fullWidth: true,
-            onPressed: () {
-              Navigator.of(context).pop();
-              final comment = _commentController.text.trim();
-              widget.onConfirm(_selectedDate, comment.isEmpty ? null : comment);
-            },
-            tintColor: widget.task.color,
-          ),
-        ),
-      ],
-    );
+        ],
+      );
+    }
   }
 }

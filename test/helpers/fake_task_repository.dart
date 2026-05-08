@@ -14,7 +14,7 @@ class FakeTaskRepository implements TaskRepository {
     this.shouldThrow = false,
   }) : _tasks = List.of(initialTasks);
 
-  final bool shouldThrow;
+  bool shouldThrow;
   final List<TaskItem> _tasks;
   final _controller = StreamController<List<TaskItem>>.broadcast();
   int _nextId = 100;

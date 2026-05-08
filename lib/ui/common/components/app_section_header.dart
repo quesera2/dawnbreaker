@@ -1,6 +1,6 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
-import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
+import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
@@ -56,39 +56,25 @@ class AppSectionHeader extends StatelessWidget {
 @Preview()
 Widget previewProgressBar() => const AppSectionHeaderShowCase();
 
-final class AppSectionHeaderShowCase extends StatelessWidget {
+final class AppSectionHeaderShowCase extends PreviewShowCase {
   const AppSectionHeaderShowCase({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final c = context.appColorScheme;
-    return PreviewWrapper(
-      child: Container(
-        color: c.bg,
-        padding: const EdgeInsets.all(24),
-        child: const SizedBox(
-          width: 320,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            spacing: 16,
-            children: [
-              AppSectionHeader(title: Text('タイトルのみ')),
-              AppSectionHeader(
-                title: Text('タイトルのみ長い文章長い文章長い文章長い文章長い文章長い文章長い文章'),
-              ),
-              AppSectionHeader(
-                title: Text('タイトルとサブタイトル'),
-                subTitle: Text('サブタイトル'),
-              ),
-              AppSectionHeader(
-                title: Text('前景色・背景色指定', style: TextStyle(color: Colors.white)),
-                backgroundColor: Colors.red,
-              ),
-            ],
-          ),
+  Widget buildPreview(BuildContext context) => const SizedBox(
+    width: 320,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      spacing: 16,
+      children: [
+        AppSectionHeader(title: Text('タイトルのみ')),
+        AppSectionHeader(title: Text('タイトルのみ長い文章長い文章長い文章長い文章長い文章長い文章長い文章')),
+        AppSectionHeader(title: Text('タイトルとサブタイトル'), subTitle: Text('サブタイトル')),
+        AppSectionHeader(
+          title: Text('前景色・背景色指定', style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red,
         ),
-      ),
-    );
-  }
+      ],
+    ),
+  );
 }

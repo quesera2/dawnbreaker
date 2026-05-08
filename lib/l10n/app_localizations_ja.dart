@@ -254,6 +254,15 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get appDetailDeleteHistorySuccess => '完了記録を削除しました';
+
+  @override
+  String get appDetailDeleteHistoryFailed => '記録を削除できませんでした';
+
+  @override
+  String get appDetailDeleteHistoryButton => '長押しで削除';
+
+  @override
   String get onboardingPage1Title => 'いつやるんだっけ？　の悩みをなくす';
 
   @override

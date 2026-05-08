@@ -1,6 +1,6 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
-import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
+import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
@@ -46,43 +46,38 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
 @Preview()
 Widget previewAppAppBar() => const AppAppBarShowCase();
 
-final class AppAppBarShowCase extends StatelessWidget {
+final class AppAppBarShowCase extends PreviewShowCase {
   const AppAppBarShowCase({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildPreview(BuildContext context) {
     final c = context.appColorScheme;
-    return PreviewWrapper(
-      child: ColoredBox(
-        color: c.bg,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const AppAppBar(title: 'タイトルのみ'),
-            Divider(height: 1, color: c.divider),
-            AppAppBar(
-              title: 'アクションあり',
-              actions: [
-                AppIconButton(onTap: () {}, icon: Icons.add),
-                const SizedBox(width: 8),
-                AppIconButton(onTap: () {}, icon: Icons.settings_outlined),
-                const SizedBox(width: 4),
-              ],
-            ),
-            Divider(height: 1, color: c.divider),
-            AppAppBar(title: '戻るボタンあり', onBack: () {}),
-            Divider(height: 1, color: c.divider),
-            AppAppBar(
-              title: 'すべてあり',
-              onBack: () {},
-              actions: [
-                AppIconButton(onTap: () {}, icon: Icons.more_vert),
-                const SizedBox(width: 4),
-              ],
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const AppAppBar(title: 'タイトルのみ'),
+        Divider(height: 1, color: c.divider),
+        AppAppBar(
+          title: 'アクションあり',
+          actions: [
+            AppIconButton(onTap: () {}, icon: Icons.add),
+            const SizedBox(width: 8),
+            AppIconButton(onTap: () {}, icon: Icons.settings_outlined),
+            const SizedBox(width: 4),
           ],
         ),
-      ),
+        Divider(height: 1, color: c.divider),
+        AppAppBar(title: '戻るボタンあり', onBack: () {}),
+        Divider(height: 1, color: c.divider),
+        AppAppBar(
+          title: 'すべてあり',
+          onBack: () {},
+          actions: [
+            AppIconButton(onTap: () {}, icon: Icons.more_vert),
+            const SizedBox(width: 4),
+          ],
+        ),
+      ],
     );
   }
 }

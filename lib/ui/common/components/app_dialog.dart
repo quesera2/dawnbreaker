@@ -1,7 +1,6 @@
-import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
-import 'package:dawnbreaker/ui/common/components/preview_wrapper.dart';
+import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
@@ -66,6 +65,11 @@ class AppDialog extends StatelessWidget {
   TaskDeleteErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.taskErrorDeleteFailed,
+    actionLabel: context.l10n.commonRetry,
+  ),
+  TaskExecutionDeleteErrorMessage() => (
+    title: context.l10n.commonErrorTitle,
+    messageText: context.l10n.appDetailDeleteHistoryFailed,
     actionLabel: context.l10n.commonRetry,
   ),
   DeleteTaskConfirmMessage(:final taskName) => (
@@ -139,71 +143,62 @@ List<Widget> _buildActions(
 @Preview()
 Widget previewAppDialog() => const DialogShowCase();
 
-final class DialogShowCase extends StatelessWidget {
+final class DialogShowCase extends PreviewShowCase {
   const DialogShowCase({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final c = context.appColorScheme;
-    return PreviewWrapper(
-      child: Container(
-        color: c.bg,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 24,
-          children: [
-            AppDialog(
-              title: 'エラー',
-              message: '読み込みに失敗しました。',
-              actions: [
-                AppButton(
-                  label: 'OK',
-                  variant: .secondary,
-                  size: .medium,
-                  onPressed: () {},
-                ),
-              ],
-            ),
-            AppDialog(
-              title: 'エラー',
-              message: '読み込みに失敗しました。',
-              actions: [
-                AppButton(
-                  label: 'キャンセル',
-                  variant: .secondary,
-                  size: .medium,
-                  onPressed: () {},
-                ),
-                AppButton(
-                  label: '再試行',
-                  variant: .primary,
-                  size: .medium,
-                  onPressed: () {},
-                ),
-              ],
-            ),
-            AppDialog(
-              title: '確認',
-              message: 'タスクを削除しますか？',
-              actions: [
-                AppButton(
-                  label: 'キャンセル',
-                  variant: .secondary,
-                  size: .medium,
-                  onPressed: () {},
-                ),
-                AppButton(
-                  label: '削除',
-                  variant: .danger,
-                  size: .medium,
-                  onPressed: () {},
-                ),
-              ],
-            ),
-          ],
-        ),
+  Widget buildPreview(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    spacing: 24,
+    children: [
+      AppDialog(
+        title: 'エラー',
+        message: '読み込みに失敗しました。',
+        actions: [
+          AppButton(
+            label: 'OK',
+            variant: .secondary,
+            size: .medium,
+            onPressed: () {},
+          ),
+        ],
       ),
-    );
-  }
+      AppDialog(
+        title: 'エラー',
+        message: '読み込みに失敗しました。',
+        actions: [
+          AppButton(
+            label: 'キャンセル',
+            variant: .secondary,
+            size: .medium,
+            onPressed: () {},
+          ),
+          AppButton(
+            label: '再試行',
+            variant: .primary,
+            size: .medium,
+            onPressed: () {},
+          ),
+        ],
+      ),
+      AppDialog(
+        title: '確認',
+        message: 'タスクを削除しますか？',
+        actions: [
+          AppButton(
+            label: 'キャンセル',
+            variant: .secondary,
+            size: .medium,
+            onPressed: () {},
+          ),
+          AppButton(
+            label: '削除',
+            variant: .danger,
+            size: .medium,
+            onPressed: () {},
+          ),
+        ],
+      ),
+    ],
+  );
 }
