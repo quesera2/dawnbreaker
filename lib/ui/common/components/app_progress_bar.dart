@@ -283,33 +283,24 @@ class _BlinkBarState extends State<_BlinkBar>
 @Preview()
 Widget previewProgressBar() => const ProgressBarShowCase();
 
-final class ProgressBarShowCase extends StatelessWidget {
+final class ProgressBarShowCase extends PreviewShowCase {
   const ProgressBarShowCase({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final c = context.appColorScheme;
-    return PreviewWrapper(
-      child: Container(
-        color: c.bg,
-        padding: const EdgeInsets.all(24),
-        child: const SizedBox(
-          width: 320,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            spacing: 16,
-            children: [
-              AppProgressBar(value: 0.15),
-              AppProgressBar(value: 0.25),
-              AppProgressBar(value: 0.55),
-              AppProgressBar(value: 0.85),
-              AppProgressBar(value: 1.0, isOverdue: false),
-              AppProgressBar(value: 1.0, isOverdue: true),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Widget buildPreview(BuildContext context) => const SizedBox(
+    width: 320,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      spacing: 16,
+      children: [
+        AppProgressBar(value: 0.15),
+        AppProgressBar(value: 0.25),
+        AppProgressBar(value: 0.55),
+        AppProgressBar(value: 0.85),
+        AppProgressBar(value: 1.0, isOverdue: false),
+        AppProgressBar(value: 1.0, isOverdue: true),
+      ],
+    ),
+  );
 }

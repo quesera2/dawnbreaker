@@ -74,42 +74,38 @@ abstract final class AppSnackBar {
 @Preview()
 Widget previewSnackBar() => const SnackBarShowCase();
 
-final class SnackBarShowCase extends StatelessWidget {
+final class SnackBarShowCase extends PreviewShowCase {
   const SnackBarShowCase({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return PreviewWrapper(
-      child: ScaffoldMessenger(
-        child: Scaffold(
-          body: Builder(
-            builder: (context) => Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 12,
-                children: [
-                  AppButton(
-                    label: '完了通知',
-                    onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                      AppSnackBar.create(message: '「オイル交換」の完了を記録しました'),
-                    ),
-                  ),
-                  AppButton(
-                    label: '登録通知（取り消しあり）',
-                    onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                      AppSnackBar.createWithAction(
-                        message: '「歯ブラシ交換」を登録しました',
-                        actionLabel: '取り消し',
-                        onAction: () {},
-                      ),
-                    ),
-                  ),
-                ],
+  Widget buildPreview(BuildContext context) => ScaffoldMessenger(
+    child: Scaffold(
+      body: Builder(
+        builder: (context) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 12,
+            children: [
+              AppButton(
+                label: '完了通知',
+                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                  AppSnackBar.create(message: '「オイル交換」の完了を記録しました'),
+                ),
               ),
-            ),
+              AppButton(
+                label: '登録通知（取り消しあり）',
+                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                  AppSnackBar.createWithAction(
+                    message: '「歯ブラシ交換」を登録しました',
+                    actionLabel: '取り消し',
+                    onAction: () {},
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

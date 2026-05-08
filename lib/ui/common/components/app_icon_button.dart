@@ -93,26 +93,16 @@ extension _AppIconButtonTone on AppColorScheme {
 @Preview()
 Widget previewIconButton() => const IconButtonShowCase();
 
-final class IconButtonShowCase extends StatelessWidget {
+final class IconButtonShowCase extends PreviewShowCase {
   const IconButtonShowCase({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final colorScheme = context.appColorScheme;
-    return PreviewWrapper(
-      child: Container(
-        color: colorScheme.bg,
-        padding: const EdgeInsets.all(18),
-        alignment: Alignment.center,
-        child: Row(
-          spacing: 6,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppIconButton(icon: Icons.add_ic_call_outlined, onTap: () {}),
-            AppIconButton(icon: Icons.edit, label: '編集', onTap: () {}),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget buildPreview(BuildContext context) => Row(
+    spacing: 6,
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      AppIconButton(icon: Icons.add_ic_call_outlined, onTap: () {}),
+      AppIconButton(icon: Icons.edit, label: '編集', onTap: () {}),
+    ],
+  );
 }

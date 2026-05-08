@@ -56,30 +56,20 @@ class AppBadge extends StatelessWidget {
 @Preview()
 Widget previewAllTones() => const LabelShowCase();
 
-final class LabelShowCase extends StatelessWidget {
+final class LabelShowCase extends PreviewShowCase {
   const LabelShowCase({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final colorScheme = context.appColorScheme;
-    return PreviewWrapper(
-      child: Container(
-        color: colorScheme.bg,
-        padding: const EdgeInsets.all(18),
-        alignment: Alignment.center,
-        child: const Row(
-          spacing: 6,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppBadge(label: '中立', tone: AppBadgeTone.neutral),
-            AppBadge(label: '11日超過', tone: AppBadgeTone.danger),
-            AppBadge(label: '今日', tone: AppBadgeTone.warning),
-            AppBadge(label: '完了', tone: AppBadgeTone.success),
-            AppBadge(label: '情報', tone: AppBadgeTone.info),
-            AppBadge(label: '残り6日', tone: AppBadgeTone.primary),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget buildPreview(BuildContext context) => const Row(
+    spacing: 6,
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      AppBadge(label: '中立', tone: AppBadgeTone.neutral),
+      AppBadge(label: '11日超過', tone: AppBadgeTone.danger),
+      AppBadge(label: '今日', tone: AppBadgeTone.warning),
+      AppBadge(label: '完了', tone: AppBadgeTone.success),
+      AppBadge(label: '情報', tone: AppBadgeTone.info),
+      AppBadge(label: '残り6日', tone: AppBadgeTone.primary),
+    ],
+  );
 }
