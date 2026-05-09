@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/ui/settings/viewmodel/settings_ui_state.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,7 @@ void main() {
 
   group('SettingsViewModel', () {
     late ProviderContainer container;
+    late SettingsUiState viewState;
 
     setUp(() {
       PackageInfo.setMockInitialValues(
@@ -36,16 +38,20 @@ void main() {
 
     group('ロード後', () {
       setUp(() async {
-        container.read(settingsViewModelProvider);
+        container.listen(
+          settingsViewModelProvider,
+          (_, next) => viewState = next,
+          fireImmediately: true,
+        );
         await Future<void>.microtask(() {});
       });
 
       test('バージョンが表示される', () {
-        expect(container.read(settingsViewModelProvider).version, '1.2.3');
+        expect(viewState.version, '1.2.3');
       });
 
       test('読み込みが完了している', () {
-        expect(container.read(settingsViewModelProvider).isLoading, false);
+        expect(viewState.isLoading, false);
       });
     });
   });

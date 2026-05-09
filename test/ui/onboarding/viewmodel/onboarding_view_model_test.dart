@@ -14,6 +14,17 @@ void main() {
   group('OnboardingViewModel', () {
     late ProviderContainer container;
     late FakeOnboardingRepository fakeRepository;
+    late OnboardingViewModel viewModel;
+    late OnboardingUiState viewState;
+
+    void setUpState({OnboardingMode mode = .initial}) {
+      viewModel = container.read(onboardingViewModelProvider(mode: mode).notifier);
+      container.listen(
+        onboardingViewModelProvider(mode: mode),
+        (_, next) => viewState = next,
+        fireImmediately: true,
+      );
+    }
 
     setUp(() {
       fakeRepository = FakeOnboardingRepository();
@@ -27,25 +38,18 @@ void main() {
     tearDown(() => container.dispose());
 
     group('初期状態', () {
+      setUp(setUpState);
+
       test('ボタンが操作可能な状態である', () {
-        final state = container.read(
-          onboardingViewModelProvider(mode: .initial),
-        );
-        expect(state.isLoading, false);
+        expect(viewState.isLoading, false);
       });
 
       test('遷移先が決まっていない', () {
-        final state = container.read(
-          onboardingViewModelProvider(mode: .initial),
-        );
-        expect(state.destination, isNull);
+        expect(viewState.destination, isNull);
       });
 
       test('エラーがない', () {
-        final state = container.read(
-          onboardingViewModelProvider(mode: .initial),
-        );
-        expect(state.dialogMessage, isNull);
+        expect(viewState.dialogMessage, isNull);
       });
     });
 
@@ -64,105 +68,73 @@ void main() {
           ),
         ]) {
           test(description, () async {
-            await container
-                .read(onboardingViewModelProvider(mode: mode).notifier)
-                .onClickDone();
-            final state = container.read(
-              onboardingViewModelProvider(mode: mode),
-            );
-            expect(state.destination, expected);
+            setUpState(mode: mode);
+            await viewModel.onClickDone();
+            expect(viewState.destination, expected);
           });
         }
 
         test('遷移完了まで操作できない状態のままである', () async {
-          await container
-              .read(onboardingViewModelProvider(mode: .initial).notifier)
-              .onClickDone();
-          final state = container.read(
-            onboardingViewModelProvider(mode: .initial),
-          );
-          expect(state.isLoading, true);
+          setUpState();
+          await viewModel.onClickDone();
+          expect(viewState.isLoading, true);
         });
       });
 
       group('異常系', () {
-        setUp(() => fakeRepository.shouldThrow = true);
+        setUp(() {
+          fakeRepository.shouldThrow = true;
+          setUpState();
+        });
 
         test('エラーが通知される', () async {
-          await container
-              .read(onboardingViewModelProvider(mode: .initial).notifier)
-              .onClickDone();
-          final state = container.read(
-            onboardingViewModelProvider(mode: .initial),
-          );
-          expect(state.dialogMessage, isA<OnboardingSaveErrorMessage>());
+          await viewModel.onClickDone();
+          expect(viewState.dialogMessage, isA<OnboardingSaveErrorMessage>());
         });
 
         test('ボタンが操作可能な状態に戻る', () async {
-          await container
-              .read(onboardingViewModelProvider(mode: .initial).notifier)
-              .onClickDone();
-          final state = container.read(
-            onboardingViewModelProvider(mode: .initial),
-          );
-          expect(state.isLoading, false);
+          await viewModel.onClickDone();
+          expect(viewState.isLoading, false);
         });
 
         test('画面遷移しない', () async {
-          await container
-              .read(onboardingViewModelProvider(mode: .initial).notifier)
-              .onClickDone();
-          final state = container.read(
-            onboardingViewModelProvider(mode: .initial),
-          );
-          expect(state.destination, isNull);
+          await viewModel.onClickDone();
+          expect(viewState.destination, isNull);
         });
       });
     });
 
     group('onClickSkip', () {
       group('正常系', () {
+        setUp(setUpState);
+
         test('ホーム画面に遷移する', () async {
-          await container
-              .read(onboardingViewModelProvider(mode: .initial).notifier)
-              .onClickSkip();
-          final state = container.read(
-            onboardingViewModelProvider(mode: .initial),
-          );
-          expect(state.destination, OnboardingDestination.home);
+          await viewModel.onClickSkip();
+          expect(viewState.destination, OnboardingDestination.home);
         });
       });
 
       group('異常系', () {
         test('設定画面からスキップすることはできない', () {
+          setUpState(mode: .fromSettings);
           expect(
-            () => container
-                .read(onboardingViewModelProvider(mode: .fromSettings).notifier)
-                .onClickSkip(),
+            () => viewModel.onClickSkip(),
             throwsStateError,
           );
         });
 
         test('エラーが通知される', () async {
           fakeRepository.shouldThrow = true;
-          await container
-              .read(onboardingViewModelProvider(mode: .initial).notifier)
-              .onClickSkip();
-          final state = container.read(
-            onboardingViewModelProvider(mode: .initial),
-          );
-          expect(state.dialogMessage, isA<OnboardingSaveErrorMessage>());
+          setUpState();
+          await viewModel.onClickSkip();
+          expect(viewState.dialogMessage, isA<OnboardingSaveErrorMessage>());
         });
 
         test('ボタンが操作可能な状態に戻る', () async {
           fakeRepository.shouldThrow = true;
-          await container
-              .read(onboardingViewModelProvider(mode: .initial).notifier)
-              .onClickSkip();
-          final state = container.read(
-            onboardingViewModelProvider(mode: .initial),
-          );
-          expect(state.isLoading, false);
+          setUpState();
+          await viewModel.onClickSkip();
+          expect(viewState.isLoading, false);
         });
       });
     });
