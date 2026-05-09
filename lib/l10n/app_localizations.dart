@@ -308,12 +308,6 @@ abstract class AppLocalizations {
   /// **'読み込みに失敗しました'**
   String get taskErrorLoadFailed;
 
-  /// No description provided for @taskErrorNotFound.
-  ///
-  /// In ja, this message translates to:
-  /// **'タスクが見つかりません'**
-  String get taskErrorNotFound;
-
   /// No description provided for @taskErrorSaveFailed.
   ///
   /// In ja, this message translates to:

@@ -120,9 +120,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taskErrorLoadFailed => 'Failed to load';
 
   @override
-  String get taskErrorNotFound => 'Task not found';
-
-  @override
   String get taskErrorSaveFailed => 'Failed to save';
 
   @override

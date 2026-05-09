@@ -120,9 +120,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get taskErrorLoadFailed => '読み込みに失敗しました';
 
   @override
-  String get taskErrorNotFound => 'タスクが見つかりません';
-
-  @override
   String get taskErrorSaveFailed => '保存に失敗しました';
 
   @override

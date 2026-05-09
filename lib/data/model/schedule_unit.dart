@@ -8,9 +8,9 @@ enum ScheduleUnit {
 
   /// [value] 日後の DateTime を返す
   DateTime addTo(DateTime base, int value) => switch (this) {
-    ScheduleUnit.day => base.add(Duration(days: value)),
-    ScheduleUnit.week => base.add(Duration(days: value * 7)),
-    ScheduleUnit.month => DateTime(
+    .day => base.add(Duration(days: value)),
+    .week => base.add(Duration(days: value * 7)),
+    .month => DateTime(
       base.year,
       base.month + value,
       base.day,
@@ -20,9 +20,11 @@ enum ScheduleUnit {
     ),
   };
 
+  // coverage:ignore-start
   String label(BuildContext context) => switch (this) {
-    ScheduleUnit.day => context.l10n.commonUnitDay,
-    ScheduleUnit.week => context.l10n.commonUnitWeek,
-    ScheduleUnit.month => context.l10n.commonUnitMonth,
+    .day => context.l10n.commonUnitDay,
+    .week => context.l10n.commonUnitWeek,
+    .month => context.l10n.commonUnitMonth,
   };
+  // coverage:ignore-end
 }

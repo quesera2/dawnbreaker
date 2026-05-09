@@ -77,11 +77,6 @@ class AppDialog extends StatelessWidget {
     messageText: context.l10n.appDetailTaskDeleteConfirm(taskName),
     actionLabel: context.l10n.commonDelete,
   ),
-  TaskNotFoundErrorMessage() => (
-    title: context.l10n.commonErrorTitle,
-    messageText: context.l10n.taskErrorNotFound,
-    actionLabel: '',
-  ),
   TaskInvalidArgumentErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.taskErrorInvalidArgument,
