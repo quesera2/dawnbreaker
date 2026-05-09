@@ -31,28 +31,6 @@ void main() {
 
   tearDown(() => db.close());
 
-  group('DBが異常な場合', () {
-    test('タスク一覧の取得がエラーになる', () async {
-      // DB に直接 scheduled タスクを挿入（taskScheduledConfigs なし）
-      await db
-          .into(db.taskDefinitions)
-          .insert(
-            TaskDefinitionsCompanion.insert(
-              taskType: TaskType.scheduled,
-              name: 'config なしタスク',
-              furigana: '',
-              icon: '📝',
-              color: TaskColor.none,
-            ),
-          );
-
-      await expectLater(
-        repository.allTaskItems(),
-        emitsError(isA<TaskNotFoundException>()),
-      );
-    });
-  });
-
   group('データベースエラー時の異常系', () {
     setUp(() async {
       await db.select(db.taskDefinitions).get();
@@ -67,7 +45,6 @@ void main() {
             name: 'x',
             icon: '📝',
             color: TaskColor.none,
-            executedAt: DateTime.now(),
           ),
           throwsA(isA<TaskSaveException>()),
         );
@@ -152,85 +129,130 @@ void main() {
     });
   });
 
-  group('allTaskItems ソート順', () {
-    test('次回予定日が早いタスクが先に来る', () async {
-      // 後の scheduledAt を先に追加して、ソートで前に来ることを確認
-      await repository.addTask(
-        taskType: TaskType.scheduled,
-        name: 'タスクB',
-        icon: '📝',
-        color: TaskColor.none,
-        scheduleValue: 7,
-        scheduleUnit: ScheduleUnit.day,
-        executedAt: DateTime(2025, 1, 15), // scheduledAt = 1/22
-      );
-      await repository.addTask(
-        taskType: TaskType.scheduled,
-        name: 'タスクA',
-        icon: '📝',
-        color: TaskColor.none,
-        scheduleValue: 7,
-        scheduleUnit: ScheduleUnit.day,
-        executedAt: DateTime(2025, 1, 1), // scheduledAt = 1/8
-      );
+  group('allTaskItems', () {
+    group('DBが異常な場合', () {
+      setUp(() async {
+        await db
+            .into(db.taskDefinitions)
+            .insert(
+              TaskDefinitionsCompanion.insert(
+                taskType: TaskType.scheduled,
+                name: 'config なしタスク',
+                furigana: '',
+                icon: '📝',
+                color: TaskColor.none,
+              ),
+            );
+      });
 
-      final tasks = await repository.allTaskItems().first;
-      expect(tasks[0].name, 'タスクA'); // scheduledAt=1/8 が先
-      expect(tasks[1].name, 'タスクB'); // scheduledAt=1/22 が後
+      test('タスク一覧の取得がエラーになる', () async {
+        await expectLater(
+          repository.allTaskItems(),
+          emitsError(isA<TaskNotFoundException>()),
+        );
+      });
     });
 
-    test('次回予定日がないタスクは末尾に来る', () async {
-      // PeriodTask 履歴1件 → scheduledAt=null
-      await repository.addTask(
-        taskType: TaskType.period,
-        name: '不定期タスク',
-        icon: '📝',
-        color: TaskColor.none,
-        executedAt: DateTime(2025, 1, 1),
-      );
-      await repository.addTask(
-        taskType: TaskType.scheduled,
-        name: '定期タスク',
-        icon: '📝',
-        color: TaskColor.none,
-        scheduleValue: 7,
-        scheduleUnit: ScheduleUnit.day,
-        executedAt: DateTime(2025, 1, 1),
-      );
+    group('ソート順', () {
+      group('次回予定日が異なる場合', () {
+        setUp(() async {
+          final idB = await repository.addTask(
+            taskType: TaskType.scheduled,
+            name: 'タスクB',
+            icon: '📝',
+            color: TaskColor.none,
+            scheduleValue: 7,
+            scheduleUnit: ScheduleUnit.day,
+          );
+          await repository.recordExecution(
+            idB,
+            executedAt: DateTime(2025, 1, 15),
+          ); // scheduledAt = 1/22
 
-      final tasks = await repository.allTaskItems().first;
-      expect(tasks[0].name, '定期タスク'); // scheduledAt あり
-      expect(tasks[1].name, '不定期タスク'); // scheduledAt=null → 末尾
-    });
+          final idA = await repository.addTask(
+            taskType: TaskType.scheduled,
+            name: 'タスクA',
+            icon: '📝',
+            color: TaskColor.none,
+            scheduleValue: 7,
+            scheduleUnit: ScheduleUnit.day,
+          );
+          await repository.recordExecution(
+            idA,
+            executedAt: DateTime(2025, 1, 1),
+          ); // scheduledAt = 1/8
+        });
 
-    test('次回予定日がないタスクが複数あるとき全て末尾に集まる', () async {
-      await repository.addTask(
-        taskType: TaskType.scheduled,
-        name: '定期タスク',
-        icon: '📝',
-        color: TaskColor.none,
-        scheduleValue: 7,
-        scheduleUnit: ScheduleUnit.day,
-        executedAt: DateTime(2025, 1, 1),
-      );
-      await repository.addTask(
-        taskType: TaskType.period,
-        name: '不定期A',
-        icon: '📝',
-        color: TaskColor.none,
-        executedAt: DateTime(2025, 1, 1),
-      );
-      await repository.addTask(
-        taskType: TaskType.period,
-        name: '不定期B',
-        icon: '📝',
-        color: TaskColor.none,
-        executedAt: DateTime(2025, 1, 1),
-      );
+        test('次回予定日が早いタスクが先に来る', () async {
+          final tasks = await repository.allTaskItems().first;
+          expect(tasks[0].name, 'タスクA');
+          expect(tasks[1].name, 'タスクB');
+        });
+      });
 
-      final tasks = await repository.allTaskItems().first;
-      expect(tasks[0].name, '定期タスク');
-      expect(tasks.skip(1).map((t) => t.name).toSet(), {'不定期A', '不定期B'});
+      group('次回予定日がないタスクが混在する場合', () {
+        setUp(() async {
+          await repository.addTask(
+            taskType: TaskType.period,
+            name: '不定期タスク',
+            icon: '📝',
+            color: TaskColor.none,
+          );
+          final idS = await repository.addTask(
+            taskType: TaskType.scheduled,
+            name: '定期タスク',
+            icon: '📝',
+            color: TaskColor.none,
+            scheduleValue: 7,
+            scheduleUnit: ScheduleUnit.day,
+          );
+          await repository.recordExecution(
+            idS,
+            executedAt: DateTime(2025, 1, 1),
+          );
+        });
+
+        test('次回予定日がないタスクは末尾に来る', () async {
+          final tasks = await repository.allTaskItems().first;
+          expect(tasks[0].name, '定期タスク');
+          expect(tasks[1].name, '不定期タスク');
+        });
+      });
+
+      group('次回予定日がないタスクが複数ある場合', () {
+        setUp(() async {
+          final idS = await repository.addTask(
+            taskType: TaskType.scheduled,
+            name: '定期タスク',
+            icon: '📝',
+            color: TaskColor.none,
+            scheduleValue: 7,
+            scheduleUnit: ScheduleUnit.day,
+          );
+          await repository.recordExecution(
+            idS,
+            executedAt: DateTime(2025, 1, 1),
+          );
+          await repository.addTask(
+            taskType: TaskType.period,
+            name: '不定期A',
+            icon: '📝',
+            color: TaskColor.none,
+          );
+          await repository.addTask(
+            taskType: TaskType.period,
+            name: '不定期B',
+            icon: '📝',
+            color: TaskColor.none,
+          );
+        });
+
+        test('全て末尾に集まる', () async {
+          final tasks = await repository.allTaskItems().first;
+          expect(tasks[0].name, '定期タスク');
+          expect(tasks.skip(1).map((t) => t.name).toSet(), {'不定期A', '不定期B'});
+        });
+      });
     });
   });
 
@@ -241,7 +263,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime.now(),
       );
       final tasks = await repository.allTaskItems().first;
 
@@ -251,7 +272,7 @@ void main() {
       expect(task.name, '散髪');
       expect(task.furigana, 'さんぱつ');
       expect(task.color, TaskColor.none);
-      expect(task.taskHistory, hasLength(1));
+      expect(task.taskHistory, isEmpty);
     });
 
     test('scheduled タスクを追加できる', () async {
@@ -262,7 +283,6 @@ void main() {
         color: TaskColor.orange,
         scheduleValue: 2,
         scheduleUnit: ScheduleUnit.week,
-        executedAt: DateTime.now(),
       );
       final tasks = await repository.allTaskItems().first;
 
@@ -272,7 +292,7 @@ void main() {
       expect(task.furigana, 'むしよけこうかん');
       expect(task.scheduleValue, 2);
       expect(task.scheduleUnit, ScheduleUnit.week);
-      expect(task.taskHistory, hasLength(1));
+      expect(task.taskHistory, isEmpty);
     });
 
     test('irregular タスクを追加できる', () async {
@@ -281,7 +301,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime.now(),
       );
       final tasks = await repository.allTaskItems().first;
 
@@ -299,7 +318,6 @@ void main() {
           name: '虫避け交換',
           icon: '📝',
           color: TaskColor.orange,
-          executedAt: DateTime.now(),
         ),
         throwsA(isA<TaskRepositoryException>()),
       );
@@ -313,7 +331,6 @@ void main() {
         name: '散髪',
         icon: '✂️',
         color: TaskColor.none,
-        executedAt: DateTime.now(),
       );
 
       final task = await repository.findTaskById(id);
@@ -331,7 +348,6 @@ void main() {
         color: TaskColor.orange,
         scheduleValue: 2,
         scheduleUnit: ScheduleUnit.week,
-        executedAt: DateTime.now(),
       );
 
       final task = await repository.findTaskById(id) as ScheduledTaskItem;
@@ -355,12 +371,11 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime(2025, 1, 1),
       );
       await repository.recordExecution(id, executedAt: DateTime(2025, 6, 1));
 
       final tasks = await repository.allTaskItems().first;
-      expect(tasks.first.taskHistory, hasLength(2));
+      expect(tasks.first.taskHistory, hasLength(1));
     });
 
     test('履歴が2件以上になると scheduledAt が算出される', () async {
@@ -369,8 +384,8 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime(2025, 1, 1),
       );
+      await repository.recordExecution(id, executedAt: DateTime(2025, 1, 1));
       await repository.recordExecution(id, executedAt: DateTime(2025, 2, 1));
 
       final tasks = await repository.allTaskItems().first;
@@ -383,7 +398,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime(2025, 1, 1),
       );
       final history = await repository.recordExecution(
         id,
@@ -399,7 +413,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime(2025, 1, 1),
       );
       final history = await repository.recordExecution(
         id,
@@ -417,7 +430,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime(2025, 1, 1),
       );
       final history = await repository.recordExecution(
         id,
@@ -434,7 +446,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime(2025, 1, 1),
       );
       final history = await repository.recordExecution(
         id,
@@ -457,7 +468,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime(2025, 1, 1),
       );
     });
 
@@ -548,7 +558,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime.now(),
       );
       await repository.updateTask(
         taskId: id,
@@ -574,7 +583,6 @@ void main() {
         color: TaskColor.orange,
         scheduleValue: 2,
         scheduleUnit: ScheduleUnit.week,
-        executedAt: DateTime.now(),
       );
       await repository.updateTask(
         taskId: id,
@@ -599,7 +607,6 @@ void main() {
         color: TaskColor.orange,
         scheduleValue: 2,
         scheduleUnit: ScheduleUnit.week,
-        executedAt: DateTime.now(),
       );
       await repository.updateTask(
         taskId: id,
@@ -619,7 +626,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime.now(),
       );
       await repository.updateTask(
         taskId: id,
@@ -645,7 +651,6 @@ void main() {
         color: TaskColor.orange,
         scheduleValue: 2,
         scheduleUnit: ScheduleUnit.week,
-        executedAt: DateTime.now(),
       );
 
       expect(
@@ -668,7 +673,6 @@ void main() {
         name: '散髪',
         icon: '✂️',
         color: TaskColor.none,
-        executedAt: DateTime.now(),
       );
 
       final task = await repository.watchTaskById(id).first;
@@ -688,7 +692,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime.now(),
       );
 
       final future = expectLater(
@@ -716,7 +719,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime.now(),
       );
 
       final future = expectLater(
@@ -737,14 +739,14 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime(2025, 1, 1),
       );
-      final history = await repository.recordExecution(
+      await repository.recordExecution(id, executedAt: DateTime(2025, 1, 1));
+      final target = await repository.recordExecution(
         id,
         executedAt: DateTime(2025, 6, 1),
       );
 
-      await repository.deleteExecution(history.id);
+      await repository.deleteExecution(target.id);
 
       final task = await repository.findTaskById(id);
       expect(task.taskHistory, hasLength(1));
@@ -757,7 +759,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime(2025, 1, 1),
       );
       await repository.recordExecution(id, executedAt: DateTime(2025, 3, 1));
       final target = await repository.recordExecution(
@@ -769,7 +770,7 @@ void main() {
       await repository.deleteExecution(target.id);
 
       final task = await repository.findTaskById(id);
-      expect(task.taskHistory, hasLength(3));
+      expect(task.taskHistory, hasLength(2));
       expect(
         task.taskHistory.map((h) => h.executedAt),
         isNot(contains(DateTime(2025, 6, 1))),
@@ -784,8 +785,8 @@ void main() {
         name: '散髪',
         icon: '✂️',
         color: TaskColor.none,
-        executedAt: DateTime(2025, 1, 1),
       );
+      await repository.recordExecution(id, executedAt: DateTime(2025, 1, 1));
       await repository.recordExecution(id, executedAt: DateTime(2025, 6, 1));
       final deleted = await repository.findTaskById(id);
       await repository.deleteTask(id);
@@ -809,7 +810,6 @@ void main() {
         color: TaskColor.orange,
         scheduleValue: 2,
         scheduleUnit: ScheduleUnit.week,
-        executedAt: DateTime.now(),
       );
       final deleted = await repository.findTaskById(id) as ScheduledTaskItem;
       await repository.deleteTask(id);
@@ -829,7 +829,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime.now(),
       );
       final deleted = await repository.findTaskById(id);
       await repository.deleteTask(id);
@@ -851,7 +850,6 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime.now(),
       );
       await repository.deleteTask(id);
 
@@ -865,14 +863,12 @@ void main() {
         name: '散髪',
         icon: '📝',
         color: TaskColor.none,
-        executedAt: DateTime.now(),
       );
       await repository.addTask(
         taskType: TaskType.period,
         name: '歯ブラシ交換',
         icon: '📝',
         color: TaskColor.blue,
-        executedAt: DateTime.now(),
       );
       await repository.deleteTask(id1);
 
