@@ -260,6 +260,24 @@ void main() {
             );
             expect(viewState.dialogMessage?.handler, isNotNull);
           });
+
+          test('リトライハンドラを呼び出すと再度更新が試みられ成功する', () async {
+            await viewModel.updateExecution(
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
+            final handler = viewState.dialogMessage?.handler;
+            expect(handler, isNotNull);
+
+            fakeRepository.shouldThrow = false;
+            handler!();
+            await Future.microtask(() {});
+
+            expect(
+              viewState.snackBarMessage,
+              isA<TaskExecutionUpdateSuccess>(),
+            );
+          });
         });
       });
 
@@ -348,6 +366,22 @@ void main() {
             );
             expect(viewState.dialogMessage?.handler, isNotNull);
           });
+
+          test('リトライハンドラを呼び出すと再度記録が試みられ成功する', () async {
+            await viewModel.recordExecution(
+              _taskOneHistory,
+              DateTime(2026, 4, 1),
+              null,
+            );
+            final handler = viewState.dialogMessage?.handler;
+            expect(handler, isNotNull);
+
+            fakeRepository.shouldThrow = false;
+            handler!();
+            await Future.microtask(() {});
+
+            expect(viewState.snackBarMessage, isA<TaskCompleteSuccess>());
+          });
         });
       });
 
@@ -428,6 +462,18 @@ void main() {
           test('削除を再試行できる', () async {
             await viewModel.deleteTask();
             expect(viewState.dialogMessage?.handler, isNotNull);
+          });
+
+          test('リトライハンドラを呼び出すと再度削除が試みられ成功する', () async {
+            await viewModel.deleteTask();
+            final handler = viewState.dialogMessage?.handler;
+            expect(handler, isNotNull);
+
+            fakeRepository.shouldThrow = false;
+            handler!();
+            await Future.microtask(() {});
+
+            expect(viewState.shouldPop, true);
           });
         });
       });

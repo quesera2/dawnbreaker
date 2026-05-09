@@ -11,10 +11,6 @@ sealed class DialogMessage {
   final String id;
 }
 
-class TaskNotFoundErrorMessage extends DialogMessage {
-  TaskNotFoundErrorMessage() : super(type: DialogType.error);
-}
-
 class TaskLoadErrorMessage extends DialogMessage {
   TaskLoadErrorMessage({required super.handler})
     : super(type: DialogType.error);

@@ -56,7 +56,6 @@
     }
   },
   "taskErrorLoadFailed": "読み込みに失敗しました",
-  "taskErrorNotFound": "タスクが見つかりません",
   "taskErrorSaveFailed": "保存に失敗しました",
   "taskErrorUpdateFailed": "更新に失敗しました",
   "taskErrorDeleteFailed": "削除に失敗しました",
