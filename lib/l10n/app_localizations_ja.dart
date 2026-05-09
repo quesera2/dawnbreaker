@@ -254,7 +254,9 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get appDetailDeleteHistorySuccess => '完了記録を削除しました';
+  String appDetailDeleteHistorySuccess(String taskName, String date) {
+    return '「$taskName」の$dateの記録を削除しました';
+  }
 
   @override
   String get appDetailDeleteHistoryFailed => '記録を削除できませんでした';

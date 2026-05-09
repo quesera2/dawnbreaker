@@ -151,7 +151,17 @@
       }
     }
   },
-  "appDetailDeleteHistorySuccess": "Completion record deleted",
+  "appDetailDeleteHistorySuccess": "Deleted the {date} record for \"{taskName}\"",
+  "@appDetailDeleteHistorySuccess": {
+    "placeholders": {
+      "taskName": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "appDetailDeleteHistoryFailed": "Failed to delete record",
   "appDetailDeleteHistoryButton": "Hold to delete",
   "appDetailNoHistory": "No history yet",

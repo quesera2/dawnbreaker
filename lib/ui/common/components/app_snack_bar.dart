@@ -1,6 +1,7 @@
 import 'dart:async' show unawaited;
 
 import 'package:dawnbreaker/core/util/context_extension.dart';
+import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
@@ -61,8 +62,11 @@ abstract final class AppSnackBar {
     text: context.l10n.appDetailUpdateHistorySuccess,
     actionLabel: context.l10n.commonUndo,
   ),
-  TaskExecutionDeleteSuccess() => (
-    text: context.l10n.appDetailDeleteHistorySuccess,
+  TaskExecutionDeleteSuccess(:final taskName, :final executedAt) => (
+    text: context.l10n.appDetailDeleteHistorySuccess(
+      taskName,
+      executedAt.localized(context),
+    ),
     actionLabel: context.l10n.commonUndo,
   ),
   DebugDummyTasksGeneratedMessage() => (

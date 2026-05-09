@@ -36,7 +36,14 @@ class TaskExecutionUpdateSuccess extends SnackBarMessage {
 }
 
 class TaskExecutionDeleteSuccess extends SnackBarMessage {
-  TaskExecutionDeleteSuccess({required super.handler});
+  TaskExecutionDeleteSuccess({
+    required this.taskName,
+    required this.executedAt,
+    required super.handler,
+  });
+
+  final String taskName;
+  final DateTime executedAt;
 }
 
 class DebugDummyTasksGeneratedMessage extends SnackBarMessage {

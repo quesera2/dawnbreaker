@@ -551,8 +551,8 @@ abstract class AppLocalizations {
   /// No description provided for @appDetailDeleteHistorySuccess.
   ///
   /// In ja, this message translates to:
-  /// **'完了記録を削除しました'**
-  String get appDetailDeleteHistorySuccess;
+  /// **'「{taskName}」の{date}の記録を削除しました'**
+  String appDetailDeleteHistorySuccess(String taskName, String date);
 
   /// No description provided for @appDetailDeleteHistoryFailed.
   ///
