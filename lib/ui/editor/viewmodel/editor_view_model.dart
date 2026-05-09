@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
@@ -94,7 +93,6 @@ class EditorViewModel extends _$EditorViewModel {
       color: state.color,
       scheduleValue: state.scheduleValue,
       scheduleUnit: state.scheduleUnit,
-      executedAt: DateTime.now().truncateTime,
     );
     return state.copyWith(
       isSaving: false,

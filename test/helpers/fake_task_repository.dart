@@ -51,7 +51,6 @@ class FakeTaskRepository implements TaskRepository {
     required String name,
     required String icon,
     required TaskColor color,
-    required DateTime executedAt,
     int? scheduleValue,
     ScheduleUnit? scheduleUnit,
   }) async {
