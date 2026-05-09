@@ -27,9 +27,16 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         .watchTaskById(taskId)
         .listen(
           (task) {
-            // 削除されたときは無視する
+            // 削除されたときは前の画面に戻る
             if (!ref.mounted || task == null) {
-              state = state.clearTaskItem();
+              state = state.copyWith(
+                isLoading: false,
+                task: null,
+                historyStats: null,
+                daysSinceLastExecution: null,
+                averageIntervalDays: null,
+                shouldPop: true,
+              );
             } else {
               state = state.updateTaskItem(task);
             }
@@ -97,12 +104,12 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     try {
       await _repository.deleteTask(task.id);
       if (!ref.mounted) return;
+      // タスク削除で watchTaskById で前の画面に戻る処理が走る
       state = state.copyWith(
         snackBarMessage: TaskDeleteSuccess(
           taskName: task.name,
           handler: () => _repository.restoreTask(task),
         ),
-        shouldPop: true,
       );
     } on TaskRepositoryException {
       if (!ref.mounted) return;

@@ -34,14 +34,6 @@ abstract class AppDetailUiState with _$AppDetailUiState implements BaseUiState {
     );
   }
 
-  AppDetailUiState clearTaskItem() => copyWith(
-    isLoading: false,
-    task: null,
-    historyStats: null,
-    daysSinceLastExecution: null,
-    averageIntervalDays: null,
-  );
-
   int? _calculateDaysSinceLastExecution(TaskItem task) {
     final last = task.lastExecutedAt?.truncateTime;
     if (last == null) return null;
