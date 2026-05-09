@@ -566,6 +566,12 @@ abstract class AppLocalizations {
   /// **'長押しで削除'**
   String get appDetailDeleteHistoryButton;
 
+  /// No description provided for @appDetailNoHistory.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ履歴がありません'**
+  String get appDetailNoHistory;
+
   /// No description provided for @onboardingPage1Title.
   ///
   /// In ja, this message translates to:

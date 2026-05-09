@@ -154,6 +154,7 @@
   "appDetailDeleteHistorySuccess": "Completion record deleted",
   "appDetailDeleteHistoryFailed": "Failed to delete record",
   "appDetailDeleteHistoryButton": "Hold to delete",
+  "appDetailNoHistory": "No history yet",
   "onboardingPage1Title": "Never forget \"when was I supposed to do this?\"",
   "onboardingPage1Body": "Car wash, filter cleaning, toothbrush replacement... just register things you tend to forget.",
   "onboardingPage2Title": "Never wonder \"when should I do this next?\"",

@@ -264,6 +264,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appDetailDeleteHistoryButton => 'Hold to delete';
 
   @override
+  String get appDetailNoHistory => 'No history yet';
+
+  @override
   String get onboardingPage1Title =>
       'Never forget \"when was I supposed to do this?\"';
 

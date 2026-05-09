@@ -12,6 +12,7 @@ import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
 import 'package:dawnbreaker/ui/common/components/app_badge.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
+import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
@@ -158,33 +159,66 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
     List<(TaskHistory, int?)> historyAndInterval,
     AppDetailViewModel viewModel,
   ) {
-    return SliverMainAxisGroup(
-      slivers: [
-        SliverToBoxAdapter(
-          child: AppSectionHeader(
-            title: Text(context.l10n.appDetailHistorySection.toUpperCase()),
-            subTitle: Text(historyAndInterval.length.toString()),
+    if (historyAndInterval.isEmpty) {
+      return SliverMainAxisGroup(
+        slivers: [
+          SliverToBoxAdapter(
+            child: AppSectionHeader(
+              title: Text(context.l10n.appDetailHistorySection.toUpperCase()),
+            ),
           ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          sliver: SliverList.builder(
-            itemCount: historyAndInterval.length,
-            itemBuilder: (context, i) {
-              final (entry, intervalDays) = historyAndInterval[i];
-              return AppDetailHistoryItem(
-                entry: entry,
-                isFirst: i == 0,
-                isLast: i == historyAndInterval.length - 1,
-                taskColor: task.color,
-                intervalDays: intervalDays,
-                onTap: () => _showEditSheet(task, entry, viewModel),
-              );
-            },
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: SliverToBoxAdapter(
+              child: AppListCell(
+                type: .single,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Text(
+                      context.l10n.appDetailNoHistory,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyle.body.copyWith(
+                        color: context.appColorScheme.textMuted,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    } else {
+      return SliverMainAxisGroup(
+        slivers: [
+          SliverToBoxAdapter(
+            child: AppSectionHeader(
+              title: Text(context.l10n.appDetailHistorySection.toUpperCase()),
+              subTitle: Text(historyAndInterval.length.toString()),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: SliverList.builder(
+              itemCount: historyAndInterval.length,
+              itemBuilder: (context, i) {
+                final (entry, intervalDays) = historyAndInterval[i];
+                return AppDetailHistoryItem(
+                  entry: entry,
+                  isFirst: i == 0,
+                  isLast: i == historyAndInterval.length - 1,
+                  taskColor: task.color,
+                  intervalDays: intervalDays,
+                  onTap: () => _showEditSheet(task, entry, viewModel),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    }
   }
 
   void _showEditSheet(
