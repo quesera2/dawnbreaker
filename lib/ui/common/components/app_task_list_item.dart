@@ -116,7 +116,7 @@ class _DateRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = DateUtil.format(context, taskProgress.scheduledAt);
+    final dateStr = taskProgress.scheduledAt.localizedWithWeekday(context);
 
     final AppBadgeTone tone;
     final String badgeText;

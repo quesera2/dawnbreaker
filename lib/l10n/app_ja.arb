@@ -151,9 +151,20 @@
       }
     }
   },
-  "appDetailDeleteHistorySuccess": "完了記録を削除しました",
+  "appDetailDeleteHistorySuccess": "「{taskName}」の{date}の記録を削除しました",
+  "@appDetailDeleteHistorySuccess": {
+    "placeholders": {
+      "taskName": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "appDetailDeleteHistoryFailed": "記録を削除できませんでした",
   "appDetailDeleteHistoryButton": "長押しで削除",
+  "appDetailNoHistory": "まだ履歴がありません",
   "onboardingPage1Title": "いつやるんだっけ？　の悩みをなくす",
   "onboardingPage1Body": "洗車、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。",
   "onboardingPage2Title": "次はいつごろだっけ？　の悩みをなくす",

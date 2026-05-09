@@ -88,7 +88,7 @@ class AppDetailHistoryItem extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        DateUtil.format(context, entry.executedAt),
+                        entry.executedAt.localizedWithWeekday(context),
                         style: AppTextStyle.body.copyWith(
                           color: colors.text,
                           fontWeight: isFirst

@@ -146,6 +146,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       if (!ref.mounted) return;
       state = state.copyWith(
         snackBarMessage: TaskExecutionDeleteSuccess(
+          taskName: task.name,
+          executedAt: history.executedAt,
           handler: () => _repository.recordExecution(
             task.id,
             executedAt: history.executedAt,

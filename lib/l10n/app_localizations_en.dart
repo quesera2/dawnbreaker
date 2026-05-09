@@ -255,13 +255,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get appDetailDeleteHistorySuccess => 'Completion record deleted';
+  String appDetailDeleteHistorySuccess(String taskName, String date) {
+    return 'Deleted the $date record for \"$taskName\"';
+  }
 
   @override
   String get appDetailDeleteHistoryFailed => 'Failed to delete record';
 
   @override
   String get appDetailDeleteHistoryButton => 'Hold to delete';
+
+  @override
+  String get appDetailNoHistory => 'No history yet';
 
   @override
   String get onboardingPage1Title =>
