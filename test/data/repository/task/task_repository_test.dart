@@ -31,28 +31,6 @@ void main() {
 
   tearDown(() => db.close());
 
-  group('DBが異常な場合', () {
-    test('タスク一覧の取得がエラーになる', () async {
-      // DB に直接 scheduled タスクを挿入（taskScheduledConfigs なし）
-      await db
-          .into(db.taskDefinitions)
-          .insert(
-            TaskDefinitionsCompanion.insert(
-              taskType: TaskType.scheduled,
-              name: 'config なしタスク',
-              furigana: '',
-              icon: '📝',
-              color: TaskColor.none,
-            ),
-          );
-
-      await expectLater(
-        repository.allTaskItems(),
-        emitsError(isA<TaskNotFoundException>()),
-      );
-    });
-  });
-
   group('データベースエラー時の異常系', () {
     setUp(() async {
       await db.select(db.taskDefinitions).get();
@@ -151,91 +129,130 @@ void main() {
     });
   });
 
-  group('allTaskItems ソート順', () {
-    test('次回予定日が早いタスクが先に来る', () async {
-      // 後の scheduledAt を先に追加して、ソートで前に来ることを確認
-      final idB = await repository.addTask(
-        taskType: TaskType.scheduled,
-        name: 'タスクB',
-        icon: '📝',
-        color: TaskColor.none,
-        scheduleValue: 7,
-        scheduleUnit: ScheduleUnit.day,
-      );
-      await repository.recordExecution(
-        idB,
-        executedAt: DateTime(2025, 1, 15),
-      ); // scheduledAt = 1/22
+  group('allTaskItems', () {
+    group('DBが異常な場合', () {
+      setUp(() async {
+        await db
+            .into(db.taskDefinitions)
+            .insert(
+              TaskDefinitionsCompanion.insert(
+                taskType: TaskType.scheduled,
+                name: 'config なしタスク',
+                furigana: '',
+                icon: '📝',
+                color: TaskColor.none,
+              ),
+            );
+      });
 
-      final idA = await repository.addTask(
-        taskType: TaskType.scheduled,
-        name: 'タスクA',
-        icon: '📝',
-        color: TaskColor.none,
-        scheduleValue: 7,
-        scheduleUnit: ScheduleUnit.day,
-      );
-      await repository.recordExecution(
-        idA,
-        executedAt: DateTime(2025, 1, 1),
-      ); // scheduledAt = 1/8
-
-      final tasks = await repository.allTaskItems().first;
-      expect(tasks[0].name, 'タスクA'); // scheduledAt=1/8 が先
-      expect(tasks[1].name, 'タスクB'); // scheduledAt=1/22 が後
+      test('タスク一覧の取得がエラーになる', () async {
+        await expectLater(
+          repository.allTaskItems(),
+          emitsError(isA<TaskNotFoundException>()),
+        );
+      });
     });
 
-    test('次回予定日がないタスクは末尾に来る', () async {
-      // PeriodTask 履歴0件 → scheduledAt=null
-      await repository.addTask(
-        taskType: TaskType.period,
-        name: '不定期タスク',
-        icon: '📝',
-        color: TaskColor.none,
-      );
+    group('ソート順', () {
+      group('次回予定日が異なる場合', () {
+        setUp(() async {
+          final idB = await repository.addTask(
+            taskType: TaskType.scheduled,
+            name: 'タスクB',
+            icon: '📝',
+            color: TaskColor.none,
+            scheduleValue: 7,
+            scheduleUnit: ScheduleUnit.day,
+          );
+          await repository.recordExecution(
+            idB,
+            executedAt: DateTime(2025, 1, 15),
+          ); // scheduledAt = 1/22
 
-      final idS = await repository.addTask(
-        taskType: TaskType.scheduled,
-        name: '定期タスク',
-        icon: '📝',
-        color: TaskColor.none,
-        scheduleValue: 7,
-        scheduleUnit: ScheduleUnit.day,
-      );
-      await repository.recordExecution(idS, executedAt: DateTime(2025, 1, 1));
+          final idA = await repository.addTask(
+            taskType: TaskType.scheduled,
+            name: 'タスクA',
+            icon: '📝',
+            color: TaskColor.none,
+            scheduleValue: 7,
+            scheduleUnit: ScheduleUnit.day,
+          );
+          await repository.recordExecution(
+            idA,
+            executedAt: DateTime(2025, 1, 1),
+          ); // scheduledAt = 1/8
+        });
 
-      final tasks = await repository.allTaskItems().first;
-      expect(tasks[0].name, '定期タスク'); // scheduledAt あり
-      expect(tasks[1].name, '不定期タスク'); // scheduledAt=null → 末尾
-    });
+        test('次回予定日が早いタスクが先に来る', () async {
+          final tasks = await repository.allTaskItems().first;
+          expect(tasks[0].name, 'タスクA');
+          expect(tasks[1].name, 'タスクB');
+        });
+      });
 
-    test('次回予定日がないタスクが複数あるとき全て末尾に集まる', () async {
-      final idS = await repository.addTask(
-        taskType: TaskType.scheduled,
-        name: '定期タスク',
-        icon: '📝',
-        color: TaskColor.none,
-        scheduleValue: 7,
-        scheduleUnit: ScheduleUnit.day,
-      );
-      await repository.recordExecution(idS, executedAt: DateTime(2025, 1, 1));
+      group('次回予定日がないタスクが混在する場合', () {
+        setUp(() async {
+          await repository.addTask(
+            taskType: TaskType.period,
+            name: '不定期タスク',
+            icon: '📝',
+            color: TaskColor.none,
+          );
+          final idS = await repository.addTask(
+            taskType: TaskType.scheduled,
+            name: '定期タスク',
+            icon: '📝',
+            color: TaskColor.none,
+            scheduleValue: 7,
+            scheduleUnit: ScheduleUnit.day,
+          );
+          await repository.recordExecution(
+            idS,
+            executedAt: DateTime(2025, 1, 1),
+          );
+        });
 
-      await repository.addTask(
-        taskType: TaskType.period,
-        name: '不定期A',
-        icon: '📝',
-        color: TaskColor.none,
-      );
-      await repository.addTask(
-        taskType: TaskType.period,
-        name: '不定期B',
-        icon: '📝',
-        color: TaskColor.none,
-      );
+        test('次回予定日がないタスクは末尾に来る', () async {
+          final tasks = await repository.allTaskItems().first;
+          expect(tasks[0].name, '定期タスク');
+          expect(tasks[1].name, '不定期タスク');
+        });
+      });
 
-      final tasks = await repository.allTaskItems().first;
-      expect(tasks[0].name, '定期タスク');
-      expect(tasks.skip(1).map((t) => t.name).toSet(), {'不定期A', '不定期B'});
+      group('次回予定日がないタスクが複数ある場合', () {
+        setUp(() async {
+          final idS = await repository.addTask(
+            taskType: TaskType.scheduled,
+            name: '定期タスク',
+            icon: '📝',
+            color: TaskColor.none,
+            scheduleValue: 7,
+            scheduleUnit: ScheduleUnit.day,
+          );
+          await repository.recordExecution(
+            idS,
+            executedAt: DateTime(2025, 1, 1),
+          );
+          await repository.addTask(
+            taskType: TaskType.period,
+            name: '不定期A',
+            icon: '📝',
+            color: TaskColor.none,
+          );
+          await repository.addTask(
+            taskType: TaskType.period,
+            name: '不定期B',
+            icon: '📝',
+            color: TaskColor.none,
+          );
+        });
+
+        test('全て末尾に集まる', () async {
+          final tasks = await repository.allTaskItems().first;
+          expect(tasks[0].name, '定期タスク');
+          expect(tasks.skip(1).map((t) => t.name).toSet(), {'不定期A', '不定期B'});
+        });
+      });
     });
   });
 
