@@ -745,6 +745,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'すべてのタスクを削除しました'**
   String get settingsDebugAllTasksDeleted;
+
+  /// No description provided for @notificationGroupTask.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスク通知'**
+  String get notificationGroupTask;
+
+  /// No description provided for @notificationChannelTask.
+  ///
+  /// In ja, this message translates to:
+  /// **'個別タスク通知'**
+  String get notificationChannelTask;
 }
 
 class _AppLocalizationsDelegate

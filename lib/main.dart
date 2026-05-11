@@ -1,4 +1,5 @@
 import 'package:dawnbreaker/app/app.dart';
+import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/preferences/shared_preferences_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +13,7 @@ void main() async {
   final container = ProviderContainer(
     overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
   );
+  await container.read(notificationServiceProvider).initialize();
 
   runApp(UncontrolledProviderScope(container: container, child: const App()));
 }

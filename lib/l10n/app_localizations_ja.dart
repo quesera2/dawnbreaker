@@ -354,4 +354,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsDebugAllTasksDeleted => 'すべてのタスクを削除しました';
+
+  @override
+  String get notificationGroupTask => 'タスク通知';
+
+  @override
+  String get notificationChannelTask => '個別タスク通知';
 }
