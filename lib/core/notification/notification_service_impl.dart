@@ -124,13 +124,13 @@ class NotificationServiceImpl implements NotificationService {
       title: task.name,
       body: _l10n.notificationTaskBody,
       scheduledDate: notifyAt,
-      notificationDetails: const NotificationDetails(
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           taskChannelId,
-          taskChannelId,
+          _l10n.notificationChannelTask,
           importance: Importance.high,
         ),
-        iOS: DarwinNotificationDetails(),
+        iOS: const DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       payload: task.id.toString(),
