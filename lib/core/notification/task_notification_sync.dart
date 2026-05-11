@@ -3,6 +3,7 @@ import 'package:dawnbreaker/core/notification/notification_service.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'task_notification_sync.g.dart';
@@ -22,30 +23,31 @@ class TaskNotificationSync extends _$TaskNotificationSync {
         )
         .pairwise(initialValue: [])
         .listen((pair) {
-          _updateNotifications(service, previous: pair.$1, current: pair.$2);
+          updateNotifications(service, previous: pair.$1, current: pair.$2);
         });
 
     ref.onDispose(sub.cancel);
   }
+}
 
-  void _updateNotifications(
-    NotificationService service, {
-    required List<TaskItem> previous,
-    required List<TaskItem> current,
-  }) {
-    final previousSet = previous.toSet();
-    final currentSet = current.toSet();
+@visibleForTesting
+void updateNotifications(
+  NotificationService service, {
+  required List<TaskItem> previous,
+  required List<TaskItem> current,
+}) {
+  final previousSet = previous.toSet();
+  final currentSet = current.toSet();
 
-    for (final task in previousSet.difference(currentSet)) {
+  for (final task in previousSet.difference(currentSet)) {
+    service.removeNotification(task);
+  }
+
+  for (final task in currentSet.difference(previousSet)) {
+    if (task.scheduledAt != null) {
+      service.registerNotification(task);
+    } else {
       service.removeNotification(task);
-    }
-
-    for (final task in currentSet.difference(previousSet)) {
-      if (task.scheduledAt != null) {
-        service.registerNotification(task);
-      } else {
-        service.removeNotification(task);
-      }
     }
   }
 }
