@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:dawnbreaker/core/notification/notification_service.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
+import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 part 'notification_service_impl.g.dart';
 
@@ -84,6 +86,53 @@ class NotificationServiceImpl implements NotificationService {
         sound: true,
       );
     }
+  }
+
+  static const _notifyHour = 9;
+  static const _notificationBody = '予定日になりました';
+
+  @override
+  Future<void> registerNotification(TaskItem task) async {
+    final scheduledAt = task.scheduledAt;
+    if (scheduledAt == null) {
+      await removeNotification(task);
+      return;
+    }
+
+    final notifyAt = tz.TZDateTime(
+      tz.local,
+      scheduledAt.year,
+      scheduledAt.month,
+      scheduledAt.day,
+      _notifyHour,
+    );
+    if (notifyAt.isBefore(tz.TZDateTime.now(tz.local))) {
+      await removeNotification(task);
+      return;
+    }
+
+    await _plugin.cancel(id: task.id);
+    await _plugin.zonedSchedule(
+      id: task.id,
+      title: task.name,
+      body: _notificationBody,
+      scheduledDate: notifyAt,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          taskChannelId,
+          taskChannelId,
+          importance: Importance.high,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      payload: task.id.toString(),
+    );
+  }
+
+  @override
+  Future<void> removeNotification(TaskItem task) async {
+    await _plugin.cancel(id: task.id);
   }
 
   void _onNotificationResponse(NotificationResponse details) {
