@@ -360,4 +360,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get notificationChannelTask => '個別タスク通知';
+
+  @override
+  String get notificationTaskBody => '予定日になりました';
 }

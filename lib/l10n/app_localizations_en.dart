@@ -365,4 +365,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notificationChannelTask => 'Individual Task Notification';
+
+  @override
+  String get notificationTaskBody => 'It\'s due today';
 }

@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:dawnbreaker/core/notification/notification_service.dart';
-import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
-import 'package:flutter/widgets.dart';
+import 'package:dawnbreaker/l10n/app_localizations.dart';
+import 'package:dawnbreaker/l10n/app_localizations_provider.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -16,12 +16,20 @@ void onDidReceiveBackgroundNotificationResponse(NotificationResponse details) {
 }
 
 @Riverpod(keepAlive: true)
-NotificationService notificationService(Ref ref) => NotificationServiceImpl();
+Future<NotificationService> notificationService(Ref ref) async {
+  final appLocalizations = await ref.watch(appLocalizationsProvider.future);
+  return NotificationServiceImpl(localizations: appLocalizations);
+}
 
 const _taskGroupId = 'task_notifications';
 const taskChannelId = 'individual_task_notification';
 
 class NotificationServiceImpl implements NotificationService {
+  NotificationServiceImpl({required AppLocalizations localizations})
+    : _l10n = localizations;
+
+  final AppLocalizations _l10n;
+
   static const _androidSettings = AndroidInitializationSettings(
     '@mipmap/ic_launcher',
   );
@@ -56,23 +64,23 @@ class NotificationServiceImpl implements NotificationService {
       onDidReceiveBackgroundNotificationResponse:
           onDidReceiveBackgroundNotificationResponse,
     );
-  }
 
-  @override
-  Future<void> setupChannels(BuildContext context) async {
-    if (!Platform.isAndroid) return;
-    final l10n = context.l10n;
-    await _androidImplementation?.createNotificationChannelGroup(
-      AndroidNotificationChannelGroup(_taskGroupId, l10n.notificationGroupTask),
-    );
-    await _androidImplementation?.createNotificationChannel(
-      AndroidNotificationChannel(
-        taskChannelId,
-        l10n.notificationChannelTask,
-        groupId: _taskGroupId,
-        importance: Importance.high,
-      ),
-    );
+    if (Platform.isAndroid) {
+      await _androidImplementation?.createNotificationChannelGroup(
+        AndroidNotificationChannelGroup(
+          _taskGroupId,
+          _l10n.notificationGroupTask,
+        ),
+      );
+      await _androidImplementation?.createNotificationChannel(
+        AndroidNotificationChannel(
+          taskChannelId,
+          _l10n.notificationChannelTask,
+          groupId: _taskGroupId,
+          importance: Importance.high,
+        ),
+      );
+    }
   }
 
   @override
@@ -89,7 +97,6 @@ class NotificationServiceImpl implements NotificationService {
   }
 
   static const _notifyHour = 9;
-  static const _notificationBody = '予定日になりました';
 
   @override
   Future<void> registerNotification(TaskItem task) async {
@@ -115,7 +122,7 @@ class NotificationServiceImpl implements NotificationService {
     await _plugin.zonedSchedule(
       id: task.id,
       title: task.name,
-      body: _notificationBody,
+      body: _l10n.notificationTaskBody,
       scheduledDate: notifyAt,
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(

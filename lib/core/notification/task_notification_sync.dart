@@ -12,9 +12,9 @@ part 'task_notification_sync.g.dart';
 @Riverpod(keepAlive: true)
 class TaskNotificationSync extends _$TaskNotificationSync {
   @override
-  void build() {
+  Future<void> build() async {
     final repository = ref.read(taskRepositoryProvider);
-    final service = ref.read(notificationServiceProvider);
+    final service = await ref.read(notificationServiceProvider.future);
 
     final sub = repository
         .allTaskItems()
