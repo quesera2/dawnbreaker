@@ -4,6 +4,7 @@ import 'package:dawnbreaker/data/model/task_item.dart';
 class FakeNotificationService implements NotificationService {
   final List<TaskItem> registered = [];
   final List<TaskItem> removed = [];
+  bool callRemovedAll = false;
 
   @override
   Future<void> initialize() async {}
@@ -17,4 +18,7 @@ class FakeNotificationService implements NotificationService {
 
   @override
   Future<void> removeNotification(TaskItem task) async => removed.add(task);
+
+  @override
+  Future<void> removeAllNotification() async => callRemovedAll = true;
 }

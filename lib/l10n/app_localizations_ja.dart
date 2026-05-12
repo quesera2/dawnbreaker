@@ -329,6 +329,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsTitle => '設定';
 
   @override
+  String get settingsSectionNotification => '通知';
+
+  @override
+  String get settingsNotificationTitle => '予定日に通知';
+
+  @override
+  String get settingsNotificationSubtitle => '朝 9:00 に通知が届きます';
+
+  @override
   String get settingsSectionInfo => '情報';
 
   @override

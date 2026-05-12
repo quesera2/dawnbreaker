@@ -142,6 +142,11 @@ class NotificationServiceImpl implements NotificationService {
     await _plugin.cancel(id: task.id);
   }
 
+  @override
+  Future<void> removeAllNotification() async {
+    await _plugin.cancelAll();
+  }
+
   void _onNotificationResponse(NotificationResponse details) {
     // TODO: フォアグラウンドで通知を受け取ったときの処理を行う
   }

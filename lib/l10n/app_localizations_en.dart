@@ -334,6 +334,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTitle => 'Settings';
 
   @override
+  String get settingsSectionNotification => 'Notifications';
+
+  @override
+  String get settingsNotificationTitle => 'Notify on due date';
+
+  @override
+  String get settingsNotificationSubtitle => 'You\'ll be notified at 9:00 AM';
+
+  @override
   String get settingsSectionInfo => 'Info';
 
   @override

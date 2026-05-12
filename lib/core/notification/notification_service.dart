@@ -8,4 +8,6 @@ abstract interface class NotificationService {
   Future<void> registerNotification(TaskItem task);
 
   Future<void> removeNotification(TaskItem task);
+
+  Future<void> removeAllNotification();
 }
