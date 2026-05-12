@@ -10,7 +10,8 @@ PreferencesManager preferencesManager(Ref ref) =>
     PreferencesManager(preferences: ref.watch(sharedPreferencesProvider));
 
 enum PreferenceKey {
-  onboardingComplete('onboarding_complete');
+  onboardingComplete('onboarding_complete'),
+  notificationEnabled('notification_enabled');
 
   const PreferenceKey(this.rawKey);
 
