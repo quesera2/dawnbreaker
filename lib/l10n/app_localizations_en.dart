@@ -359,4 +359,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDebugAllTasksDeleted => 'All tasks deleted';
+
+  @override
+  String get notificationGroupTask => 'Task Notifications';
+
+  @override
+  String get notificationChannelTask => 'Individual Task Notification';
+
+  @override
+  String get notificationTaskBody => 'It\'s due today';
 }
