@@ -10,6 +10,8 @@ abstract class SettingsUiState with _$SettingsUiState implements BaseUiState {
   const factory SettingsUiState({
     @Default(true) bool isLoading,
     @Default('') String version,
+    @Default(true) bool notificationEnabled,
+    @Default(false) bool isNotificationUpdating,
     DialogMessage? dialogMessage,
     SnackBarMessage? snackBarMessage,
   }) = _SettingsUiState;

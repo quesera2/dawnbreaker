@@ -38,12 +38,47 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            ..._notificationSection(
+              context,
+              notificationEnabled: viewState.notificationEnabled,
+              isNotificationUpdating: viewState.isNotificationUpdating,
+              onNotificationChanged: viewModel.setNotificationEnabled,
+            ),
+            const SizedBox(height: 24),
             ..._infoSection(context, viewState.version),
-            if (kDebugMode) ..._debugSection(context, viewModel),
+            if (kDebugMode) ...[
+              const SizedBox(height: 24),
+              ..._debugSection(context, viewModel),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> _notificationSection(
+    BuildContext context, {
+    required bool notificationEnabled,
+    required bool isNotificationUpdating,
+    required ValueChanged<bool> onNotificationChanged,
+  }) {
+    return [
+      AppSectionHeader(
+        title: Text('通知'),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+      ),
+      AppListCell(
+        type: .single,
+        child: ListTile(
+          title: Text('予定日に通知'),
+          subtitle: Text('朝 9:00 に通知が届きます'),
+          trailing: Switch(
+            value: notificationEnabled,
+            onChanged: isNotificationUpdating ? null : onNotificationChanged,
+          ),
+        ),
+      ),
+    ];
   }
 
   List<Widget> _infoSection(BuildContext context, String version) {
@@ -100,7 +135,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     final colorScheme = context.appColorScheme;
     final divider = Divider(height: 1, color: colorScheme.divider);
     return [
-      const SizedBox(height: 24),
       AppSectionHeader(
         title: Text(context.l10n.settingsSectionDebug),
         padding: const EdgeInsets.symmetric(vertical: 8),
