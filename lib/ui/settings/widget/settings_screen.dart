@@ -64,14 +64,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   }) {
     return [
       AppSectionHeader(
-        title: Text('通知'),
+        title: Text(context.l10n.settingsSectionNotification),
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       AppListCell(
         type: .single,
         child: ListTile(
-          title: Text('予定日に通知'),
-          subtitle: Text('朝 9:00 に通知が届きます'),
+          title: Text(context.l10n.settingsNotificationTitle),
+          subtitle: Text(context.l10n.settingsNotificationSubtitle),
           trailing: Switch(
             value: notificationEnabled,
             onChanged: isNotificationUpdating ? null : onNotificationChanged,

@@ -692,6 +692,24 @@ abstract class AppLocalizations {
   /// **'設定'**
   String get settingsTitle;
 
+  /// No description provided for @settingsSectionNotification.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知'**
+  String get settingsSectionNotification;
+
+  /// No description provided for @settingsNotificationTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'予定日に通知'**
+  String get settingsNotificationTitle;
+
+  /// No description provided for @settingsNotificationSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'朝 9:00 に通知が届きます'**
+  String get settingsNotificationSubtitle;
+
   /// No description provided for @settingsSectionInfo.
   ///
   /// In ja, this message translates to:
