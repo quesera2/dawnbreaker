@@ -10,6 +10,8 @@ import 'task_notification_sync.dart';
 part 'task_notification_sync_notifier.g.dart';
 
 /// すべてのタスクを監視して変化があったときに通知を登録する
+///
+/// 通知の有効・無効を切り替えると[build]が再実行され、すべての通知を再登録する。
 @Riverpod(keepAlive: true)
 class TaskNotificationSyncNotifier extends _$TaskNotificationSyncNotifier {
   @override
