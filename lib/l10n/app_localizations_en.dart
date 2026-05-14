@@ -271,7 +271,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingPage1Body =>
-      'Car wash, filter cleaning, toothbrush replacement... just register things you tend to forget.';
+      'Oil change, filter cleaning, toothbrush replacement... just register things you tend to forget.';
 
   @override
   String get onboardingPage2Title =>
@@ -292,16 +292,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingColorRed => 'Kitchen';
 
   @override
-  String get onboardingColorBlue => 'AC';
+  String get onboardingColorBlue => 'Appliances';
 
   @override
-  String get onboardingColorGreen => 'Garden';
+  String get onboardingColorGreen => 'Plants';
 
   @override
   String get onboardingColorOrange => 'Balcony';
 
   @override
-  String get onboardingColorYellow => 'Food';
+  String get onboardingColorYellow => 'Consumables';
 
   @override
   String get onboardingColorNone => 'Vehicle';

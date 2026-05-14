@@ -269,7 +269,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get onboardingPage1Body =>
-      '洗車、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。';
+      'オイル交換、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。';
 
   @override
   String get onboardingPage2Title => '次はいつごろだっけ？　の悩みをなくす';
@@ -287,16 +287,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingColorRed => 'キッチン';
 
   @override
-  String get onboardingColorBlue => 'エアコン';
+  String get onboardingColorBlue => '家電';
 
   @override
-  String get onboardingColorGreen => '庭';
+  String get onboardingColorGreen => '植物';
 
   @override
   String get onboardingColorOrange => 'ベランダ';
 
   @override
-  String get onboardingColorYellow => '食品';
+  String get onboardingColorYellow => '消耗品';
 
   @override
   String get onboardingColorNone => '車両';

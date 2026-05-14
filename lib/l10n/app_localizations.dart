@@ -575,7 +575,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingPage1Body.
   ///
   /// In ja, this message translates to:
-  /// **'洗車、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。'**
+  /// **'オイル交換、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。'**
   String get onboardingPage1Body;
 
   /// No description provided for @onboardingPage2Title.
@@ -611,13 +611,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingColorBlue.
   ///
   /// In ja, this message translates to:
-  /// **'エアコン'**
+  /// **'家電'**
   String get onboardingColorBlue;
 
   /// No description provided for @onboardingColorGreen.
   ///
   /// In ja, this message translates to:
-  /// **'庭'**
+  /// **'植物'**
   String get onboardingColorGreen;
 
   /// No description provided for @onboardingColorOrange.
@@ -629,7 +629,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingColorYellow.
   ///
   /// In ja, this message translates to:
-  /// **'食品'**
+  /// **'消耗品'**
   String get onboardingColorYellow;
 
   /// No description provided for @onboardingColorNone.
