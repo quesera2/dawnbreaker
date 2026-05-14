@@ -99,17 +99,41 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
         body: SafeArea(
           child: Column(
             children: [
-              if (widget.mode == .fromSettings)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 4, 0, 0),
-                    child: AppIconButton(
-                      icon: Icons.close,
-                      onTap: () => context.pop(),
+              switch (widget.mode) {
+                .fromSettings => Visibility(
+                  visible: !_isLastPage,
+                  maintainSize: true,
+                  maintainAnimation: true,
+                  maintainState: true,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 4, 0, 0),
+                      child: AppIconButton(
+                        icon: Icons.close,
+                        onTap: () => context.pop(),
+                      ),
                     ),
                   ),
                 ),
+                .initial => Visibility(
+                  visible: !_isLastPage,
+                  maintainSize: true,
+                  maintainAnimation: true,
+                  maintainState: true,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 8, 4),
+                      child: AppIconButton(
+                        icon: Icons.skip_next,
+                        label: context.l10n.onboardingSkip,
+                        onTap: _viewModel.onClickSkip,
+                      ),
+                    ),
+                  ),
+                ),
+              },
               Expanded(
                 child: PageView(
                   controller: _pageController,
@@ -138,7 +162,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                         duration: const Duration(milliseconds: 500),
                         curve: Curves.easeInOut,
                       ),
-                onSkip: _viewModel.onClickSkip,
+                onSecondary: _viewModel.onClickSkip,
               ),
             ],
           ),
@@ -154,14 +178,14 @@ class _ButtonArea extends StatelessWidget {
     required this.mode,
     required this.isCompleting,
     required this.onPrimary,
-    required this.onSkip,
+    required this.onSecondary,
   });
 
   final bool isLastPage;
   final OnboardingMode mode;
   final bool isCompleting;
   final VoidCallback onPrimary;
-  final VoidCallback onSkip;
+  final VoidCallback onSecondary;
 
   @override
   Widget build(BuildContext context) {
@@ -183,7 +207,7 @@ class _ButtonArea extends StatelessWidget {
           if (mode == .initial)
             AppButton(
               label: context.l10n.onboardingSkip,
-              onPressed: isCompleting ? null : onSkip,
+              onPressed: isCompleting ? null : onSecondary,
               fullWidth: true,
               size: AppButtonSize.large,
               variant: AppButtonVariant.ghost,
