@@ -38,6 +38,10 @@ class OnboardingViewModel extends _$OnboardingViewModel {
     );
   }
 
+  Future<void> onRequestNotification() async {
+    // TODO: 通知許可リクエスト実装
+  }
+
   Future<void> onClickSkip() async {
     if (mode == .fromSettings) {
       throw StateError('skip is not available in fromSettings mode');

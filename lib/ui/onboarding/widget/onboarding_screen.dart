@@ -43,7 +43,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _pages = buildOnboardingPages(context);
+    _pages = buildOnboardingPages(
+      context,
+      mode: widget.mode,
+      onNext: () => _pageController.nextPage(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      ),
+      onDone: _viewModel.onClickDone,
+      onSkip: _viewModel.onClickSkip,
+      onRequestNotification: _viewModel.onRequestNotification,
+    );
     _colors = _pages.map((page) => page.backgroundColor).toList();
   }
 
@@ -141,28 +151,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                   children: _pages,
                 ),
               ),
-              SmoothPageIndicator(
-                controller: _pageController,
-                count: _pages.length,
-                effect: ExpandingDotsEffect(
-                  dotHeight: 10,
-                  dotWidth: 10,
-                  activeDotColor: colorScheme.primary,
-                  dotColor: colorScheme.borderStrong,
+              Padding(
+                padding: const EdgeInsetsGeometry.symmetric(vertical: 16),
+                child: SmoothPageIndicator(
+                  controller: _pageController,
+                  count: _pages.length,
+                  effect: ExpandingDotsEffect(
+                    dotHeight: 10,
+                    dotWidth: 10,
+                    activeDotColor: colorScheme.primary,
+                    dotColor: colorScheme.borderStrong,
+                  ),
+                  onDotClicked: (index) => _pageController.jumpToPage(index),
                 ),
-                onDotClicked: (index) => _pageController.jumpToPage(index),
               ),
               _ButtonArea(
-                isLastPage: _isLastPage,
-                mode: widget.mode,
+                page: _pages[_currentPage],
                 isCompleting: isCompleting,
-                onPrimary: _isLastPage
-                    ? _viewModel.onClickDone
-                    : () => _pageController.nextPage(
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeInOut,
-                      ),
-                onSecondary: _viewModel.onClickSkip,
               ),
             ],
           ),
@@ -173,19 +178,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
 }
 
 class _ButtonArea extends StatelessWidget {
-  const _ButtonArea({
-    required this.isLastPage,
-    required this.mode,
-    required this.isCompleting,
-    required this.onPrimary,
-    required this.onSecondary,
-  });
+  const _ButtonArea({required this.page, required this.isCompleting});
 
-  final bool isLastPage;
-  final OnboardingMode mode;
+  final OnboardingPage page;
   final bool isCompleting;
-  final VoidCallback onPrimary;
-  final VoidCallback onSecondary;
 
   @override
   Widget build(BuildContext context) {
@@ -195,23 +191,24 @@ class _ButtonArea extends StatelessWidget {
         spacing: 8,
         children: [
           AppButton(
-            label: switch ((isLastPage, mode)) {
-              (false, _) => context.l10n.onboardingNext,
-              (true, .initial) => context.l10n.onboardingStart,
-              (true, .fromSettings) => context.l10n.commonClose,
-            },
-            onPressed: isCompleting ? null : onPrimary,
+            label: page.primaryLabel,
+            onPressed: isCompleting ? null : page.onPrimary,
             fullWidth: true,
             size: AppButtonSize.large,
           ),
-          if (mode == .initial)
-            AppButton(
-              label: context.l10n.onboardingSkip,
-              onPressed: isCompleting ? null : onSecondary,
+          Visibility(
+            visible: page.secondaryLabel != null,
+            maintainSize: true,
+            maintainAnimation: true,
+            maintainState: true,
+            child: AppButton(
+              label: page.secondaryLabel ?? '',
+              onPressed: isCompleting ? null : page.onSecondary,
               fullWidth: true,
               size: AppButtonSize.large,
               variant: AppButtonVariant.ghost,
             ),
+          ),
         ],
       ),
     );

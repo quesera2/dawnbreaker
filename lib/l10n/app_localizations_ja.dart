@@ -278,10 +278,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingPage2Body => '過去の登録から間隔を算出して、どのくらいの頻度でやっているのかを可視化します。';
 
   @override
-  String get onboardingPage3Title => '色でまとめると、見つけやすくなります';
+  String get onboardingPage4Title => '色でまとめると、見つけやすくなります';
 
   @override
-  String get onboardingPage3Body => 'カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。';
+  String get onboardingPage4Body => 'カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。';
 
   @override
   String get onboardingColorRed => 'キッチン';
@@ -315,6 +315,15 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get onboardingDemoTask5 => 'スニーカーの洗濯';
+
+  @override
+  String get onboardingPage3Title => '通知でタイムリーに気づく';
+
+  @override
+  String get onboardingPage3Body => 'スケジュールのタイミングで通知を受け取れます。';
+
+  @override
+  String get onboardingEnableNotification => '通知をONにする';
 
   @override
   String get onboardingNext => '次へ';

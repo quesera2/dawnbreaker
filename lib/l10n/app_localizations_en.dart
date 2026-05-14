@@ -282,10 +282,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Intervals are calculated from past records to visualize how often you\'re actually doing each task.';
 
   @override
-  String get onboardingPage3Title => 'Group by color to find tasks faster';
+  String get onboardingPage4Title => 'Group by color to find tasks faster';
 
   @override
-  String get onboardingPage3Body =>
+  String get onboardingPage4Body =>
       'Color-code tasks by category or location to make your list easy to scan at a glance.';
 
   @override
@@ -320,6 +320,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingDemoTask5 => 'Sneaker wash';
+
+  @override
+  String get onboardingPage3Title => 'Get timely reminders';
+
+  @override
+  String get onboardingPage3Body => 'Receive notifications when tasks are due.';
+
+  @override
+  String get onboardingEnableNotification => 'Enable Notifications';
 
   @override
   String get onboardingNext => 'Next';
