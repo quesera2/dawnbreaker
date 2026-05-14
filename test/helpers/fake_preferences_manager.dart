@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:dawnbreaker/data/preferences/preferences_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,8 +20,8 @@ class FakePreferencesManager extends PreferencesManager {
   }
 
   @override
-  Future<void> setBool(PreferenceKey key, {required bool value}) {
+  Future<void> set<T>(PreferenceKey<T> key, T value) {
     if (shouldThrow) throw Exception('storage error');
-    return super.setBool(key, value: value);
+    return super.set(key, value);
   }
 }

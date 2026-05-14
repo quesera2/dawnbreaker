@@ -1,4 +1,5 @@
 import 'package:dawnbreaker/app/app_colors.dart';
+import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:dawnbreaker/data/preferences/preferences_manager.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/app_detail_screen.dart';
 import 'package:dawnbreaker/ui/editor/widgets/editor_screen.dart';
@@ -15,7 +16,10 @@ part 'app_router.g.dart';
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
   final preferencesManager = ref.read(preferencesManagerProvider);
-  final isOnboardingCompleted = preferencesManager.getBool(.onboardingComplete);
+  final isOnboardingCompleted = preferencesManager.get(
+    onboardingCompleteKey,
+    defaultValue: false,
+  );
   final initialLocation = isOnboardingCompleted ? '/home' : '/onboarding';
 
   final router = GoRouter(

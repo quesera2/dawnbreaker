@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:dawnbreaker/data/preferences/preferences_manager.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -26,13 +27,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
   @override
   Stream<bool> watchNotificationEnabled() async* {
-    yield _manager.getBool(.notificationEnabled, defaultValue: true);
+    yield _manager.get(notificationEnabledKey, defaultValue: false);
     yield* _controller.stream;
   }
 
   @override
   Future<void> setNotificationEnabled(bool value) async {
-    await _manager.setBool(.notificationEnabled, value: value);
+    await _manager.set(notificationEnabledKey, value);
     _controller.add(value);
   }
 

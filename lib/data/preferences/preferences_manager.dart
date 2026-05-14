@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,14 +10,7 @@ part 'preferences_manager.g.dart';
 PreferencesManager preferencesManager(Ref ref) =>
     PreferencesManager(preferences: ref.watch(sharedPreferencesProvider));
 
-enum PreferenceKey {
-  onboardingComplete('onboarding_complete'),
-  notificationEnabled('notification_enabled');
-
-  const PreferenceKey(this.rawKey);
-
-  final String rawKey;
-}
+class PreferenceKeyDefinition {}
 
 class PreferencesManager {
   const PreferencesManager({required SharedPreferences preferences})
@@ -24,9 +18,22 @@ class PreferencesManager {
 
   final SharedPreferences _preferences;
 
-  bool getBool(PreferenceKey key, {bool defaultValue = false}) =>
-      _preferences.getBool(key.rawKey) ?? defaultValue;
+  T get<T>(PreferenceKey<T> key, {required T defaultValue}) {
+    final value = switch (T) {
+      const (bool) => _preferences.getBool(key.rawKey) as T?,
+      const (String) => _preferences.getString(key.rawKey) as T?,
+      const (int) => _preferences.getInt(key.rawKey) as T?,
+      _ => throw UnsupportedError('Unsupported type: $T'),
+    };
+    return value ?? defaultValue;
+  }
 
-  Future<void> setBool(PreferenceKey key, {required bool value}) =>
-      _preferences.setBool(key.rawKey, value);
+  Future<void> set<T>(PreferenceKey<T> key, T value) {
+    return switch (T) {
+      const (bool) => _preferences.setBool(key.rawKey, value as bool),
+      const (String) => _preferences.setString(key.rawKey, value as String),
+      const (int) => _preferences.setInt(key.rawKey, value as int),
+      _ => throw UnsupportedError('Unsupported type: $T'),
+    };
+  }
 }
