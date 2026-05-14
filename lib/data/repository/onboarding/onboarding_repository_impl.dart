@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:dawnbreaker/data/preferences/preferences_manager.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
@@ -15,9 +16,27 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
   final PreferencesManager _manager;
 
   @override
+  Future<void> enableNotificationSettings() async {
+    try {
+      await _manager.set(notificationEnabledKey, true);
+    } catch (e) {
+      throw OnboardingSaveException(e.toString());
+    }
+  }
+
+  @override
   Future<void> saveCompletion() async {
     try {
-      await _manager.setBool(PreferenceKey.onboardingComplete, value: true);
+      await _manager.set(onboardingCompleteKey, true);
+    } catch (e) {
+      throw OnboardingSaveException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> removeCompletion() async {
+    try {
+      await _manager.set(onboardingCompleteKey, false);
     } catch (e) {
       throw OnboardingSaveException(e.toString());
     }

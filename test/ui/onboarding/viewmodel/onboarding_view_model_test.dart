@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_ui_state.dart';
@@ -6,6 +7,7 @@ import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
 
 void main() {
@@ -14,11 +16,14 @@ void main() {
   group('OnboardingViewModel', () {
     late ProviderContainer container;
     late FakeOnboardingRepository fakeRepository;
+    late FakeNotificationService fakeNotificationService;
     late OnboardingViewModel viewModel;
     late OnboardingUiState viewState;
 
     void setUpState({OnboardingMode mode = .initial}) {
-      viewModel = container.read(onboardingViewModelProvider(mode: mode).notifier);
+      viewModel = container.read(
+        onboardingViewModelProvider(mode: mode).notifier,
+      );
       container.listen(
         onboardingViewModelProvider(mode: mode),
         (_, next) => viewState = next,
@@ -28,9 +33,13 @@ void main() {
 
     setUp(() {
       fakeRepository = FakeOnboardingRepository();
+      fakeNotificationService = FakeNotificationService();
       container = ProviderContainer(
         overrides: [
           onboardingRepositoryProvider.overrideWith((_) => fakeRepository),
+          notificationServiceProvider.overrideWith(
+            (_) async => fakeNotificationService,
+          ),
         ],
       );
     });
@@ -70,7 +79,7 @@ void main() {
           test(description, () async {
             setUpState(mode: mode);
             await viewModel.onClickDone();
-            expect(viewState.destination, expected);
+            expect(viewState.destination?.type, expected);
           });
         }
 
@@ -104,23 +113,41 @@ void main() {
       });
     });
 
+    group('onRequestNotification', () {
+      group('正常系', () {
+        setUp(setUpState);
+
+        for (final (permissionGranted, notificationEnabled, description) in [
+          (true, true, '通知を許可すると通知設定が有効になり次のページへ進む'),
+          (false, false, '通知を拒否しても次のページへ進み通知設定は変わらない'),
+        ]) {
+          test(description, () async {
+            fakeNotificationService.permissionResult = permissionGranted;
+            await viewModel.onRequestNotification();
+            expect(viewState.destination?.type, OnboardingDestination.next);
+            expect(
+              fakeRepository.enableNotificationCalled,
+              notificationEnabled,
+            );
+          });
+        }
+      });
+    });
+
     group('onClickSkip', () {
       group('正常系', () {
         setUp(setUpState);
 
         test('ホーム画面に遷移する', () async {
           await viewModel.onClickSkip();
-          expect(viewState.destination, OnboardingDestination.home);
+          expect(viewState.destination?.type, OnboardingDestination.home);
         });
       });
 
       group('異常系', () {
         test('設定画面からスキップすることはできない', () {
           setUpState(mode: .fromSettings);
-          expect(
-            () => viewModel.onClickSkip(),
-            throwsStateError,
-          );
+          expect(() => viewModel.onClickSkip(), throwsStateError);
         });
 
         test('エラーが通知される', () async {

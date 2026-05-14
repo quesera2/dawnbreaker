@@ -1,4 +1,4 @@
-import 'package:dawnbreaker/data/preferences/preferences_manager.dart';
+import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -19,10 +19,10 @@ void main() {
         repository = SettingsRepositoryImpl(manager);
       });
 
-      test('デフォルト値のtrueが流れる', () async {
+      test('デフォルト値のfalseが流れる', () async {
         await expectLater(
           repository.watchNotificationEnabled().take(1),
-          emits(true),
+          emits(false),
         );
       });
     });
@@ -30,7 +30,7 @@ void main() {
     group('初期値がfalseの場合', () {
       setUp(() async {
         manager = await FakePreferencesManager.create(
-          mockValues: {PreferenceKey.notificationEnabled.rawKey: false},
+          mockValues: {notificationEnabledKey.rawKey: false},
         );
         repository = SettingsRepositoryImpl(manager);
       });
@@ -53,21 +53,18 @@ void main() {
     test('変更した値がstreamに流れる', () async {
       final expectation = expectLater(
         repository.watchNotificationEnabled().take(2),
-        emitsInOrder([true, false]),
+        emitsInOrder([false, true]),
       );
       await pumpEventQueue();
 
-      await repository.setNotificationEnabled(false);
+      await repository.setNotificationEnabled(true);
       await expectation;
     });
 
     test('変更した値がストレージに保存される', () async {
       await repository.setNotificationEnabled(false);
 
-      expect(
-        manager.getBool(PreferenceKey.notificationEnabled, defaultValue: true),
-        false,
-      );
+      expect(manager.get(notificationEnabledKey, defaultValue: true), false);
     });
 
     test('変更後の新しいsubscriberは最新値を受け取る', () async {

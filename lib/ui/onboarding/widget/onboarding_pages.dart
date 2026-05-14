@@ -9,33 +9,64 @@ import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_list_item.dart';
+import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:flutter/material.dart';
 
-List<OnboardingPage> buildOnboardingPages(BuildContext context) {
+List<OnboardingPage> buildOnboardingPages(
+  BuildContext context, {
+  required OnboardingMode mode,
+  required VoidCallback onNext,
+  required VoidCallback onDone,
+  required VoidCallback onSkip,
+  required VoidCallback onRequestNotification,
+}) {
   final c = context.appColorScheme;
   final pageColors = [
     c.info,
     c.warning,
+    c.danger,
     c.successSoft,
   ].map((color) => Color.lerp(color, c.surface, 0.65)!).toList();
+
   return [
     OnboardingPage(
       pageTitle: context.l10n.onboardingPage1Title,
       pageDescription: context.l10n.onboardingPage1Body,
       backgroundColor: pageColors[0],
       pageDetail: _OnboardingPage1Description(backgroundColor: pageColors[0]),
+      primaryLabel: context.l10n.onboardingNext,
+      onPrimary: onNext,
     ),
     OnboardingPage(
       pageTitle: context.l10n.onboardingPage2Title,
       pageDescription: context.l10n.onboardingPage2Body,
       backgroundColor: pageColors[1],
       pageDetail: const _OnboardingPage2Description(),
+      primaryLabel: context.l10n.onboardingNext,
+      onPrimary: onNext,
     ),
     OnboardingPage(
       pageTitle: context.l10n.onboardingPage3Title,
-      pageDescription: context.l10n.onboardingPage3Body,
+      pageDescription: context.l10n.onboardingPage3Title,
       backgroundColor: pageColors[2],
       pageDetail: const _OnboardingPage3Description(),
+      primaryLabel: context.l10n.onboardingEnableNotification,
+      onPrimary: onRequestNotification,
+      secondaryLabel: context.l10n.onboardingNext,
+      onSecondary: onNext,
+    ),
+    OnboardingPage(
+      pageTitle: context.l10n.onboardingPage4Title,
+      pageDescription: context.l10n.onboardingPage4Body,
+      backgroundColor: pageColors[3],
+      pageDetail: const _OnboardingPage4Description(),
+      primaryLabel: switch (mode) {
+        .initial => context.l10n.onboardingStart,
+        .fromSettings => context.l10n.commonClose,
+      },
+      onPrimary: onDone,
+      secondaryLabel: mode == .initial ? context.l10n.onboardingSkip : null,
+      onSecondary: mode == .initial ? onSkip : null,
     ),
   ];
 }
@@ -47,12 +78,20 @@ class OnboardingPage extends StatelessWidget {
     required this.pageDescription,
     required this.pageDetail,
     required this.backgroundColor,
+    required this.primaryLabel,
+    required this.onPrimary,
+    this.secondaryLabel,
+    this.onSecondary,
   });
 
   final String pageTitle;
   final String pageDescription;
   final Widget pageDetail;
   final Color backgroundColor;
+  final String primaryLabel;
+  final VoidCallback onPrimary;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
 
   @override
   Widget build(BuildContext context) {
@@ -242,6 +281,19 @@ class _OnboardingPage2Description extends StatelessWidget {
 
 class _OnboardingPage3Description extends StatelessWidget {
   const _OnboardingPage3Description();
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(
+      Icons.notifications_active_outlined,
+      size: 120,
+      color: context.appColorScheme.primary,
+    );
+  }
+}
+
+class _OnboardingPage4Description extends StatelessWidget {
+  const _OnboardingPage4Description();
 
   @override
   Widget build(BuildContext context) {

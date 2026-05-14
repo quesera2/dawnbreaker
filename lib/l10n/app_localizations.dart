@@ -575,7 +575,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingPage1Body.
   ///
   /// In ja, this message translates to:
-  /// **'洗車、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。'**
+  /// **'オイル交換、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。'**
   String get onboardingPage1Body;
 
   /// No description provided for @onboardingPage2Title.
@@ -590,17 +590,17 @@ abstract class AppLocalizations {
   /// **'過去の登録から間隔を算出して、どのくらいの頻度でやっているのかを可視化します。'**
   String get onboardingPage2Body;
 
-  /// No description provided for @onboardingPage3Title.
+  /// No description provided for @onboardingPage4Title.
   ///
   /// In ja, this message translates to:
   /// **'色でまとめると、見つけやすくなります'**
-  String get onboardingPage3Title;
+  String get onboardingPage4Title;
 
-  /// No description provided for @onboardingPage3Body.
+  /// No description provided for @onboardingPage4Body.
   ///
   /// In ja, this message translates to:
   /// **'カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。'**
-  String get onboardingPage3Body;
+  String get onboardingPage4Body;
 
   /// No description provided for @onboardingColorRed.
   ///
@@ -611,13 +611,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingColorBlue.
   ///
   /// In ja, this message translates to:
-  /// **'エアコン'**
+  /// **'家電'**
   String get onboardingColorBlue;
 
   /// No description provided for @onboardingColorGreen.
   ///
   /// In ja, this message translates to:
-  /// **'庭'**
+  /// **'植物'**
   String get onboardingColorGreen;
 
   /// No description provided for @onboardingColorOrange.
@@ -629,7 +629,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingColorYellow.
   ///
   /// In ja, this message translates to:
-  /// **'食品'**
+  /// **'消耗品'**
   String get onboardingColorYellow;
 
   /// No description provided for @onboardingColorNone.
@@ -667,6 +667,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'スニーカーの洗濯'**
   String get onboardingDemoTask5;
+
+  /// No description provided for @onboardingPage3Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知でタイムリーに気づく'**
+  String get onboardingPage3Title;
+
+  /// No description provided for @onboardingPage3Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'スケジュールのタイミングで通知を受け取れます。'**
+  String get onboardingPage3Body;
+
+  /// No description provided for @onboardingEnableNotification.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知をONにする'**
+  String get onboardingEnableNotification;
 
   /// No description provided for @onboardingNext.
   ///
@@ -763,6 +781,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'すべてのタスクを削除しました'**
   String get settingsDebugAllTasksDeleted;
+
+  /// No description provided for @settingsDebugResetTutorialFlag.
+  ///
+  /// In ja, this message translates to:
+  /// **'チュートリアルフラグをリセット'**
+  String get settingsDebugResetTutorialFlag;
+
+  /// No description provided for @settingsDebugTutorialFlagReset.
+  ///
+  /// In ja, this message translates to:
+  /// **'チュートリアルフラグをリセットしました'**
+  String get settingsDebugTutorialFlagReset;
 
   /// No description provided for @notificationGroupTask.
   ///

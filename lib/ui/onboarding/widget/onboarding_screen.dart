@@ -43,7 +43,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _pages = buildOnboardingPages(context);
+    _pages = buildOnboardingPages(
+      context,
+      mode: widget.mode,
+      onNext: () => _pageController.nextPage(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      ),
+      onDone: _viewModel.onClickDone,
+      onSkip: _viewModel.onClickSkip,
+      onRequestNotification: _viewModel.onRequestNotification,
+    );
     _colors = _pages.map((page) => page.backgroundColor).toList();
   }
 
@@ -59,15 +69,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     listenMessages(_viewState);
     final isCompleting = ref.watch(_viewState.select((s) => s.isLoading));
 
-    ref.listen(_viewState.select((s) => s.destination), (_, destination) {
-      if (destination == null) return;
-      switch (destination) {
+    ref.listen(_viewState.select((s) => s.destination), (prev, next) {
+      if (next == null || prev?.id == next.id) return;
+
+      switch (next.type) {
         case .home:
           context.go('/home');
         case .newTask:
           context.go('/home/new_task');
         case .pop:
           context.pop();
+        case .next:
+          _pageController.nextPage(
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
       }
     });
 
@@ -99,17 +115,41 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
         body: SafeArea(
           child: Column(
             children: [
-              if (widget.mode == .fromSettings)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 4, 0, 0),
-                    child: AppIconButton(
-                      icon: Icons.close,
-                      onTap: () => context.pop(),
+              switch (widget.mode) {
+                .fromSettings => Visibility(
+                  visible: !_isLastPage,
+                  maintainSize: true,
+                  maintainAnimation: true,
+                  maintainState: true,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 4, 0, 0),
+                      child: AppIconButton(
+                        icon: Icons.close,
+                        onTap: () => context.pop(),
+                      ),
                     ),
                   ),
                 ),
+                .initial => Visibility(
+                  visible: !_isLastPage,
+                  maintainSize: true,
+                  maintainAnimation: true,
+                  maintainState: true,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 8, 4),
+                      child: AppIconButton(
+                        icon: Icons.skip_next,
+                        label: context.l10n.onboardingSkip,
+                        onTap: _viewModel.onClickSkip,
+                      ),
+                    ),
+                  ),
+                ),
+              },
               Expanded(
                 child: PageView(
                   controller: _pageController,
@@ -117,28 +157,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                   children: _pages,
                 ),
               ),
-              SmoothPageIndicator(
-                controller: _pageController,
-                count: _pages.length,
-                effect: ExpandingDotsEffect(
-                  dotHeight: 10,
-                  dotWidth: 10,
-                  activeDotColor: colorScheme.primary,
-                  dotColor: colorScheme.borderStrong,
+              Padding(
+                padding: const EdgeInsetsGeometry.symmetric(vertical: 16),
+                child: SmoothPageIndicator(
+                  controller: _pageController,
+                  count: _pages.length,
+                  effect: ExpandingDotsEffect(
+                    dotHeight: 10,
+                    dotWidth: 10,
+                    activeDotColor: colorScheme.primary,
+                    dotColor: colorScheme.borderStrong,
+                  ),
+                  onDotClicked: (index) => _pageController.jumpToPage(index),
                 ),
-                onDotClicked: (index) => _pageController.jumpToPage(index),
               ),
               _ButtonArea(
-                isLastPage: _isLastPage,
-                mode: widget.mode,
+                page: _pages[_currentPage],
                 isCompleting: isCompleting,
-                onPrimary: _isLastPage
-                    ? _viewModel.onClickDone
-                    : () => _pageController.nextPage(
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeInOut,
-                      ),
-                onSkip: _viewModel.onClickSkip,
               ),
             ],
           ),
@@ -149,19 +184,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
 }
 
 class _ButtonArea extends StatelessWidget {
-  const _ButtonArea({
-    required this.isLastPage,
-    required this.mode,
-    required this.isCompleting,
-    required this.onPrimary,
-    required this.onSkip,
-  });
+  const _ButtonArea({required this.page, required this.isCompleting});
 
-  final bool isLastPage;
-  final OnboardingMode mode;
+  final OnboardingPage page;
   final bool isCompleting;
-  final VoidCallback onPrimary;
-  final VoidCallback onSkip;
 
   @override
   Widget build(BuildContext context) {
@@ -171,23 +197,24 @@ class _ButtonArea extends StatelessWidget {
         spacing: 8,
         children: [
           AppButton(
-            label: switch ((isLastPage, mode)) {
-              (false, _) => context.l10n.onboardingNext,
-              (true, .initial) => context.l10n.onboardingStart,
-              (true, .fromSettings) => context.l10n.commonClose,
-            },
-            onPressed: isCompleting ? null : onPrimary,
+            label: page.primaryLabel,
+            onPressed: isCompleting ? null : page.onPrimary,
             fullWidth: true,
             size: AppButtonSize.large,
           ),
-          if (mode == .initial)
-            AppButton(
-              label: context.l10n.onboardingSkip,
-              onPressed: isCompleting ? null : onSkip,
+          Visibility(
+            visible: page.secondaryLabel != null,
+            maintainSize: true,
+            maintainAnimation: true,
+            maintainState: true,
+            child: AppButton(
+              label: page.secondaryLabel ?? '',
+              onPressed: isCompleting ? null : page.onSecondary,
               fullWidth: true,
               size: AppButtonSize.large,
               variant: AppButtonVariant.ghost,
             ),
+          ),
         ],
       ),
     );

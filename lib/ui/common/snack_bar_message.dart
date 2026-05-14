@@ -53,3 +53,7 @@ class DebugDummyTasksGeneratedMessage extends SnackBarMessage {
 class AllTasksDeletedMessage extends SnackBarMessage {
   AllTasksDeletedMessage();
 }
+
+class TutorialFlagResetMessage extends SnackBarMessage {
+  TutorialFlagResetMessage();
+}

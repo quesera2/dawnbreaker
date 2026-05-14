@@ -154,7 +154,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .bottom,
+        type: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugDeleteAllTasks),
@@ -165,6 +165,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           ),
         ),
         onTap: () => viewModel.deleteAllTasks(),
+      ),
+      divider,
+      AppListCell(
+        type: .bottom,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(context.l10n.settingsDebugResetTutorialFlag),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: colorScheme.textMuted,
+          ),
+        ),
+        onTap: () => viewModel.deleteTutorialFlag(),
       ),
     ];
   }

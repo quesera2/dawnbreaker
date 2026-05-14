@@ -1,10 +1,13 @@
+import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
+import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_ui_state.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../../helpers/fake_onboarding_repository.dart';
 import '../../../helpers/fake_settings_repository.dart';
 import '../../../helpers/riverpod_test_helper.dart';
 
@@ -14,6 +17,7 @@ void main() {
   late ProviderContainer container;
   late SettingsViewModel viewModel;
   late SettingsUiState viewState;
+  late FakeOnboardingRepository fakeOnboardingRepository;
 
   void setUpContainer({bool notificationEnabled = true}) {
     PackageInfo.setMockInitialValues(
@@ -23,12 +27,16 @@ void main() {
       buildNumber: '42',
       buildSignature: '',
     );
+    fakeOnboardingRepository = FakeOnboardingRepository();
     container = ProviderContainer(
       overrides: [
         settingsRepositoryProvider.overrideWithValue(
           FakeSettingsRepository(
             initialNotificationEnabled: notificationEnabled,
           ),
+        ),
+        onboardingRepositoryProvider.overrideWith(
+          (_) => fakeOnboardingRepository,
         ),
       ],
     );
@@ -104,6 +112,20 @@ void main() {
           await viewModel.setNotificationEnabled(false);
           await viewModel.setNotificationEnabled(true);
           expect(viewState.notificationEnabled, true);
+        });
+      });
+
+      group('deleteTutorialFlag', () {
+        setUp(() async => setUpLoaded());
+
+        test('チュートリアルフラグが削除される', () async {
+          await viewModel.deleteTutorialFlag();
+          expect(fakeOnboardingRepository.removeCompletionCalled, true);
+        });
+
+        test('完了メッセージが表示される', () async {
+          await viewModel.deleteTutorialFlag();
+          expect(viewState.snackBarMessage, isA<TutorialFlagResetMessage>());
         });
       });
     });

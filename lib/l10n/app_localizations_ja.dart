@@ -269,7 +269,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get onboardingPage1Body =>
-      '洗車、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。';
+      'オイル交換、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。';
 
   @override
   String get onboardingPage2Title => '次はいつごろだっけ？　の悩みをなくす';
@@ -278,25 +278,25 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingPage2Body => '過去の登録から間隔を算出して、どのくらいの頻度でやっているのかを可視化します。';
 
   @override
-  String get onboardingPage3Title => '色でまとめると、見つけやすくなります';
+  String get onboardingPage4Title => '色でまとめると、見つけやすくなります';
 
   @override
-  String get onboardingPage3Body => 'カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。';
+  String get onboardingPage4Body => 'カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。';
 
   @override
   String get onboardingColorRed => 'キッチン';
 
   @override
-  String get onboardingColorBlue => 'エアコン';
+  String get onboardingColorBlue => '家電';
 
   @override
-  String get onboardingColorGreen => '庭';
+  String get onboardingColorGreen => '植物';
 
   @override
   String get onboardingColorOrange => 'ベランダ';
 
   @override
-  String get onboardingColorYellow => '食品';
+  String get onboardingColorYellow => '消耗品';
 
   @override
   String get onboardingColorNone => '車両';
@@ -315,6 +315,15 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get onboardingDemoTask5 => 'スニーカーの洗濯';
+
+  @override
+  String get onboardingPage3Title => '通知でタイムリーに気づく';
+
+  @override
+  String get onboardingPage3Body => 'スケジュールのタイミングで通知を受け取れます。';
+
+  @override
+  String get onboardingEnableNotification => '通知をONにする';
 
   @override
   String get onboardingNext => '次へ';
@@ -363,6 +372,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsDebugAllTasksDeleted => 'すべてのタスクを削除しました';
+
+  @override
+  String get settingsDebugResetTutorialFlag => 'チュートリアルフラグをリセット';
+
+  @override
+  String get settingsDebugTutorialFlagReset => 'チュートリアルフラグをリセットしました';
 
   @override
   String get notificationGroupTask => 'タスク通知';
