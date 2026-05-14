@@ -1,5 +1,7 @@
+import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_ui_state.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_view_model.dart';
@@ -7,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
 import '../../../helpers/fake_settings_repository.dart';
 import '../../../helpers/riverpod_test_helper.dart';
@@ -18,8 +21,14 @@ void main() {
   late SettingsViewModel viewModel;
   late SettingsUiState viewState;
   late FakeOnboardingRepository fakeOnboardingRepository;
+  late FakeSettingsRepository fakeSettingsRepository;
+  late FakeNotificationService fakeNotificationService;
 
-  void setUpContainer({bool notificationEnabled = true}) {
+  void setUpContainer({
+    bool notificationEnabled = true,
+    bool checkPermissionResult = true,
+    bool permissionResult = true,
+  }) {
     PackageInfo.setMockInitialValues(
       appName: 'dawnbreaker',
       packageName: 'com.example.dawnbreaker',
@@ -28,22 +37,36 @@ void main() {
       buildSignature: '',
     );
     fakeOnboardingRepository = FakeOnboardingRepository();
+    fakeSettingsRepository = FakeSettingsRepository(
+      initialNotificationEnabled: notificationEnabled,
+    );
+    fakeNotificationService = FakeNotificationService(
+      checkPermissionResult: checkPermissionResult,
+      permissionResult: permissionResult,
+    );
     container = ProviderContainer(
       overrides: [
-        settingsRepositoryProvider.overrideWithValue(
-          FakeSettingsRepository(
-            initialNotificationEnabled: notificationEnabled,
-          ),
-        ),
+        settingsRepositoryProvider.overrideWithValue(fakeSettingsRepository),
         onboardingRepositoryProvider.overrideWith(
           (_) => fakeOnboardingRepository,
+        ),
+        notificationServiceProvider.overrideWith(
+          (_) async => fakeNotificationService,
         ),
       ],
     );
   }
 
-  Future<void> setUpLoaded({bool notificationEnabled = true}) async {
-    setUpContainer(notificationEnabled: notificationEnabled);
+  Future<void> setUpLoaded({
+    bool notificationEnabled = true,
+    bool checkPermissionResult = true,
+    bool permissionResult = true,
+  }) async {
+    setUpContainer(
+      notificationEnabled: notificationEnabled,
+      checkPermissionResult: checkPermissionResult,
+      permissionResult: permissionResult,
+    );
     await waitUntil(container, settingsViewModelProvider, (s) => !s.isLoading);
     viewModel = container.read(settingsViewModelProvider.notifier);
     container.listen(
@@ -94,24 +117,89 @@ void main() {
       });
 
       group('setNotificationEnabled', () {
+        group('falseの場合', () {
+          setUp(() async => setUpLoaded());
+
+          test('処理中はisNotificationUpdatingがtrueになる', () async {
+            final future = viewModel.setNotificationEnabled(false);
+            expect(viewState.isNotificationUpdating, true);
+            await future;
+            expect(viewState.isNotificationUpdating, false);
+          });
+
+          test('通知が無効になる', () async {
+            await viewModel.setNotificationEnabled(false);
+            expect(viewState.notificationEnabled, false);
+          });
+        });
+
+        group('trueの場合', () {
+          group('権限がある場合', () {
+            setUp(
+              () async => setUpLoaded(
+                notificationEnabled: false,
+                checkPermissionResult: true,
+              ),
+            );
+
+            test('通知が有効になる', () async {
+              await viewModel.setNotificationEnabled(true);
+              expect(viewState.notificationEnabled, true);
+            });
+
+            test('権限取得ダイアログを表示しない', () async {
+              await viewModel.setNotificationEnabled(true);
+              expect(viewState.dialogMessage, isNull);
+            });
+          });
+
+          group('権限がなく取得に成功した場合', () {
+            setUp(
+              () async => setUpLoaded(
+                notificationEnabled: false,
+                checkPermissionResult: false,
+                permissionResult: true,
+              ),
+            );
+
+            test('通知が有効になる', () async {
+              await viewModel.setNotificationEnabled(true);
+              expect(viewState.notificationEnabled, true);
+            });
+          });
+
+          group('権限がなく取得に失敗した場合', () {
+            setUp(
+              () async => setUpLoaded(
+                notificationEnabled: false,
+                checkPermissionResult: false,
+                permissionResult: false,
+              ),
+            );
+
+            test('通知がOFFのままになる', () async {
+              await viewModel.setNotificationEnabled(true);
+              expect(viewState.notificationEnabled, false);
+            });
+
+            test('権限拒否ダイアログが表示される', () async {
+              await viewModel.setNotificationEnabled(true);
+              expect(
+                viewState.dialogMessage,
+                isA<NotificationPermissionDeniedMessage>(),
+              );
+            });
+          });
+        });
+      });
+
+      group('通知設定の外部変更', () {
         setUp(() async => setUpLoaded());
 
-        test('処理中はisNotificationUpdatingがtrueになる', () async {
-          final future = viewModel.setNotificationEnabled(false);
-          expect(viewState.isNotificationUpdating, true);
-          await future;
-          expect(viewState.isNotificationUpdating, false);
-        });
-
-        test('通知が無効になる', () async {
-          await viewModel.setNotificationEnabled(false);
+        test('リポジトリの変更がstateに反映される', () async {
+          await fakeSettingsRepository.setNotificationEnabled(false);
+          await pumpEventQueue();
           expect(viewState.notificationEnabled, false);
-        });
-
-        test('通知が有効になる', () async {
-          await viewModel.setNotificationEnabled(false);
-          await viewModel.setNotificationEnabled(true);
-          expect(viewState.notificationEnabled, true);
         });
       });
 
