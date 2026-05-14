@@ -182,13 +182,13 @@ void main() {
 
         test('画面を閉じる状態になる', () async {
           fakeRepository.emitError(const TaskLoadException('stream error'));
-          await Future.microtask(() {});
+          await pumpEventQueue();
           expect(viewState.shouldPop, true);
         });
 
         test('ローディング状態が解除される', () async {
           fakeRepository.emitError(const TaskLoadException('stream error'));
-          await Future.microtask(() {});
+          await pumpEventQueue();
           expect(viewState.isLoading, false);
         });
       });
@@ -271,7 +271,7 @@ void main() {
 
             fakeRepository.shouldThrow = false;
             handler!();
-            await Future.microtask(() {});
+            await pumpEventQueue();
 
             expect(
               viewState.snackBarMessage,
@@ -378,7 +378,7 @@ void main() {
 
             fakeRepository.shouldThrow = false;
             handler!();
-            await Future.microtask(() {});
+            await pumpEventQueue();
 
             expect(viewState.snackBarMessage, isA<TaskCompleteSuccess>());
           });
@@ -406,7 +406,7 @@ void main() {
           final handler = viewState.dialogMessage?.handler;
           expect(handler, isNotNull);
           handler!();
-          await Future.microtask(() {});
+          await pumpEventQueue();
           expect(fakeRepository.containsTask(_taskOneHistory.id), false);
         });
       });
@@ -471,7 +471,7 @@ void main() {
 
             fakeRepository.shouldThrow = false;
             handler!();
-            await Future.microtask(() {});
+            await pumpEventQueue();
 
             expect(viewState.shouldPop, true);
           });
@@ -574,7 +574,7 @@ void main() {
 
             fakeRepository.shouldThrow = false;
             handler!();
-            await Future.microtask(() {});
+            await pumpEventQueue();
 
             expect(
               viewState.snackBarMessage,

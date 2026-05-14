@@ -98,6 +98,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonClose => 'Close';
 
   @override
+  String get commonOpenSettings => 'Open Settings';
+
+  @override
   String get commonUnitDay => 'd';
 
   @override
@@ -350,6 +353,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsNotificationSubtitle => 'You\'ll be notified at 9:00 AM';
+
+  @override
+  String get settingsNotificationPermissionTitle =>
+      'Notification Permission Required';
+
+  @override
+  String get settingsNotificationPermissionMessage =>
+      'Notifications are not allowed. Please enable them in the Settings app.';
 
   @override
   String get settingsSectionInfo => 'Info';

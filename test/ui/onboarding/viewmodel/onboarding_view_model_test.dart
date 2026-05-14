@@ -132,6 +132,24 @@ void main() {
           });
         }
       });
+
+      group('異常系', () {
+        setUp(() {
+          fakeRepository.shouldThrow = true;
+          fakeNotificationService.permissionResult = true;
+          setUpState();
+        });
+
+        test('エラーが通知される', () async {
+          await viewModel.onRequestNotification();
+          expect(viewState.dialogMessage, isA<OnboardingSaveErrorMessage>());
+        });
+
+        test('画面遷移しない', () async {
+          await viewModel.onRequestNotification();
+          expect(viewState.destination, isNull);
+        });
+      });
     });
 
     group('onClickSkip', () {

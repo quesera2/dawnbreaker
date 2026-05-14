@@ -1,4 +1,5 @@
 import 'package:dawnbreaker/app/app.dart';
+import 'package:dawnbreaker/core/notification/notification_permission_observer.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/task_notification_sync_notifier.dart';
 import 'package:dawnbreaker/data/preferences/shared_preferences_provider.dart';
@@ -22,6 +23,7 @@ void main() async {
   );
   await notificationService.initialize();
   container.read(taskNotificationSyncProvider);
+  container.read(notificationPermissionObserverProvider);
 
   runApp(UncontrolledProviderScope(container: container, child: const App()));
 }

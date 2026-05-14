@@ -46,7 +46,13 @@ class OnboardingViewModel extends _$OnboardingViewModel {
     );
     final isGranted = await notificationService.requestPermission();
     if (isGranted) {
-      await _repository.enableNotificationSettings();
+      try {
+        await _repository.enableNotificationSettings();
+      } on OnboardingRepositoryException {
+        if (!ref.mounted) return;
+        state = state.copyWith(dialogMessage: OnboardingSaveErrorMessage());
+        return;
+      }
     }
     if (!ref.mounted) return;
     state = state.copyWith(destination: OnboardingDestinationEvent(.next));

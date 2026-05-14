@@ -1,9 +1,12 @@
 import 'dart:math';
 
+import 'package:app_settings/app_settings.dart';
+import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/dummy_tasks.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_ui_state.dart';
@@ -19,6 +22,11 @@ class SettingsViewModel extends _$SettingsViewModel {
   @override
   SettingsUiState build() {
     _repository = ref.read(settingsRepositoryProvider);
+    ref.listen(notificationEnabledProvider, (_, next) {
+      next.whenData(
+        (enabled) => state = state.copyWith(notificationEnabled: enabled),
+      );
+    });
     _initialize();
     return const SettingsUiState();
   }
@@ -37,11 +45,55 @@ class SettingsViewModel extends _$SettingsViewModel {
   }
 
   Future<void> setNotificationEnabled(bool value) async {
+    if (value) {
+      await _enableNotification();
+    } else {
+      await _disableNotification();
+    }
+  }
+
+  Future<void> _enableNotification() async {
     state = state.copyWith(
       isNotificationUpdating: true,
-      notificationEnabled: value,
+      notificationEnabled: true,
     );
-    await ref.read(settingsRepositoryProvider).setNotificationEnabled(value);
+    final notificationService = await ref.read(
+      notificationServiceProvider.future,
+    );
+
+    final hasPermission = await notificationService.checkPermission();
+    if (hasPermission) {
+      await ref.read(settingsRepositoryProvider).setNotificationEnabled(true);
+      if (!ref.mounted) return;
+      state = state.copyWith(isNotificationUpdating: false);
+      return;
+    }
+
+    final isGranted = await notificationService.requestPermission();
+    if (!ref.mounted) return;
+
+    if (isGranted) {
+      await ref.read(settingsRepositoryProvider).setNotificationEnabled(true);
+      if (!ref.mounted) return;
+      state = state.copyWith(isNotificationUpdating: false);
+    } else {
+      state = state.copyWith(
+        isNotificationUpdating: false,
+        notificationEnabled: false,
+        dialogMessage: NotificationPermissionDeniedMessage(
+          handler: () =>
+              AppSettings.openAppSettings(type: AppSettingsType.notification),
+        ),
+      );
+    }
+  }
+
+  Future<void> _disableNotification() async {
+    state = state.copyWith(
+      isNotificationUpdating: true,
+      notificationEnabled: false,
+    );
+    await ref.read(settingsRepositoryProvider).setNotificationEnabled(false);
     if (!ref.mounted) return;
     state = state.copyWith(isNotificationUpdating: false);
   }
