@@ -12,64 +12,123 @@ import 'package:dawnbreaker/ui/common/components/app_task_list_item.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:flutter/material.dart';
 
-List<OnboardingPage> buildOnboardingPages(
+typedef ButtonConfig = ({
+  String primaryLabel,
+  VoidCallback primaryAction,
+  String? secondaryLabel,
+  VoidCallback? secondaryAction,
+  bool hasSecondaryArea,
+});
+
+typedef OnboardingPageData = ({OnboardingPage page, ButtonConfig buttons});
+
+List<OnboardingPageData> buildOnboardingPages(
   BuildContext context, {
+  required List<Color> pageColors,
   required OnboardingMode mode,
   required VoidCallback onNext,
   required VoidCallback onDone,
   required VoidCallback onSkip,
   required VoidCallback onRequestNotification,
-}) {
-  final c = context.appColorScheme;
-  final pageColors = [
-    c.info,
-    c.warning,
-    c.danger,
-    c.successSoft,
-  ].map((color) => Color.lerp(color, c.surface, 0.65)!).toList();
-
-  return [
-    OnboardingPage(
+}) => [
+  (
+    page: OnboardingPage(
       pageTitle: context.l10n.onboardingPage1Title,
       pageDescription: context.l10n.onboardingPage1Body,
       backgroundColor: pageColors[0],
       pageDetail: _OnboardingPage1Description(backgroundColor: pageColors[0]),
-      primaryLabel: context.l10n.onboardingNext,
-      onPrimary: onNext,
     ),
-    OnboardingPage(
+    buttons: _nextOnlyButtons(context, mode, onNext: onNext),
+  ),
+  (
+    page: OnboardingPage(
       pageTitle: context.l10n.onboardingPage2Title,
       pageDescription: context.l10n.onboardingPage2Body,
       backgroundColor: pageColors[1],
       pageDetail: const _OnboardingPage2Description(),
-      primaryLabel: context.l10n.onboardingNext,
-      onPrimary: onNext,
     ),
-    OnboardingPage(
+    buttons: _nextOnlyButtons(context, mode, onNext: onNext),
+  ),
+  (
+    page: OnboardingPage(
       pageTitle: context.l10n.onboardingPage3Title,
       pageDescription: context.l10n.onboardingPage3Title,
       backgroundColor: pageColors[2],
       pageDetail: const _OnboardingPage3Description(),
-      primaryLabel: context.l10n.onboardingEnableNotification,
-      onPrimary: onRequestNotification,
-      secondaryLabel: context.l10n.onboardingNext,
-      onSecondary: onNext,
     ),
-    OnboardingPage(
+    buttons: _notificationPageButtons(
+      context,
+      mode,
+      onNext: onNext,
+      onRequestNotification: onRequestNotification,
+    ),
+  ),
+  (
+    page: OnboardingPage(
       pageTitle: context.l10n.onboardingPage4Title,
       pageDescription: context.l10n.onboardingPage4Body,
       backgroundColor: pageColors[3],
       pageDetail: const _OnboardingPage4Description(),
-      primaryLabel: switch (mode) {
-        .initial => context.l10n.onboardingStart,
-        .fromSettings => context.l10n.commonClose,
-      },
-      onPrimary: onDone,
-      secondaryLabel: mode == .initial ? context.l10n.onboardingSkip : null,
-      onSecondary: mode == .initial ? onSkip : null,
     ),
-  ];
-}
+    buttons: _lastPageButtons(context, mode, onDone: onDone, onSkip: onSkip),
+  ),
+];
+
+ButtonConfig _nextOnlyButtons(
+  BuildContext context,
+  OnboardingMode mode, {
+  required VoidCallback onNext,
+}) => (
+  primaryLabel: context.l10n.onboardingNext,
+  primaryAction: onNext,
+  secondaryLabel: null,
+  secondaryAction: null,
+  hasSecondaryArea: mode == .initial,
+);
+
+ButtonConfig _notificationPageButtons(
+  BuildContext context,
+  OnboardingMode mode, {
+  required VoidCallback onNext,
+  required VoidCallback onRequestNotification,
+}) => switch (mode) {
+  .initial => (
+    primaryLabel: context.l10n.onboardingEnableNotification,
+    primaryAction: onRequestNotification,
+    secondaryLabel: context.l10n.onboardingNext,
+    secondaryAction: onNext,
+    hasSecondaryArea: true,
+  ),
+  .fromSettings => (
+    primaryLabel: context.l10n.onboardingNext,
+    primaryAction: onNext,
+    secondaryLabel: null,
+    secondaryAction: null,
+    hasSecondaryArea: false,
+  ),
+};
+
+ButtonConfig _lastPageButtons(
+  BuildContext context,
+  OnboardingMode mode, {
+  required VoidCallback onDone,
+  required VoidCallback onSkip,
+}) => switch (mode) {
+  .initial => (
+    primaryLabel: context.l10n.onboardingStart,
+    primaryAction: onDone,
+    secondaryLabel: context.l10n.onboardingSkip,
+    secondaryAction: onSkip,
+    hasSecondaryArea: true,
+  ),
+  .fromSettings => (
+    primaryLabel: context.l10n.commonClose,
+    primaryAction: onDone,
+    secondaryLabel: null,
+    secondaryAction: null,
+    hasSecondaryArea: false,
+  ),
+};
 
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({
@@ -78,20 +137,12 @@ class OnboardingPage extends StatelessWidget {
     required this.pageDescription,
     required this.pageDetail,
     required this.backgroundColor,
-    required this.primaryLabel,
-    required this.onPrimary,
-    this.secondaryLabel,
-    this.onSecondary,
   });
 
   final String pageTitle;
   final String pageDescription;
   final Widget pageDetail;
   final Color backgroundColor;
-  final String primaryLabel;
-  final VoidCallback onPrimary;
-  final String? secondaryLabel;
-  final VoidCallback? onSecondary;
 
   @override
   Widget build(BuildContext context) {

@@ -26,11 +26,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
   late final OnboardingViewModelProvider _viewState;
   late final OnboardingViewModel _viewModel;
 
-  late List<OnboardingPage> _pages;
+  late List<OnboardingPageData> _pageData;
   late List<Color> _colors;
   int _currentPage = 0;
 
-  bool get _isLastPage => _currentPage == _pages.length - 1;
+  bool get _isLastPage => _currentPage == _pageData.length - 1;
 
   @override
   void initState() {
@@ -43,8 +43,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _pages = buildOnboardingPages(
+    final c = context.appColorScheme;
+    _colors = [
+      c.info,
+      c.warning,
+      c.danger,
+      c.successSoft,
+    ].map((color) => Color.lerp(color, c.surface, 0.65)!).toList();
+    _pageData = buildOnboardingPages(
       context,
+      pageColors: _colors,
       mode: widget.mode,
       onNext: () => _pageController.nextPage(
         duration: const Duration(milliseconds: 500),
@@ -54,7 +62,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
       onSkip: _viewModel.onClickSkip,
       onRequestNotification: _viewModel.onRequestNotification,
     );
-    _colors = _pages.map((page) => page.backgroundColor).toList();
   }
 
   @override
@@ -154,14 +161,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                 child: PageView(
                   controller: _pageController,
                   onPageChanged: (page) => setState(() => _currentPage = page),
-                  children: _pages,
+                  children: _pageData.map((d) => d.page).toList(),
                 ),
               ),
               Padding(
                 padding: const EdgeInsetsGeometry.symmetric(vertical: 16),
                 child: SmoothPageIndicator(
                   controller: _pageController,
-                  count: _pages.length,
+                  count: _pageData.length,
                   effect: ExpandingDotsEffect(
                     dotHeight: 10,
                     dotWidth: 10,
@@ -172,7 +179,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                 ),
               ),
               _ButtonArea(
-                page: _pages[_currentPage],
+                buttons: _pageData[_currentPage].buttons,
                 isCompleting: isCompleting,
               ),
             ],
@@ -184,9 +191,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
 }
 
 class _ButtonArea extends StatelessWidget {
-  const _ButtonArea({required this.page, required this.isCompleting});
+  const _ButtonArea({required this.buttons, required this.isCompleting});
 
-  final OnboardingPage page;
+  final ButtonConfig buttons;
   final bool isCompleting;
 
   @override
@@ -197,24 +204,25 @@ class _ButtonArea extends StatelessWidget {
         spacing: 8,
         children: [
           AppButton(
-            label: page.primaryLabel,
-            onPressed: isCompleting ? null : page.onPrimary,
+            label: buttons.primaryLabel,
+            onPressed: isCompleting ? null : buttons.primaryAction,
             fullWidth: true,
             size: AppButtonSize.large,
           ),
-          Visibility(
-            visible: page.secondaryLabel != null,
-            maintainSize: true,
-            maintainAnimation: true,
-            maintainState: true,
-            child: AppButton(
-              label: page.secondaryLabel ?? '',
-              onPressed: isCompleting ? null : page.onSecondary,
-              fullWidth: true,
-              size: AppButtonSize.large,
-              variant: AppButtonVariant.ghost,
+          if (buttons.hasSecondaryArea)
+            Visibility(
+              visible: buttons.secondaryLabel != null,
+              maintainSize: true,
+              maintainAnimation: true,
+              maintainState: true,
+              child: AppButton(
+                label: buttons.secondaryLabel ?? '',
+                onPressed: isCompleting ? null : buttons.secondaryAction,
+                fullWidth: true,
+                size: AppButtonSize.large,
+                variant: AppButtonVariant.ghost,
+              ),
             ),
-          ),
         ],
       ),
     );
