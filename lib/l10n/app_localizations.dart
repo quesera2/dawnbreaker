@@ -764,6 +764,18 @@ abstract class AppLocalizations {
   /// **'すべてのタスクを削除しました'**
   String get settingsDebugAllTasksDeleted;
 
+  /// No description provided for @settingsDebugResetTutorialFlag.
+  ///
+  /// In ja, this message translates to:
+  /// **'チュートリアルフラグをリセット'**
+  String get settingsDebugResetTutorialFlag;
+
+  /// No description provided for @settingsDebugTutorialFlagReset.
+  ///
+  /// In ja, this message translates to:
+  /// **'チュートリアルフラグをリセットしました'**
+  String get settingsDebugTutorialFlagReset;
+
   /// No description provided for @notificationGroupTask.
   ///
   /// In ja, this message translates to:

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
@@ -60,5 +61,12 @@ class SettingsViewModel extends _$SettingsViewModel {
     await repository.deleteAllTasks();
     if (!ref.mounted) return;
     state = state.copyWith(snackBarMessage: AllTasksDeletedMessage());
+  }
+
+  Future<void> deleteTutorialFlag() async {
+    final repository = ref.read(onboardingRepositoryProvider);
+    await repository.removeCompletion();
+    if (!ref.mounted) return;
+    state = state.copyWith(snackBarMessage: TutorialFlagResetMessage());
   }
 }

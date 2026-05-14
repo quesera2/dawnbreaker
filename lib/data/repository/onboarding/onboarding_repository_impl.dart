@@ -23,4 +23,13 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       throw OnboardingSaveException(e.toString());
     }
   }
+
+  @override
+  Future<void> removeCompletion() async {
+    try {
+      await _manager.set(onboardingCompleteKey, false);
+    } catch (e) {
+      throw OnboardingSaveException(e.toString());
+    }
+  }
 }

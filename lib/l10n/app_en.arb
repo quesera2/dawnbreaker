@@ -197,6 +197,8 @@
   "settingsDebugDummyTasksGenerated": "Dummy tasks generated",
   "settingsDebugDeleteAllTasks": "Delete all tasks",
   "settingsDebugAllTasksDeleted": "All tasks deleted",
+  "settingsDebugResetTutorialFlag": "Reset tutorial flag",
+  "settingsDebugTutorialFlagReset": "Tutorial flag reset",
   "notificationGroupTask": "Task Notifications",
   "notificationChannelTask": "Individual Task Notification",
   "notificationTaskBody": "It's due today"

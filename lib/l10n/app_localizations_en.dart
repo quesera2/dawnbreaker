@@ -370,6 +370,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsDebugAllTasksDeleted => 'All tasks deleted';
 
   @override
+  String get settingsDebugResetTutorialFlag => 'Reset tutorial flag';
+
+  @override
+  String get settingsDebugTutorialFlagReset => 'Tutorial flag reset';
+
+  @override
   String get notificationGroupTask => 'Task Notifications';
 
   @override

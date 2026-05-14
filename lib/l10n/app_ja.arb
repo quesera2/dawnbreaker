@@ -197,6 +197,8 @@
   "settingsDebugDummyTasksGenerated": "ダミータスクを生成しました",
   "settingsDebugDeleteAllTasks": "すべてのタスクを削除",
   "settingsDebugAllTasksDeleted": "すべてのタスクを削除しました",
+  "settingsDebugResetTutorialFlag": "チュートリアルフラグをリセット",
+  "settingsDebugTutorialFlagReset": "チュートリアルフラグをリセットしました",
   "notificationGroupTask": "タスク通知",
   "notificationChannelTask": "個別タスク通知",
   "notificationTaskBody": "予定日になりました"

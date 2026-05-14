@@ -365,6 +365,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsDebugAllTasksDeleted => 'すべてのタスクを削除しました';
 
   @override
+  String get settingsDebugResetTutorialFlag => 'チュートリアルフラグをリセット';
+
+  @override
+  String get settingsDebugTutorialFlagReset => 'チュートリアルフラグをリセットしました';
+
+  @override
   String get notificationGroupTask => 'タスク通知';
 
   @override
