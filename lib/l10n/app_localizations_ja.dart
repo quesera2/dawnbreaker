@@ -98,6 +98,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commonClose => '閉じる';
 
   @override
+  String get commonOpenSettings => '設定を開く';
+
+  @override
   String get commonUnitDay => '日';
 
   @override
@@ -345,6 +348,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsNotificationSubtitle => '朝 9:00 に通知が届きます';
+
+  @override
+  String get settingsNotificationPermissionTitle => '通知の許可が必要です';
+
+  @override
+  String get settingsNotificationPermissionMessage =>
+      '通知が許可されていません。設定アプリから通知を有効にしてください。';
 
   @override
   String get settingsSectionInfo => '情報';

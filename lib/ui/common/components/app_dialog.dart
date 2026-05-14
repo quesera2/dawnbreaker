@@ -87,6 +87,11 @@ class AppDialog extends StatelessWidget {
     messageText: context.l10n.onboardingErrorSaveFailed,
     actionLabel: '',
   ),
+  NotificationPermissionDeniedMessage() => (
+    title: context.l10n.settingsNotificationPermissionTitle,
+    messageText: context.l10n.settingsNotificationPermissionMessage,
+    actionLabel: context.l10n.commonOpenSettings,
+  ),
   UnknownErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.commonErrorUnknown,

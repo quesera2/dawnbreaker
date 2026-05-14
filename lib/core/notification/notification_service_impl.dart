@@ -87,6 +87,21 @@ class NotificationServiceImpl implements NotificationService {
   }
 
   @override
+  Future<bool> checkPermission() async {
+    final isEnabled = switch (defaultTargetPlatform) {
+      TargetPlatform.android =>
+        await _androidImplementation?.areNotificationsEnabled(),
+      TargetPlatform.iOS => await _iOSImplementation?.checkPermissions().then(
+        (p) => p?.isEnabled,
+      ),
+      _ => throw UnsupportedError(
+        'Unsupported platform: $defaultTargetPlatform',
+      ),
+    };
+    return isEnabled ?? false;
+  }
+
+  @override
   Future<bool> requestPermission() async {
     final isGranted = switch (defaultTargetPlatform) {
       TargetPlatform.android =>

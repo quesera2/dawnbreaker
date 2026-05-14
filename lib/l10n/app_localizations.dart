@@ -272,6 +272,12 @@ abstract class AppLocalizations {
   /// **'閉じる'**
   String get commonClose;
 
+  /// No description provided for @commonOpenSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定を開く'**
+  String get commonOpenSettings;
+
   /// No description provided for @commonUnitDay.
   ///
   /// In ja, this message translates to:
@@ -727,6 +733,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'朝 9:00 に通知が届きます'**
   String get settingsNotificationSubtitle;
+
+  /// No description provided for @settingsNotificationPermissionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知の許可が必要です'**
+  String get settingsNotificationPermissionTitle;
+
+  /// No description provided for @settingsNotificationPermissionMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知が許可されていません。設定アプリから通知を有効にしてください。'**
+  String get settingsNotificationPermissionMessage;
 
   /// No description provided for @settingsSectionInfo.
   ///

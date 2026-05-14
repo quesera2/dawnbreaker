@@ -21,10 +21,17 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen>
     with MessagesListenMixin<SettingsScreen> {
+  late SettingsViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = ref.read(settingsViewModelProvider.notifier);
+  }
+
   @override
   Widget build(BuildContext context) {
     listenMessages(settingsViewModelProvider);
-    final viewModel = ref.read(settingsViewModelProvider.notifier);
     final viewState = ref.watch(settingsViewModelProvider);
 
     final padding = MediaQuery.paddingOf(context);
@@ -42,13 +49,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               context,
               notificationEnabled: viewState.notificationEnabled,
               isNotificationUpdating: viewState.isNotificationUpdating,
-              onNotificationChanged: viewModel.setNotificationEnabled,
+              onNotificationChanged: _viewModel.setNotificationEnabled,
             ),
             const SizedBox(height: 24),
             ..._infoSection(context, viewState.version),
             if (kDebugMode) ...[
               const SizedBox(height: 24),
-              ..._debugSection(context, viewModel),
+              ..._debugSection(context, _viewModel),
             ],
           ],
         ),
