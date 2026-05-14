@@ -56,8 +56,8 @@ ThemeData createThemeData(BuildContext context) {
         borderRadius: BorderRadius.circular(AppRadius.lg),
         side: BorderSide(color: c.border),
       ),
-      titleTextStyle: AppTextStyle.headline.copyWith(color: c.text),
-      contentTextStyle: AppTextStyle.caption.copyWith(color: c.textMuted),
+      titleTextStyle: AppTextStyle.title2.copyWith(color: c.text),
+      contentTextStyle: AppTextStyle.body.copyWith(color: c.textMuted),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: c.text,
