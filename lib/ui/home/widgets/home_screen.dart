@@ -42,7 +42,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final viewModel = ref.read(homeViewModelProvider.notifier);
 
     if (uiState.isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold();
     }
 
     final colorScheme = context.appColorScheme;
