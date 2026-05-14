@@ -1,3 +1,5 @@
+import 'package:app_settings/app_settings.dart';
+import 'package:app_settings/app_settings_platform_interface.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
@@ -12,6 +14,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
 import '../../../helpers/fake_settings_repository.dart';
+import '../../../helpers/mock_app_settings_platform.dart';
 import '../../../helpers/riverpod_test_helper.dart';
 
 void main() {
@@ -169,13 +172,18 @@ void main() {
           });
 
           group('権限がなく取得に失敗した場合', () {
-            setUp(
-              () async => setUpLoaded(
+            late FakeAppSettingsPlatform mockAppSettings;
+
+            setUp(() async {
+              AppSettings();
+              mockAppSettings = FakeAppSettingsPlatform();
+              AppSettingsPlatform.instance = mockAppSettings;
+              await setUpLoaded(
                 notificationEnabled: false,
                 checkPermissionResult: false,
                 permissionResult: false,
-              ),
-            );
+              );
+            });
 
             test('通知がOFFのままになる', () async {
               await viewModel.setNotificationEnabled(true);
@@ -188,6 +196,13 @@ void main() {
                 viewState.dialogMessage,
                 isA<NotificationPermissionDeniedMessage>(),
               );
+            });
+
+            test('ハンドラを呼び出すとアプリの通知設定が開かれる', () async {
+              await viewModel.setNotificationEnabled(true);
+              viewState.dialogMessage!.handler!();
+              await pumpEventQueue();
+              expect(mockAppSettings.openedType, AppSettingsType.notification);
             });
           });
         });

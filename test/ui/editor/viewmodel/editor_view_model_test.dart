@@ -25,9 +25,7 @@ void main() {
     void setUpContainer() {
       fakeRepository = FakeTaskRepository(initialTasks: _testTasks);
       container = ProviderContainer(
-        overrides: [
-          taskRepositoryProvider.overrideWith((_) => fakeRepository),
-        ],
+        overrides: [taskRepositoryProvider.overrideWith((_) => fakeRepository)],
       );
     }
 
@@ -49,7 +47,11 @@ void main() {
         setUpContainer();
         final p = editorViewModelProvider();
         viewModel = container.read(p.notifier);
-        container.listen(p, (_, next) => viewState = next, fireImmediately: true);
+        container.listen(
+          p,
+          (_, next) => viewState = next,
+          fireImmediately: true,
+        );
       });
 
       test('初期状態が正しい', () {
