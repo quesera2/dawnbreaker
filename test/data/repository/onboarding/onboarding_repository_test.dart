@@ -12,6 +12,34 @@ void main() {
   late OnboardingRepository repository;
   late FakePreferencesManager manager;
 
+  group('enableNotificationSettings', () {
+    group('ストレージが正常な場合', () {
+      setUp(() async {
+        manager = await FakePreferencesManager.create();
+        repository = OnboardingRepositoryImpl(manager);
+      });
+
+      test('通知設定が有効になる', () async {
+        await repository.enableNotificationSettings();
+        expect(manager.get(notificationEnabledKey, defaultValue: false), true);
+      });
+    });
+
+    group('ストレージが異常な場合', () {
+      setUp(() async {
+        manager = await FakePreferencesManager.create(shouldThrow: true);
+        repository = OnboardingRepositoryImpl(manager);
+      });
+
+      test('通知設定が保存されない', () async {
+        await expectLater(
+          () => repository.enableNotificationSettings(),
+          throwsA(isA<OnboardingSaveException>()),
+        );
+      });
+    });
+  });
+
   group('saveCompletion', () {
     group('完了状態が保持されていない場合', () {
       setUp(() async {

@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
@@ -30,16 +31,25 @@ class OnboardingViewModel extends _$OnboardingViewModel {
       );
       return;
     }
+    if (!ref.mounted) return;
     state = state.copyWith(
       destination: switch (mode) {
-        .initial => .newTask,
-        .fromSettings => .pop,
+        .initial => OnboardingDestinationEvent(.newTask),
+        .fromSettings => OnboardingDestinationEvent(.pop),
       },
     );
   }
 
   Future<void> onRequestNotification() async {
-    // TODO: 通知許可リクエスト実装
+    final notificationService = await ref.read(
+      notificationServiceProvider.future,
+    );
+    final isGranted = await notificationService.requestPermission();
+    if (isGranted) {
+      await _repository.enableNotificationSettings();
+    }
+    if (!ref.mounted) return;
+    state = state.copyWith(destination: OnboardingDestinationEvent(.next));
   }
 
   Future<void> onClickSkip() async {
@@ -58,6 +68,7 @@ class OnboardingViewModel extends _$OnboardingViewModel {
       );
       return;
     }
-    state = state.copyWith(destination: .home);
+    if (!ref.mounted) return;
+    state = state.copyWith(destination: OnboardingDestinationEvent(.home));
   }
 }

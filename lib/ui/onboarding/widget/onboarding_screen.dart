@@ -69,15 +69,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     listenMessages(_viewState);
     final isCompleting = ref.watch(_viewState.select((s) => s.isLoading));
 
-    ref.listen(_viewState.select((s) => s.destination), (_, destination) {
-      if (destination == null) return;
-      switch (destination) {
+    ref.listen(_viewState.select((s) => s.destination), (prev, next) {
+      if (next == null || prev?.id == next.id) return;
+
+      switch (next.type) {
         case .home:
           context.go('/home');
         case .newTask:
           context.go('/home/new_task');
         case .pop:
           context.pop();
+        case .next:
+          _pageController.nextPage(
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
       }
     });
 

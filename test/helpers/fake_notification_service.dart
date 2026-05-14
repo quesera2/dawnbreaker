@@ -2,6 +2,10 @@ import 'package:dawnbreaker/core/notification/notification_service.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 
 class FakeNotificationService implements NotificationService {
+  FakeNotificationService({this.permissionResult = true});
+
+  bool permissionResult;
+  bool requestPermissionCalled = false;
   final List<TaskItem> registered = [];
   final List<TaskItem> removed = [];
   bool callRemovedAll = false;
@@ -10,7 +14,10 @@ class FakeNotificationService implements NotificationService {
   Future<void> initialize() async {}
 
   @override
-  Future<void> requestPermission() async {}
+  Future<bool> requestPermission() async {
+    requestPermissionCalled = true;
+    return permissionResult;
+  }
 
   @override
   Future<void> registerNotification(TaskItem task) async =>

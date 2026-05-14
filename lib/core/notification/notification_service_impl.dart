@@ -4,6 +4,7 @@ import 'package:dawnbreaker/core/notification/notification_service.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/l10n/app_localizations.dart';
 import 'package:dawnbreaker/l10n/app_localizations_provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -29,6 +30,8 @@ class NotificationServiceImpl implements NotificationService {
     : _l10n = localizations;
 
   final AppLocalizations _l10n;
+
+  static const _notifyHour = 9;
 
   static const _androidSettings = AndroidInitializationSettings(
     '@mipmap/ic_launcher',
@@ -84,19 +87,21 @@ class NotificationServiceImpl implements NotificationService {
   }
 
   @override
-  Future<void> requestPermission() async {
-    if (Platform.isAndroid) {
-      await _androidImplementation?.requestNotificationsPermission();
-    } else if (Platform.isIOS) {
-      await _iOSImplementation?.requestPermissions(
+  Future<bool> requestPermission() async {
+    final isGranted = switch (defaultTargetPlatform) {
+      TargetPlatform.android =>
+        await _androidImplementation?.requestNotificationsPermission(),
+      TargetPlatform.iOS => await _iOSImplementation?.requestPermissions(
         alert: true,
         badge: true,
         sound: true,
-      );
-    }
+      ),
+      _ => throw UnsupportedError(
+        'Unsupported platform: $defaultTargetPlatform',
+      ),
+    };
+    return isGranted ?? false;
   }
-
-  static const _notifyHour = 9;
 
   @override
   Future<void> registerNotification(TaskItem task) async {

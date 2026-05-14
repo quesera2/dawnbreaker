@@ -6,6 +6,13 @@ class FakeOnboardingRepository implements OnboardingRepository {
 
   bool shouldThrow;
   bool removeCompletionCalled = false;
+  bool enableNotificationCalled = false;
+
+  @override
+  Future<void> enableNotificationSettings() async {
+    if (shouldThrow) throw const OnboardingSaveException('テストエラー');
+    enableNotificationCalled = true;
+  }
 
   @override
   Future<void> saveCompletion() async {

@@ -16,6 +16,15 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
   final PreferencesManager _manager;
 
   @override
+  Future<void> enableNotificationSettings() async {
+    try {
+      await _manager.set(notificationEnabledKey, true);
+    } catch (e) {
+      throw OnboardingSaveException(e.toString());
+    }
+  }
+
+  @override
   Future<void> saveCompletion() async {
     try {
       await _manager.set(onboardingCompleteKey, true);
