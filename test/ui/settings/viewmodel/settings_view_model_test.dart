@@ -200,7 +200,7 @@ void main() {
 
             test('ハンドラを呼び出すとアプリの通知設定が開かれる', () async {
               await viewModel.setNotificationEnabled(true);
-              viewState.dialogMessage!.handler!();
+              viewState.dialogMessage!.primaryHandler!();
               await pumpEventQueue();
               expect(mockAppSettings.openedType, AppSettingsType.notification);
             });

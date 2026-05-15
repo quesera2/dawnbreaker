@@ -230,6 +230,12 @@ abstract class AppLocalizations {
   /// **'キャンセル'**
   String get commonCancel;
 
+  /// No description provided for @commonSkip.
+  ///
+  /// In ja, this message translates to:
+  /// **'スキップ'**
+  String get commonSkip;
+
   /// No description provided for @commonRetry.
   ///
   /// In ja, this message translates to:
@@ -698,12 +704,6 @@ abstract class AppLocalizations {
   /// **'次へ'**
   String get onboardingNext;
 
-  /// No description provided for @onboardingSkip.
-  ///
-  /// In ja, this message translates to:
-  /// **'スキップ'**
-  String get onboardingSkip;
-
   /// No description provided for @onboardingStart.
   ///
   /// In ja, this message translates to:
@@ -745,6 +745,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'通知が許可されていません。設定アプリから通知を有効にしてください。'**
   String get settingsNotificationPermissionMessage;
+
+  /// No description provided for @settingsExactAlarmPermissionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'アラームの許可が必要です'**
+  String get settingsExactAlarmPermissionTitle;
+
+  /// No description provided for @settingsExactAlarmPermissionMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'正確な時間に通知を受け取るには、アラームとリマインダーを許可してください。'**
+  String get settingsExactAlarmPermissionMessage;
 
   /// No description provided for @settingsSectionInfo.
   ///

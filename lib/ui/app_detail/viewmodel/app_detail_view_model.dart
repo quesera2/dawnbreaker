@@ -74,7 +74,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       if (!ref.mounted) return;
       state = state.copyWith(
         dialogMessage: TaskUpdateErrorMessage(
-          handler: () => updateExecution(
+          primaryHandler: () => updateExecution(
             history,
             executedAt: executedAt,
             comment: comment,
@@ -91,7 +91,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     state = state.copyWith(
       dialogMessage: DeleteTaskConfirmMessage(
         task.name,
-        handler: () => deleteTask(),
+        primaryHandler: () => deleteTask(),
       ),
     );
   }
@@ -114,7 +114,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     } on TaskRepositoryException {
       if (!ref.mounted) return;
       state = state.copyWith(
-        dialogMessage: TaskDeleteErrorMessage(handler: deleteTask),
+        dialogMessage: TaskDeleteErrorMessage(primaryHandler: deleteTask),
       );
     }
   }
@@ -141,7 +141,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       if (!ref.mounted) return;
       state = state.copyWith(
         dialogMessage: TaskSaveErrorMessage(
-          handler: () => recordExecution(task, executedAt, comment),
+          primaryHandler: () => recordExecution(task, executedAt, comment),
         ),
       );
     }
@@ -166,7 +166,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       if (!ref.mounted) return;
       state = state.copyWith(
         dialogMessage: TaskExecutionDeleteErrorMessage(
-          handler: () => deleteExecution(task, history),
+          primaryHandler: () => deleteExecution(task, history),
         ),
       );
     }

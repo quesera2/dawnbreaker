@@ -4,34 +4,40 @@ import 'package:uuid/uuid.dart';
 enum DialogType { error, info, destruction }
 
 sealed class DialogMessage {
-  DialogMessage({required this.type, this.handler}) : id = const Uuid().v4();
+  DialogMessage({
+    required this.type,
+    this.primaryHandler,
+    this.secondaryHandler,
+  }) : id = const Uuid().v4();
 
   final DialogType type;
-  final VoidCallback? handler;
+  final VoidCallback? primaryHandler;
+  final VoidCallback? secondaryHandler;
   final String id;
 }
 
 class TaskLoadErrorMessage extends DialogMessage {
-  TaskLoadErrorMessage({required super.handler})
+  TaskLoadErrorMessage({required super.primaryHandler})
     : super(type: DialogType.error);
 }
 
 class TaskSaveErrorMessage extends DialogMessage {
-  TaskSaveErrorMessage({required super.handler})
+  TaskSaveErrorMessage({required super.primaryHandler})
     : super(type: DialogType.error);
 }
 
 class TaskUpdateErrorMessage extends DialogMessage {
-  TaskUpdateErrorMessage({required super.handler})
+  TaskUpdateErrorMessage({required super.primaryHandler})
     : super(type: DialogType.error);
 }
 
 class TaskDeleteErrorMessage extends DialogMessage {
-  TaskDeleteErrorMessage({super.handler}) : super(type: DialogType.error);
+  TaskDeleteErrorMessage({super.primaryHandler})
+    : super(type: DialogType.error);
 }
 
 class TaskExecutionDeleteErrorMessage extends DialogMessage {
-  TaskExecutionDeleteErrorMessage({super.handler})
+  TaskExecutionDeleteErrorMessage({super.primaryHandler})
     : super(type: DialogType.error);
 }
 
@@ -44,14 +50,19 @@ class OnboardingSaveErrorMessage extends DialogMessage {
 }
 
 class DeleteTaskConfirmMessage extends DialogMessage {
-  DeleteTaskConfirmMessage(this.taskName, {required super.handler})
+  DeleteTaskConfirmMessage(this.taskName, {required super.primaryHandler})
     : super(type: DialogType.destruction);
 
   final String taskName;
 }
 
 class NotificationPermissionDeniedMessage extends DialogMessage {
-  NotificationPermissionDeniedMessage({required super.handler})
+  NotificationPermissionDeniedMessage({required super.primaryHandler})
+    : super(type: DialogType.info);
+}
+
+class ExactAlarmPermissionRequestMessage extends DialogMessage {
+  ExactAlarmPermissionRequestMessage({required super.primaryHandler})
     : super(type: DialogType.info);
 }
 

@@ -18,4 +18,6 @@ abstract interface class NotificationService {
   Stream<bool> watchCanScheduleExactAlarms();
 
   Future<void> syncExactAlarmPermission();
+
+  Future<void> requestExactAlarmPermission();
 }

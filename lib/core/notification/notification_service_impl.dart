@@ -112,7 +112,8 @@ class NotificationServiceImpl implements NotificationService {
   @override
   Future<bool> requestPermission() async {
     final isGranted = switch (defaultTargetPlatform) {
-      TargetPlatform.android => await _androidRequestPermission(),
+      TargetPlatform.android =>
+        await _androidImplementation?.requestNotificationsPermission(),
       TargetPlatform.iOS => await _iOSImplementation?.requestPermissions(
         alert: true,
         badge: true,
@@ -123,13 +124,6 @@ class NotificationServiceImpl implements NotificationService {
       ),
     };
     return isGranted ?? false;
-  }
-
-  Future<bool?> _androidRequestPermission() async {
-    final isGranted = await _androidImplementation
-        ?.requestNotificationsPermission();
-    await _androidImplementation?.requestExactAlarmsPermission();
-    return isGranted;
   }
 
   @override
@@ -192,6 +186,11 @@ class NotificationServiceImpl implements NotificationService {
   @override
   Future<void> syncExactAlarmPermission() async {
     _exactAlarmController.add(await canScheduleExactAlarms());
+  }
+
+  @override
+  Future<void> requestExactAlarmPermission() async {
+    await _androidImplementation?.requestExactAlarmsPermission();
   }
 
   @override

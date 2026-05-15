@@ -25,11 +25,16 @@ class AppDialog extends StatelessWidget {
   }
 
   static AppDialog create(BuildContext context, DialogMessage message) {
-    final (:title, :messageText, :actionLabel) = _labels(context, message);
+    final config = _labels(context, message);
     return AppDialog(
-      title: title,
-      message: messageText,
-      actions: _buildActions(context, message, actionLabel),
+      title: config.title,
+      message: config.messageText,
+      actions: _buildActions(
+        context,
+        message,
+        config.primaryActionLabel,
+        config.secondaryActionLabel,
+      ),
     );
   }
 
@@ -43,74 +48,98 @@ class AppDialog extends StatelessWidget {
   }
 }
 
-({String title, String messageText, String actionLabel}) _labels(
-  BuildContext context,
-  DialogMessage msg,
-) => switch (msg) {
+typedef LabelConfig = ({
+  String title,
+  String messageText,
+  String primaryActionLabel,
+  String secondaryActionLabel,
+});
+
+LabelConfig _labels(BuildContext context, DialogMessage msg) => switch (msg) {
   TaskLoadErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.taskErrorLoadFailed,
-    actionLabel: context.l10n.commonRetry,
+    primaryActionLabel: context.l10n.commonRetry,
+    secondaryActionLabel: context.l10n.commonCancel,
   ),
   TaskSaveErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.taskErrorSaveFailed,
-    actionLabel: context.l10n.commonRetry,
+    primaryActionLabel: context.l10n.commonRetry,
+    secondaryActionLabel: context.l10n.commonCancel,
   ),
   TaskUpdateErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.taskErrorUpdateFailed,
-    actionLabel: context.l10n.commonRetry,
+    primaryActionLabel: context.l10n.commonRetry,
+    secondaryActionLabel: context.l10n.commonCancel,
   ),
   TaskDeleteErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.taskErrorDeleteFailed,
-    actionLabel: context.l10n.commonRetry,
+    primaryActionLabel: context.l10n.commonRetry,
+    secondaryActionLabel: context.l10n.commonCancel,
   ),
   TaskExecutionDeleteErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.appDetailDeleteHistoryFailed,
-    actionLabel: context.l10n.commonRetry,
+    primaryActionLabel: context.l10n.commonRetry,
+    secondaryActionLabel: context.l10n.commonCancel,
   ),
   DeleteTaskConfirmMessage(:final taskName) => (
     title: context.l10n.commonConfirmTitle,
     messageText: context.l10n.appDetailTaskDeleteConfirm(taskName),
-    actionLabel: context.l10n.commonDelete,
+    primaryActionLabel: context.l10n.commonDelete,
+    secondaryActionLabel: context.l10n.commonCancel,
   ),
   TaskInvalidArgumentErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.taskErrorInvalidArgument,
-    actionLabel: '',
+    primaryActionLabel: '',
+    secondaryActionLabel: context.l10n.commonOk,
   ),
   OnboardingSaveErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.onboardingErrorSaveFailed,
-    actionLabel: '',
+    primaryActionLabel: '',
+    secondaryActionLabel: context.l10n.commonOk,
   ),
   NotificationPermissionDeniedMessage() => (
     title: context.l10n.settingsNotificationPermissionTitle,
     messageText: context.l10n.settingsNotificationPermissionMessage,
-    actionLabel: context.l10n.commonOpenSettings,
+    primaryActionLabel: context.l10n.commonOpenSettings,
+    secondaryActionLabel: context.l10n.commonCancel,
+  ),
+  ExactAlarmPermissionRequestMessage() => (
+    title: context.l10n.settingsExactAlarmPermissionTitle,
+    messageText: context.l10n.settingsExactAlarmPermissionMessage,
+    primaryActionLabel: context.l10n.commonOpenSettings,
+    secondaryActionLabel: context.l10n.commonSkip,
   ),
   UnknownErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.commonErrorUnknown,
-    actionLabel: '',
+    primaryActionLabel: '',
+    secondaryActionLabel: context.l10n.commonOk,
   ),
 };
 
 List<Widget> _buildActions(
   BuildContext context,
   DialogMessage message,
-  String actionLabel,
+  String primaryActionLabel,
+  String secondaryActionLabel,
 ) {
   void close() => Navigator.of(context).pop();
 
-  if (message.handler == null) {
+  if (message.primaryHandler == null) {
     return [
       AppButton(
-        onPressed: close,
-        label: context.l10n.commonOk,
+        onPressed: () {
+          close();
+          message.secondaryHandler?.call();
+        },
+        label: secondaryActionLabel,
         variant: .secondary,
         size: .medium,
       ),
@@ -123,17 +152,20 @@ List<Widget> _buildActions(
   };
   return [
     AppButton(
-      onPressed: close,
-      label: context.l10n.commonCancel,
+      onPressed: () {
+        close();
+        message.secondaryHandler?.call();
+      },
+      label: secondaryActionLabel,
       variant: .secondary,
       size: .medium,
     ),
     AppButton(
       onPressed: () {
         close();
-        message.handler!();
+        message.primaryHandler!();
       },
-      label: actionLabel,
+      label: primaryActionLabel,
       variant: variant,
       size: .medium,
     ),
