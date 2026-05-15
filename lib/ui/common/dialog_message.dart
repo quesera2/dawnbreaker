@@ -62,8 +62,10 @@ class NotificationPermissionDeniedMessage extends DialogMessage {
 }
 
 class ExactAlarmPermissionRequestMessage extends DialogMessage {
-  ExactAlarmPermissionRequestMessage({required super.primaryHandler})
-    : super(type: DialogType.info);
+  ExactAlarmPermissionRequestMessage({
+    required super.primaryHandler,
+    super.secondaryHandler,
+  }) : super(type: DialogType.info);
 }
 
 class UnknownErrorMessage extends DialogMessage {

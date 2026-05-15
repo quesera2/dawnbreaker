@@ -62,6 +62,10 @@ class FakeNotificationService implements NotificationService {
     _exactAlarmController.add(canScheduleExactAlarmsResult);
   }
 
+  bool requestExactAlarmPermissionCalled = false;
+
   @override
-  Future<void> requestExactAlarmPermission() async {}
+  Future<void> requestExactAlarmPermission() async {
+    requestExactAlarmPermissionCalled = true;
+  }
 }
