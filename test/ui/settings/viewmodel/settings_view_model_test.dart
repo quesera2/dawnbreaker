@@ -31,6 +31,7 @@ void main() {
     bool notificationEnabled = true,
     bool checkPermissionResult = true,
     bool permissionResult = true,
+    bool canScheduleExactAlarmsResult = true,
   }) {
     PackageInfo.setMockInitialValues(
       appName: 'dawnbreaker',
@@ -46,6 +47,7 @@ void main() {
     fakeNotificationService = FakeNotificationService(
       checkPermissionResult: checkPermissionResult,
       permissionResult: permissionResult,
+      canScheduleExactAlarmsResult: canScheduleExactAlarmsResult,
     );
     container = ProviderContainer(
       overrides: [
@@ -64,11 +66,13 @@ void main() {
     bool notificationEnabled = true,
     bool checkPermissionResult = true,
     bool permissionResult = true,
+    bool canScheduleExactAlarmsResult = true,
   }) async {
     setUpContainer(
       notificationEnabled: notificationEnabled,
       checkPermissionResult: checkPermissionResult,
       permissionResult: permissionResult,
+      canScheduleExactAlarmsResult: canScheduleExactAlarmsResult,
     );
     await waitUntil(container, settingsViewModelProvider, (s) => !s.isLoading);
     viewModel = container.read(settingsViewModelProvider.notifier);
@@ -203,6 +207,35 @@ void main() {
               viewState.dialogMessage!.primaryHandler!();
               await pumpEventQueue();
               expect(mockAppSettings.openedType, AppSettingsType.notification);
+            });
+          });
+
+          group('exactAlarmの許可が必要な場合', () {
+            setUp(
+              () async => setUpLoaded(
+                notificationEnabled: false,
+                checkPermissionResult: false,
+                permissionResult: true,
+                canScheduleExactAlarmsResult: false,
+              ),
+            );
+
+            test('exactAlarm許可ダイアログが表示される', () async {
+              await viewModel.setNotificationEnabled(true);
+              expect(
+                viewState.dialogMessage,
+                isA<ExactAlarmPermissionRequestMessage>(),
+              );
+            });
+
+            test('ハンドラを呼び出すとアラームとリマインダー設定が開かれる', () async {
+              await viewModel.setNotificationEnabled(true);
+              viewState.dialogMessage!.primaryHandler!.call();
+              await pumpEventQueue();
+              expect(
+                fakeNotificationService.requestExactAlarmPermissionCalled,
+                true,
+              );
             });
           });
         });
