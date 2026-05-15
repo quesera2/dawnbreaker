@@ -10,6 +10,7 @@ part 'notification_permission_observer.g.dart';
 class NotificationPermissionObserver extends _$NotificationPermissionObserver
     with WidgetsBindingObserver {
   late SettingsRepository _repository;
+
   @override
   void build() {
     _repository = ref.read(settingsRepositoryProvider);
@@ -33,5 +34,7 @@ class NotificationPermissionObserver extends _$NotificationPermissionObserver
     if (!hasPermission) {
       await _repository.setNotificationEnabled(false);
     }
+
+    await service.syncExactAlarmPermission();
   }
 }

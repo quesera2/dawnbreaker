@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dawnbreaker/core/notification/notification_service.dart';
@@ -10,6 +11,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 part 'notification_service_impl.g.dart';
+
+@riverpod
+Stream<bool> canScheduleExactAlarms(Ref ref) async* {
+  final service = await ref.watch(notificationServiceProvider.future);
+  yield* service.watchCanScheduleExactAlarms();
+}
 
 @pragma('vm:entry-point')
 void onDidReceiveBackgroundNotificationResponse(NotificationResponse details) {
@@ -44,6 +51,7 @@ class NotificationServiceImpl implements NotificationService {
   );
 
   final _plugin = FlutterLocalNotificationsPlugin();
+  final _exactAlarmController = StreamController<bool>.broadcast();
 
   AndroidFlutterLocalNotificationsPlugin? get _androidImplementation => _plugin
       .resolvePlatformSpecificImplementation<
@@ -104,8 +112,7 @@ class NotificationServiceImpl implements NotificationService {
   @override
   Future<bool> requestPermission() async {
     final isGranted = switch (defaultTargetPlatform) {
-      TargetPlatform.android =>
-        await _androidImplementation?.requestNotificationsPermission(),
+      TargetPlatform.android => await _androidRequestPermission(),
       TargetPlatform.iOS => await _iOSImplementation?.requestPermissions(
         alert: true,
         badge: true,
@@ -116,6 +123,13 @@ class NotificationServiceImpl implements NotificationService {
       ),
     };
     return isGranted ?? false;
+  }
+
+  Future<bool?> _androidRequestPermission() async {
+    final isGranted = await _androidImplementation
+        ?.requestNotificationsPermission();
+    await _androidImplementation?.requestExactAlarmsPermission();
+    return isGranted;
   }
 
   @override
@@ -152,9 +166,32 @@ class NotificationServiceImpl implements NotificationService {
         ),
         iOS: const DarwinNotificationDetails(),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: await _resolveAndroidScheduleMode(),
       payload: task.id.toString(),
     );
+  }
+
+  Future<AndroidScheduleMode> _resolveAndroidScheduleMode() async {
+    final canExact = await canScheduleExactAlarms();
+    return canExact ? .exactAllowWhileIdle : .inexactAllowWhileIdle;
+  }
+
+  @override
+  Future<bool> canScheduleExactAlarms() async {
+    if (!Platform.isAndroid) return true;
+    return await _androidImplementation?.canScheduleExactNotifications() ??
+        false;
+  }
+
+  @override
+  Stream<bool> watchCanScheduleExactAlarms() async* {
+    yield await canScheduleExactAlarms();
+    yield* _exactAlarmController.stream;
+  }
+
+  @override
+  Future<void> syncExactAlarmPermission() async {
+    _exactAlarmController.add(await canScheduleExactAlarms());
   }
 
   @override
