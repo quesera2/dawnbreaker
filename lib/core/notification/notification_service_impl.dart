@@ -1,3 +1,6 @@
+// coverage:ignore-file
+
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dawnbreaker/core/notification/notification_service.dart';
@@ -10,6 +13,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 part 'notification_service_impl.g.dart';
+
+@riverpod
+Stream<bool> canScheduleExactAlarms(Ref ref) async* {
+  final service = await ref.watch(notificationServiceProvider.future);
+  yield* service.watchCanScheduleExactAlarms();
+}
 
 @pragma('vm:entry-point')
 void onDidReceiveBackgroundNotificationResponse(NotificationResponse details) {
@@ -44,6 +53,7 @@ class NotificationServiceImpl implements NotificationService {
   );
 
   final _plugin = FlutterLocalNotificationsPlugin();
+  final _exactAlarmController = StreamController<bool>.broadcast();
 
   AndroidFlutterLocalNotificationsPlugin? get _androidImplementation => _plugin
       .resolvePlatformSpecificImplementation<
@@ -152,9 +162,37 @@ class NotificationServiceImpl implements NotificationService {
         ),
         iOS: const DarwinNotificationDetails(),
       ),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode: await _resolveAndroidScheduleMode(),
       payload: task.id.toString(),
     );
+  }
+
+  Future<AndroidScheduleMode> _resolveAndroidScheduleMode() async {
+    final canExact = await canScheduleExactAlarms();
+    return canExact ? .exactAllowWhileIdle : .inexactAllowWhileIdle;
+  }
+
+  @override
+  Future<bool> canScheduleExactAlarms() async {
+    if (!Platform.isAndroid) return true;
+    return await _androidImplementation?.canScheduleExactNotifications() ??
+        false;
+  }
+
+  @override
+  Stream<bool> watchCanScheduleExactAlarms() async* {
+    yield await canScheduleExactAlarms();
+    yield* _exactAlarmController.stream;
+  }
+
+  @override
+  Future<void> syncExactAlarmPermission() async {
+    _exactAlarmController.add(await canScheduleExactAlarms());
+  }
+
+  @override
+  Future<void> requestExactAlarmPermission() async {
+    await _androidImplementation?.requestExactAlarmsPermission();
   }
 
   @override

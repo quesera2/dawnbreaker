@@ -258,7 +258,7 @@ void main() {
               _taskOneHistory.taskHistory.first,
               executedAt: DateTime(2026, 2, 1),
             );
-            expect(viewState.dialogMessage?.handler, isNotNull);
+            expect(viewState.dialogMessage?.primaryHandler, isNotNull);
           });
 
           test('リトライハンドラを呼び出すと再度更新が試みられ成功する', () async {
@@ -266,7 +266,7 @@ void main() {
               _taskOneHistory.taskHistory.first,
               executedAt: DateTime(2026, 2, 1),
             );
-            final handler = viewState.dialogMessage?.handler;
+            final handler = viewState.dialogMessage?.primaryHandler;
             expect(handler, isNotNull);
 
             fakeRepository.shouldThrow = false;
@@ -364,7 +364,7 @@ void main() {
               DateTime(2026, 4, 1),
               null,
             );
-            expect(viewState.dialogMessage?.handler, isNotNull);
+            expect(viewState.dialogMessage?.primaryHandler, isNotNull);
           });
 
           test('リトライハンドラを呼び出すと再度記録が試みられ成功する', () async {
@@ -373,7 +373,7 @@ void main() {
               DateTime(2026, 4, 1),
               null,
             );
-            final handler = viewState.dialogMessage?.handler;
+            final handler = viewState.dialogMessage?.primaryHandler;
             expect(handler, isNotNull);
 
             fakeRepository.shouldThrow = false;
@@ -403,7 +403,7 @@ void main() {
 
         test('ダイアログのハンドラを呼び出すとタスクが削除される', () async {
           viewModel.showDeleteTaskDialog();
-          final handler = viewState.dialogMessage?.handler;
+          final handler = viewState.dialogMessage?.primaryHandler;
           expect(handler, isNotNull);
           handler!();
           await pumpEventQueue();
@@ -461,12 +461,12 @@ void main() {
 
           test('削除を再試行できる', () async {
             await viewModel.deleteTask();
-            expect(viewState.dialogMessage?.handler, isNotNull);
+            expect(viewState.dialogMessage?.primaryHandler, isNotNull);
           });
 
           test('リトライハンドラを呼び出すと再度削除が試みられ成功する', () async {
             await viewModel.deleteTask();
-            final handler = viewState.dialogMessage?.handler;
+            final handler = viewState.dialogMessage?.primaryHandler;
             expect(handler, isNotNull);
 
             fakeRepository.shouldThrow = false;
@@ -561,7 +561,7 @@ void main() {
               _taskOneHistory,
               _taskOneHistory.taskHistory.first,
             );
-            expect(viewState.dialogMessage?.handler, isNotNull);
+            expect(viewState.dialogMessage?.primaryHandler, isNotNull);
           });
 
           test('リトライハンドラを呼び出すと再度削除が試みられ成功する', () async {
@@ -569,7 +569,7 @@ void main() {
               _taskOneHistory,
               _taskOneHistory.taskHistory.first,
             );
-            final handler = viewState.dialogMessage?.handler;
+            final handler = viewState.dialogMessage?.primaryHandler;
             expect(handler, isNotNull);
 
             fakeRepository.shouldThrow = false;

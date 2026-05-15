@@ -12,4 +12,12 @@ abstract interface class NotificationService {
   Future<void> removeNotification(TaskItem task);
 
   Future<void> removeAllNotification();
+
+  Future<bool> canScheduleExactAlarms();
+
+  Stream<bool> watchCanScheduleExactAlarms();
+
+  Future<void> syncExactAlarmPermission();
+
+  Future<void> requestExactAlarmPermission();
 }

@@ -3,6 +3,7 @@ import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_task_list.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
@@ -279,24 +280,30 @@ void main() {
         });
 
         group('異常系', () {
+          setUp(() => fakeRepository.shouldThrow = true);
+
           test('リポジトリがエラーを返すと dialogMessage がセットされる', () async {
-            final throwingRepo = FakeTaskRepository(shouldThrow: true);
-            final c = ProviderContainer(
-              overrides: [
-                taskRepositoryProvider.overrideWith((_) => throwingRepo),
-              ],
+            await viewModel.recordExecution(
+              _testTasks[0],
+              DateTime(2026, 4, 1),
+              null,
             );
-            addTearDown(() {
-              c.dispose();
-              throwingRepo.dispose();
-            });
-            await waitUntil(c, homeViewModelProvider, (s) => !s.isLoading);
+            expect(viewState.dialogMessage, isA<TaskSaveErrorMessage>());
+          });
 
-            await c
-                .read(homeViewModelProvider.notifier)
-                .recordExecution(_testTasks[0], DateTime(2026, 4, 1), null);
-
-            expect(c.read(homeViewModelProvider).dialogMessage, isNotNull);
+          test('ハンドラを呼び出すと再実行を試みる', () async {
+            await viewModel.recordExecution(
+              _testTasks[0],
+              DateTime(2026, 4, 1),
+              null,
+            );
+            fakeRepository.shouldThrow = false;
+            final previousId = viewState.dialogMessage!.id;
+            viewState.dialogMessage!.primaryHandler!.call();
+            await pumpEventQueue();
+            // 同一IDの場合は新たなエラーダイアログが表示されていない
+            expect(viewState.dialogMessage!.id, previousId);
+            expect(viewState.snackBarMessage, isA<TaskCompleteSuccess>());
           });
         });
       });

@@ -65,7 +65,7 @@ List<OnboardingPage> buildOnboardingPages(
         .fromSettings => context.l10n.commonClose,
       },
       onPrimary: onDone,
-      secondaryLabel: mode == .initial ? context.l10n.onboardingSkip : null,
+      secondaryLabel: mode == .initial ? context.l10n.commonSkip : null,
       onSecondary: mode == .initial ? onSkip : null,
     ),
   ];

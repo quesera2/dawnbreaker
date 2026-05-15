@@ -77,6 +77,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commonCancel => 'キャンセル';
 
   @override
+  String get commonSkip => 'スキップ';
+
+  @override
   String get commonRetry => '再試行';
 
   @override
@@ -332,9 +335,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingNext => '次へ';
 
   @override
-  String get onboardingSkip => 'スキップ';
-
-  @override
   String get onboardingStart => '最初のタスクを登録する';
 
   @override
@@ -355,6 +355,13 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get settingsNotificationPermissionMessage =>
       '通知が許可されていません。設定アプリから通知を有効にしてください。';
+
+  @override
+  String get settingsExactAlarmPermissionTitle => 'アラームの許可が必要です';
+
+  @override
+  String get settingsExactAlarmPermissionMessage =>
+      '正確な時間に通知を受け取るには、アラームとリマインダーを許可してください。';
 
   @override
   String get settingsSectionInfo => '情報';

@@ -45,7 +45,9 @@ class EditorViewModel extends _$EditorViewModel {
       if (!ref.mounted) return;
       state = state.copyWith(
         isLoading: false,
-        dialogMessage: TaskLoadErrorMessage(handler: () => _loadTask(taskId)),
+        dialogMessage: TaskLoadErrorMessage(
+          primaryHandler: () => _loadTask(taskId),
+        ),
       );
     }
   }
@@ -80,7 +82,7 @@ class EditorViewModel extends _$EditorViewModel {
       if (!ref.mounted) return;
       state = state.copyWith(
         isSaving: false,
-        dialogMessage: TaskSaveErrorMessage(handler: save),
+        dialogMessage: TaskSaveErrorMessage(primaryHandler: save),
       );
     }
   }
