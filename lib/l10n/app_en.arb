@@ -208,6 +208,7 @@
   "settingsDebugAllTasksDeleted": "All tasks deleted",
   "settingsDebugResetTutorialFlag": "Reset tutorial flag",
   "settingsDebugTutorialFlagReset": "Tutorial flag reset",
+  "settingsDebugLogPendingNotifications": "Log pending notifications",
   "notificationGroupTask": "Task Notifications",
   "notificationChannelTask": "Individual Task Notification",
   "notificationTaskBody": "It's due today"

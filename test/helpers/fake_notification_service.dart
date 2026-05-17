@@ -68,4 +68,7 @@ class FakeNotificationService implements NotificationService {
   Future<void> requestExactAlarmPermission() async {
     requestExactAlarmPermissionCalled = true;
   }
+
+  @override
+  Future<void> logPendingNotifications() async {}
 }

@@ -205,6 +205,17 @@ class NotificationServiceImpl implements NotificationService {
     await _plugin.cancelAll();
   }
 
+  @override
+  Future<void> logPendingNotifications() async {
+    if (!kDebugMode) return;
+    final pending = await _plugin.pendingNotificationRequests();
+    debugPrint('=== Pending Notifications (${pending.length}) ===');
+    for (final n in pending) {
+      debugPrint('  id=${n.id}, title="${n.title}", payload="${n.payload}"');
+    }
+    debugPrint('================================================');
+  }
+
   void _onNotificationResponse(NotificationResponse details) {
     // TODO: フォアグラウンドで通知を受け取ったときの処理を行う
   }
