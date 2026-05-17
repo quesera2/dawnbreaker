@@ -60,3 +60,8 @@ lib/
 - ViewModel は `@riverpod` アノテーションで生成
 - UI State は `@freezed` で定義、`copyWith` で更新、`BaseUiState` を implements すること
 - 画面のルートは `XXXPage` ではなく `XXXScreen`
+
+## PR 作成
+
+- シンプルな内容にとどめる
+- PR 本文末尾に "powered by Claude Code" などのフッターは付けない

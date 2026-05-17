@@ -323,13 +323,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingDemoTask5 => 'スニーカーの洗濯';
 
   @override
-  String get onboardingPage3Title => '通知でタイムリーに気づく';
+  String get onboardingDemoTask6 => '美容院';
 
   @override
-  String get onboardingPage3Body => 'スケジュールのタイミングで通知を受け取れます。';
+  String get onboardingPage3Title => 'スケジュールになったら通知でお知らせ';
 
   @override
-  String get onboardingEnableNotification => '通知をONにする';
+  String get onboardingPage3Body =>
+      '通知を有効にすると、予定日になったタイミングでお知らせします。通知は後から設定することもできます。';
+
+  @override
+  String get onboardingEnableNotification => '通知を有効にする';
 
   @override
   String get onboardingNext => '次へ';

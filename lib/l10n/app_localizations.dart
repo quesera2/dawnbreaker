@@ -680,22 +680,28 @@ abstract class AppLocalizations {
   /// **'スニーカーの洗濯'**
   String get onboardingDemoTask5;
 
+  /// No description provided for @onboardingDemoTask6.
+  ///
+  /// In ja, this message translates to:
+  /// **'美容院'**
+  String get onboardingDemoTask6;
+
   /// No description provided for @onboardingPage3Title.
   ///
   /// In ja, this message translates to:
-  /// **'通知でタイムリーに気づく'**
+  /// **'スケジュールになったら通知でお知らせ'**
   String get onboardingPage3Title;
 
   /// No description provided for @onboardingPage3Body.
   ///
   /// In ja, this message translates to:
-  /// **'スケジュールのタイミングで通知を受け取れます。'**
+  /// **'通知を有効にすると、予定日になったタイミングでお知らせします。通知は後から設定することもできます。'**
   String get onboardingPage3Body;
 
   /// No description provided for @onboardingEnableNotification.
   ///
   /// In ja, this message translates to:
-  /// **'通知をONにする'**
+  /// **'通知を有効にする'**
   String get onboardingEnableNotification;
 
   /// No description provided for @onboardingNext.

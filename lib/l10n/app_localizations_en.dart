@@ -328,10 +328,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingDemoTask5 => 'Sneaker wash';
 
   @override
-  String get onboardingPage3Title => 'Get timely reminders';
+  String get onboardingDemoTask6 => 'Hair salon';
 
   @override
-  String get onboardingPage3Body => 'Receive notifications when tasks are due.';
+  String get onboardingPage3Title => 'Get notified when tasks are due';
+
+  @override
+  String get onboardingPage3Body =>
+      'Enable notifications to be reminded when tasks are due. You can also set this up later.';
 
   @override
   String get onboardingEnableNotification => 'Enable Notifications';
