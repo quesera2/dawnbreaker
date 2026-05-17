@@ -136,4 +136,9 @@ class SettingsViewModel extends _$SettingsViewModel {
     if (!ref.mounted) return;
     state = state.copyWith(snackBarMessage: TutorialFlagResetMessage());
   }
+
+  Future<void> logPendingNotifications() async {
+    final service = await ref.read(notificationServiceProvider.future);
+    await service.logPendingNotifications();
+  }
 }

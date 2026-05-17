@@ -401,6 +401,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsDebugTutorialFlagReset => 'チュートリアルフラグをリセットしました';
 
   @override
+  String get settingsDebugLogPendingNotifications => '登録されている通知一覧をログ出力';
+
+  @override
   String get notificationGroupTask => 'タスク通知';
 
   @override

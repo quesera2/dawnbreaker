@@ -830,6 +830,12 @@ abstract class AppLocalizations {
   /// **'チュートリアルフラグをリセットしました'**
   String get settingsDebugTutorialFlagReset;
 
+  /// No description provided for @settingsDebugLogPendingNotifications.
+  ///
+  /// In ja, this message translates to:
+  /// **'登録されている通知一覧をログ出力'**
+  String get settingsDebugLogPendingNotifications;
+
   /// No description provided for @notificationGroupTask.
   ///
   /// In ja, this message translates to:

@@ -20,4 +20,6 @@ abstract interface class NotificationService {
   Future<void> syncExactAlarmPermission();
 
   Future<void> requestExactAlarmPermission();
+
+  Future<void> logPendingNotifications();
 }

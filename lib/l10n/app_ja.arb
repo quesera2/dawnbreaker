@@ -208,6 +208,7 @@
   "settingsDebugAllTasksDeleted": "すべてのタスクを削除しました",
   "settingsDebugResetTutorialFlag": "チュートリアルフラグをリセット",
   "settingsDebugTutorialFlagReset": "チュートリアルフラグをリセットしました",
+  "settingsDebugLogPendingNotifications": "登録されている通知一覧をログ出力",
   "notificationGroupTask": "タスク通知",
   "notificationChannelTask": "個別タスク通知",
   "notificationTaskBody": "予定日になりました"

@@ -407,6 +407,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsDebugTutorialFlagReset => 'Tutorial flag reset';
 
   @override
+  String get settingsDebugLogPendingNotifications =>
+      'Log pending notifications';
+
+  @override
   String get notificationGroupTask => 'Task Notifications';
 
   @override
