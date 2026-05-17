@@ -133,6 +133,44 @@ void main() {
         }
       });
 
+      group('exactAlarmの許可が必要な場合', () {
+        setUp(() {
+          fakeNotificationService.permissionResult = true;
+          fakeNotificationService.canScheduleExactAlarmsResult = false;
+          setUpState();
+        });
+
+        test('exactAlarm許可ダイアログが表示される', () async {
+          await viewModel.onRequestNotification();
+          expect(
+            viewState.dialogMessage,
+            isA<ExactAlarmPermissionRequestMessage>(),
+          );
+          expect(viewState.destination, isNull);
+        });
+
+        test('スキップすると次のページへ進む', () async {
+          await viewModel.onRequestNotification();
+          final msg =
+              viewState.dialogMessage as ExactAlarmPermissionRequestMessage;
+          msg.secondaryHandler!.call();
+          expect(viewState.destination?.type, OnboardingDestination.next);
+        });
+
+        test('設定を開くと許可を求めて次のページへ進む', () async {
+          await viewModel.onRequestNotification();
+          final msg =
+              viewState.dialogMessage as ExactAlarmPermissionRequestMessage;
+          msg.primaryHandler!.call();
+          await pumpEventQueue();
+          expect(
+            fakeNotificationService.requestExactAlarmPermissionCalled,
+            true,
+          );
+          expect(viewState.destination?.type, OnboardingDestination.next);
+        });
+      });
+
       group('異常系', () {
         setUp(() {
           fakeRepository.shouldThrow = true;

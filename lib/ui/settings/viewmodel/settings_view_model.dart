@@ -72,20 +72,35 @@ class SettingsViewModel extends _$SettingsViewModel {
     final isGranted = await notificationService.requestPermission();
     if (!ref.mounted) return;
 
-    if (isGranted) {
-      await ref.read(settingsRepositoryProvider).setNotificationEnabled(true);
-      if (!ref.mounted) return;
-      state = state.copyWith(isNotificationUpdating: false);
-    } else {
+    if (!isGranted) {
       state = state.copyWith(
         isNotificationUpdating: false,
         notificationEnabled: false,
         dialogMessage: NotificationPermissionDeniedMessage(
-          handler: () =>
+          primaryHandler: () =>
               AppSettings.openAppSettings(type: AppSettingsType.notification),
         ),
       );
+      return;
     }
+
+    await ref.read(settingsRepositoryProvider).setNotificationEnabled(true);
+    if (!ref.mounted) return;
+
+    final canExact = await notificationService.canScheduleExactAlarms();
+    if (!ref.mounted) return;
+    if (!canExact) {
+      state = state.copyWith(
+        isNotificationUpdating: false,
+        dialogMessage: ExactAlarmPermissionRequestMessage(
+          primaryHandler: () =>
+              notificationService.requestExactAlarmPermission(),
+        ),
+      );
+      return;
+    }
+
+    state = state.copyWith(isNotificationUpdating: false);
   }
 
   Future<void> _disableNotification() async {

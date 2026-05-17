@@ -117,7 +117,7 @@ ButtonConfig _lastPageButtons(
   .initial => (
     primaryLabel: context.l10n.onboardingStart,
     primaryAction: onDone,
-    secondaryLabel: context.l10n.onboardingSkip,
+    secondaryLabel: context.l10n.commonSkip,
     secondaryAction: onSkip,
     hasSecondaryArea: true,
   ),

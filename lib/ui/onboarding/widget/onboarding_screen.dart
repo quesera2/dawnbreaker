@@ -150,7 +150,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                       padding: const EdgeInsets.fromLTRB(0, 0, 8, 4),
                       child: AppIconButton(
                         icon: Icons.skip_next,
-                        label: context.l10n.onboardingSkip,
+                        label: context.l10n.commonSkip,
                         onTap: _viewModel.onClickSkip,
                       ),
                     ),

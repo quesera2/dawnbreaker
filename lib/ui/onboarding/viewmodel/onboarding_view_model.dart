@@ -45,15 +45,42 @@ class OnboardingViewModel extends _$OnboardingViewModel {
       notificationServiceProvider.future,
     );
     final isGranted = await notificationService.requestPermission();
-    if (isGranted) {
-      try {
-        await _repository.enableNotificationSettings();
-      } on OnboardingRepositoryException {
-        if (!ref.mounted) return;
-        state = state.copyWith(dialogMessage: OnboardingSaveErrorMessage());
-        return;
-      }
+    if (!ref.mounted) return;
+
+    if (!isGranted) {
+      state = state.copyWith(destination: OnboardingDestinationEvent(.next));
+      return;
     }
+
+    try {
+      await _repository.enableNotificationSettings();
+    } on OnboardingRepositoryException {
+      if (!ref.mounted) return;
+      state = state.copyWith(dialogMessage: OnboardingSaveErrorMessage());
+      return;
+    }
+
+    final canExact = await notificationService.canScheduleExactAlarms();
+    if (!ref.mounted) return;
+
+    if (!canExact) {
+      state = state.copyWith(
+        dialogMessage: ExactAlarmPermissionRequestMessage(
+          primaryHandler: () => requestExactAlarmPermission(),
+          secondaryHandler: () => state = state.copyWith(
+            destination: OnboardingDestinationEvent(.next),
+          ),
+        ),
+      );
+      return;
+    }
+
+    state = state.copyWith(destination: OnboardingDestinationEvent(.next));
+  }
+
+  Future<void> requestExactAlarmPermission() async {
+    final service = await ref.read(notificationServiceProvider.future);
+    await service.requestExactAlarmPermission();
     if (!ref.mounted) return;
     state = state.copyWith(destination: OnboardingDestinationEvent(.next));
   }

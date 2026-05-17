@@ -12,11 +12,13 @@ part 'task_notification_sync_notifier.g.dart';
 /// すべてのタスクを監視して変化があったときに通知を登録する
 ///
 /// 通知の有効・無効を切り替えると[build]が再実行され、すべての通知を再登録する。
+/// exact alarm 権限が変化したときも[build]が再実行され、正確・曖昧の切り替えが反映される。
 @Riverpod(keepAlive: true)
 class TaskNotificationSyncNotifier extends _$TaskNotificationSyncNotifier {
   @override
   Future<void> build() async {
     final enabled = await ref.watch(notificationEnabledProvider.future);
+    await ref.watch(canScheduleExactAlarmsProvider.future);
     final service = await ref.read(notificationServiceProvider.future);
     final syncLogic = TaskNotificationSync(service);
     final repository = ref.read(taskRepositoryProvider);

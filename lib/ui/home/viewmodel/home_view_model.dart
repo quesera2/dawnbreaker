@@ -59,7 +59,7 @@ class HomeViewModel extends _$HomeViewModel {
       if (!ref.mounted) return;
       state = state.copyWith(
         dialogMessage: TaskSaveErrorMessage(
-          handler: () => recordExecution(task, executedAt, comment),
+          primaryHandler: () => recordExecution(task, executedAt, comment),
         ),
       );
     }

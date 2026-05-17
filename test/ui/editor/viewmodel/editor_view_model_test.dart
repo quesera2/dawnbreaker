@@ -4,6 +4,7 @@ import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_ui_state.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_view_model.dart';
@@ -201,7 +202,15 @@ void main() {
 
           test('読み込みエラーが通知される', () {
             expect(viewState.isLoading, false);
-            expect(viewState.dialogMessage, isNotNull);
+            expect(viewState.dialogMessage, isA<TaskLoadErrorMessage>());
+          });
+
+          test('ハンドラを呼び出すと再読み込みを試みる', () async {
+            final firstId = viewState.dialogMessage!.id;
+            viewState.dialogMessage!.primaryHandler!();
+            await pumpEventQueue();
+            expect(viewState.dialogMessage, isA<TaskLoadErrorMessage>());
+            expect(viewState.dialogMessage!.id, isNot(firstId));
           });
         });
 

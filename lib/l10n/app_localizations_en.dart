@@ -77,6 +77,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonCancel => 'Cancel';
 
   @override
+  String get commonSkip => 'Skip';
+
+  @override
   String get commonRetry => 'Retry';
 
   @override
@@ -337,9 +340,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingNext => 'Next';
 
   @override
-  String get onboardingSkip => 'Skip';
-
-  @override
   String get onboardingStart => 'Register your first task';
 
   @override
@@ -361,6 +361,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsNotificationPermissionMessage =>
       'Notifications are not allowed. Please enable them in the Settings app.';
+
+  @override
+  String get settingsExactAlarmPermissionTitle => 'Alarm Permission Required';
+
+  @override
+  String get settingsExactAlarmPermissionMessage =>
+      'To receive notifications at the exact time, please allow Alarms & Reminders.';
 
   @override
   String get settingsSectionInfo => 'Info';
