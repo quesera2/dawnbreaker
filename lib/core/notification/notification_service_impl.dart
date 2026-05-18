@@ -160,7 +160,11 @@ class NotificationServiceImpl implements NotificationService {
           _l10n.notificationChannelTask,
           importance: Importance.high,
         ),
-        iOS: const DarwinNotificationDetails(),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
       ),
       androidScheduleMode: await _resolveAndroidScheduleMode(),
       payload: task.id.toString(),
