@@ -25,8 +25,12 @@ class AppLongPressButton extends StatefulWidget {
 
 class _AppLongPressButtonState extends State<AppLongPressButton>
     with SingleTickerProviderStateMixin {
+  // 縦方向にこれ以上動いたらスクロール意図と判断してキャンセル
+  static const _scrollCancelThreshold = 12.0;
+
   late final AnimationController _controller;
   bool _isFinished = false;
+  Offset? _startPosition;
 
   @override
   void initState() {
@@ -54,28 +58,16 @@ class _AppLongPressButtonState extends State<AppLongPressButton>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails _) =>
-      _controller.forward(from: _controller.value);
-
-  void _onEnd() {
-    if (_isFinished) return;
-
-    _controller.animateBack(
-      0,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
     final size = widget.size;
     final radius = BorderRadius.circular(AppRadius.md);
-    return GestureDetector(
-      onTapDown: _onTapDown,
-      onTapUp: (_) => _onEnd(),
-      onTapCancel: _onEnd,
+    return Listener(
+      onPointerDown: _onPointerDown,
+      onPointerMove: _onPointerMove,
+      onPointerUp: _onPointerUp,
+      onPointerCancel: _onPointerCancel,
       child: DecoratedBox(
         position: DecorationPosition.foreground,
         decoration: BoxDecoration(
@@ -120,6 +112,40 @@ class _AppLongPressButtonState extends State<AppLongPressButton>
           ),
         ),
       ),
+    );
+  }
+
+  void _onPointerDown(PointerDownEvent event) {
+    _isFinished = false;
+    _startPosition = event.localPosition;
+    _controller.forward(from: _controller.value);
+  }
+
+  void _onPointerMove(PointerMoveEvent event) {
+    if (_startPosition == null) return;
+    final dy = (event.localPosition - _startPosition!).dy.abs();
+    if (dy > _scrollCancelThreshold) {
+      _startPosition = null;
+      _cancelAnimation();
+    }
+  }
+
+  void _onPointerUp(PointerUpEvent _) {
+    _startPosition = null;
+    _cancelAnimation();
+  }
+
+  void _onPointerCancel(PointerCancelEvent _) {
+    _startPosition = null;
+    _cancelAnimation();
+  }
+
+  void _cancelAnimation() {
+    if (_isFinished) return;
+    _controller.animateBack(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
     );
   }
 }
