@@ -211,31 +211,55 @@ void main() {
           });
 
           group('exactAlarmの許可が必要な場合', () {
-            setUp(
-              () async => setUpLoaded(
-                notificationEnabled: false,
-                checkPermissionResult: false,
-                permissionResult: true,
-                canScheduleExactAlarmsResult: false,
-              ),
-            );
-
-            test('exactAlarm許可ダイアログが表示される', () async {
-              await viewModel.setNotificationEnabled(true);
-              expect(
-                viewState.dialogMessage,
-                isA<ExactAlarmPermissionRequestMessage>(),
+            group('通知権限を新規取得した場合', () {
+              setUp(
+                () async => setUpLoaded(
+                  notificationEnabled: false,
+                  checkPermissionResult: false,
+                  permissionResult: true,
+                  canScheduleExactAlarmsResult: false,
+                ),
               );
+
+              test('exactAlarm許可ダイアログが表示される', () async {
+                await viewModel.setNotificationEnabled(true);
+                expect(
+                  viewState.dialogMessage,
+                  isA<ExactAlarmPermissionRequestMessage>(),
+                );
+              });
+
+              test('ハンドラを呼び出すとアラームとリマインダー設定が開かれる', () async {
+                await viewModel.setNotificationEnabled(true);
+                viewState.dialogMessage!.primaryHandler!.call();
+                await pumpEventQueue();
+                expect(
+                  fakeNotificationService.requestExactAlarmPermissionCalled,
+                  true,
+                );
+              });
             });
 
-            test('ハンドラを呼び出すとアラームとリマインダー設定が開かれる', () async {
-              await viewModel.setNotificationEnabled(true);
-              viewState.dialogMessage!.primaryHandler!.call();
-              await pumpEventQueue();
-              expect(
-                fakeNotificationService.requestExactAlarmPermissionCalled,
-                true,
+            // exactAlarmはオプションのため、通知権限が既にある場合は再要求しない
+            // exactAlarm未許可のままでも通知は有効化し、不正確なタイマーで動作させる
+            group('通知権限が既にある場合', () {
+              setUp(
+                () async => setUpLoaded(
+                  notificationEnabled: false,
+                  checkPermissionResult: true,
+                  canScheduleExactAlarmsResult: false,
+                ),
               );
+
+              test('通知が有効になる', () async {
+                await viewModel.setNotificationEnabled(true);
+                expect(viewState.notificationEnabled, true);
+              });
+
+              test('exactAlarm許可ダイアログは表示されない', () async {
+                await viewModel.setNotificationEnabled(true);
+                expect(viewState.dialogMessage, isNull);
+              });
             });
           });
         });
