@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
+import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
@@ -52,6 +53,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               onNotificationChanged: _viewModel.setNotificationEnabled,
             ),
             const SizedBox(height: 24),
+            ..._displaySection(
+              context,
+              displayMode: viewState.displayMode,
+              onDisplayModeChanged: _viewModel.setDisplayMode,
+            ),
+            const SizedBox(height: 24),
             ..._infoSection(context, viewState.version),
             if (kDebugMode) ...[
               const SizedBox(height: 24),
@@ -83,6 +90,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             value: notificationEnabled,
             onChanged: isNotificationUpdating ? null : onNotificationChanged,
           ),
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _displaySection(
+    BuildContext context, {
+    required HomeDisplayMode displayMode,
+    required ValueChanged<HomeDisplayMode> onDisplayModeChanged,
+  }) {
+    final colorScheme = context.appColorScheme;
+    final divider = Divider(height: 1, color: colorScheme.divider);
+    return [
+      AppSectionHeader(
+        title: Text(context.l10n.settingsSectionDisplay),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+      ),
+      RadioGroup<HomeDisplayMode>(
+        groupValue: displayMode,
+        onChanged: (v) => onDisplayModeChanged(v!),
+        child: Column(
+          children: [
+            AppListCell(
+              type: .top,
+              child: RadioListTile<HomeDisplayMode>(
+                value: .timeline,
+                title: Text(context.l10n.settingsDisplayHomeTimeline),
+                subtitle: Text(
+                  context.l10n.settingsDisplayHomeTimelineSubtitle,
+                ),
+              ),
+            ),
+            divider,
+            AppListCell(
+              type: .bottom,
+              child: RadioListTile<HomeDisplayMode>(
+                value: .byColor,
+                title: Text(context.l10n.settingsDisplayHomeByColor),
+                subtitle: Text(context.l10n.settingsDisplayHomeByColorSubtitle),
+              ),
+            ),
+          ],
         ),
       ),
     ];

@@ -386,6 +386,21 @@ class AppLocalizationsJa extends AppLocalizations {
       '正確な時間に通知を受け取るには、アラームとリマインダーを許可してください。';
 
   @override
+  String get settingsSectionDisplay => '表示';
+
+  @override
+  String get settingsDisplayHomeTimeline => 'タイムライン';
+
+  @override
+  String get settingsDisplayHomeTimelineSubtitle => '超過と今後の予定に分けて時系列で並べます';
+
+  @override
+  String get settingsDisplayHomeByColor => 'カラーグループ';
+
+  @override
+  String get settingsDisplayHomeByColorSubtitle => 'タスクの色でグループ分けします';
+
+  @override
   String get settingsSectionInfo => '情報';
 
   @override

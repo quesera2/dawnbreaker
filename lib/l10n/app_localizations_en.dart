@@ -392,6 +392,23 @@ class AppLocalizationsEn extends AppLocalizations {
       'To receive notifications at the exact time, please allow Alarms & Reminders.';
 
   @override
+  String get settingsSectionDisplay => 'Display';
+
+  @override
+  String get settingsDisplayHomeTimeline => 'Timeline';
+
+  @override
+  String get settingsDisplayHomeTimelineSubtitle =>
+      'Shows tasks in chronological order, split into overdue and upcoming.';
+
+  @override
+  String get settingsDisplayHomeByColor => 'Color Groups';
+
+  @override
+  String get settingsDisplayHomeByColorSubtitle =>
+      'Groups tasks by their assigned color.';
+
+  @override
   String get settingsSectionInfo => 'Info';
 
   @override

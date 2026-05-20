@@ -1,6 +1,7 @@
 import 'package:app_settings/app_settings.dart';
 import 'package:app_settings/app_settings_platform_interface.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
+import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -32,6 +33,7 @@ void main() {
     bool checkPermissionResult = true,
     bool permissionResult = true,
     bool canScheduleExactAlarmsResult = true,
+    HomeDisplayMode initialDisplayMode = HomeDisplayMode.timeline,
   }) {
     PackageInfo.setMockInitialValues(
       appName: 'dawnbreaker',
@@ -43,6 +45,7 @@ void main() {
     fakeOnboardingRepository = FakeOnboardingRepository();
     fakeSettingsRepository = FakeSettingsRepository(
       initialNotificationEnabled: notificationEnabled,
+      initialDisplayMode: initialDisplayMode,
     );
     fakeNotificationService = FakeNotificationService(
       checkPermissionResult: checkPermissionResult,
@@ -67,12 +70,14 @@ void main() {
     bool checkPermissionResult = true,
     bool permissionResult = true,
     bool canScheduleExactAlarmsResult = true,
+    HomeDisplayMode initialDisplayMode = HomeDisplayMode.timeline,
   }) async {
     setUpContainer(
       notificationEnabled: notificationEnabled,
       checkPermissionResult: checkPermissionResult,
       permissionResult: permissionResult,
       canScheduleExactAlarmsResult: canScheduleExactAlarmsResult,
+      initialDisplayMode: initialDisplayMode,
     );
     await waitUntil(container, settingsViewModelProvider, (s) => !s.isLoading);
     viewModel = container.read(settingsViewModelProvider.notifier);
@@ -262,6 +267,41 @@ void main() {
               });
             });
           });
+        });
+      });
+
+      group('表示モードの初期値', () {
+        group('タイムラインの場合', () {
+          setUp(() async => setUpLoaded());
+
+          test('表示モードがタイムラインである', () {
+            expect(viewState.displayMode, HomeDisplayMode.timeline);
+          });
+        });
+
+        group('カラーグループの場合', () {
+          setUp(
+            () async =>
+                setUpLoaded(initialDisplayMode: HomeDisplayMode.byColor),
+          );
+
+          test('表示モードがカラーグループである', () {
+            expect(viewState.displayMode, HomeDisplayMode.byColor);
+          });
+        });
+      });
+
+      group('setDisplayMode', () {
+        setUp(() async => setUpLoaded());
+
+        test('表示モードが変更される', () async {
+          await viewModel.setDisplayMode(HomeDisplayMode.byColor);
+          expect(viewState.displayMode, HomeDisplayMode.byColor);
+        });
+
+        test('リポジトリに保存される', () async {
+          await viewModel.setDisplayMode(HomeDisplayMode.byColor);
+          expect(fakeSettingsRepository.displayMode, HomeDisplayMode.byColor);
         });
       });
 
