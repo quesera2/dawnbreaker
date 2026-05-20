@@ -4,6 +4,7 @@ import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/task_notification_sync_notifier.dart';
 import 'package:dawnbreaker/data/preferences/shared_preferences_provider.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -12,7 +13,8 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await initializeDateFormatting();
   tz.initializeTimeZones();
   final localTimezone = await FlutterTimezone.getLocalTimezone();
