@@ -27,7 +27,7 @@ class HomeViewModel extends _$HomeViewModel {
   }
 
   void _initialize() {
-    final disposale = combineLatest(
+    final disposable = combineLatest(
       _taskRepository.allTaskItems(),
       _settingsRepository.watchHomeDisplayMode(),
       (tasks, mode) => state = state.copyWith(
