@@ -20,11 +20,6 @@ Stream<bool> canScheduleExactAlarms(Ref ref) async* {
   yield* service.watchCanScheduleExactAlarms();
 }
 
-@pragma('vm:entry-point')
-void onDidReceiveBackgroundNotificationResponse(NotificationResponse details) {
-  // TODO: バックグラウンド・アプリキル状態で受け取った通知のハンドリングを行う
-}
-
 @Riverpod(keepAlive: true)
 Future<NotificationService> notificationService(Ref ref) async {
   final appLocalizations = await ref.watch(appLocalizationsProvider.future);
@@ -71,12 +66,7 @@ class NotificationServiceImpl implements NotificationService {
       android: _androidSettings,
       iOS: _iosSettings,
     );
-    await _plugin.initialize(
-      settings: settings,
-      onDidReceiveNotificationResponse: _onNotificationResponse,
-      onDidReceiveBackgroundNotificationResponse:
-          onDidReceiveBackgroundNotificationResponse,
-    );
+    await _plugin.initialize(settings: settings);
 
     if (Platform.isAndroid) {
       await _androidImplementation?.createNotificationChannelGroup(
@@ -173,7 +163,7 @@ class NotificationServiceImpl implements NotificationService {
 
   Future<AndroidScheduleMode> _resolveAndroidScheduleMode() async {
     final canExact = await canScheduleExactAlarms();
-    return canExact ? .exactAllowWhileIdle : .inexactAllowWhileIdle;
+    return canExact ? .alarmClock : .inexactAllowWhileIdle;
   }
 
   @override
@@ -218,9 +208,5 @@ class NotificationServiceImpl implements NotificationService {
       debugPrint('  id=${n.id}, title="${n.title}", payload="${n.payload}"');
     }
     debugPrint('================================================');
-  }
-
-  void _onNotificationResponse(NotificationResponse details) {
-    // TODO: フォアグラウンドで通知を受け取ったときの処理を行う
   }
 }
