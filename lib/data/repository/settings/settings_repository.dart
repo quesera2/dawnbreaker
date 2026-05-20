@@ -5,7 +5,7 @@ abstract interface class SettingsRepository {
 
   Future<void> setNotificationEnabled(bool value);
 
-  Stream<HomeDisplayMode> watchHomeSortType();
+  Stream<HomeDisplayMode> watchHomeDisplayMode();
 
-  Future<void> setHomeSortType(HomeDisplayMode value);
+  Future<void> setHomeDisplayMode(HomeDisplayMode value);
 }

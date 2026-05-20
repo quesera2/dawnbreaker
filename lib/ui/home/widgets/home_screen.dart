@@ -271,7 +271,13 @@ class _FilterChipRow extends StatelessWidget {
 
 extension _HomeTaskListTypeLabel on HomeTaskListType {
   String label(BuildContext context) => switch (this) {
-    HomeTaskListType.overdueTasks => context.l10n.homeSectionOverdue,
-    HomeTaskListType.upcomingTasks => context.l10n.homeSectionUpcoming,
+    .overdueTasks => context.l10n.homeSectionOverdue,
+    .upcomingTasks => context.l10n.homeSectionUpcoming,
+    .none => context.l10n.homeSectionColorNone,
+    .red => context.l10n.homeSectionColorRed,
+    .blue => context.l10n.homeSectionColorBlue,
+    .yellow => context.l10n.homeSectionColorYellow,
+    .green => context.l10n.homeSectionColorGreen,
+    .orange => context.l10n.homeSectionColorOrange,
   };
 }

@@ -40,7 +40,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Stream<HomeDisplayMode> watchHomeSortType() async* {
+  Stream<HomeDisplayMode> watchHomeDisplayMode() async* {
     yield HomeDisplayMode.fromString(
       _manager.get(homeSortModeKey, defaultValue: ''),
     );
@@ -48,7 +48,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Future<void> setHomeSortType(HomeDisplayMode value) async {
+  Future<void> setHomeDisplayMode(HomeDisplayMode value) async {
     await _manager.set(homeSortModeKey, value.rawKey);
     _homeSortModeController.add(value);
   }
