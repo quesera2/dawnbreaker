@@ -1,6 +1,7 @@
 import 'package:animated_list_plus/animated_list_plus.dart';
 import 'package:animated_list_plus/transitions.dart';
 import 'package:dawnbreaker/app/app_colors.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/components/app_filter_chip.dart';
@@ -38,6 +39,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   Widget build(BuildContext context) {
     listenMessages(homeViewModelProvider);
+    ref.listen(homeViewModelProvider.select((s) => s.isLoading), (
+      _,
+      isLoading,
+    ) {
+      if (!isLoading) FlutterNativeSplash.remove();
+    });
     final uiState = ref.watch(homeViewModelProvider);
     final viewModel = ref.read(homeViewModelProvider.notifier);
 
