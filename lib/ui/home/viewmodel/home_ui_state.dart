@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -21,6 +22,7 @@ abstract class HomeUiState with _$HomeUiState implements BaseUiState {
     @Default([]) List<TaskItem> tasks,
     @Default('') String searchQuery,
     @Default(HomeFilter.all) HomeFilter selectedFilter,
+    @Default(HomeDisplayMode.timeline) HomeDisplayMode displayMode,
   }) = _HomeUiState;
 
   bool get hasTasks => tasks.isNotEmpty;
@@ -28,6 +30,7 @@ abstract class HomeUiState with _$HomeUiState implements BaseUiState {
   HomeTaskCount get taskCount => HomeTaskCount.from(tasks: tasks);
 
   HomeTaskList get taskList => HomeTaskList.from(
+    displayMode: displayMode,
     tasks: tasks,
     searchQuery: searchQuery,
     filter: selectedFilter,

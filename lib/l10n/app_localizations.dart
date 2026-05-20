@@ -170,6 +170,42 @@ abstract class AppLocalizations {
   /// **'今後の予定'**
   String get homeSectionUpcoming;
 
+  /// No description provided for @homeSectionColorNone.
+  ///
+  /// In ja, this message translates to:
+  /// **'グレー'**
+  String get homeSectionColorNone;
+
+  /// No description provided for @homeSectionColorRed.
+  ///
+  /// In ja, this message translates to:
+  /// **'レッド'**
+  String get homeSectionColorRed;
+
+  /// No description provided for @homeSectionColorBlue.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブルー'**
+  String get homeSectionColorBlue;
+
+  /// No description provided for @homeSectionColorYellow.
+  ///
+  /// In ja, this message translates to:
+  /// **'イエロー'**
+  String get homeSectionColorYellow;
+
+  /// No description provided for @homeSectionColorGreen.
+  ///
+  /// In ja, this message translates to:
+  /// **'グリーン'**
+  String get homeSectionColorGreen;
+
+  /// No description provided for @homeSectionColorOrange.
+  ///
+  /// In ja, this message translates to:
+  /// **'オレンジ'**
+  String get homeSectionColorOrange;
+
   /// No description provided for @homeComplete.
   ///
   /// In ja, this message translates to:

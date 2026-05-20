@@ -45,6 +45,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeSectionUpcoming => 'Upcoming';
 
   @override
+  String get homeSectionColorNone => 'Gray';
+
+  @override
+  String get homeSectionColorRed => 'Red';
+
+  @override
+  String get homeSectionColorBlue => 'Blue';
+
+  @override
+  String get homeSectionColorYellow => 'Yellow';
+
+  @override
+  String get homeSectionColorGreen => 'Green';
+
+  @override
+  String get homeSectionColorOrange => 'Orange';
+
+  @override
   String get homeComplete => 'Done';
 
   @override

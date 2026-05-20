@@ -45,6 +45,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeSectionUpcoming => '今後の予定';
 
   @override
+  String get homeSectionColorNone => 'グレー';
+
+  @override
+  String get homeSectionColorRed => 'レッド';
+
+  @override
+  String get homeSectionColorBlue => 'ブルー';
+
+  @override
+  String get homeSectionColorYellow => 'イエロー';
+
+  @override
+  String get homeSectionColorGreen => 'グリーン';
+
+  @override
+  String get homeSectionColorOrange => 'オレンジ';
+
+  @override
   String get homeComplete => '完了';
 
   @override

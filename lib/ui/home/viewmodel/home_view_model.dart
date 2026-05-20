@@ -1,4 +1,8 @@
+import 'package:dawnbreaker/core/util/stream_util.dart';
+import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
+import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
@@ -11,20 +15,32 @@ part 'home_view_model.g.dart';
 
 @riverpod
 class HomeViewModel extends _$HomeViewModel {
-  late TaskRepository _repository;
+  late TaskRepository _taskRepository;
+  late SettingsRepository _settingsRepository;
 
   @override
   HomeUiState build() {
-    _repository = ref.read(taskRepositoryProvider);
+    _taskRepository = ref.read(taskRepositoryProvider);
+    _settingsRepository = ref.read(settingsRepositoryProvider);
     _initialize();
     return const HomeUiState(isLoading: true);
   }
 
-  Future<void> _initialize() async {
-    final subscription = _repository.allTaskItems().listen((tasks) {
-      state = state.copyWith(isLoading: false, tasks: tasks);
-    });
-    ref.onDispose(subscription.cancel);
+  void _initialize() {
+    final disposable = combineLatest(
+      _taskRepository.allTaskItems(),
+      _settingsRepository.watchHomeDisplayMode(),
+      (tasks, mode) => state = state.copyWith(
+        isLoading: false,
+        tasks: tasks,
+        displayMode: mode,
+      ),
+    );
+    ref.onDispose(disposable);
+  }
+
+  Future<void> updateDisplayMode(HomeDisplayMode mode) async {
+    await _settingsRepository.setHomeDisplayMode(mode);
   }
 
   void updateSearchQuery(String query) {
@@ -43,7 +59,7 @@ class HomeViewModel extends _$HomeViewModel {
     String? comment,
   ) async {
     try {
-      final history = await _repository.recordExecution(
+      final history = await _taskRepository.recordExecution(
         task.id,
         executedAt: executedAt,
         comment: comment,
@@ -52,7 +68,7 @@ class HomeViewModel extends _$HomeViewModel {
       state = state.copyWith(
         snackBarMessage: TaskCompleteSuccess(
           taskName: task.name,
-          handler: () => _repository.deleteExecution(history.id),
+          handler: () => _taskRepository.deleteExecution(history.id),
         ),
       );
     } on TaskRepositoryException {
