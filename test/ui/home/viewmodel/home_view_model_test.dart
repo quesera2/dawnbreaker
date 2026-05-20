@@ -1,7 +1,9 @@
+import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
@@ -11,6 +13,7 @@ import 'package:dawnbreaker/ui/home/viewmodel/home_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/fake_settings_repository.dart';
 import '../../../helpers/fake_task_repository.dart';
 import '../../../helpers/riverpod_test_helper.dart';
 
@@ -20,6 +23,8 @@ extension _HomeTaskListExt on HomeTaskList {
 
   List<TaskItem> get upcomingTasks =>
       taskItemMap[HomeTaskListType.upcomingTasks] ?? [];
+
+  List<TaskItem> colorGroup(HomeTaskListType type) => taskItemMap[type] ?? [];
 }
 
 void main() {
@@ -106,15 +111,26 @@ void main() {
     late HomeViewModel viewModel;
     late HomeUiState viewState;
 
-    void setUpContainer({List<TaskItem>? tasks}) {
+    void setUpContainer({
+      List<TaskItem>? tasks,
+      FakeSettingsRepository? settings,
+    }) {
       fakeRepository = FakeTaskRepository(initialTasks: tasks ?? _testTasks);
       container = ProviderContainer(
-        overrides: [taskRepositoryProvider.overrideWith((_) => fakeRepository)],
+        overrides: [
+          taskRepositoryProvider.overrideWith((_) => fakeRepository),
+          settingsRepositoryProvider.overrideWith(
+            (_) => settings ?? FakeSettingsRepository(),
+          ),
+        ],
       );
     }
 
-    Future<void> setUpLoaded({List<TaskItem>? tasks}) async {
-      setUpContainer(tasks: tasks);
+    Future<void> setUpLoaded({
+      List<TaskItem>? tasks,
+      FakeSettingsRepository? settings,
+    }) async {
+      setUpContainer(tasks: tasks, settings: settings);
       await waitUntil(container, homeViewModelProvider, (s) => !s.isLoading);
       viewModel = container.read(homeViewModelProvider.notifier);
       container.listen(
@@ -357,6 +373,48 @@ void main() {
       });
     });
 
+    group('byColor モード', () {
+      setUp(
+        () async => setUpLoaded(
+          tasks: _colorTasks,
+          settings: FakeSettingsRepository(
+            initialDisplayMode: HomeDisplayMode.byColor,
+          ),
+        ),
+      );
+
+      test('色ごとにグループ化される', () {
+        final tl = viewState.taskList;
+        expect(tl.colorGroup(.red).map((t) => t.name), ['レッドA', 'レッドB']);
+        expect(tl.colorGroup(.blue).map((t) => t.name), ['ブルー']);
+        expect(tl.colorGroup(.none).map((t) => t.name), ['グレー']);
+      });
+
+      test('タスクのない色はグループが存在しない', () {
+        final tl = viewState.taskList;
+        expect(tl.taskItemMap.containsKey(HomeTaskListType.yellow), isFalse);
+        expect(tl.taskItemMap.containsKey(HomeTaskListType.green), isFalse);
+        expect(tl.taskItemMap.containsKey(HomeTaskListType.orange), isFalse);
+      });
+
+      test('タスクがあるとき isEmpty は false', () {
+        expect(viewState.taskList.isEmpty, isFalse);
+      });
+
+      test('一致しない検索クエリのとき isEmpty は true', () {
+        viewModel.updateSearchQuery('zzz');
+        expect(viewState.taskList.isEmpty, isTrue);
+      });
+
+      test('検索クエリで絞り込まれる', () {
+        viewModel.updateSearchQuery('レッド');
+        final tl = viewState.taskList;
+        expect(tl.colorGroup(.red).length, 2);
+        expect(tl.colorGroup(.blue), isEmpty);
+        expect(tl.colorGroup(.none), isEmpty);
+      });
+    });
+
     group('taskCount', () {
       setUp(() async => setUpLoaded(tasks: classificationTasks));
 
@@ -382,6 +440,41 @@ void main() {
     });
   });
 }
+
+final _colorTasks = [
+  const TaskItem.period(
+    id: 30,
+    name: 'レッドA',
+    furigana: 'れっどえー',
+    icon: '📝',
+    color: TaskColor.red,
+    taskHistory: [],
+  ),
+  const TaskItem.period(
+    id: 31,
+    name: 'レッドB',
+    furigana: 'れっどびー',
+    icon: '📝',
+    color: TaskColor.red,
+    taskHistory: [],
+  ),
+  const TaskItem.period(
+    id: 32,
+    name: 'ブルー',
+    furigana: 'ぶるー',
+    icon: '📝',
+    color: TaskColor.blue,
+    taskHistory: [],
+  ),
+  const TaskItem.period(
+    id: 33,
+    name: 'グレー',
+    furigana: 'ぐれー',
+    icon: '📝',
+    color: TaskColor.none,
+    taskHistory: [],
+  ),
+];
 
 final _testTasks = [
   TaskItem.period(
