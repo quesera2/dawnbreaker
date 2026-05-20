@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/core/util/stream_util.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
@@ -25,15 +26,17 @@ class HomeViewModel extends _$HomeViewModel {
     return const HomeUiState(isLoading: true);
   }
 
-  Future<void> _initialize() async {
-    final taskSub = _taskRepository.allTaskItems().listen((tasks) {
-      state = state.copyWith(isLoading: false, tasks: tasks);
-    });
-    final displayModeSub = _settingsRepository.watchHomeDisplayMode().listen(
-      (mode) => state = state.copyWith(displayMode: mode),
+  void _initialize() {
+    final disposale = combineLatest(
+      _taskRepository.allTaskItems(),
+      _settingsRepository.watchHomeDisplayMode(),
+      (tasks, mode) => state = state.copyWith(
+        isLoading: false,
+        tasks: tasks,
+        displayMode: mode,
+      ),
     );
-    ref.onDispose(taskSub.cancel);
-    ref.onDispose(displayModeSub.cancel);
+    ref.onDispose(disposable);
   }
 
   Future<void> updateDisplayMode(HomeDisplayMode mode) async {
