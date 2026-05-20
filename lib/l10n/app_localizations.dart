@@ -800,6 +800,36 @@ abstract class AppLocalizations {
   /// **'正確な時間に通知を受け取るには、アラームとリマインダーを許可してください。'**
   String get settingsExactAlarmPermissionMessage;
 
+  /// No description provided for @settingsSectionDisplay.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示'**
+  String get settingsSectionDisplay;
+
+  /// No description provided for @settingsDisplayHomeTimeline.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムライン'**
+  String get settingsDisplayHomeTimeline;
+
+  /// No description provided for @settingsDisplayHomeTimelineSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'超過と今後の予定に分けて時系列で並べます'**
+  String get settingsDisplayHomeTimelineSubtitle;
+
+  /// No description provided for @settingsDisplayHomeByColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーグループ'**
+  String get settingsDisplayHomeByColor;
+
+  /// No description provided for @settingsDisplayHomeByColorSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスクの色でグループ分けします'**
+  String get settingsDisplayHomeByColorSubtitle;
+
   /// No description provided for @settingsSectionInfo.
   ///
   /// In ja, this message translates to:

@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
@@ -12,6 +13,7 @@ abstract class SettingsUiState with _$SettingsUiState implements BaseUiState {
     @Default('') String version,
     @Default(true) bool notificationEnabled,
     @Default(false) bool isNotificationUpdating,
+    @Default(HomeDisplayMode.timeline) HomeDisplayMode displayMode,
     DialogMessage? dialogMessage,
     SnackBarMessage? snackBarMessage,
   }) = _SettingsUiState;
