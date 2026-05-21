@@ -1,7 +1,6 @@
 import 'package:animated_list_plus/animated_list_plus.dart';
 import 'package:animated_list_plus/transitions.dart';
 import 'package:dawnbreaker/app/app_colors.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/components/app_filter_chip.dart';
@@ -16,6 +15,7 @@ import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_view_model.dart';
 import 'package:dawnbreaker/ui/home/widgets/task_complete_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
