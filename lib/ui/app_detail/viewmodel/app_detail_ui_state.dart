@@ -19,8 +19,8 @@ abstract class AppDetailUiState with _$AppDetailUiState implements BaseUiState {
     int? daysSinceLastExecution,
     int? averageIntervalDays,
     @Default(false) bool shouldPop,
-    @override DialogMessage? dialogMessage,
-    @override SnackBarMessage? snackBarMessage,
+    DialogMessage? dialogMessage,
+    SnackBarMessage? snackBarMessage,
   }) = _AppDetailUiState;
 
   AppDetailUiState updateTaskItem(TaskItem taskItem) {
