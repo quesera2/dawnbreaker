@@ -23,11 +23,7 @@ TaskRepository taskRepository(Ref ref) {
 }
 
 class TaskRepositoryImpl implements TaskRepository {
-  TaskRepositoryImpl({
-    required AppDatabase db,
-    required FuriganaTranslate furiganaTranslate,
-  }) : _db = db,
-       _furiganaTranslate = furiganaTranslate;
+  TaskRepositoryImpl({required this._db, required this._furiganaTranslate});
 
   final AppDatabase _db;
   final FuriganaTranslate _furiganaTranslate;
