@@ -23,15 +23,14 @@ Stream<bool> canScheduleExactAlarms(Ref ref) async* {
 @Riverpod(keepAlive: true)
 Future<NotificationService> notificationService(Ref ref) async {
   final appLocalizations = await ref.watch(appLocalizationsProvider.future);
-  return NotificationServiceImpl(localizations: appLocalizations);
+  return NotificationServiceImpl(l10n: appLocalizations);
 }
 
 const _taskGroupId = 'task_notifications';
 const taskChannelId = 'individual_task_notification';
 
 class NotificationServiceImpl implements NotificationService {
-  NotificationServiceImpl({required AppLocalizations localizations})
-    : _l10n = localizations;
+  NotificationServiceImpl({required this._l10n});
 
   final AppLocalizations _l10n;
 

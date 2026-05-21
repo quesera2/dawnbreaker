@@ -1,5 +1,6 @@
 class PreferenceKey<T> {
   const PreferenceKey(this.rawKey);
+
   final String rawKey;
 }
 

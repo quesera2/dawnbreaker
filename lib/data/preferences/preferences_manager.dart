@@ -13,8 +13,7 @@ PreferencesManager preferencesManager(Ref ref) =>
 class PreferenceKeyDefinition {}
 
 class PreferencesManager {
-  const PreferencesManager({required SharedPreferences preferences})
-    : _preferences = preferences;
+  const PreferencesManager({required this._preferences});
 
   final SharedPreferences _preferences;
 
