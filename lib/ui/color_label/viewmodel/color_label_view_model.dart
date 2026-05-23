@@ -25,7 +25,7 @@ class ColorLabelViewModel extends _$ColorLabelViewModel {
   }
 
   void toggleMode() {
-    state = state.copyWith(mode: state.mode == .edit ? .sort : .edit);
+    state = state.copyWith(mode: state.mode.toggled);
   }
 
   Future<void> updateAlias(TaskColor color, String alias) async {

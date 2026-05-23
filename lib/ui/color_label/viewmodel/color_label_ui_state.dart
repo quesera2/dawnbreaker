@@ -6,7 +6,15 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'color_label_ui_state.freezed.dart';
 
-enum ColorLabelMode { edit, sort }
+enum ColorLabelMode {
+  edit,
+  sort;
+
+  ColorLabelMode get toggled => switch (this) {
+    .edit => .sort,
+    .sort => .edit,
+  };
+}
 
 @freezed
 abstract class ColorLabelUiState
