@@ -7,3 +7,4 @@ class PreferenceKey<T> {
 const onboardingCompleteKey = PreferenceKey<bool>('onboarding_complete');
 const notificationEnabledKey = PreferenceKey<bool>('notification_enabled');
 const homeSortModeKey = PreferenceKey<String>('home_sort_mode');
+const colorSettingsKey = PreferenceKey<List<String>>('color_settings');
