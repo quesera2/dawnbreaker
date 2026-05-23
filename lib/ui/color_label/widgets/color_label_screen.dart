@@ -226,8 +226,8 @@ class _ColorDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 24,
-      height: 24,
+      width: 16,
+      height: 16,
       decoration: BoxDecoration(
         color: color.baseColor(context),
         borderRadius: BorderRadius.circular(AppRadius.pill),
