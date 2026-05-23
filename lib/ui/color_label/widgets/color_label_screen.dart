@@ -165,55 +165,53 @@ class _SortModeList extends StatelessWidget {
   Widget build(BuildContext context) {
     final padding = MediaQuery.paddingOf(context);
     final colors = context.appColorScheme;
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(bottom: padding.bottom + 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppSectionHeader(
+    // CustomScrollView で単一スクロールコンテキストにまとめることで、
+    // shrinkWrap + SingleChildScrollView の組み合わせによるジェスチャー競合を回避する
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: AppSectionHeader(
             title: Text(context.l10n.colorLabelSortSectionTitle),
           ),
-          const Divider(height: 1),
-          ReorderableListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            buildDefaultDragHandles: false,
-            itemCount: settings.length,
-            onReorderItem: onReorderItem,
-            proxyDecorator: (child, _, _) =>
-                Material(color: Colors.transparent, child: child),
-            itemBuilder: (context, index) {
-              final setting = settings[index];
-              final label = setting.alias.isNotEmpty
-                  ? setting.alias
-                  : setting.color.defaultLabel(context);
-              return Column(
-                key: ValueKey(setting.color),
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ListTile(
-                    leading: _ColorDot(color: setting.color),
-                    title: Text(label),
-                    trailing: ReorderableDragStartListener(
-                      index: index,
-                      child: Icon(Icons.drag_handle, color: colors.textMuted),
-                    ),
+        ),
+        const SliverToBoxAdapter(child: Divider(height: 1)),
+        SliverReorderableList(
+          onReorderItem: onReorderItem,
+          proxyDecorator: (child, _, _) =>
+              Material(color: Colors.transparent, child: child),
+          itemCount: settings.length,
+          itemBuilder: (context, index) {
+            final setting = settings[index];
+            final label = setting.alias.isNotEmpty
+                ? setting.alias
+                : setting.color.defaultLabel(context);
+            return Column(
+              key: ValueKey(setting.color),
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: _ColorDot(color: setting.color),
+                  title: Text(label),
+                  trailing: ReorderableDragStartListener(
+                    index: index,
+                    child: Icon(Icons.drag_handle, color: colors.textMuted),
                   ),
-                  const Divider(height: 1),
-                ],
-              );
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                ),
+                const Divider(height: 1),
+              ],
+            );
+          },
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20, 8, 20, padding.bottom + 16),
             child: Text(
               context.l10n.colorLabelSortDescription,
               style: AppTextStyle.caption.copyWith(color: colors.textMuted),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

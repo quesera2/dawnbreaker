@@ -18,11 +18,9 @@ class ColorLabelViewModel extends _$ColorLabelViewModel {
     return const ColorLabelUiState();
   }
 
-  void _initialize() {
-    final subscription = _repository.watchColorSettings().listen((settings) {
-      state = state.copyWith(isLoading: false, settings: settings);
-    });
-    ref.onDispose(subscription.cancel);
+  Future<void> _initialize() async {
+    final settings = await _repository.watchColorSettings().first;
+    state = state.copyWith(isLoading: false, settings: settings);
   }
 
   void toggleMode() {
@@ -33,6 +31,7 @@ class ColorLabelViewModel extends _$ColorLabelViewModel {
     final updated = state.settings.map((s) {
       return s.color == color ? s.copyWith(alias: alias) : s;
     }).toList();
+    state = state.copyWith(settings: updated);
     await _repository.setColorSettings(updated);
   }
 
@@ -41,6 +40,7 @@ class ColorLabelViewModel extends _$ColorLabelViewModel {
     final item = list.removeAt(oldIndex);
     list.insert(newIndex, item);
     final reordered = [for (final (i, s) in list.indexed) s.copyWith(order: i)];
+    state = state.copyWith(settings: reordered);
     await _repository.setColorSettings(reordered);
   }
 }
