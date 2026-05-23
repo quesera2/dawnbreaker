@@ -62,11 +62,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       colorSettingsKey,
       defaultValue: const <String>[],
     );
-    final settings = ColorSetting.fromStringList(stored);
-    if (stored.isEmpty) {
-      await _manager.set(colorSettingsKey, ColorSetting.toStringList(settings));
-    }
-    yield settings;
+    yield ColorSetting.fromStringList(stored);
     yield* _colorSettingsController.stream;
   }
 

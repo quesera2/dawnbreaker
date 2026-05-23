@@ -39,9 +39,9 @@ class ColorLabelViewModel extends _$ColorLabelViewModel {
   Future<void> reorder(int oldIndex, int newIndex) async {
     final list = List<ColorSetting>.from(state.settings);
     final item = list.removeAt(oldIndex);
-    final insertAt = newIndex > oldIndex ? newIndex - 1 : newIndex;
-    list.insert(insertAt, item);
-    state = state.copyWith(settings: list);
-    await _repository.setColorSettings(list);
+    list.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, item);
+    final reordered = [for (final (i, s) in list.indexed) s.copyWith(order: i)];
+    state = state.copyWith(settings: reordered);
+    await _repository.setColorSettings(reordered);
   }
 }

@@ -96,24 +96,13 @@ void main() {
         final settings = await repository.watchColorSettings().first;
         expect(settings.last.color, TaskColor.none);
       });
-
-      test('デフォルト設定がストレージに保存される', () async {
-        await repository.watchColorSettings().first;
-
-        final saved = manager.get(
-          colorSettingsKey,
-          defaultValue: const <String>[],
-        );
-        expect(saved, isNotEmpty);
-        expect(saved.length, TaskColor.values.length);
-      });
     });
 
     group('保存済みの設定がある場合', () {
       setUp(() async {
         manager = await FakePreferencesManager.create(
           mockValues: {
-            colorSettingsKey.rawKey: ['red:レッド', 'blue:ブルー'],
+            colorSettingsKey.rawKey: ['red:0:レッド', 'blue:1:ブルー'],
           },
         );
         repository = SettingsRepositoryImpl(manager);
@@ -138,8 +127,8 @@ void main() {
 
     test('変更した設定がstreamに流れる', () async {
       final updated = [
-        const ColorSetting(color: TaskColor.red, alias: 'キッチン'),
-        const ColorSetting(color: TaskColor.blue, alias: ''),
+        const ColorSetting(color: TaskColor.red, alias: 'キッチン', order: 0),
+        const ColorSetting(color: TaskColor.blue, alias: '', order: 1),
       ];
       final expectation = expectLater(
         repository.watchColorSettings().skip(1).take(1),
@@ -152,11 +141,13 @@ void main() {
     });
 
     test('変更した設定がストレージに保存される', () async {
-      final updated = [const ColorSetting(color: TaskColor.green, alias: '植物')];
+      final updated = [
+        const ColorSetting(color: TaskColor.green, alias: '植物', order: 0),
+      ];
       await repository.setColorSettings(updated);
 
       expect(manager.get(colorSettingsKey, defaultValue: const <String>[]), [
-        'green:植物',
+        'green:0:植物',
       ]);
     });
   });

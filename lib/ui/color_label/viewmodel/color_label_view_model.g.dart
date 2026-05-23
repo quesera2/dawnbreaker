@@ -42,7 +42,7 @@ final class ColorLabelViewModelProvider
 }
 
 String _$colorLabelViewModelHash() =>
-    r'bc57475949730ed51a1e48098e8247509fad5c1f';
+    r'3c1288a6ee416298955a076dfedc418946e727d1';
 
 abstract class _$ColorLabelViewModel extends $Notifier<ColorLabelUiState> {
   ColorLabelUiState build();
