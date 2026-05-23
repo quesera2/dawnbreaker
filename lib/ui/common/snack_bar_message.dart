@@ -57,3 +57,7 @@ class AllTasksDeletedMessage extends SnackBarMessage {
 class TutorialFlagResetMessage extends SnackBarMessage {
   TutorialFlagResetMessage();
 }
+
+class ColorSettingsResetMessage extends SnackBarMessage {
+  ColorSettingsResetMessage();
+}
