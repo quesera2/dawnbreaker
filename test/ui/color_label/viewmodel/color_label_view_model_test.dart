@@ -106,7 +106,7 @@ void main() {
           await setUpLoaded(initialColorSettings: initial);
           final firstColor = initial.first.color;
 
-          await viewModel.reorder(0, initial.length);
+          await viewModel.reorder(0, initial.length - 1);
           await pumpEventQueue();
           expect(viewState.settings.last.color, firstColor);
         });

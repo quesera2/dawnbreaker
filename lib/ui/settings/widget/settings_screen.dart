@@ -111,6 +111,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         groupValue: displayMode,
         onChanged: (v) => onDisplayModeChanged(v!),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             AppListCell(
               type: .top,
@@ -124,27 +125,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             ),
             divider,
             AppListCell(
-              type: .middle,
+              type: displayMode == .byColor ? .middle : .bottom,
               child: RadioListTile<HomeDisplayMode>(
                 value: .byColor,
                 title: Text(context.l10n.settingsDisplayHomeByColor),
                 subtitle: Text(context.l10n.settingsDisplayHomeByColorSubtitle),
               ),
             ),
-            divider,
-            AppListCell(
-              type: .bottom,
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                title: Text(context.l10n.settingsColorGroupTitle),
-                subtitle: Text(context.l10n.settingsColorGroupSubtitle),
-                trailing: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: colorScheme.textMuted,
-                ),
-              ),
-              onTap: () => context.push('/settings/color-labels'),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              child: displayMode == .byColor
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        divider,
+                        AppListCell(
+                          type: .bottom,
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                            ),
+                            title: Text(context.l10n.settingsColorGroupTitle),
+                            subtitle: Text(
+                              context.l10n.settingsColorGroupSubtitle,
+                            ),
+                            trailing: Icon(
+                              Icons.arrow_forward_ios,
+                              size: 16,
+                              color: colorScheme.textMuted,
+                            ),
+                          ),
+                          onTap: () => context.push('/settings/color-labels'),
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
             ),
           ],
         ),

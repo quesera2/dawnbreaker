@@ -1,13 +1,11 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
-import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/ui/color_label/viewmodel/color_label_view_model.dart';
 import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
-import 'package:dawnbreaker/ui/common/components/app_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -80,7 +78,7 @@ class _ColorLabelScreenState extends ConsumerState<ColorLabelScreen> {
           : isSort
           ? _SortModeList(
               settings: uiState.settings,
-              onReorder: _viewModel.reorder,
+              onReorderItem: _viewModel.reorder,
             )
           : _EditModeList(
               settings: uiState.settings,
@@ -106,82 +104,65 @@ class _EditModeList extends StatelessWidget {
   Widget build(BuildContext context) {
     final padding = MediaQuery.paddingOf(context);
     return ListView.separated(
-      padding: EdgeInsets.fromLTRB(20, 16, 20, padding.bottom + 16),
+      padding: EdgeInsets.only(bottom: padding.bottom),
       itemCount: settings.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final setting = settings[index];
-        return _EditModeRow(
-          setting: setting,
-          controller: controllers[setting.color]!,
-          onChanged: (alias) => onChanged(setting.color, alias),
+        return ListTile(
+          leading: _ColorDot(color: setting.color),
+          title: TextField(
+            controller: controllers[setting.color]!,
+            decoration: InputDecoration(
+              hintText: setting.color.defaultLabel(context),
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+            onChanged: (alias) => onChanged(setting.color, alias),
+          ),
         );
       },
     );
   }
 }
 
-class _EditModeRow extends StatelessWidget {
-  const _EditModeRow({
-    required this.setting,
-    required this.controller,
-    required this.onChanged,
-  });
-
-  final ColorSetting setting;
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      spacing: 12,
-      children: [
-        _ColorDot(color: setting.color),
-        Expanded(
-          child: AppTextInput(
-            controller: controller,
-            hintText: setting.color.defaultLabel(context),
-            onChanged: onChanged,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _SortModeList extends StatelessWidget {
-  const _SortModeList({required this.settings, required this.onReorder});
+  const _SortModeList({required this.settings, required this.onReorderItem});
 
   final List<ColorSetting> settings;
-  final void Function(int, int) onReorder;
+  final void Function(int, int) onReorderItem;
 
   @override
   Widget build(BuildContext context) {
     final padding = MediaQuery.paddingOf(context);
     final colors = context.appColorScheme;
     return ReorderableListView.builder(
-      padding: EdgeInsets.fromLTRB(20, 16, 20, padding.bottom + 16),
+      padding: EdgeInsets.only(bottom: padding.bottom),
+      buildDefaultDragHandles: false,
       itemCount: settings.length,
-      onReorder: onReorder,
-      proxyDecorator: (child, _, __) =>
+      onReorderItem: onReorderItem,
+      proxyDecorator: (child, _, _) =>
           Material(color: Colors.transparent, child: child),
       itemBuilder: (context, index) {
         final setting = settings[index];
         final label = setting.alias.isNotEmpty
             ? setting.alias
             : setting.color.defaultLabel(context);
-        return Padding(
+        return Column(
           key: ValueKey(setting.color),
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Row(
-            spacing: 12,
-            children: [
-              _ColorDot(color: setting.color),
-              Expanded(child: Text(label, style: AppTextStyle.body)),
-              Icon(Icons.drag_handle, color: colors.textMuted),
-            ],
-          ),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: _ColorDot(color: setting.color),
+              title: Text(label),
+              trailing: ReorderableDragStartListener(
+                index: index,
+                child: Icon(Icons.drag_handle, color: colors.textMuted),
+              ),
+            ),
+            const Divider(height: 1),
+          ],
         );
       },
     );
