@@ -860,6 +860,30 @@ abstract class AppLocalizations {
   /// **'ラベルを編集'**
   String get colorLabelEditButton;
 
+  /// No description provided for @colorLabelEditSectionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ラベルを編集'**
+  String get colorLabelEditSectionTitle;
+
+  /// No description provided for @colorLabelSortSectionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーグループを並び替え'**
+  String get colorLabelSortSectionTitle;
+
+  /// No description provided for @colorLabelEditDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'ラベルをタップして編集できます。空欄にするとデフォルト名に戻ります。'**
+  String get colorLabelEditDescription;
+
+  /// No description provided for @colorLabelSortDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドラッグハンドルを使って表示順を変更できます。'**
+  String get colorLabelSortDescription;
+
   /// No description provided for @settingsSectionInfo.
   ///
   /// In ja, this message translates to:

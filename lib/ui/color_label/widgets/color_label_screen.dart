@@ -1,11 +1,13 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
+import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/ui/color_label/viewmodel/color_label_view_model.dart';
 import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
+import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -38,11 +40,13 @@ class _ColorLabelScreenState extends ConsumerState<ColorLabelScreen> {
     super.dispose();
   }
 
-  void _initControllers(List<ColorSetting> settings) {
+  void _initControllers(BuildContext context, List<ColorSetting> settings) {
     if (_controllersInitialized) return;
     _controllersInitialized = true;
     for (final setting in settings) {
-      _controllers[setting.color]?.text = setting.alias;
+      _controllers[setting.color]?.text = setting.alias.isNotEmpty
+          ? setting.alias
+          : setting.color.defaultLabel(context);
     }
   }
 
@@ -52,7 +56,7 @@ class _ColorLabelScreenState extends ConsumerState<ColorLabelScreen> {
     final uiState = ref.watch(colorLabelViewModelProvider);
 
     if (!uiState.isLoading) {
-      _initControllers(uiState.settings);
+      _initControllers(context, uiState.settings);
     }
 
     final isSort = uiState.mode == .sort;
@@ -103,26 +107,50 @@ class _EditModeList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final padding = MediaQuery.paddingOf(context);
-    return ListView.separated(
-      padding: EdgeInsets.only(bottom: padding.bottom),
-      itemCount: settings.length,
-      separatorBuilder: (_, _) => const Divider(height: 1),
-      itemBuilder: (context, index) {
-        final setting = settings[index];
-        return ListTile(
-          leading: _ColorDot(color: setting.color),
-          title: TextField(
-            controller: controllers[setting.color]!,
-            decoration: InputDecoration(
-              hintText: setting.color.defaultLabel(context),
-              border: InputBorder.none,
-              isDense: true,
-              contentPadding: EdgeInsets.zero,
-            ),
-            onChanged: (alias) => onChanged(setting.color, alias),
+    final colors = context.appColorScheme;
+    return SingleChildScrollView(
+      padding: EdgeInsets.only(bottom: padding.bottom + 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppSectionHeader(
+            title: Text(context.l10n.colorLabelEditSectionTitle),
           ),
-        );
-      },
+          const Divider(height: 1),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            itemCount: settings.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final setting = settings[index];
+              return ListTile(
+                leading: _ColorDot(color: setting.color),
+                title: TextField(
+                  controller: controllers[setting.color]!,
+                  decoration: InputDecoration(
+                    hintText: setting.color.defaultLabel(context),
+                    hintStyle: TextStyle(color: colors.textMuted),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onChanged: (alias) => onChanged(setting.color, alias),
+                ),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            child: Text(
+              context.l10n.colorLabelEditDescription,
+              style: AppTextStyle.caption.copyWith(color: colors.textMuted),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -137,34 +165,55 @@ class _SortModeList extends StatelessWidget {
   Widget build(BuildContext context) {
     final padding = MediaQuery.paddingOf(context);
     final colors = context.appColorScheme;
-    return ReorderableListView.builder(
-      padding: EdgeInsets.only(bottom: padding.bottom),
-      buildDefaultDragHandles: false,
-      itemCount: settings.length,
-      onReorderItem: onReorderItem,
-      proxyDecorator: (child, _, _) =>
-          Material(color: Colors.transparent, child: child),
-      itemBuilder: (context, index) {
-        final setting = settings[index];
-        final label = setting.alias.isNotEmpty
-            ? setting.alias
-            : setting.color.defaultLabel(context);
-        return Column(
-          key: ValueKey(setting.color),
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: _ColorDot(color: setting.color),
-              title: Text(label),
-              trailing: ReorderableDragStartListener(
-                index: index,
-                child: Icon(Icons.drag_handle, color: colors.textMuted),
-              ),
+    return SingleChildScrollView(
+      padding: EdgeInsets.only(bottom: padding.bottom + 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppSectionHeader(
+            title: Text(context.l10n.colorLabelSortSectionTitle),
+          ),
+          const Divider(height: 1),
+          ReorderableListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            buildDefaultDragHandles: false,
+            itemCount: settings.length,
+            onReorderItem: onReorderItem,
+            proxyDecorator: (child, _, _) =>
+                Material(color: Colors.transparent, child: child),
+            itemBuilder: (context, index) {
+              final setting = settings[index];
+              final label = setting.alias.isNotEmpty
+                  ? setting.alias
+                  : setting.color.defaultLabel(context);
+              return Column(
+                key: ValueKey(setting.color),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: _ColorDot(color: setting.color),
+                    title: Text(label),
+                    trailing: ReorderableDragStartListener(
+                      index: index,
+                      child: Icon(Icons.drag_handle, color: colors.textMuted),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                ],
+              );
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            child: Text(
+              context.l10n.colorLabelSortDescription,
+              style: AppTextStyle.caption.copyWith(color: colors.textMuted),
             ),
-            const Divider(height: 1),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -177,8 +226,8 @@ class _ColorDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 32,
-      height: 32,
+      width: 24,
+      height: 24,
       decoration: BoxDecoration(
         color: color.baseColor(context),
         borderRadius: BorderRadius.circular(AppRadius.pill),

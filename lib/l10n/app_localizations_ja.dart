@@ -416,6 +416,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get colorLabelEditButton => 'ラベルを編集';
 
   @override
+  String get colorLabelEditSectionTitle => 'ラベルを編集';
+
+  @override
+  String get colorLabelSortSectionTitle => 'カラーグループを並び替え';
+
+  @override
+  String get colorLabelEditDescription => 'ラベルをタップして編集できます。空欄にするとデフォルト名に戻ります。';
+
+  @override
+  String get colorLabelSortDescription => 'ドラッグハンドルを使って表示順を変更できます。';
+
+  @override
   String get settingsSectionInfo => '情報';
 
   @override

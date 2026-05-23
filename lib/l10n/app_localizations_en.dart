@@ -424,6 +424,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get colorLabelEditButton => 'Edit Labels';
 
   @override
+  String get colorLabelEditSectionTitle => 'Edit Labels';
+
+  @override
+  String get colorLabelSortSectionTitle => 'Reorder Color Groups';
+
+  @override
+  String get colorLabelEditDescription =>
+      'Tap a label to edit it. Leave it blank to use the default name.';
+
+  @override
+  String get colorLabelSortDescription =>
+      'Use the drag handle to change the display order.';
+
+  @override
   String get settingsSectionInfo => 'Info';
 
   @override
