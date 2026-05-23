@@ -27,17 +27,20 @@ void main() {
 
   Future<void> setUpLoaded({List<ColorSetting>? initialColorSettings}) async {
     setUpContainer(initialColorSettings: initialColorSettings);
-    await waitUntil(
-      container,
-      colorLabelViewModelProvider,
-      (s) => !s.isLoading,
-    );
-    viewModel = container.read(colorLabelViewModelProvider.notifier);
+    // container.listen を先に張り provider を生かし続ける
+    // （waitUntil が sub.close() するとリスナーゼロになり auto-dispose される）
     container.listen(
       colorLabelViewModelProvider,
       (_, next) => viewState = next,
       fireImmediately: true,
     );
+    await waitUntil(
+      container,
+      colorLabelViewModelProvider,
+      (s) => !s.isLoading,
+    );
+    await pumpEventQueue();
+    viewModel = container.read(colorLabelViewModelProvider.notifier);
   }
 
   group('ColorLabelViewModel', () {
@@ -70,6 +73,7 @@ void main() {
         test('指定したカラーのエイリアスが更新される', () async {
           await setUpLoaded();
           await viewModel.updateAlias(TaskColor.red, 'キッチン');
+          await pumpEventQueue();
           final red = viewState.settings.firstWhere(
             (s) => s.color == TaskColor.red,
           );
@@ -79,6 +83,7 @@ void main() {
         test('他のカラーのエイリアスは変わらない', () async {
           await setUpLoaded();
           await viewModel.updateAlias(TaskColor.red, 'キッチン');
+          await pumpEventQueue();
           final blue = viewState.settings.firstWhere(
             (s) => s.color == TaskColor.blue,
           );
@@ -102,6 +107,7 @@ void main() {
           final firstColor = initial.first.color;
 
           await viewModel.reorder(0, initial.length);
+          await pumpEventQueue();
           expect(viewState.settings.last.color, firstColor);
         });
 
@@ -111,6 +117,7 @@ void main() {
           final lastColor = initial.last.color;
 
           await viewModel.reorder(initial.length - 1, 0);
+          await pumpEventQueue();
           expect(viewState.settings.first.color, lastColor);
         });
 
