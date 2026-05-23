@@ -401,6 +401,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsDisplayHomeByColorSubtitle => 'タスクの色でグループ分けします';
 
   @override
+  String get settingsColorGroupTitle => 'カラーグループの設定';
+
+  @override
+  String get settingsColorGroupSubtitle => 'ラベルと並び順をカスタマイズ';
+
+  @override
+  String get colorLabelScreenTitle => 'カラーグループの設定';
+
+  @override
+  String get colorLabelSortButton => '並び替え';
+
+  @override
+  String get colorLabelEditButton => 'ラベルを編集';
+
+  @override
   String get settingsSectionInfo => '情報';
 
   @override

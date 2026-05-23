@@ -830,6 +830,36 @@ abstract class AppLocalizations {
   /// **'タスクの色でグループ分けします'**
   String get settingsDisplayHomeByColorSubtitle;
 
+  /// No description provided for @settingsColorGroupTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーグループの設定'**
+  String get settingsColorGroupTitle;
+
+  /// No description provided for @settingsColorGroupSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ラベルと並び順をカスタマイズ'**
+  String get settingsColorGroupSubtitle;
+
+  /// No description provided for @colorLabelScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーグループの設定'**
+  String get colorLabelScreenTitle;
+
+  /// No description provided for @colorLabelSortButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'並び替え'**
+  String get colorLabelSortButton;
+
+  /// No description provided for @colorLabelEditButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'ラベルを編集'**
+  String get colorLabelEditButton;
+
   /// No description provided for @settingsSectionInfo.
   ///
   /// In ja, this message translates to:

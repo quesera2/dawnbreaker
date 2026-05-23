@@ -409,6 +409,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Groups tasks by their assigned color.';
 
   @override
+  String get settingsColorGroupTitle => 'Color Group Settings';
+
+  @override
+  String get settingsColorGroupSubtitle => 'Customize labels and order';
+
+  @override
+  String get colorLabelScreenTitle => 'Color Group Settings';
+
+  @override
+  String get colorLabelSortButton => 'Reorder';
+
+  @override
+  String get colorLabelEditButton => 'Edit Labels';
+
+  @override
   String get settingsSectionInfo => 'Info';
 
   @override
