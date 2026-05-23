@@ -141,6 +141,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           entry.key,
           entry.value,
           viewModel,
+          taskList,
           addTopPadding: index > 0,
         ),
     ];
@@ -150,7 +151,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     BuildContext context,
     HomeTaskListType type,
     List<TaskItem> tasks,
-    HomeViewModel viewModel, {
+    HomeViewModel viewModel,
+    HomeTaskList taskList, {
     required bool addTopPadding,
   }) {
     final colors = context.appColorScheme;
@@ -162,7 +164,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             maxHeight: 30,
             minHeight: 30,
             child: AppSectionHeader(
-              title: Text(type.label(context)),
+              title: Text(type.labelWith(context, taskList.aliasFor(type))),
               subTitle: Text(tasks.length.toString()),
               backgroundColor: colors.bg.withValues(alpha: 0.8),
             ),
@@ -277,14 +279,17 @@ class _FilterChipRow extends StatelessWidget {
 }
 
 extension _HomeTaskListTypeLabel on HomeTaskListType {
-  String label(BuildContext context) => switch (this) {
-    .overdueTasks => context.l10n.homeSectionOverdue,
-    .upcomingTasks => context.l10n.homeSectionUpcoming,
-    .none => context.l10n.homeSectionColorNone,
-    .red => context.l10n.homeSectionColorRed,
-    .blue => context.l10n.homeSectionColorBlue,
-    .yellow => context.l10n.homeSectionColorYellow,
-    .green => context.l10n.homeSectionColorGreen,
-    .orange => context.l10n.homeSectionColorOrange,
-  };
+  String labelWith(BuildContext context, String? alias) {
+    if (alias != null) return alias;
+    return switch (this) {
+      .overdueTasks => context.l10n.homeSectionOverdue,
+      .upcomingTasks => context.l10n.homeSectionUpcoming,
+      .none => context.l10n.homeSectionColorNone,
+      .red => context.l10n.homeSectionColorRed,
+      .blue => context.l10n.homeSectionColorBlue,
+      .yellow => context.l10n.homeSectionColorYellow,
+      .green => context.l10n.homeSectionColorGreen,
+      .orange => context.l10n.homeSectionColorOrange,
+    };
+  }
 }
