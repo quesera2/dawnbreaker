@@ -92,6 +92,11 @@ void main() {
         expect(settings.every((s) => s.alias.isEmpty), isTrue);
       });
 
+      test('.none が末尾に配置される', () async {
+        final settings = await repository.watchColorSettings().first;
+        expect(settings.last.color, TaskColor.none);
+      });
+
       test('デフォルト設定がストレージに保存される', () async {
         await repository.watchColorSettings().first;
 

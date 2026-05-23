@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 
 class ColorSetting {
@@ -7,7 +8,11 @@ class ColorSetting {
   final String alias;
 
   static List<ColorSetting> defaults() =>
-      TaskColor.values.map((c) => ColorSetting(color: c)).toList();
+      TaskColor.values.map((c) => ColorSetting(color: c)).sorted((c1, c2) {
+        if (c1.color == .none) return 1;
+        if (c2.color == .none) return -1;
+        return 0;
+      }).toList();
 
   String encode() => '${color.name}:$alias';
 
@@ -25,6 +30,7 @@ class ColorSetting {
   }
 
   static List<ColorSetting> fromStringList(List<String> encoded) {
+    if (encoded.isEmpty) return defaults();
     final decoded = encoded.map(decode).whereType<ColorSetting>().toList();
     final existing = {for (final s in decoded) s.color};
     final missing = TaskColor.values
