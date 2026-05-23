@@ -7,12 +7,9 @@ class ColorSetting {
   final TaskColor color;
   final String alias;
 
-  static List<ColorSetting> defaults() =>
-      TaskColor.values.map((c) => ColorSetting(color: c)).sorted((c1, c2) {
-        if (c1.color == .none) return 1;
-        if (c2.color == .none) return -1;
-        return 0;
-      }).toList();
+  static List<ColorSetting> defaults() => TaskColor.values
+      .map((c) => ColorSetting(color: c))
+      .sortedBy<num>((s) => s.color == .none ? 1 : 0);
 
   String encode() => '${color.name}:$alias';
 
