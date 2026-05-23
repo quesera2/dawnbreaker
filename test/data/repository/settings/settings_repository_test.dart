@@ -91,6 +91,17 @@ void main() {
         expect(settings.map((s) => s.color).toSet(), TaskColor.values.toSet());
         expect(settings.every((s) => s.alias.isEmpty), isTrue);
       });
+
+      test('デフォルト設定がストレージに保存される', () async {
+        await repository.watchColorSettings().first;
+
+        final saved = manager.get(
+          colorSettingsKey,
+          defaultValue: const <String>[],
+        );
+        expect(saved, isNotEmpty);
+        expect(saved.length, TaskColor.values.length);
+      });
     });
 
     group('保存済みの設定がある場合', () {
