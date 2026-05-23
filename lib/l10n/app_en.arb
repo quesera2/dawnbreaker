@@ -225,6 +225,8 @@
   "settingsDebugResetTutorialFlag": "Reset tutorial flag",
   "settingsDebugTutorialFlagReset": "Tutorial flag reset",
   "settingsDebugLogPendingNotifications": "Log pending notifications",
+  "settingsDebugResetColorSettings": "Reset color settings",
+  "settingsDebugColorSettingsReset": "Color settings reset",
   "notificationGroupTask": "Task Notifications",
   "notificationChannelTask": "Individual Task Notification",
   "notificationTaskBody": "It's due today"

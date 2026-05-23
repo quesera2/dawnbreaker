@@ -452,6 +452,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsDebugLogPendingNotifications => '登録されている通知一覧をログ出力';
 
   @override
+  String get settingsDebugResetColorSettings => 'カラー設定をリセット';
+
+  @override
+  String get settingsDebugColorSettingsReset => 'カラー設定をリセットしました';
+
+  @override
   String get notificationGroupTask => 'タスク通知';
 
   @override

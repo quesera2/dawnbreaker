@@ -225,6 +225,8 @@
   "settingsDebugResetTutorialFlag": "チュートリアルフラグをリセット",
   "settingsDebugTutorialFlagReset": "チュートリアルフラグをリセットしました",
   "settingsDebugLogPendingNotifications": "登録されている通知一覧をログ出力",
+  "settingsDebugResetColorSettings": "カラー設定をリセット",
+  "settingsDebugColorSettingsReset": "カラー設定をリセットしました",
   "notificationGroupTask": "タスク通知",
   "notificationChannelTask": "個別タスク通知",
   "notificationTaskBody": "予定日になりました"

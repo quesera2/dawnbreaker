@@ -461,6 +461,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Log pending notifications';
 
   @override
+  String get settingsDebugResetColorSettings => 'Reset color settings';
+
+  @override
+  String get settingsDebugColorSettingsReset => 'Color settings reset';
+
+  @override
   String get notificationGroupTask => 'Task Notifications';
 
   @override

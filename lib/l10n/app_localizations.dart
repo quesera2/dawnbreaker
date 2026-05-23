@@ -932,6 +932,18 @@ abstract class AppLocalizations {
   /// **'登録されている通知一覧をログ出力'**
   String get settingsDebugLogPendingNotifications;
 
+  /// No description provided for @settingsDebugResetColorSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラー設定をリセット'**
+  String get settingsDebugResetColorSettings;
+
+  /// No description provided for @settingsDebugColorSettingsReset.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラー設定をリセットしました'**
+  String get settingsDebugColorSettingsReset;
+
   /// No description provided for @notificationGroupTask.
   ///
   /// In ja, this message translates to:
