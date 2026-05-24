@@ -60,16 +60,21 @@ class AppListCell extends StatelessWidget {
 
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 48),
-      child: Ink(
+      child: DecoratedBox(
         decoration: type.boxDecoration(
           backgroundColor: colors.surface,
           borderColor: colors.border,
           borderRadius: borderRadius,
         ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: borderRadius,
-          child: Align(alignment: Alignment.centerLeft, child: child),
+        child: ClipRRect(
+          borderRadius: borderRadius ?? BorderRadius.zero,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              child: Align(alignment: Alignment.centerLeft, child: child),
+            ),
+          ),
         ),
       ),
     );
