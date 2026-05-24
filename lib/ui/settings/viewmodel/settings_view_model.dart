@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:app_settings/app_settings.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
+import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
@@ -149,5 +150,11 @@ class SettingsViewModel extends _$SettingsViewModel {
   Future<void> logPendingNotifications() async {
     final service = await ref.read(notificationServiceProvider.future);
     await service.logPendingNotifications();
+  }
+
+  Future<void> resetColorSettings() async {
+    await _repository.setColorSettings(List<ColorSetting>.empty());
+    if (!ref.mounted) return;
+    state = state.copyWith(snackBarMessage: ColorSettingsResetMessage());
   }
 }

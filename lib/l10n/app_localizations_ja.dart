@@ -401,6 +401,33 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsDisplayHomeByColorSubtitle => 'タスクの色でグループ分けします';
 
   @override
+  String get settingsColorGroupTitle => 'カラーグループの設定';
+
+  @override
+  String get settingsColorGroupSubtitle => 'ラベルと並び順をカスタマイズ';
+
+  @override
+  String get colorLabelScreenTitle => 'カラーグループの設定';
+
+  @override
+  String get colorLabelSortButton => 'ソート';
+
+  @override
+  String get colorLabelEditButton => '編集';
+
+  @override
+  String get colorLabelEditSectionTitle => 'ラベルを編集';
+
+  @override
+  String get colorLabelSortSectionTitle => 'カラーグループを並び替え';
+
+  @override
+  String get colorLabelEditDescription => 'ラベルをタップして編集できます。空欄にするとデフォルト名に戻ります。';
+
+  @override
+  String get colorLabelSortDescription => 'ドラッグハンドルを使って表示順を変更できます。';
+
+  @override
   String get settingsSectionInfo => '情報';
 
   @override
@@ -435,6 +462,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsDebugLogPendingNotifications => '登録されている通知一覧をログ出力';
+
+  @override
+  String get settingsDebugResetColorSettings => 'カラー設定をリセット';
+
+  @override
+  String get settingsDebugColorSettingsReset => 'カラー設定をリセットしました';
 
   @override
   String get notificationGroupTask => 'タスク通知';

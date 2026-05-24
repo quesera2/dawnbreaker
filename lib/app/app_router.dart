@@ -2,6 +2,7 @@ import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:dawnbreaker/data/preferences/preferences_manager.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/app_detail_screen.dart';
+import 'package:dawnbreaker/ui/color_label/widgets/color_label_screen.dart';
 import 'package:dawnbreaker/ui/editor/widgets/editor_screen.dart';
 import 'package:dawnbreaker/ui/home/widgets/home_screen.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
@@ -57,6 +58,10 @@ GoRouter appRouter(Ref ref) {
               ).copyWith(cardColor: context.appColorScheme.bg),
               child: const LicensePage(),
             ),
+          ),
+          GoRoute(
+            path: 'color-labels',
+            builder: (_, _) => const ColorLabelScreen(),
           ),
         ],
       ),

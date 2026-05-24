@@ -830,6 +830,60 @@ abstract class AppLocalizations {
   /// **'タスクの色でグループ分けします'**
   String get settingsDisplayHomeByColorSubtitle;
 
+  /// No description provided for @settingsColorGroupTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーグループの設定'**
+  String get settingsColorGroupTitle;
+
+  /// No description provided for @settingsColorGroupSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ラベルと並び順をカスタマイズ'**
+  String get settingsColorGroupSubtitle;
+
+  /// No description provided for @colorLabelScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーグループの設定'**
+  String get colorLabelScreenTitle;
+
+  /// No description provided for @colorLabelSortButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'ソート'**
+  String get colorLabelSortButton;
+
+  /// No description provided for @colorLabelEditButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'編集'**
+  String get colorLabelEditButton;
+
+  /// No description provided for @colorLabelEditSectionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ラベルを編集'**
+  String get colorLabelEditSectionTitle;
+
+  /// No description provided for @colorLabelSortSectionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーグループを並び替え'**
+  String get colorLabelSortSectionTitle;
+
+  /// No description provided for @colorLabelEditDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'ラベルをタップして編集できます。空欄にするとデフォルト名に戻ります。'**
+  String get colorLabelEditDescription;
+
+  /// No description provided for @colorLabelSortDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドラッグハンドルを使って表示順を変更できます。'**
+  String get colorLabelSortDescription;
+
   /// No description provided for @settingsSectionInfo.
   ///
   /// In ja, this message translates to:
@@ -901,6 +955,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'登録されている通知一覧をログ出力'**
   String get settingsDebugLogPendingNotifications;
+
+  /// No description provided for @settingsDebugResetColorSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラー設定をリセット'**
+  String get settingsDebugResetColorSettings;
+
+  /// No description provided for @settingsDebugColorSettingsReset.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラー設定をリセットしました'**
+  String get settingsDebugColorSettingsReset;
 
   /// No description provided for @notificationGroupTask.
   ///

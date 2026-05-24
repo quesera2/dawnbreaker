@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
@@ -28,23 +29,29 @@ extension on TaskColor {
 }
 
 class HomeTaskList {
-  HomeTaskList._({required this.taskItemMap});
+  HomeTaskList._({required this.taskItemMap, this.colorAliases = const {}});
 
   final Map<HomeTaskListType, List<TaskItem>> taskItemMap;
 
+  // null = デフォルト名を使う, non-null = カスタムエイリアス
+  final Map<HomeTaskListType, String?> colorAliases;
+
   bool get isEmpty => taskItemMap.values.every((list) => list.isEmpty);
+
+  String? aliasFor(HomeTaskListType type) => colorAliases[type];
 
   factory HomeTaskList.from({
     required HomeDisplayMode displayMode,
     required List<TaskItem> tasks,
     required String searchQuery,
     required HomeFilter filter,
+    required List<ColorSetting> colorSettings,
     DateTime? now,
   }) {
     final filtered = _applySearchAndFilter(tasks, searchQuery, filter, now);
     return switch (displayMode) {
       .timeline => _buildTimeline(filtered, now),
-      .byColor => _buildByColor(filtered),
+      .byColor => _buildByColor(filtered, colorSettings),
     };
   }
 
@@ -63,14 +70,29 @@ class HomeTaskList {
     return HomeTaskList._(taskItemMap: taskItemMap);
   }
 
-  static HomeTaskList _buildByColor(Iterable<TaskItem> tasks) {
+  static HomeTaskList _buildByColor(
+    Iterable<TaskItem> tasks,
+    List<ColorSetting> colorSettings,
+  ) {
     final grouped = tasks.groupListsBy((t) => t.color.asListType);
+    final ordered = colorSettings.isEmpty
+        ? HomeTaskListType.values
+        : colorSettings.map((s) => s.color.asListType);
+
     final taskItemMap = Map.fromEntries(
-      HomeTaskListType.values
+      ordered
           .where((t) => grouped.containsKey(t))
           .map((t) => MapEntry(t, grouped[t] ?? [])),
     );
-    return HomeTaskList._(taskItemMap: taskItemMap);
+
+    final colorAliases = Map.fromEntries(
+      colorSettings.map(
+        (s) =>
+            MapEntry(s.color.asListType, s.alias.isNotEmpty ? s.alias : null),
+      ),
+    );
+
+    return HomeTaskList._(taskItemMap: taskItemMap, colorAliases: colorAliases);
   }
 }
 

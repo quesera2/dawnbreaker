@@ -81,6 +81,10 @@ abstract final class AppSnackBar {
     text: context.l10n.settingsDebugTutorialFlagReset,
     actionLabel: '',
   ),
+  ColorSettingsResetMessage() => (
+    text: context.l10n.settingsDebugColorSettingsReset,
+    actionLabel: '',
+  ),
 };
 
 @Preview()

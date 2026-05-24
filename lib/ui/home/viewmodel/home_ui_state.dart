@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
@@ -23,6 +24,7 @@ abstract class HomeUiState with _$HomeUiState implements BaseUiState {
     @Default('') String searchQuery,
     @Default(HomeFilter.all) HomeFilter selectedFilter,
     @Default(HomeDisplayMode.timeline) HomeDisplayMode displayMode,
+    @Default([]) List<ColorSetting> colorSettings,
   }) = _HomeUiState;
 
   bool get hasTasks => tasks.isNotEmpty;
@@ -34,5 +36,6 @@ abstract class HomeUiState with _$HomeUiState implements BaseUiState {
     tasks: tasks,
     searchQuery: searchQuery,
     filter: selectedFilter,
+    colorSettings: colorSettings,
   );
 }

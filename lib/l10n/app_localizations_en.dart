@@ -409,6 +409,35 @@ class AppLocalizationsEn extends AppLocalizations {
       'Groups tasks by their assigned color.';
 
   @override
+  String get settingsColorGroupTitle => 'Color Group Settings';
+
+  @override
+  String get settingsColorGroupSubtitle => 'Customize labels and order';
+
+  @override
+  String get colorLabelScreenTitle => 'Color Group Settings';
+
+  @override
+  String get colorLabelSortButton => 'Sort';
+
+  @override
+  String get colorLabelEditButton => 'Edit';
+
+  @override
+  String get colorLabelEditSectionTitle => 'Edit Labels';
+
+  @override
+  String get colorLabelSortSectionTitle => 'Reorder Color Groups';
+
+  @override
+  String get colorLabelEditDescription =>
+      'Tap a label to edit it. Leave it blank to use the default name.';
+
+  @override
+  String get colorLabelSortDescription =>
+      'Use the drag handle to change the display order.';
+
+  @override
   String get settingsSectionInfo => 'Info';
 
   @override
@@ -444,6 +473,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsDebugLogPendingNotifications =>
       'Log pending notifications';
+
+  @override
+  String get settingsDebugResetColorSettings => 'Reset color settings';
+
+  @override
+  String get settingsDebugColorSettingsReset => 'Color settings reset';
 
   @override
   String get notificationGroupTask => 'Task Notifications';

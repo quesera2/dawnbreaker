@@ -22,6 +22,7 @@ class PreferencesManager {
       const (bool) => _preferences.getBool(key.rawKey) as T?,
       const (String) => _preferences.getString(key.rawKey) as T?,
       const (int) => _preferences.getInt(key.rawKey) as T?,
+      const (List<String>) => _preferences.getStringList(key.rawKey) as T?,
       _ => throw UnsupportedError('Unsupported type: $T'),
     };
     return value ?? defaultValue;
@@ -32,6 +33,10 @@ class PreferencesManager {
       const (bool) => _preferences.setBool(key.rawKey, value as bool),
       const (String) => _preferences.setString(key.rawKey, value as String),
       const (int) => _preferences.setInt(key.rawKey, value as int),
+      const (List<String>) => _preferences.setStringList(
+        key.rawKey,
+        value as List<String>,
+      ),
       _ => throw UnsupportedError('Unsupported type: $T'),
     };
   }
