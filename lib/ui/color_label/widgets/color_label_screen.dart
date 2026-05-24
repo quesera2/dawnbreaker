@@ -79,22 +79,68 @@ class _ColorLabelScreenState extends ConsumerState<ColorLabelScreen> {
       ),
       body: uiState.isLoading
           ? const SizedBox.shrink()
-          : isSort
-          ? _SortModeList(
-              settings: uiState.settings,
-              onReorderItem: _viewModel.reorder,
-            )
-          : _EditModeList(
+          : _ColorLabelBody(
+              isSort: isSort,
               settings: uiState.settings,
               controllers: _controllers,
+              onReorderItem: _viewModel.reorder,
               onChanged: _viewModel.updateAlias,
             ),
     );
   }
 }
 
-class _EditModeList extends StatelessWidget {
-  const _EditModeList({
+class _ColorLabelBody extends StatelessWidget {
+  const _ColorLabelBody({
+    required this.isSort,
+    required this.settings,
+    required this.controllers,
+    required this.onReorderItem,
+    required this.onChanged,
+  });
+
+  final bool isSort;
+  final List<ColorSetting> settings;
+  final Map<TaskColor, TextEditingController> controllers;
+  final void Function(int, int) onReorderItem;
+  final void Function(TaskColor, String) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        AnimatedCrossFade(
+          duration: const Duration(milliseconds: 300),
+          crossFadeState: isSort
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
+          firstChild: AppSectionHeader(
+            title: Text(context.l10n.colorLabelEditSectionTitle),
+          ),
+          secondChild: AppSectionHeader(
+            title: Text(context.l10n.colorLabelSortSectionTitle),
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: isSort
+              ? _SortModeContent(
+                  settings: settings,
+                  onReorderItem: onReorderItem,
+                )
+              : _EditModeContent(
+                  settings: settings,
+                  controllers: controllers,
+                  onChanged: onChanged,
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EditModeContent extends StatelessWidget {
+  const _EditModeContent({
     required this.settings,
     required this.controllers,
     required this.onChanged,
@@ -106,26 +152,20 @@ class _EditModeList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final padding = MediaQuery.paddingOf(context);
     final colors = context.appColorScheme;
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(bottom: padding.bottom + 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppSectionHeader(
-            title: Text(context.l10n.colorLabelEditSectionTitle),
-          ),
-          const Divider(height: 1),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
+    final padding = MediaQuery.paddingOf(context);
+    return CustomScrollView(
+      physics: const ClampingScrollPhysics(),
+      slivers: [
+        DecoratedSliver(
+          decoration: BoxDecoration(color: colors.surface),
+          sliver: SliverList.separated(
             itemCount: settings.length,
             separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final setting = settings[index];
               return ListTile(
+                tileColor: colors.surface,
                 leading: _ColorDot(color: setting.color),
                 title: TextField(
                   controller: controllers[setting.color]!,
@@ -141,73 +181,137 @@ class _EditModeList extends StatelessWidget {
               );
             },
           ),
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-            child: Text(
-              context.l10n.colorLabelEditDescription,
-              style: AppTextStyle.caption.copyWith(color: colors.textMuted),
+        ),
+        const SliverToBoxAdapter(child: Divider(height: 1)),
+        SliverToBoxAdapter(
+          child: ColoredBox(
+            color: colors.bg,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20, 8, 20, padding.bottom + 16),
+              child: Text(
+                context.l10n.colorLabelEditDescription,
+                style: AppTextStyle.caption.copyWith(color: colors.textMuted),
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
-class _SortModeList extends StatelessWidget {
-  const _SortModeList({required this.settings, required this.onReorderItem});
+class _SortModeContent extends StatefulWidget {
+  const _SortModeContent({required this.settings, required this.onReorderItem});
 
   final List<ColorSetting> settings;
   final void Function(int, int) onReorderItem;
 
   @override
+  State<_SortModeContent> createState() => _SortModeContentState();
+}
+
+class _SortModeContentState extends State<_SortModeContent>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Animation<Offset> _handleSlide(int index) {
+    final start = (index / widget.settings.length * 0.4).clamp(0.0, 1.0);
+    final end = (start + 0.6).clamp(0.0, 1.0);
+    return Tween<Offset>(begin: const Offset(1.0, 0), end: Offset.zero).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(start, end, curve: Curves.easeOut),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final padding = MediaQuery.paddingOf(context);
     final colors = context.appColorScheme;
+    final padding = MediaQuery.paddingOf(context);
     // CustomScrollView で単一スクロールコンテキストにまとめることで、
     // shrinkWrap + SingleChildScrollView の組み合わせによるジェスチャー競合を回避する
     return CustomScrollView(
+      physics: const ClampingScrollPhysics(),
       slivers: [
-        SliverToBoxAdapter(
-          child: AppSectionHeader(
-            title: Text(context.l10n.colorLabelSortSectionTitle),
+        DecoratedSliver(
+          decoration: BoxDecoration(color: colors.surface),
+          sliver: SliverReorderableList(
+            onReorderItem: widget.onReorderItem,
+            proxyDecorator: (child, _, animation) {
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (_, child) {
+                  return DecoratedBox(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: colors.shadow.withValues(
+                            alpha: 0.2 * animation.value,
+                          ),
+                          blurRadius: 8 * animation.value,
+                          offset: Offset(0, 3 * animation.value),
+                        ),
+                      ],
+                    ),
+                    child: Material(color: Colors.transparent, child: child!),
+                  );
+                },
+                child: child,
+              );
+            },
+            itemCount: widget.settings.length,
+            itemBuilder: (context, index) {
+              final setting = widget.settings[index];
+              final label = setting.alias.isNotEmpty
+                  ? setting.alias
+                  : setting.color.defaultLabel(context);
+              return Column(
+                key: ValueKey(setting.color),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ReorderableDragStartListener(
+                    index: index,
+                    child: ListTile(
+                      tileColor: colors.surface,
+                      leading: _ColorDot(color: setting.color),
+                      title: Text(label),
+                      trailing: SlideTransition(
+                        position: _handleSlide(index),
+                        child: Icon(Icons.drag_handle, color: colors.textMuted),
+                      ),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                ],
+              );
+            },
           ),
         ),
-        const SliverToBoxAdapter(child: Divider(height: 1)),
-        SliverReorderableList(
-          onReorderItem: onReorderItem,
-          proxyDecorator: (child, _, _) =>
-              Material(color: Colors.transparent, child: child),
-          itemCount: settings.length,
-          itemBuilder: (context, index) {
-            final setting = settings[index];
-            final label = setting.alias.isNotEmpty
-                ? setting.alias
-                : setting.color.defaultLabel(context);
-            return Column(
-              key: ValueKey(setting.color),
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: _ColorDot(color: setting.color),
-                  title: Text(label),
-                  trailing: ReorderableDragStartListener(
-                    index: index,
-                    child: Icon(Icons.drag_handle, color: colors.textMuted),
-                  ),
-                ),
-                const Divider(height: 1),
-              ],
-            );
-          },
-        ),
         SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(20, 8, 20, padding.bottom + 16),
-            child: Text(
-              context.l10n.colorLabelSortDescription,
-              style: AppTextStyle.caption.copyWith(color: colors.textMuted),
+          child: ColoredBox(
+            color: colors.bg,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20, 8, 20, padding.bottom + 16),
+              child: Text(
+                context.l10n.colorLabelSortDescription,
+                style: AppTextStyle.caption.copyWith(color: colors.textMuted),
+              ),
             ),
           ),
         ),
