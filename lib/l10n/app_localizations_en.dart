@@ -418,10 +418,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get colorLabelScreenTitle => 'Color Group Settings';
 
   @override
-  String get colorLabelSortButton => 'Reorder';
+  String get colorLabelSortButton => 'Sort';
 
   @override
-  String get colorLabelEditButton => 'Edit Labels';
+  String get colorLabelEditButton => 'Edit';
 
   @override
   String get colorLabelEditSectionTitle => 'Edit Labels';

@@ -410,10 +410,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get colorLabelScreenTitle => 'カラーグループの設定';
 
   @override
-  String get colorLabelSortButton => '並び替え';
+  String get colorLabelSortButton => 'ソート';
 
   @override
-  String get colorLabelEditButton => 'ラベルを編集';
+  String get colorLabelEditButton => '編集';
 
   @override
   String get colorLabelEditSectionTitle => 'ラベルを編集';

@@ -851,13 +851,13 @@ abstract class AppLocalizations {
   /// No description provided for @colorLabelSortButton.
   ///
   /// In ja, this message translates to:
-  /// **'並び替え'**
+  /// **'ソート'**
   String get colorLabelSortButton;
 
   /// No description provided for @colorLabelEditButton.
   ///
   /// In ja, this message translates to:
-  /// **'ラベルを編集'**
+  /// **'編集'**
   String get colorLabelEditButton;
 
   /// No description provided for @colorLabelEditSectionTitle.
