@@ -53,11 +53,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               onNotificationChanged: _viewModel.setNotificationEnabled,
             ),
             const SizedBox(height: 24),
-            ..._displaySection(
-              context,
-              displayMode: viewState.displayMode,
-              onDisplayModeChanged: _viewModel.setDisplayMode,
-            ),
+            ..._displaySection(context, displayMode: viewState.displayMode),
             const SizedBox(height: 24),
             ..._infoSection(context, viewState.version),
             if (kDebugMode) ...[
@@ -98,75 +94,59 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   List<Widget> _displaySection(
     BuildContext context, {
     required HomeDisplayMode displayMode,
-    required ValueChanged<HomeDisplayMode> onDisplayModeChanged,
   }) {
     final colorScheme = context.appColorScheme;
-    final divider = Divider(height: 1, color: colorScheme.divider);
     return [
       AppSectionHeader(
         title: Text(context.l10n.settingsSectionDisplay),
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
-      RadioGroup<HomeDisplayMode>(
-        groupValue: displayMode,
-        onChanged: (v) => onDisplayModeChanged(v!),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppListCell(
-              type: .top,
-              child: RadioListTile<HomeDisplayMode>(
-                value: .timeline,
-                title: Text(context.l10n.settingsDisplayHomeTimeline),
-                subtitle: Text(
-                  context.l10n.settingsDisplayHomeTimelineSubtitle,
-                ),
+      AppListCell(
+        type: .top,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(context.l10n.settingsDisplayType),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _displayModeLabel(context, displayMode),
+                style: AppTextStyle.body.copyWith(color: colorScheme.textMuted),
               ),
-            ),
-            divider,
-            AppListCell(
-              type: displayMode == .byColor ? .middle : .bottom,
-              child: RadioListTile<HomeDisplayMode>(
-                value: .byColor,
-                title: Text(context.l10n.settingsDisplayHomeByColor),
-                subtitle: Text(context.l10n.settingsDisplayHomeByColorSubtitle),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: colorScheme.textMuted,
               ),
-            ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              child: displayMode == .byColor
-                  ? Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        divider,
-                        AppListCell(
-                          type: .bottom,
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                            ),
-                            title: Text(context.l10n.settingsColorGroupTitle),
-                            subtitle: Text(
-                              context.l10n.settingsColorGroupSubtitle,
-                            ),
-                            trailing: Icon(
-                              Icons.arrow_forward_ios,
-                              size: 16,
-                              color: colorScheme.textMuted,
-                            ),
-                          ),
-                          onTap: () => context.push('/settings/color-labels'),
-                        ),
-                      ],
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ],
+            ],
+          ),
         ),
+        onTap: () => context.push('/settings/display'),
+      ),
+      Divider(height: 1, color: colorScheme.divider),
+      AppListCell(
+        type: .bottom,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(context.l10n.settingsColorGroupTitle),
+          subtitle: Text(context.l10n.settingsColorGroupSubtitle),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: colorScheme.textMuted,
+          ),
+        ),
+        onTap: () => context.push('/settings/color-labels'),
       ),
     ];
   }
+
+  String _displayModeLabel(BuildContext context, HomeDisplayMode mode) =>
+      switch (mode) {
+        .timeline => context.l10n.settingsDisplayHomeTimeline,
+        .byColor => context.l10n.settingsDisplayHomeByColor,
+      };
 
   List<Widget> _infoSection(BuildContext context, String version) {
     final colorScheme = context.appColorScheme;

@@ -803,8 +803,14 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSectionDisplay.
   ///
   /// In ja, this message translates to:
-  /// **'表示'**
+  /// **'表示設定'**
   String get settingsSectionDisplay;
+
+  /// No description provided for @settingsDisplayType.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示タイプ'**
+  String get settingsDisplayType;
 
   /// No description provided for @settingsDisplayHomeTimeline.
   ///

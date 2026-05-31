@@ -7,6 +7,7 @@ import 'package:dawnbreaker/ui/editor/widgets/editor_screen.dart';
 import 'package:dawnbreaker/ui/home/widgets/home_screen.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_screen.dart';
+import 'package:dawnbreaker/ui/settings/display_settings/widget/display_settings_screen.dart';
 import 'package:dawnbreaker/ui/settings/widget/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -62,6 +63,10 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: 'color-labels',
             builder: (_, _) => const ColorLabelScreen(),
+          ),
+          GoRoute(
+            path: 'display',
+            builder: (_, _) => const DisplaySettingsScreen(),
           ),
         ],
       ),
