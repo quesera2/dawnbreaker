@@ -291,17 +291,15 @@ void main() {
         });
       });
 
-      group('setDisplayMode', () {
+      group('表示モードの外部変更', () {
         setUp(() async => setUpLoaded());
 
-        test('表示モードが変更される', () async {
-          await viewModel.setDisplayMode(HomeDisplayMode.byColor);
+        test('リポジトリの変更がstateに反映される', () async {
+          await fakeSettingsRepository.setHomeDisplayMode(
+            HomeDisplayMode.byColor,
+          );
+          await pumpEventQueue();
           expect(viewState.displayMode, HomeDisplayMode.byColor);
-        });
-
-        test('リポジトリに保存される', () async {
-          await viewModel.setDisplayMode(HomeDisplayMode.byColor);
-          expect(fakeSettingsRepository.displayMode, HomeDisplayMode.byColor);
         });
       });
 

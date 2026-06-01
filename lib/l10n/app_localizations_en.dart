@@ -392,7 +392,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'To receive notifications at the exact time, please allow Alarms & Reminders.';
 
   @override
-  String get settingsSectionDisplay => 'Display';
+  String get settingsSectionDisplay => 'Display Settings';
+
+  @override
+  String get settingsDisplayType => 'Display Type';
 
   @override
   String get settingsDisplayHomeTimeline => 'Timeline';

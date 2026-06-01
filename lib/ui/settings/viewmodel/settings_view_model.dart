@@ -29,6 +29,9 @@ class SettingsViewModel extends _$SettingsViewModel {
         (enabled) => state = state.copyWith(notificationEnabled: enabled),
       );
     });
+    ref.listen(homeDisplayModeProvider, (_, next) {
+      next.whenData((mode) => state = state.copyWith(displayMode: mode));
+    });
     _initialize();
     return const SettingsUiState();
   }
@@ -115,12 +118,6 @@ class SettingsViewModel extends _$SettingsViewModel {
     await ref.read(settingsRepositoryProvider).setNotificationEnabled(false);
     if (!ref.mounted) return;
     state = state.copyWith(isNotificationUpdating: false);
-  }
-
-  Future<void> setDisplayMode(HomeDisplayMode mode) async {
-    await _repository.setHomeDisplayMode(mode);
-    if (!ref.mounted) return;
-    state = state.copyWith(displayMode: mode);
   }
 
   Future<void> generateDummyTasks() async {
