@@ -35,6 +35,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     listenMessages(settingsViewModelProvider);
     final viewState = ref.watch(settingsViewModelProvider);
 
+    if (viewState.isLoading) {
+      return const Scaffold();
+    }
+
     final padding = MediaQuery.paddingOf(context);
     return Scaffold(
       appBar: AppAppBar(
