@@ -209,6 +209,7 @@
   "settingsDisplayHomeTimelineSubtitle": "Shows tasks in chronological order, split into overdue and upcoming.",
   "settingsDisplayHomeByColor": "Color Groups",
   "settingsDisplayHomeByColorSubtitle": "Groups tasks by their assigned color.",
+  "settingsDisplayProgressBarAnimation": "Progress Bar Effects",
   "settingsColorGroupTitle": "Color Group Settings",
   "settingsColorGroupSubtitle": "Customize labels and order",
   "colorLabelScreenTitle": "Color Group Settings",

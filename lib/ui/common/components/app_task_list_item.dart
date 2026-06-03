@@ -15,11 +15,13 @@ class AppTaskListItem extends StatelessWidget {
     required this.task,
     this.onTap,
     this.onComplete,
+    this.progressBarAnimated = true,
   });
 
   final TaskItem task;
   final VoidCallback? onTap;
   final VoidCallback? onComplete;
+  final bool progressBarAnimated;
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +82,7 @@ class AppTaskListItem extends StatelessWidget {
                                   value: taskProgress.progress,
                                   isOverdue: taskProgress.isOverdue,
                                   thickness: 2,
+                                  animated: progressBarAnimated,
                                 ),
                               ],
                             ],

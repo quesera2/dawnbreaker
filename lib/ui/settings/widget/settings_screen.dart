@@ -35,6 +35,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     listenMessages(settingsViewModelProvider);
     final viewState = ref.watch(settingsViewModelProvider);
 
+    if (viewState.isLoading) {
+      return const Scaffold();
+    }
+
     final padding = MediaQuery.paddingOf(context);
     return Scaffold(
       appBar: AppAppBar(
@@ -53,7 +57,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               onNotificationChanged: _viewModel.setNotificationEnabled,
             ),
             const SizedBox(height: 24),
-            ..._displaySection(context, displayMode: viewState.displayMode),
+            ..._displaySection(
+              context,
+              displayMode: viewState.displayMode,
+              progressBarAnimationEnabled:
+                  viewState.progressBarAnimationEnabled,
+            ),
             const SizedBox(height: 24),
             ..._infoSection(context, viewState.version),
             if (kDebugMode) ...[
@@ -94,8 +103,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   List<Widget> _displaySection(
     BuildContext context, {
     required HomeDisplayMode displayMode,
+    required bool progressBarAnimationEnabled,
   }) {
     final colorScheme = context.appColorScheme;
+    final divider = Divider(height: 1, color: colorScheme.divider);
     return [
       AppSectionHeader(
         title: Text(context.l10n.settingsSectionDisplay),
@@ -124,9 +135,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         ),
         onTap: () => context.push('/settings/display'),
       ),
-      Divider(height: 1, color: colorScheme.divider),
+      divider,
       AppListCell(
-        type: .bottom,
+        type: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsColorGroupTitle),
@@ -138,6 +149,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           ),
         ),
         onTap: () => context.push('/settings/color-labels'),
+      ),
+      divider,
+      AppListCell(
+        type: .bottom,
+        child: ListTile(
+          title: Text(context.l10n.settingsDisplayProgressBarAnimation),
+          trailing: Switch(
+            value: progressBarAnimationEnabled,
+            onChanged: _viewModel.setProgressBarAnimationEnabled,
+          ),
+        ),
       ),
     ];
   }

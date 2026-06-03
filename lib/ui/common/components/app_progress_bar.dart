@@ -10,6 +10,7 @@ class AppProgressBar extends StatelessWidget {
     required this.value,
     this.isOverdue = false,
     this.thickness = 3,
+    this.animated = true,
   });
 
   /// 進捗 (0.0 〜 1.0)
@@ -19,6 +20,8 @@ class AppProgressBar extends StatelessWidget {
 
   /// バーの太さ (dp)
   final double thickness;
+
+  final bool animated;
 
   static ({Color base, Color soft}) _barColors(
     AppColorScheme c,
@@ -38,6 +41,14 @@ class AppProgressBar extends StatelessWidget {
     final highlightColor = Color.lerp(base, soft, 0.6)!;
     final clamped = value.clamp(0.0, 1.0);
 
+    if (!animated) {
+      return _StaticBar(
+        clamped: clamped,
+        baseColor: base,
+        trackBg: c.trackBg,
+        thickness: thickness,
+      );
+    }
     if (value >= 1.0) {
       return _BlinkBar(
         clamped: clamped,

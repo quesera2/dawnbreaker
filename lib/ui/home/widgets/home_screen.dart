@@ -97,6 +97,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             uiState.hasTasks,
             taskList,
             viewModel,
+            uiState.progressBarAnimationEnabled,
           ),
           SliverPadding(
             padding: EdgeInsets.only(
@@ -113,6 +114,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     bool hasTasks,
     HomeTaskList taskList,
     HomeViewModel viewModel,
+    bool progressBarAnimationEnabled,
   ) {
     if (taskList.isEmpty) {
       final colors = context.appColorScheme;
@@ -142,6 +144,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           entry.value,
           viewModel,
           taskList,
+          progressBarAnimationEnabled: progressBarAnimationEnabled,
           addTopPadding: index > 0,
         ),
     ];
@@ -153,6 +156,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     List<TaskItem> tasks,
     HomeViewModel viewModel,
     HomeTaskList taskList, {
+    required bool progressBarAnimationEnabled,
     required bool addTopPadding,
   }) {
     final colors = context.appColorScheme;
@@ -188,6 +192,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       onConfirm: (date, comment) =>
                           viewModel.recordExecution(item, date, comment),
                     ),
+                    progressBarAnimated: progressBarAnimationEnabled,
                   ),
                 ),
           ),

@@ -21,10 +21,6 @@ SettingsRepository settingsRepository(Ref ref) {
 Stream<bool> notificationEnabled(Ref ref) =>
     ref.watch(settingsRepositoryProvider).watchNotificationEnabled();
 
-@Riverpod(keepAlive: true)
-Stream<HomeDisplayMode> homeDisplayMode(Ref ref) =>
-    ref.watch(settingsRepositoryProvider).watchHomeDisplayMode();
-
 class SettingsRepositoryImpl implements SettingsRepository {
   SettingsRepositoryImpl(this._manager);
 
@@ -33,6 +29,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   final _homeSortModeController = StreamController<HomeDisplayMode>.broadcast();
   final _colorSettingsController =
       StreamController<List<ColorSetting>>.broadcast();
+  final _progressBarAnimationController = StreamController<bool>.broadcast();
 
   @override
   Stream<bool> watchNotificationEnabled() async* {
@@ -76,9 +73,22 @@ class SettingsRepositoryImpl implements SettingsRepository {
     _colorSettingsController.add(settings);
   }
 
+  @override
+  Stream<bool> watchProgressBarAnimationEnabled() async* {
+    yield _manager.get(progressBarAnimationKey, defaultValue: true);
+    yield* _progressBarAnimationController.stream;
+  }
+
+  @override
+  Future<void> setProgressBarAnimationEnabled(bool value) async {
+    await _manager.set(progressBarAnimationKey, value);
+    _progressBarAnimationController.add(value);
+  }
+
   void dispose() {
     _notificationEnabledController.close();
     _homeSortModeController.close();
     _colorSettingsController.close();
+    _progressBarAnimationController.close();
   }
 }

@@ -209,6 +209,7 @@
   "settingsDisplayHomeTimelineSubtitle": "超過と今後の予定に分けて時系列で並べます",
   "settingsDisplayHomeByColor": "カラーグループ",
   "settingsDisplayHomeByColorSubtitle": "タスクの色でグループ分けします",
+  "settingsDisplayProgressBarAnimation": "プログレスバーエフェクト",
   "settingsColorGroupTitle": "カラーグループの設定",
   "settingsColorGroupSubtitle": "ラベルと並び順をカスタマイズ",
   "colorLabelScreenTitle": "カラーグループの設定",

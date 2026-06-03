@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$HomeUiState {
 
- bool get isLoading; DialogMessage? get dialogMessage; SnackBarMessage? get snackBarMessage; List<TaskItem> get tasks; String get searchQuery; HomeFilter get selectedFilter; HomeDisplayMode get displayMode; List<ColorSetting> get colorSettings;
+ bool get isLoading; DialogMessage? get dialogMessage; SnackBarMessage? get snackBarMessage; List<TaskItem> get tasks; String get searchQuery; HomeFilter get selectedFilter; HomeDisplayMode get displayMode; List<ColorSetting> get colorSettings; bool get progressBarAnimationEnabled;
 /// Create a copy of HomeUiState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $HomeUiStateCopyWith<HomeUiState> get copyWith => _$HomeUiStateCopyWithImpl<Home
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeUiState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.dialogMessage, dialogMessage) || other.dialogMessage == dialogMessage)&&(identical(other.snackBarMessage, snackBarMessage) || other.snackBarMessage == snackBarMessage)&&const DeepCollectionEquality().equals(other.tasks, tasks)&&(identical(other.searchQuery, searchQuery) || other.searchQuery == searchQuery)&&(identical(other.selectedFilter, selectedFilter) || other.selectedFilter == selectedFilter)&&(identical(other.displayMode, displayMode) || other.displayMode == displayMode)&&const DeepCollectionEquality().equals(other.colorSettings, colorSettings));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeUiState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.dialogMessage, dialogMessage) || other.dialogMessage == dialogMessage)&&(identical(other.snackBarMessage, snackBarMessage) || other.snackBarMessage == snackBarMessage)&&const DeepCollectionEquality().equals(other.tasks, tasks)&&(identical(other.searchQuery, searchQuery) || other.searchQuery == searchQuery)&&(identical(other.selectedFilter, selectedFilter) || other.selectedFilter == selectedFilter)&&(identical(other.displayMode, displayMode) || other.displayMode == displayMode)&&const DeepCollectionEquality().equals(other.colorSettings, colorSettings)&&(identical(other.progressBarAnimationEnabled, progressBarAnimationEnabled) || other.progressBarAnimationEnabled == progressBarAnimationEnabled));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,dialogMessage,snackBarMessage,const DeepCollectionEquality().hash(tasks),searchQuery,selectedFilter,displayMode,const DeepCollectionEquality().hash(colorSettings));
+int get hashCode => Object.hash(runtimeType,isLoading,dialogMessage,snackBarMessage,const DeepCollectionEquality().hash(tasks),searchQuery,selectedFilter,displayMode,const DeepCollectionEquality().hash(colorSettings),progressBarAnimationEnabled);
 
 @override
 String toString() {
-  return 'HomeUiState(isLoading: $isLoading, dialogMessage: $dialogMessage, snackBarMessage: $snackBarMessage, tasks: $tasks, searchQuery: $searchQuery, selectedFilter: $selectedFilter, displayMode: $displayMode, colorSettings: $colorSettings)';
+  return 'HomeUiState(isLoading: $isLoading, dialogMessage: $dialogMessage, snackBarMessage: $snackBarMessage, tasks: $tasks, searchQuery: $searchQuery, selectedFilter: $selectedFilter, displayMode: $displayMode, colorSettings: $colorSettings, progressBarAnimationEnabled: $progressBarAnimationEnabled)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $HomeUiStateCopyWith<$Res>  {
   factory $HomeUiStateCopyWith(HomeUiState value, $Res Function(HomeUiState) _then) = _$HomeUiStateCopyWithImpl;
 @useResult
 $Res call({
- bool isLoading, DialogMessage? dialogMessage, SnackBarMessage? snackBarMessage, List<TaskItem> tasks, String searchQuery, HomeFilter selectedFilter, HomeDisplayMode displayMode, List<ColorSetting> colorSettings
+ bool isLoading, DialogMessage? dialogMessage, SnackBarMessage? snackBarMessage, List<TaskItem> tasks, String searchQuery, HomeFilter selectedFilter, HomeDisplayMode displayMode, List<ColorSetting> colorSettings, bool progressBarAnimationEnabled
 });
 
 
@@ -62,7 +62,7 @@ class _$HomeUiStateCopyWithImpl<$Res>
 
 /// Create a copy of HomeUiState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? dialogMessage = freezed,Object? snackBarMessage = freezed,Object? tasks = null,Object? searchQuery = null,Object? selectedFilter = null,Object? displayMode = null,Object? colorSettings = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? dialogMessage = freezed,Object? snackBarMessage = freezed,Object? tasks = null,Object? searchQuery = null,Object? selectedFilter = null,Object? displayMode = null,Object? colorSettings = null,Object? progressBarAnimationEnabled = null,}) {
   return _then(_self.copyWith(
 isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,dialogMessage: freezed == dialogMessage ? _self.dialogMessage : dialogMessage // ignore: cast_nullable_to_non_nullable
@@ -72,7 +72,8 @@ as List<TaskItem>,searchQuery: null == searchQuery ? _self.searchQuery : searchQ
 as String,selectedFilter: null == selectedFilter ? _self.selectedFilter : selectedFilter // ignore: cast_nullable_to_non_nullable
 as HomeFilter,displayMode: null == displayMode ? _self.displayMode : displayMode // ignore: cast_nullable_to_non_nullable
 as HomeDisplayMode,colorSettings: null == colorSettings ? _self.colorSettings : colorSettings // ignore: cast_nullable_to_non_nullable
-as List<ColorSetting>,
+as List<ColorSetting>,progressBarAnimationEnabled: null == progressBarAnimationEnabled ? _self.progressBarAnimationEnabled : progressBarAnimationEnabled // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -157,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isLoading,  DialogMessage? dialogMessage,  SnackBarMessage? snackBarMessage,  List<TaskItem> tasks,  String searchQuery,  HomeFilter selectedFilter,  HomeDisplayMode displayMode,  List<ColorSetting> colorSettings)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isLoading,  DialogMessage? dialogMessage,  SnackBarMessage? snackBarMessage,  List<TaskItem> tasks,  String searchQuery,  HomeFilter selectedFilter,  HomeDisplayMode displayMode,  List<ColorSetting> colorSettings,  bool progressBarAnimationEnabled)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HomeUiState() when $default != null:
-return $default(_that.isLoading,_that.dialogMessage,_that.snackBarMessage,_that.tasks,_that.searchQuery,_that.selectedFilter,_that.displayMode,_that.colorSettings);case _:
+return $default(_that.isLoading,_that.dialogMessage,_that.snackBarMessage,_that.tasks,_that.searchQuery,_that.selectedFilter,_that.displayMode,_that.colorSettings,_that.progressBarAnimationEnabled);case _:
   return orElse();
 
 }
@@ -178,10 +179,10 @@ return $default(_that.isLoading,_that.dialogMessage,_that.snackBarMessage,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isLoading,  DialogMessage? dialogMessage,  SnackBarMessage? snackBarMessage,  List<TaskItem> tasks,  String searchQuery,  HomeFilter selectedFilter,  HomeDisplayMode displayMode,  List<ColorSetting> colorSettings)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isLoading,  DialogMessage? dialogMessage,  SnackBarMessage? snackBarMessage,  List<TaskItem> tasks,  String searchQuery,  HomeFilter selectedFilter,  HomeDisplayMode displayMode,  List<ColorSetting> colorSettings,  bool progressBarAnimationEnabled)  $default,) {final _that = this;
 switch (_that) {
 case _HomeUiState():
-return $default(_that.isLoading,_that.dialogMessage,_that.snackBarMessage,_that.tasks,_that.searchQuery,_that.selectedFilter,_that.displayMode,_that.colorSettings);case _:
+return $default(_that.isLoading,_that.dialogMessage,_that.snackBarMessage,_that.tasks,_that.searchQuery,_that.selectedFilter,_that.displayMode,_that.colorSettings,_that.progressBarAnimationEnabled);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +199,10 @@ return $default(_that.isLoading,_that.dialogMessage,_that.snackBarMessage,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isLoading,  DialogMessage? dialogMessage,  SnackBarMessage? snackBarMessage,  List<TaskItem> tasks,  String searchQuery,  HomeFilter selectedFilter,  HomeDisplayMode displayMode,  List<ColorSetting> colorSettings)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isLoading,  DialogMessage? dialogMessage,  SnackBarMessage? snackBarMessage,  List<TaskItem> tasks,  String searchQuery,  HomeFilter selectedFilter,  HomeDisplayMode displayMode,  List<ColorSetting> colorSettings,  bool progressBarAnimationEnabled)?  $default,) {final _that = this;
 switch (_that) {
 case _HomeUiState() when $default != null:
-return $default(_that.isLoading,_that.dialogMessage,_that.snackBarMessage,_that.tasks,_that.searchQuery,_that.selectedFilter,_that.displayMode,_that.colorSettings);case _:
+return $default(_that.isLoading,_that.dialogMessage,_that.snackBarMessage,_that.tasks,_that.searchQuery,_that.selectedFilter,_that.displayMode,_that.colorSettings,_that.progressBarAnimationEnabled);case _:
   return null;
 
 }
@@ -213,7 +214,7 @@ return $default(_that.isLoading,_that.dialogMessage,_that.snackBarMessage,_that.
 
 
 class _HomeUiState extends HomeUiState {
-  const _HomeUiState({this.isLoading = false, this.dialogMessage, this.snackBarMessage, final  List<TaskItem> tasks = const [], this.searchQuery = '', this.selectedFilter = HomeFilter.all, this.displayMode = HomeDisplayMode.timeline, final  List<ColorSetting> colorSettings = const []}): _tasks = tasks,_colorSettings = colorSettings,super._();
+  const _HomeUiState({this.isLoading = false, this.dialogMessage, this.snackBarMessage, final  List<TaskItem> tasks = const [], this.searchQuery = '', this.selectedFilter = HomeFilter.all, this.displayMode = HomeDisplayMode.timeline, final  List<ColorSetting> colorSettings = const [], this.progressBarAnimationEnabled = true}): _tasks = tasks,_colorSettings = colorSettings,super._();
   
 
 @override@JsonKey() final  bool isLoading;
@@ -236,6 +237,7 @@ class _HomeUiState extends HomeUiState {
   return EqualUnmodifiableListView(_colorSettings);
 }
 
+@override@JsonKey() final  bool progressBarAnimationEnabled;
 
 /// Create a copy of HomeUiState
 /// with the given fields replaced by the non-null parameter values.
@@ -247,16 +249,16 @@ _$HomeUiStateCopyWith<_HomeUiState> get copyWith => __$HomeUiStateCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeUiState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.dialogMessage, dialogMessage) || other.dialogMessage == dialogMessage)&&(identical(other.snackBarMessage, snackBarMessage) || other.snackBarMessage == snackBarMessage)&&const DeepCollectionEquality().equals(other._tasks, _tasks)&&(identical(other.searchQuery, searchQuery) || other.searchQuery == searchQuery)&&(identical(other.selectedFilter, selectedFilter) || other.selectedFilter == selectedFilter)&&(identical(other.displayMode, displayMode) || other.displayMode == displayMode)&&const DeepCollectionEquality().equals(other._colorSettings, _colorSettings));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeUiState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.dialogMessage, dialogMessage) || other.dialogMessage == dialogMessage)&&(identical(other.snackBarMessage, snackBarMessage) || other.snackBarMessage == snackBarMessage)&&const DeepCollectionEquality().equals(other._tasks, _tasks)&&(identical(other.searchQuery, searchQuery) || other.searchQuery == searchQuery)&&(identical(other.selectedFilter, selectedFilter) || other.selectedFilter == selectedFilter)&&(identical(other.displayMode, displayMode) || other.displayMode == displayMode)&&const DeepCollectionEquality().equals(other._colorSettings, _colorSettings)&&(identical(other.progressBarAnimationEnabled, progressBarAnimationEnabled) || other.progressBarAnimationEnabled == progressBarAnimationEnabled));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,dialogMessage,snackBarMessage,const DeepCollectionEquality().hash(_tasks),searchQuery,selectedFilter,displayMode,const DeepCollectionEquality().hash(_colorSettings));
+int get hashCode => Object.hash(runtimeType,isLoading,dialogMessage,snackBarMessage,const DeepCollectionEquality().hash(_tasks),searchQuery,selectedFilter,displayMode,const DeepCollectionEquality().hash(_colorSettings),progressBarAnimationEnabled);
 
 @override
 String toString() {
-  return 'HomeUiState(isLoading: $isLoading, dialogMessage: $dialogMessage, snackBarMessage: $snackBarMessage, tasks: $tasks, searchQuery: $searchQuery, selectedFilter: $selectedFilter, displayMode: $displayMode, colorSettings: $colorSettings)';
+  return 'HomeUiState(isLoading: $isLoading, dialogMessage: $dialogMessage, snackBarMessage: $snackBarMessage, tasks: $tasks, searchQuery: $searchQuery, selectedFilter: $selectedFilter, displayMode: $displayMode, colorSettings: $colorSettings, progressBarAnimationEnabled: $progressBarAnimationEnabled)';
 }
 
 
@@ -267,7 +269,7 @@ abstract mixin class _$HomeUiStateCopyWith<$Res> implements $HomeUiStateCopyWith
   factory _$HomeUiStateCopyWith(_HomeUiState value, $Res Function(_HomeUiState) _then) = __$HomeUiStateCopyWithImpl;
 @override @useResult
 $Res call({
- bool isLoading, DialogMessage? dialogMessage, SnackBarMessage? snackBarMessage, List<TaskItem> tasks, String searchQuery, HomeFilter selectedFilter, HomeDisplayMode displayMode, List<ColorSetting> colorSettings
+ bool isLoading, DialogMessage? dialogMessage, SnackBarMessage? snackBarMessage, List<TaskItem> tasks, String searchQuery, HomeFilter selectedFilter, HomeDisplayMode displayMode, List<ColorSetting> colorSettings, bool progressBarAnimationEnabled
 });
 
 
@@ -284,7 +286,7 @@ class __$HomeUiStateCopyWithImpl<$Res>
 
 /// Create a copy of HomeUiState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? isLoading = null,Object? dialogMessage = freezed,Object? snackBarMessage = freezed,Object? tasks = null,Object? searchQuery = null,Object? selectedFilter = null,Object? displayMode = null,Object? colorSettings = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isLoading = null,Object? dialogMessage = freezed,Object? snackBarMessage = freezed,Object? tasks = null,Object? searchQuery = null,Object? selectedFilter = null,Object? displayMode = null,Object? colorSettings = null,Object? progressBarAnimationEnabled = null,}) {
   return _then(_HomeUiState(
 isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,dialogMessage: freezed == dialogMessage ? _self.dialogMessage : dialogMessage // ignore: cast_nullable_to_non_nullable
@@ -294,7 +296,8 @@ as List<TaskItem>,searchQuery: null == searchQuery ? _self.searchQuery : searchQ
 as String,selectedFilter: null == selectedFilter ? _self.selectedFilter : selectedFilter // ignore: cast_nullable_to_non_nullable
 as HomeFilter,displayMode: null == displayMode ? _self.displayMode : displayMode // ignore: cast_nullable_to_non_nullable
 as HomeDisplayMode,colorSettings: null == colorSettings ? _self._colorSettings : colorSettings // ignore: cast_nullable_to_non_nullable
-as List<ColorSetting>,
+as List<ColorSetting>,progressBarAnimationEnabled: null == progressBarAnimationEnabled ? _self.progressBarAnimationEnabled : progressBarAnimationEnabled // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
