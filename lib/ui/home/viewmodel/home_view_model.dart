@@ -1,4 +1,4 @@
-import 'package:dawnbreaker/core/util/stream_util.dart';
+import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest4;
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
@@ -28,19 +28,22 @@ class HomeViewModel extends _$HomeViewModel {
   }
 
   void _initialize() {
-    final disposable = combineLatest3(
+    final disposable = combineLatest4(
       _taskRepository.allTaskItems(),
       _settingsRepository.watchHomeDisplayMode(),
       _settingsRepository.watchColorSettings(),
+      _settingsRepository.watchProgressBarAnimationEnabled(),
       (
         List<TaskItem> tasks,
         HomeDisplayMode mode,
         List<ColorSetting> colorSettings,
+        bool progressBarAnimationEnabled,
       ) => state = state.copyWith(
         isLoading: false,
         tasks: tasks,
         displayMode: mode,
         colorSettings: colorSettings,
+        progressBarAnimationEnabled: progressBarAnimationEnabled,
       ),
     );
     ref.onDispose(disposable);

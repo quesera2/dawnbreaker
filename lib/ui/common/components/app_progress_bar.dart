@@ -1,17 +1,16 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
-import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AppProgressBar extends ConsumerWidget {
+class AppProgressBar extends StatelessWidget {
   const AppProgressBar({
     super.key,
     required this.value,
     this.isOverdue = false,
     this.thickness = 3,
+    this.animated = true,
   });
 
   /// 進捗 (0.0 〜 1.0)
@@ -21,6 +20,8 @@ class AppProgressBar extends ConsumerWidget {
 
   /// バーの太さ (dp)
   final double thickness;
+
+  final bool animated;
 
   static ({Color base, Color soft}) _barColors(
     AppColorScheme c,
@@ -34,9 +35,7 @@ class AppProgressBar extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final animated =
-        ref.watch(progressBarAnimationEnabledProvider).asData?.value ?? true;
+  Widget build(BuildContext context) {
     final c = context.appColorScheme;
     final (:base, :soft) = _barColors(c, value, isOverdue);
     final highlightColor = Color.lerp(base, soft, 0.6)!;

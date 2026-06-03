@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:app_settings/app_settings.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
+import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest3;
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
@@ -24,39 +25,28 @@ class SettingsViewModel extends _$SettingsViewModel {
   @override
   SettingsUiState build() {
     _repository = ref.read(settingsRepositoryProvider);
-    ref.listen(notificationEnabledProvider, (_, next) {
-      next.whenData(
-        (enabled) => state = state.copyWith(notificationEnabled: enabled),
-      );
-    });
-    ref.listen(homeDisplayModeProvider, (_, next) {
-      next.whenData((mode) => state = state.copyWith(displayMode: mode));
-    });
-    ref.listen(progressBarAnimationEnabledProvider, (_, next) {
-      next.whenData(
-        (enabled) =>
-            state = state.copyWith(progressBarAnimationEnabled: enabled),
-      );
-    });
     _initialize();
     return const SettingsUiState();
   }
 
   Future<void> _initialize() async {
-    final results = await Future.wait([
-      PackageInfo.fromPlatform(),
-      _repository.watchNotificationEnabled().first,
-      _repository.watchHomeDisplayMode().first,
-      _repository.watchProgressBarAnimationEnabled().first,
-    ]);
-    if (!ref.mounted) return;
-    state = state.copyWith(
-      isLoading: false,
-      version: (results[0] as PackageInfo).version,
-      notificationEnabled: results[1] as bool,
-      displayMode: results[2] as HomeDisplayMode,
-      progressBarAnimationEnabled: results[3] as bool,
+    final disposable = combineLatest3(
+      _repository.watchNotificationEnabled(),
+      _repository.watchHomeDisplayMode(),
+      _repository.watchProgressBarAnimationEnabled(),
+      (bool notification, HomeDisplayMode mode, bool animation) {
+        state = state.copyWith(
+          notificationEnabled: notification,
+          displayMode: mode,
+          progressBarAnimationEnabled: animation,
+        );
+      },
     );
+    ref.onDispose(disposable);
+
+    final info = await PackageInfo.fromPlatform();
+    if (!ref.mounted) return;
+    state = state.copyWith(isLoading: false, version: info.version);
   }
 
   Future<void> setNotificationEnabled(bool value) async {

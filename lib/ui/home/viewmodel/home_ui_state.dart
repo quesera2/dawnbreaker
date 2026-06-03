@@ -25,6 +25,7 @@ abstract class HomeUiState with _$HomeUiState implements BaseUiState {
     @Default(HomeFilter.all) HomeFilter selectedFilter,
     @Default(HomeDisplayMode.timeline) HomeDisplayMode displayMode,
     @Default([]) List<ColorSetting> colorSettings,
+    @Default(true) bool progressBarAnimationEnabled,
   }) = _HomeUiState;
 
   bool get hasTasks => tasks.isNotEmpty;

@@ -21,14 +21,6 @@ SettingsRepository settingsRepository(Ref ref) {
 Stream<bool> notificationEnabled(Ref ref) =>
     ref.watch(settingsRepositoryProvider).watchNotificationEnabled();
 
-@Riverpod(keepAlive: true)
-Stream<HomeDisplayMode> homeDisplayMode(Ref ref) =>
-    ref.watch(settingsRepositoryProvider).watchHomeDisplayMode();
-
-@Riverpod(keepAlive: true)
-Stream<bool> progressBarAnimationEnabled(Ref ref) =>
-    ref.watch(settingsRepositoryProvider).watchProgressBarAnimationEnabled();
-
 class SettingsRepositoryImpl implements SettingsRepository {
   SettingsRepositoryImpl(this._manager);
 
