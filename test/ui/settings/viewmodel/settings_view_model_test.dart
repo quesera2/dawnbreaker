@@ -34,6 +34,7 @@ void main() {
     bool permissionResult = true,
     bool canScheduleExactAlarmsResult = true,
     HomeDisplayMode initialDisplayMode = HomeDisplayMode.timeline,
+    bool initialProgressBarAnimationEnabled = true,
   }) {
     PackageInfo.setMockInitialValues(
       appName: 'dawnbreaker',
@@ -46,6 +47,7 @@ void main() {
     fakeSettingsRepository = FakeSettingsRepository(
       initialNotificationEnabled: notificationEnabled,
       initialDisplayMode: initialDisplayMode,
+      initialProgressBarAnimationEnabled: initialProgressBarAnimationEnabled,
     );
     fakeNotificationService = FakeNotificationService(
       checkPermissionResult: checkPermissionResult,
@@ -71,6 +73,7 @@ void main() {
     bool permissionResult = true,
     bool canScheduleExactAlarmsResult = true,
     HomeDisplayMode initialDisplayMode = HomeDisplayMode.timeline,
+    bool initialProgressBarAnimationEnabled = true,
   }) async {
     setUpContainer(
       notificationEnabled: notificationEnabled,
@@ -78,6 +81,7 @@ void main() {
       permissionResult: permissionResult,
       canScheduleExactAlarmsResult: canScheduleExactAlarmsResult,
       initialDisplayMode: initialDisplayMode,
+      initialProgressBarAnimationEnabled: initialProgressBarAnimationEnabled,
     );
     await waitUntil(container, settingsViewModelProvider, (s) => !s.isLoading);
     viewModel = container.read(settingsViewModelProvider.notifier);
@@ -324,6 +328,40 @@ void main() {
         test('完了メッセージが表示される', () async {
           await viewModel.deleteTutorialFlag();
           expect(viewState.snackBarMessage, isA<TutorialFlagResetMessage>());
+        });
+      });
+
+      group('プログレスバーアニメーションの初期値', () {
+        for (final (enabled, label) in [(true, '有効'), (false, '無効')]) {
+          test('$labelが正しく読み込まれる', () async {
+            await setUpLoaded(initialProgressBarAnimationEnabled: enabled);
+            expect(viewState.progressBarAnimationEnabled, enabled);
+          });
+        }
+      });
+
+      group('setProgressBarAnimationEnabled', () {
+        setUp(() async => setUpLoaded());
+
+        test('アニメーションが無効になる', () async {
+          await viewModel.setProgressBarAnimationEnabled(false);
+          await pumpEventQueue();
+          expect(viewState.progressBarAnimationEnabled, false);
+        });
+
+        test('リポジトリに保存される', () async {
+          await viewModel.setProgressBarAnimationEnabled(false);
+          expect(fakeSettingsRepository.progressBarAnimationEnabled, false);
+        });
+      });
+
+      group('プログレスバーアニメーションの外部変更', () {
+        setUp(() async => setUpLoaded());
+
+        test('リポジトリの変更がstateに反映される', () async {
+          await fakeSettingsRepository.setProgressBarAnimationEnabled(false);
+          await pumpEventQueue();
+          expect(viewState.progressBarAnimationEnabled, false);
         });
       });
     });

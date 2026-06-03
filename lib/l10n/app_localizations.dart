@@ -836,6 +836,12 @@ abstract class AppLocalizations {
   /// **'タスクの色でグループ分けします'**
   String get settingsDisplayHomeByColorSubtitle;
 
+  /// No description provided for @settingsDisplayProgressBarAnimation.
+  ///
+  /// In ja, this message translates to:
+  /// **'プログレスバーエフェクト'**
+  String get settingsDisplayProgressBarAnimation;
+
   /// No description provided for @settingsColorGroupTitle.
   ///
   /// In ja, this message translates to:

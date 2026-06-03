@@ -9,17 +9,21 @@ class FakeSettingsRepository implements SettingsRepository {
     bool initialNotificationEnabled = true,
     HomeDisplayMode initialDisplayMode = HomeDisplayMode.timeline,
     List<ColorSetting>? initialColorSettings,
+    bool initialProgressBarAnimationEnabled = true,
   }) : notificationEnabled = initialNotificationEnabled,
        displayMode = initialDisplayMode,
-       colorSettings = initialColorSettings ?? ColorSetting.defaults();
+       colorSettings = initialColorSettings ?? ColorSetting.defaults(),
+       progressBarAnimationEnabled = initialProgressBarAnimationEnabled;
 
   bool notificationEnabled;
   HomeDisplayMode displayMode;
   List<ColorSetting> colorSettings;
+  bool progressBarAnimationEnabled;
   final _notificationController = StreamController<bool>.broadcast();
   final _displayModeController = StreamController<HomeDisplayMode>.broadcast();
   final _colorSettingsController =
       StreamController<List<ColorSetting>>.broadcast();
+  final _progressBarAnimationController = StreamController<bool>.broadcast();
 
   @override
   Stream<bool> watchNotificationEnabled() async* {
@@ -55,5 +59,17 @@ class FakeSettingsRepository implements SettingsRepository {
   Future<void> setColorSettings(List<ColorSetting> settings) async {
     colorSettings = settings;
     _colorSettingsController.add(settings);
+  }
+
+  @override
+  Stream<bool> watchProgressBarAnimationEnabled() async* {
+    yield progressBarAnimationEnabled;
+    yield* _progressBarAnimationController.stream;
+  }
+
+  @override
+  Future<void> setProgressBarAnimationEnabled(bool value) async {
+    progressBarAnimationEnabled = value;
+    _progressBarAnimationController.add(value);
   }
 }

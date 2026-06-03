@@ -32,6 +32,12 @@ class SettingsViewModel extends _$SettingsViewModel {
     ref.listen(homeDisplayModeProvider, (_, next) {
       next.whenData((mode) => state = state.copyWith(displayMode: mode));
     });
+    ref.listen(progressBarAnimationEnabledProvider, (_, next) {
+      next.whenData(
+        (enabled) =>
+            state = state.copyWith(progressBarAnimationEnabled: enabled),
+      );
+    });
     _initialize();
     return const SettingsUiState();
   }
@@ -41,6 +47,7 @@ class SettingsViewModel extends _$SettingsViewModel {
       PackageInfo.fromPlatform(),
       _repository.watchNotificationEnabled().first,
       _repository.watchHomeDisplayMode().first,
+      _repository.watchProgressBarAnimationEnabled().first,
     ]);
     if (!ref.mounted) return;
     state = state.copyWith(
@@ -48,6 +55,7 @@ class SettingsViewModel extends _$SettingsViewModel {
       version: (results[0] as PackageInfo).version,
       notificationEnabled: results[1] as bool,
       displayMode: results[2] as HomeDisplayMode,
+      progressBarAnimationEnabled: results[3] as bool,
     );
   }
 
@@ -118,6 +126,10 @@ class SettingsViewModel extends _$SettingsViewModel {
     await ref.read(settingsRepositoryProvider).setNotificationEnabled(false);
     if (!ref.mounted) return;
     state = state.copyWith(isNotificationUpdating: false);
+  }
+
+  Future<void> setProgressBarAnimationEnabled(bool value) async {
+    await _repository.setProgressBarAnimationEnabled(value);
   }
 
   Future<void> generateDummyTasks() async {

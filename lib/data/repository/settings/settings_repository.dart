@@ -13,4 +13,8 @@ abstract interface class SettingsRepository {
   Stream<List<ColorSetting>> watchColorSettings();
 
   Future<void> setColorSettings(List<ColorSetting> settings);
+
+  Stream<bool> watchProgressBarAnimationEnabled();
+
+  Future<void> setProgressBarAnimationEnabled(bool value);
 }

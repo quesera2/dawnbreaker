@@ -412,6 +412,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Groups tasks by their assigned color.';
 
   @override
+  String get settingsDisplayProgressBarAnimation => 'Progress Bar Effects';
+
+  @override
   String get settingsColorGroupTitle => 'Color Group Settings';
 
   @override

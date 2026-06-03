@@ -404,6 +404,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsDisplayHomeByColorSubtitle => 'タスクの色でグループ分けします';
 
   @override
+  String get settingsDisplayProgressBarAnimation => 'プログレスバーエフェクト';
+
+  @override
   String get settingsColorGroupTitle => 'カラーグループの設定';
 
   @override

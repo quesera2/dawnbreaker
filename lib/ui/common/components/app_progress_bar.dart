@@ -1,10 +1,12 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
+import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AppProgressBar extends StatelessWidget {
+class AppProgressBar extends ConsumerWidget {
   const AppProgressBar({
     super.key,
     required this.value,
@@ -32,12 +34,22 @@ class AppProgressBar extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final animated =
+        ref.watch(progressBarAnimationEnabledProvider).asData?.value ?? true;
     final c = context.appColorScheme;
     final (:base, :soft) = _barColors(c, value, isOverdue);
     final highlightColor = Color.lerp(base, soft, 0.6)!;
     final clamped = value.clamp(0.0, 1.0);
 
+    if (!animated) {
+      return _StaticBar(
+        clamped: clamped,
+        baseColor: base,
+        trackBg: c.trackBg,
+        thickness: thickness,
+      );
+    }
     if (value >= 1.0) {
       return _BlinkBar(
         clamped: clamped,
