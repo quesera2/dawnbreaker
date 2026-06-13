@@ -57,6 +57,23 @@ void main() {
         expect(setting.minute, 30);
       });
     });
+
+    group('不正な設定が保存されている場合', () {
+      setUp(() async {
+        manager = await FakePreferencesManager.create(
+          mockValues: {notificationSettingKey.rawKey: 'invalid json'},
+        );
+        repository = SettingsRepositoryImpl(manager);
+      });
+
+      test('デフォルト値が流れる', () async {
+        final setting = await repository.watchNotificationSetting().first;
+        expect(setting.enabled, false);
+        expect(setting.notifyDay, NotifyDay.today);
+        expect(setting.hour, 9);
+        expect(setting.minute, 0);
+      });
+    });
   });
 
   group('setNotificationSetting', () {
