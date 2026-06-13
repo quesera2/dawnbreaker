@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
@@ -389,7 +391,8 @@ class _OnboardingPage3DescriptionState
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2400),
-    )..repeat();
+    );
+    unawaited(_controller.repeat());
   }
 
   @override

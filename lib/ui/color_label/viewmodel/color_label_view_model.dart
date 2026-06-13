@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
@@ -14,7 +16,7 @@ class ColorLabelViewModel extends _$ColorLabelViewModel {
   @override
   ColorLabelUiState build() {
     _repository = ref.read(settingsRepositoryProvider);
-    _initialize();
+    unawaited(_initialize());
     return const ColorLabelUiState();
   }
 

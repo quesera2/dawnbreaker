@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
@@ -87,9 +89,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
         case .pop:
           context.pop();
         case .next:
-          _pageController.nextPage(
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
+          unawaited(
+            _pageController.nextPage(
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+            ),
           );
       }
     });

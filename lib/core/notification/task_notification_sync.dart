@@ -1,4 +1,5 @@
 import 'package:dawnbreaker/core/notification/notification_service.dart';
+import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 
 class TaskNotificationSync {
@@ -6,13 +7,13 @@ class TaskNotificationSync {
 
   final NotificationService _service;
 
-  void updateNotifications({
-    required bool enabled,
+  Future<void> updateNotifications({
+    required NotificationSetting setting,
     required List<TaskItem> previous,
     required List<TaskItem> current,
-  }) {
-    if (!enabled) {
-      _service.removeAllNotification();
+  }) async {
+    if (!setting.enabled) {
+      await _service.removeAllNotification();
       return;
     }
 
@@ -20,14 +21,19 @@ class TaskNotificationSync {
     final currentSet = current.toSet();
 
     for (final task in previousSet.difference(currentSet)) {
-      _service.removeNotification(task);
+      await _service.removeNotification(task);
     }
 
     for (final task in currentSet.difference(previousSet)) {
       if (task.scheduledAt != null) {
-        _service.registerNotification(task);
+        await _service.registerNotification(
+          task,
+          notifyDay: setting.notifyDay,
+          hour: setting.hour,
+          minute: setting.minute,
+        );
       } else {
-        _service.removeNotification(task);
+        await _service.removeNotification(task);
       }
     }
   }

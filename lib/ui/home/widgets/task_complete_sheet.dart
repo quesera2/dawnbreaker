@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
@@ -160,7 +162,7 @@ class _TaskCompleteSheetState extends State<TaskCompleteSheet> {
           minimumDate: DateTime(2000),
           maximumDate: DateTime.now(),
           onDateTimeChanged: (date) {
-            HapticFeedback.selectionClick();
+            unawaited(HapticFeedback.selectionClick());
             setState(() => _selectedDate = date);
           },
         ),

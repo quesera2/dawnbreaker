@@ -1,4 +1,6 @@
-typedef CancelCallback = void Function();
+import 'dart:async';
+
+typedef CancelCallback = Future<void> Function();
 
 CancelCallback combineLatest4<T, S, U, V>(
   Stream<T> stream1,
@@ -38,11 +40,11 @@ CancelCallback combineLatest4<T, S, U, V>(
     tryEmit();
   });
 
-  return () {
-    sub1.cancel();
-    sub2.cancel();
-    sub3.cancel();
-    sub4.cancel();
+  return () async {
+    await sub1.cancel();
+    await sub2.cancel();
+    await sub3.cancel();
+    await sub4.cancel();
   };
 }
 
@@ -77,9 +79,9 @@ CancelCallback combineLatest3<T, S, U>(
     tryEmit();
   });
 
-  return () {
-    sub1.cancel();
-    sub2.cancel();
-    sub3.cancel();
+  return () async {
+    await sub1.cancel();
+    await sub2.cancel();
+    await sub3.cancel();
   };
 }

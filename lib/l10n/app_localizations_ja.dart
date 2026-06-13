@@ -369,7 +369,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsNotificationTitle => '予定日に通知';
 
   @override
-  String get settingsNotificationSubtitle => '朝 9:00 に通知が届きます';
+  String get settingsNotificationTime => '通知時間';
+
+  @override
+  String get settingsNotificationTimeSameDay => '当日';
+
+  @override
+  String get settingsNotificationTimePrevDay => '前日';
+
+  @override
+  String get settingsNotificationTimePickerTitle => '通知時間';
 
   @override
   String get settingsNotificationPermissionTitle => '通知の許可が必要です';

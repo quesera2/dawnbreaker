@@ -2,6 +2,8 @@ import 'package:app_settings/app_settings.dart';
 import 'package:app_settings/app_settings_platform_interface.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
+import 'package:dawnbreaker/data/model/notification_setting.dart'
+    show NotificationSetting, NotifyDay;
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -120,7 +122,7 @@ void main() {
         });
 
         test('通知が有効である', () {
-          expect(viewState.notificationEnabled, true);
+          expect(viewState.notificationSetting.enabled, true);
         });
       });
 
@@ -128,7 +130,7 @@ void main() {
         setUp(() async => setUpLoaded(notificationEnabled: false));
 
         test('通知が無効である', () {
-          expect(viewState.notificationEnabled, false);
+          expect(viewState.notificationSetting.enabled, false);
         });
       });
 
@@ -145,7 +147,7 @@ void main() {
 
           test('通知が無効になる', () async {
             await viewModel.setNotificationEnabled(false);
-            expect(viewState.notificationEnabled, false);
+            expect(viewState.notificationSetting.enabled, false);
           });
         });
 
@@ -160,7 +162,7 @@ void main() {
 
             test('通知が有効になる', () async {
               await viewModel.setNotificationEnabled(true);
-              expect(viewState.notificationEnabled, true);
+              expect(viewState.notificationSetting.enabled, true);
             });
 
             test('権限取得ダイアログを表示しない', () async {
@@ -180,7 +182,7 @@ void main() {
 
             test('通知が有効になる', () async {
               await viewModel.setNotificationEnabled(true);
-              expect(viewState.notificationEnabled, true);
+              expect(viewState.notificationSetting.enabled, true);
             });
           });
 
@@ -200,7 +202,7 @@ void main() {
 
             test('通知がOFFのままになる', () async {
               await viewModel.setNotificationEnabled(true);
-              expect(viewState.notificationEnabled, false);
+              expect(viewState.notificationSetting.enabled, false);
             });
 
             test('権限拒否ダイアログが表示される', () async {
@@ -262,7 +264,7 @@ void main() {
 
               test('通知が有効になる', () async {
                 await viewModel.setNotificationEnabled(true);
-                expect(viewState.notificationEnabled, true);
+                expect(viewState.notificationSetting.enabled, true);
               });
 
               test('exactAlarm許可ダイアログは表示されない', () async {
@@ -271,6 +273,45 @@ void main() {
               });
             });
           });
+        });
+      });
+
+      group('setNotificationTime', () {
+        setUp(() async => setUpLoaded());
+
+        test('通知時間が更新される', () async {
+          await viewModel.setNotificationTime(
+            notifyDay: NotifyDay.yesterday,
+            hour: 20,
+            minute: 30,
+          );
+          await pumpEventQueue();
+          expect(viewState.notificationSetting.notifyDay, NotifyDay.yesterday);
+          expect(viewState.notificationSetting.hour, 20);
+          expect(viewState.notificationSetting.minute, 30);
+        });
+
+        test('通知のON/OFFは変わらない', () async {
+          await viewModel.setNotificationTime(
+            notifyDay: NotifyDay.today,
+            hour: 8,
+            minute: 0,
+          );
+          await pumpEventQueue();
+          expect(viewState.notificationSetting.enabled, true);
+        });
+
+        test('リポジトリに保存される', () async {
+          await viewModel.setNotificationTime(
+            notifyDay: NotifyDay.yesterday,
+            hour: 22,
+            minute: 0,
+          );
+          expect(
+            fakeSettingsRepository.notificationSetting.notifyDay,
+            NotifyDay.yesterday,
+          );
+          expect(fakeSettingsRepository.notificationSetting.hour, 22);
         });
       });
 
@@ -311,9 +352,11 @@ void main() {
         setUp(() async => setUpLoaded());
 
         test('リポジトリの変更がstateに反映される', () async {
-          await fakeSettingsRepository.setNotificationEnabled(false);
+          await fakeSettingsRepository.setNotificationSetting(
+            const NotificationSetting(enabled: false),
+          );
           await pumpEventQueue();
-          expect(viewState.notificationEnabled, false);
+          expect(viewState.notificationSetting.enabled, false);
         });
       });
 

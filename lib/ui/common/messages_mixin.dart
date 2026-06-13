@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
 import 'package:dawnbreaker/ui/common/components/app_dialog.dart';
 import 'package:dawnbreaker/ui/common/components/app_snack_bar.dart';
@@ -9,7 +11,7 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
   void listenMessages<S extends BaseUiState>(ProviderListenable<S> provider) {
     ref.listen(provider.select((s) => s.dialogMessage), (prev, next) {
       if (next == null || prev?.id == next.id) return;
-      AppDialog.show(context, next);
+      unawaited(AppDialog.show(context, next));
     });
 
     ref.listen(provider.select((s) => s.snackBarMessage), (prev, next) {

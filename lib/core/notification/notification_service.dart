@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 
 abstract interface class NotificationService {
@@ -7,7 +8,12 @@ abstract interface class NotificationService {
 
   Future<bool> requestPermission();
 
-  Future<void> registerNotification(TaskItem task);
+  Future<void> registerNotification(
+    TaskItem task, {
+    required NotifyDay notifyDay,
+    required int hour,
+    required int minute,
+  });
 
   Future<void> removeNotification(TaskItem task);
 

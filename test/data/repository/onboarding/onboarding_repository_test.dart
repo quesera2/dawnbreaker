@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
@@ -21,7 +22,8 @@ void main() {
 
       test('通知設定が有効になる', () async {
         await repository.enableNotificationSettings();
-        expect(manager.get(notificationEnabledKey, defaultValue: false), true);
+        final stored = manager.get(notificationSettingKey, defaultValue: '');
+        expect(NotificationSetting.decode(stored).enabled, true);
       });
     });
 

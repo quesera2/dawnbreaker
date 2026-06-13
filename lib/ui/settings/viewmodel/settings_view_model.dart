@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:app_settings/app_settings.dart';
@@ -5,6 +6,7 @@ import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest3;
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
+import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
@@ -25,24 +27,24 @@ class SettingsViewModel extends _$SettingsViewModel {
   @override
   SettingsUiState build() {
     _repository = ref.read(settingsRepositoryProvider);
-    _initialize();
+    unawaited(_initialize());
     return const SettingsUiState();
   }
 
   Future<void> _initialize() async {
     final disposable = combineLatest3(
-      _repository.watchNotificationEnabled(),
+      _repository.watchNotificationSetting(),
       _repository.watchHomeDisplayMode(),
       _repository.watchProgressBarAnimationEnabled(),
-      (bool notification, HomeDisplayMode mode, bool animation) {
+      (NotificationSetting notification, HomeDisplayMode mode, bool animation) {
         state = state.copyWith(
-          notificationEnabled: notification,
+          notificationSetting: notification,
           displayMode: mode,
           progressBarAnimationEnabled: animation,
         );
       },
     );
-    ref.onDispose(disposable);
+    ref.onDispose(() => unawaited(disposable()));
 
     final info = await PackageInfo.fromPlatform();
     if (!ref.mounted) return;
@@ -57,10 +59,23 @@ class SettingsViewModel extends _$SettingsViewModel {
     }
   }
 
+  Future<void> setNotificationTime({
+    required NotifyDay notifyDay,
+    required int hour,
+    required int minute,
+  }) async {
+    final updated = state.notificationSetting.copyWith(
+      notifyDay: notifyDay,
+      hour: hour,
+      minute: minute,
+    );
+    await _repository.setNotificationSetting(updated);
+  }
+
   Future<void> _enableNotification() async {
     state = state.copyWith(
       isNotificationUpdating: true,
-      notificationEnabled: true,
+      notificationSetting: state.notificationSetting.copyWith(enabled: true),
     );
     final notificationService = await ref.read(
       notificationServiceProvider.future,
@@ -68,7 +83,9 @@ class SettingsViewModel extends _$SettingsViewModel {
 
     final hasPermission = await notificationService.checkPermission();
     if (hasPermission) {
-      await ref.read(settingsRepositoryProvider).setNotificationEnabled(true);
+      await ref
+          .read(settingsRepositoryProvider)
+          .setNotificationSetting(state.notificationSetting);
       if (!ref.mounted) return;
       state = state.copyWith(isNotificationUpdating: false);
       return;
@@ -80,7 +97,7 @@ class SettingsViewModel extends _$SettingsViewModel {
     if (!isGranted) {
       state = state.copyWith(
         isNotificationUpdating: false,
-        notificationEnabled: false,
+        notificationSetting: state.notificationSetting.copyWith(enabled: false),
         dialogMessage: NotificationPermissionDeniedMessage(
           primaryHandler: () =>
               AppSettings.openAppSettings(type: AppSettingsType.notification),
@@ -89,7 +106,9 @@ class SettingsViewModel extends _$SettingsViewModel {
       return;
     }
 
-    await ref.read(settingsRepositoryProvider).setNotificationEnabled(true);
+    await ref
+        .read(settingsRepositoryProvider)
+        .setNotificationSetting(state.notificationSetting);
     if (!ref.mounted) return;
 
     final canExact = await notificationService.canScheduleExactAlarms();
@@ -109,11 +128,12 @@ class SettingsViewModel extends _$SettingsViewModel {
   }
 
   Future<void> _disableNotification() async {
+    final updated = state.notificationSetting.copyWith(enabled: false);
     state = state.copyWith(
       isNotificationUpdating: true,
-      notificationEnabled: false,
+      notificationSetting: updated,
     );
-    await ref.read(settingsRepositoryProvider).setNotificationEnabled(false);
+    await ref.read(settingsRepositoryProvider).setNotificationSetting(updated);
     if (!ref.mounted) return;
     state = state.copyWith(isNotificationUpdating: false);
   }

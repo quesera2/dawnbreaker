@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
@@ -226,14 +228,19 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
     TaskHistory entry,
     AppDetailViewModel viewModel,
   ) {
-    TaskCompleteSheet.show(
-      context,
-      task: task,
-      initialDate: entry.executedAt,
-      initialComment: entry.comment,
-      onConfirm: (date, comment) =>
-          viewModel.updateExecution(entry, executedAt: date, comment: comment),
-      onDelete: () => viewModel.deleteExecution(task, entry),
+    unawaited(
+      TaskCompleteSheet.show(
+        context,
+        task: task,
+        initialDate: entry.executedAt,
+        initialComment: entry.comment,
+        onConfirm: (date, comment) => viewModel.updateExecution(
+          entry,
+          executedAt: date,
+          comment: comment,
+        ),
+        onDelete: () => viewModel.deleteExecution(task, entry),
+      ),
     );
   }
 }

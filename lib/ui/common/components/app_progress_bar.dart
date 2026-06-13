@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
@@ -142,7 +144,8 @@ class _GlimmerBarState extends State<_GlimmerBar>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2600),
-    )..repeat();
+    );
+    unawaited(_controller.repeat());
     _phase1 = CurvedAnimation(
       parent: _controller,
       curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
@@ -237,7 +240,8 @@ class _BlinkBarState extends State<_BlinkBar>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
-    )..repeat(reverse: true);
+    );
+    unawaited(_controller.repeat(reverse: true));
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
   }
 

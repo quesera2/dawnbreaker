@@ -21,17 +21,21 @@ class FakeTaskRepository implements TaskRepository {
 
   @override
   Stream<List<TaskItem>> allTaskItems() {
-    Future.microtask(() {
-      if (!_controller.isClosed) _controller.add(List.of(_tasks));
-    });
+    unawaited(
+      Future.microtask(() {
+        if (!_controller.isClosed) _controller.add(List.of(_tasks));
+      }),
+    );
     return _controller.stream;
   }
 
   @override
   Stream<TaskItem?> watchTaskById(int taskId) {
-    Future.microtask(() {
-      if (!_controller.isClosed) _controller.add(List.of(_tasks));
-    });
+    unawaited(
+      Future.microtask(() {
+        if (!_controller.isClosed) _controller.add(List.of(_tasks));
+      }),
+    );
     return _controller.stream.map(
       (tasks) => tasks.where((t) => t.id == taskId).firstOrNull,
     );

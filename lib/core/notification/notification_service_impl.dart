@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dawnbreaker/core/notification/notification_service.dart';
+import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/l10n/app_localizations.dart';
 import 'package:dawnbreaker/l10n/app_localizations_provider.dart';
@@ -33,8 +34,6 @@ class NotificationServiceImpl implements NotificationService {
   NotificationServiceImpl({required this._l10n});
 
   final AppLocalizations _l10n;
-
-  static const _notifyHour = 9;
 
   static const _androidSettings = AndroidInitializationSettings(
     '@mipmap/ic_launcher',
@@ -118,19 +117,26 @@ class NotificationServiceImpl implements NotificationService {
   }
 
   @override
-  Future<void> registerNotification(TaskItem task) async {
+  Future<void> registerNotification(
+    TaskItem task, {
+    required NotifyDay notifyDay,
+    required int hour,
+    required int minute,
+  }) async {
     final scheduledAt = task.scheduledAt;
     if (scheduledAt == null) {
       await removeNotification(task);
       return;
     }
 
+    final baseDate = scheduledAt.add(Duration(days: notifyDay.dayOffset));
     final notifyAt = tz.TZDateTime(
       tz.local,
-      scheduledAt.year,
-      scheduledAt.month,
-      scheduledAt.day,
-      _notifyHour,
+      baseDate.year,
+      baseDate.month,
+      baseDate.day,
+      hour,
+      minute,
     );
     if (notifyAt.isBefore(tz.TZDateTime.now(tz.local))) {
       await removeNotification(task);

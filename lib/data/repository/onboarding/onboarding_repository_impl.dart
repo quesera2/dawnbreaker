@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:dawnbreaker/data/preferences/preferences_manager.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
@@ -18,7 +19,10 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
   @override
   Future<void> enableNotificationSettings() async {
     try {
-      await _manager.set(notificationEnabledKey, true);
+      await _manager.set(
+        notificationSettingKey,
+        const NotificationSetting(enabled: true).encode(),
+      );
     } catch (e) {
       throw OnboardingSaveException(e.toString());
     }
