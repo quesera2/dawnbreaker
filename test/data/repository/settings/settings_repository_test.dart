@@ -2,7 +2,12 @@ import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
-import 'package:dawnbreaker/data/preferences/preference_key.dart';
+import 'package:dawnbreaker/data/preferences/preference_key.dart'
+    show
+        notificationSettingKey,
+        homeSortModeKey,
+        colorSettingsKey,
+        progressBarAnimationKey;
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -32,22 +37,7 @@ void main() {
       });
     });
 
-    group('旧フォーマット（notificationEnabledKey）が存在する場合', () {
-      setUp(() async {
-        manager = await FakePreferencesManager.create(
-          mockValues: {notificationEnabledKey.rawKey: true},
-        );
-        repository = SettingsRepositoryImpl(manager);
-      });
-
-      test('旧フォーマットのenabledが引き継がれる', () async {
-        final setting = await repository.watchNotificationSetting().first;
-        expect(setting.enabled, true);
-        expect(setting.hour, 9);
-      });
-    });
-
-    group('新フォーマットが保存されている場合', () {
+    group('保存済みの設定がある場合', () {
       setUp(() async {
         manager = await FakePreferencesManager.create(
           mockValues: {notificationSettingKey.rawKey: 'true:-1:22:30'},
