@@ -78,27 +78,12 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
 
   late int _value;
   late ScheduleUnit _unit;
-  late final FixedExtentScrollController _valueController;
-  late final FixedExtentScrollController _unitController;
 
   @override
   void initState() {
     super.initState();
     _value = widget.initialValue;
     _unit = widget.initialUnit;
-    _valueController = FixedExtentScrollController(
-      initialItem: widget.initialValue - 1,
-    );
-    _unitController = FixedExtentScrollController(
-      initialItem: ScheduleUnit.values.indexOf(widget.initialUnit),
-    );
-  }
-
-  @override
-  void dispose() {
-    _valueController.dispose();
-    _unitController.dispose();
-    super.dispose();
   }
 
   @override
@@ -120,16 +105,14 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
             children: [
               WheelColumn.integers(
                 count: _maxValue,
-                selected: _value - 1,
-                controller: _valueController,
+                initialSelected: _value - 1,
                 flex: 2,
                 labelOf: (i) => '${i + 1}',
                 onChanged: (i) => setState(() => _value = i + 1),
               ),
               WheelColumn<ScheduleUnit>(
                 items: ScheduleUnit.values,
-                selected: _unit,
-                controller: _unitController,
+                initialSelected: _unit,
                 flex: 3,
                 labelOf: (u) => u.label(context),
                 onChanged: (u) => setState(() => _unit = u),

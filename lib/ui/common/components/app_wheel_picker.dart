@@ -92,12 +92,12 @@ TextStyle wheelItemTextStyle(AppColorScheme c, {required bool isSelected}) =>
 
 /// [ListWheelScrollView] の汎用ラッパー。
 /// [items] からアイテムを生成し、選択中アイテムのスタイルを自動適用する。
-class WheelColumn<T> extends StatelessWidget {
+/// スクロールコントローラーは内部で管理する。
+class WheelColumn<T> extends StatefulWidget {
   const WheelColumn({
     super.key,
     required this.items,
-    required this.selected,
-    required this.controller,
+    required this.initialSelected,
     required this.labelOf,
     required this.onChanged,
     this.flex = 1,
@@ -107,49 +107,69 @@ class WheelColumn<T> extends StatelessWidget {
   static WheelColumn<int> integers({
     Key? key,
     required int count,
-    required int selected,
-    required FixedExtentScrollController controller,
+    required int initialSelected,
     required ValueChanged<int> onChanged,
     String Function(int)? labelOf,
     int flex = 1,
   }) => WheelColumn<int>(
     key: key,
     items: List.generate(count, (i) => i),
-    selected: selected,
-    controller: controller,
+    initialSelected: initialSelected,
     labelOf: labelOf ?? (i) => '$i',
     onChanged: onChanged,
     flex: flex,
   );
 
   final List<T> items;
-  final T selected;
-  final FixedExtentScrollController controller;
+  final T initialSelected;
   final String Function(T item) labelOf;
   final ValueChanged<T> onChanged;
   final int flex;
 
   @override
+  State<WheelColumn<T>> createState() => _WheelColumnState<T>();
+}
+
+class _WheelColumnState<T> extends State<WheelColumn<T>> {
+  late final FixedExtentScrollController _controller;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.items.indexOf(widget.initialSelected);
+    _controller = FixedExtentScrollController(initialItem: _selectedIndex);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final c = context.appColorScheme;
     return Expanded(
-      flex: flex,
+      flex: widget.flex,
       child: ListWheelScrollView(
-        controller: controller,
+        controller: _controller,
         itemExtent: AppWheelPicker.itemExtent,
         physics: const FixedExtentScrollPhysics(),
         onSelectedItemChanged: (i) {
           HapticFeedback.selectionClick();
-          onChanged(items[i]);
+          setState(() => _selectedIndex = i);
+          widget.onChanged(widget.items[i]);
         },
-        children: items.map((item) {
-          return Center(
+        children: List.generate(
+          widget.items.length,
+          (i) => Center(
             child: Text(
-              labelOf(item),
-              style: wheelItemTextStyle(c, isSelected: item == selected),
+              widget.labelOf(widget.items[i]),
+              style: wheelItemTextStyle(c, isSelected: i == _selectedIndex),
             ),
-          );
-        }).toList(),
+          ),
+        ),
       ),
     );
   }

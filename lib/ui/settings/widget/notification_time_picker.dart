@@ -84,9 +84,6 @@ class _NotificationTimePickerSheetState
   late NotifyDay _notifyDay;
   late int _hour;
   late int _minute;
-  late final FixedExtentScrollController _dayController;
-  late final FixedExtentScrollController _hourController;
-  late final FixedExtentScrollController _minuteController;
 
   @override
   void initState() {
@@ -94,23 +91,6 @@ class _NotificationTimePickerSheetState
     _notifyDay = widget.initialNotifyDay;
     _hour = widget.initialHour;
     _minute = widget.initialMinute;
-    _dayController = FixedExtentScrollController(
-      initialItem: NotifyDay.values.indexOf(widget.initialNotifyDay),
-    );
-    _hourController = FixedExtentScrollController(
-      initialItem: widget.initialHour,
-    );
-    _minuteController = FixedExtentScrollController(
-      initialItem: widget.initialMinute,
-    );
-  }
-
-  @override
-  void dispose() {
-    _dayController.dispose();
-    _hourController.dispose();
-    _minuteController.dispose();
-    super.dispose();
   }
 
   @override
@@ -132,8 +112,7 @@ class _NotificationTimePickerSheetState
             children: [
               WheelColumn<NotifyDay>(
                 items: NotifyDay.values,
-                selected: _notifyDay,
-                controller: _dayController,
+                initialSelected: _notifyDay,
                 flex: 3,
                 labelOf: (day) => switch (day) {
                   NotifyDay.today =>
@@ -145,16 +124,14 @@ class _NotificationTimePickerSheetState
               ),
               WheelColumn.integers(
                 count: 24,
-                selected: _hour,
-                controller: _hourController,
+                initialSelected: _hour,
                 flex: 2,
                 labelOf: (i) => i.toString().padLeft(2, '0'),
                 onChanged: (i) => setState(() => _hour = i),
               ),
               WheelColumn.integers(
                 count: 60,
-                selected: _minute,
-                controller: _minuteController,
+                initialSelected: _minute,
                 flex: 2,
                 labelOf: (i) => i.toString().padLeft(2, '0'),
                 onChanged: (i) => setState(() => _minute = i),
