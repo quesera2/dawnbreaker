@@ -34,8 +34,12 @@ abstract class NotificationSetting with _$NotificationSetting {
 
   static NotificationSetting decode(String encoded) {
     try {
-      return NotificationSetting.fromJson(
+      final setting = NotificationSetting.fromJson(
         jsonDecode(encoded) as Map<String, dynamic>,
+      );
+      return setting.copyWith(
+        hour: setting.hour.clamp(0, 23),
+        minute: setting.minute.clamp(0, 59),
       );
     } catch (_) {
       return const NotificationSetting();

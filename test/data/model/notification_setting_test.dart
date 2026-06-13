@@ -34,5 +34,13 @@ void main() {
       final decoded = NotificationSetting.decode('');
       expect(decoded, const NotificationSetting());
     });
+
+    test('範囲外の hour / minute は clamp される', () {
+      final decoded = NotificationSetting.decode(
+        '{"enabled":false,"notifyDay":"today","hour":25,"minute":61}',
+      );
+      expect(decoded.hour, 23);
+      expect(decoded.minute, 59);
+    });
   });
 }
