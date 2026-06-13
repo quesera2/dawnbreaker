@@ -7,7 +7,12 @@ abstract interface class NotificationService {
 
   Future<bool> requestPermission();
 
-  Future<void> registerNotification(TaskItem task);
+  Future<void> registerNotification(
+    TaskItem task, {
+    required int dayOffset,
+    required int hour,
+    required int minute,
+  });
 
   Future<void> removeNotification(TaskItem task);
 

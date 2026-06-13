@@ -374,7 +374,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsNotificationTitle => 'Notify on due date';
 
   @override
-  String get settingsNotificationSubtitle => 'You\'ll be notified at 9:00 AM';
+  String get settingsNotificationTime => 'Notification Time';
+
+  @override
+  String get settingsNotificationTimeSameDay => 'Same day';
+
+  @override
+  String get settingsNotificationTimePrevDay => 'Day before';
+
+  @override
+  String get settingsNotificationTimePickerTitle => 'Notification Time';
 
   @override
   String get settingsNotificationPermissionTitle =>

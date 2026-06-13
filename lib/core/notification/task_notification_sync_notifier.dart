@@ -17,7 +17,7 @@ part 'task_notification_sync_notifier.g.dart';
 class TaskNotificationSyncNotifier extends _$TaskNotificationSyncNotifier {
   @override
   Future<void> build() async {
-    final enabled = await ref.watch(notificationEnabledProvider.future);
+    final setting = await ref.watch(notificationSettingProvider.future);
     await ref.watch(canScheduleExactAlarmsProvider.future);
     final service = await ref.read(notificationServiceProvider.future);
     final syncLogic = TaskNotificationSync(service);
@@ -31,7 +31,7 @@ class TaskNotificationSyncNotifier extends _$TaskNotificationSyncNotifier {
         .pairwise(initialValue: [])
         .listen((pair) {
           syncLogic.updateNotifications(
-            enabled: enabled,
+            setting: setting,
             previous: pair.$1,
             current: pair.$2,
           );

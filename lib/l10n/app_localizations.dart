@@ -770,11 +770,29 @@ abstract class AppLocalizations {
   /// **'予定日に通知'**
   String get settingsNotificationTitle;
 
-  /// No description provided for @settingsNotificationSubtitle.
+  /// No description provided for @settingsNotificationTime.
   ///
   /// In ja, this message translates to:
-  /// **'朝 9:00 に通知が届きます'**
-  String get settingsNotificationSubtitle;
+  /// **'通知時間'**
+  String get settingsNotificationTime;
+
+  /// No description provided for @settingsNotificationTimeSameDay.
+  ///
+  /// In ja, this message translates to:
+  /// **'当日'**
+  String get settingsNotificationTimeSameDay;
+
+  /// No description provided for @settingsNotificationTimePrevDay.
+  ///
+  /// In ja, this message translates to:
+  /// **'前日'**
+  String get settingsNotificationTimePrevDay;
+
+  /// No description provided for @settingsNotificationTimePickerTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知時間'**
+  String get settingsNotificationTimePickerTitle;
 
   /// No description provided for @settingsNotificationPermissionTitle.
   ///

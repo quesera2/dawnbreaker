@@ -38,8 +38,12 @@ class FakeNotificationService implements NotificationService {
   }
 
   @override
-  Future<void> registerNotification(TaskItem task) async =>
-      registered.add(task);
+  Future<void> registerNotification(
+    TaskItem task, {
+    required int dayOffset,
+    required int hour,
+    required int minute,
+  }) async => registered.add(task);
 
   @override
   Future<void> removeNotification(TaskItem task) async => removed.add(task);

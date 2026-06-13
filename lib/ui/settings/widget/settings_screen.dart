@@ -2,12 +2,14 @@ import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
+import 'package:dawnbreaker/ui/settings/viewmodel/settings_ui_state.dart';
 import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_view_model.dart';
+import 'package:dawnbreaker/ui/settings/widget/notification_time_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,12 +52,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ..._notificationSection(
-              context,
-              notificationEnabled: viewState.notificationEnabled,
-              isNotificationUpdating: viewState.isNotificationUpdating,
-              onNotificationChanged: _viewModel.setNotificationEnabled,
-            ),
+            ..._notificationSection(context, viewState: viewState),
             const SizedBox(height: 24),
             ..._displaySection(
               context,
@@ -77,26 +74,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
   List<Widget> _notificationSection(
     BuildContext context, {
-    required bool notificationEnabled,
-    required bool isNotificationUpdating,
-    required ValueChanged<bool> onNotificationChanged,
+    required SettingsUiState viewState,
   }) {
+    final colorScheme = context.appColorScheme;
+    final divider = Divider(height: 1, color: colorScheme.divider);
+    final setting = viewState.notificationSetting;
     return [
       AppSectionHeader(
         title: Text(context.l10n.settingsSectionNotification),
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       AppListCell(
-        type: .single,
+        type: setting.enabled ? .top : .single,
         child: ListTile(
           title: Text(context.l10n.settingsNotificationTitle),
-          subtitle: Text(context.l10n.settingsNotificationSubtitle),
           trailing: Switch(
-            value: notificationEnabled,
-            onChanged: isNotificationUpdating ? null : onNotificationChanged,
+            value: setting.enabled,
+            onChanged: viewState.isNotificationUpdating
+                ? null
+                : _viewModel.setNotificationEnabled,
           ),
         ),
       ),
+      if (setting.enabled) ...[
+        divider,
+        AppListCell(
+          type: .bottom,
+          child: NotificationTimeTile(
+            setting: setting,
+            onChanged: (t) => _viewModel.setNotificationTime(
+              dayOffset: t.dayOffset,
+              hour: t.hour,
+              minute: t.minute,
+            ),
+          ),
+        ),
+      ],
     ];
   }
 

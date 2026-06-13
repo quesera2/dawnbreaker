@@ -26,13 +26,15 @@ class NotificationPermissionObserver extends _$NotificationPermissionObserver
   }
 
   Future<void> _syncPermission() async {
-    final enabled = await _repository.watchNotificationEnabled().first;
-    if (!enabled) return;
+    final setting = await _repository.watchNotificationSetting().first;
+    if (!setting.enabled) return;
 
     final service = await ref.read(notificationServiceProvider.future);
     final hasPermission = await service.checkPermission();
     if (!hasPermission) {
-      await _repository.setNotificationEnabled(false);
+      await _repository.setNotificationSetting(
+        setting.copyWith(enabled: false),
+      );
     }
 
     await service.syncExactAlarmPermission();

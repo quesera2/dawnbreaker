@@ -1,5 +1,6 @@
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
+import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
@@ -15,68 +16,101 @@ void main() {
 
   tearDown(() => repository.dispose());
 
-  group('watchNotificationEnabled', () {
+  group('watchNotificationSetting', () {
     group('初期値が設定されていない場合', () {
       setUp(() async {
         manager = await FakePreferencesManager.create();
         repository = SettingsRepositoryImpl(manager);
       });
 
-      test('デフォルト値のfalseが流れる', () async {
-        await expectLater(
-          repository.watchNotificationEnabled().take(1),
-          emits(false),
-        );
+      test('デフォルト値（enabled: false, 当日9:00）が流れる', () async {
+        final setting = await repository.watchNotificationSetting().first;
+        expect(setting.enabled, false);
+        expect(setting.dayOffset, 0);
+        expect(setting.hour, 9);
+        expect(setting.minute, 0);
       });
     });
 
-    group('初期値がfalseの場合', () {
+    group('旧フォーマット（notificationEnabledKey）が存在する場合', () {
       setUp(() async {
         manager = await FakePreferencesManager.create(
-          mockValues: {notificationEnabledKey.rawKey: false},
+          mockValues: {notificationEnabledKey.rawKey: true},
         );
         repository = SettingsRepositoryImpl(manager);
       });
 
-      test('falseが流れる', () async {
-        await expectLater(
-          repository.watchNotificationEnabled().take(1),
-          emits(false),
+      test('旧フォーマットのenabledが引き継がれる', () async {
+        final setting = await repository.watchNotificationSetting().first;
+        expect(setting.enabled, true);
+        expect(setting.hour, 9);
+      });
+    });
+
+    group('新フォーマットが保存されている場合', () {
+      setUp(() async {
+        manager = await FakePreferencesManager.create(
+          mockValues: {notificationSettingKey.rawKey: 'true:-1:22:30'},
         );
+        repository = SettingsRepositoryImpl(manager);
+      });
+
+      test('保存済みの設定が流れる', () async {
+        final setting = await repository.watchNotificationSetting().first;
+        expect(setting.enabled, true);
+        expect(setting.dayOffset, -1);
+        expect(setting.hour, 22);
+        expect(setting.minute, 30);
       });
     });
   });
 
-  group('setNotificationEnabled', () {
+  group('setNotificationSetting', () {
     setUp(() async {
       manager = await FakePreferencesManager.create();
       repository = SettingsRepositoryImpl(manager);
     });
 
     test('変更した値がstreamに流れる', () async {
+      const updated = NotificationSetting(enabled: true, hour: 8, minute: 30);
       final expectation = expectLater(
-        repository.watchNotificationEnabled().take(2),
-        emitsInOrder([false, true]),
+        repository.watchNotificationSetting().take(2),
+        emitsInOrder([
+          isA<NotificationSetting>().having((s) => s.enabled, 'enabled', false),
+          isA<NotificationSetting>()
+              .having((s) => s.enabled, 'enabled', true)
+              .having((s) => s.hour, 'hour', 8)
+              .having((s) => s.minute, 'minute', 30),
+        ]),
       );
       await pumpEventQueue();
 
-      await repository.setNotificationEnabled(true);
+      await repository.setNotificationSetting(updated);
       await expectation;
     });
 
     test('変更した値がストレージに保存される', () async {
-      await repository.setNotificationEnabled(false);
+      const updated = NotificationSetting(
+        enabled: true,
+        dayOffset: -1,
+        hour: 20,
+        minute: 0,
+      );
+      await repository.setNotificationSetting(updated);
 
-      expect(manager.get(notificationEnabledKey, defaultValue: true), false);
+      expect(
+        manager.get(notificationSettingKey, defaultValue: ''),
+        'true:-1:20:0',
+      );
     });
 
     test('変更後の新しいsubscriberは最新値を受け取る', () async {
-      await repository.setNotificationEnabled(false);
+      const updated = NotificationSetting(enabled: true, hour: 7);
+      await repository.setNotificationSetting(updated);
 
-      await expectLater(
-        repository.watchNotificationEnabled().take(1),
-        emits(false),
-      );
+      final setting = await repository.watchNotificationSetting().first;
+      expect(setting.enabled, true);
+      expect(setting.hour, 7);
     });
   });
 

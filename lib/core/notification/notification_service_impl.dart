@@ -34,8 +34,6 @@ class NotificationServiceImpl implements NotificationService {
 
   final AppLocalizations _l10n;
 
-  static const _notifyHour = 9;
-
   static const _androidSettings = AndroidInitializationSettings(
     '@mipmap/ic_launcher',
   );
@@ -118,19 +116,26 @@ class NotificationServiceImpl implements NotificationService {
   }
 
   @override
-  Future<void> registerNotification(TaskItem task) async {
+  Future<void> registerNotification(
+    TaskItem task, {
+    required int dayOffset,
+    required int hour,
+    required int minute,
+  }) async {
     final scheduledAt = task.scheduledAt;
     if (scheduledAt == null) {
       await removeNotification(task);
       return;
     }
 
+    final baseDate = scheduledAt.add(Duration(days: dayOffset));
     final notifyAt = tz.TZDateTime(
       tz.local,
-      scheduledAt.year,
-      scheduledAt.month,
-      scheduledAt.day,
-      _notifyHour,
+      baseDate.year,
+      baseDate.month,
+      baseDate.day,
+      hour,
+      minute,
     );
     if (notifyAt.isBefore(tz.TZDateTime.now(tz.local))) {
       await removeNotification(task);

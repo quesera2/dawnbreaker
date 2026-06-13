@@ -1,5 +1,6 @@
 import 'package:dawnbreaker/core/notification/task_notification_sync.dart';
 import 'package:dawnbreaker/core/util/date_util.dart';
+import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
@@ -12,6 +13,9 @@ void main() {
   late FakeNotificationService service;
   late TaskNotificationSync sync;
 
+  const enabledSetting = NotificationSetting(enabled: true);
+  const disabledSetting = NotificationSetting(enabled: false);
+
   setUp(() {
     service = FakeNotificationService();
     sync = TaskNotificationSync(service);
@@ -23,7 +27,7 @@ void main() {
         test('scheduledAt があるタスクは通知が登録される', () {
           final task = _makeScheduled(id: 1);
           sync.updateNotifications(
-            enabled: true,
+            setting: enabledSetting,
             previous: [],
             current: [task],
           );
@@ -35,7 +39,7 @@ void main() {
         test('scheduledAt がないタスクは通知が削除される', () {
           final task = _makeIrregular(id: 1);
           sync.updateNotifications(
-            enabled: true,
+            setting: enabledSetting,
             previous: [],
             current: [task],
           );
@@ -50,7 +54,7 @@ void main() {
           final i1 = _makeIrregular(id: 3);
           final i2 = _makeIrregular(id: 4);
           sync.updateNotifications(
-            enabled: true,
+            setting: enabledSetting,
             previous: [],
             current: [s1, s2, i1, i2],
           );
@@ -64,7 +68,7 @@ void main() {
         test('削除されたタスクの通知が削除される', () {
           final task = _makeScheduled(id: 1);
           sync.updateNotifications(
-            enabled: true,
+            setting: enabledSetting,
             previous: [task],
             current: [],
           );
@@ -77,7 +81,7 @@ void main() {
           final keep = _makeScheduled(id: 1);
           final remove = _makeScheduled(id: 2);
           sync.updateNotifications(
-            enabled: true,
+            setting: enabledSetting,
             previous: [keep, remove],
             current: [keep],
           );
@@ -92,7 +96,7 @@ void main() {
           final old = _makeScheduled(id: 1, scheduleValue: 7);
           final updated = _makeScheduled(id: 1, scheduleValue: 14);
           sync.updateNotifications(
-            enabled: true,
+            setting: enabledSetting,
             previous: [old],
             current: [updated],
           );
@@ -106,7 +110,7 @@ void main() {
           final old = _makeScheduled(id: 2, scheduleValue: 7);
           final updated = _makeScheduled(id: 2, scheduleValue: 14);
           sync.updateNotifications(
-            enabled: true,
+            setting: enabledSetting,
             previous: [unchanged, old],
             current: [unchanged, updated],
           );
@@ -120,7 +124,7 @@ void main() {
         test('同じリストを渡した場合、通知メソッドは呼ばれない', () {
           final tasks = [_makeScheduled(id: 1), _makeScheduled(id: 2)];
           sync.updateNotifications(
-            enabled: true,
+            setting: enabledSetting,
             previous: tasks,
             current: tasks,
           );
@@ -134,7 +138,7 @@ void main() {
     group('通知が無効な場合', () {
       test('すべての通知が削除される', () {
         sync.updateNotifications(
-          enabled: false,
+          setting: disabledSetting,
           previous: [_makeScheduled(id: 1), _makeIrregular(id: 2)],
           current: [_makeScheduled(id: 3), _makeIrregular(id: 4)],
         );
