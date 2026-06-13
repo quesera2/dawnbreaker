@@ -7,13 +7,13 @@ class TaskNotificationSync {
 
   final NotificationService _service;
 
-  void updateNotifications({
+  Future<void> updateNotifications({
     required NotificationSetting setting,
     required List<TaskItem> previous,
     required List<TaskItem> current,
-  }) {
+  }) async {
     if (!setting.enabled) {
-      _service.removeAllNotification();
+      await _service.removeAllNotification();
       return;
     }
 
@@ -21,19 +21,19 @@ class TaskNotificationSync {
     final currentSet = current.toSet();
 
     for (final task in previousSet.difference(currentSet)) {
-      _service.removeNotification(task);
+      await _service.removeNotification(task);
     }
 
     for (final task in currentSet.difference(previousSet)) {
       if (task.scheduledAt != null) {
-        _service.registerNotification(
+        await _service.registerNotification(
           task,
           notifyDay: setting.notifyDay,
           hour: setting.hour,
           minute: setting.minute,
         );
       } else {
-        _service.removeNotification(task);
+        await _service.removeNotification(task);
       }
     }
   }

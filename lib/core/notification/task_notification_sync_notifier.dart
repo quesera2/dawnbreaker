@@ -29,8 +29,8 @@ class TaskNotificationSyncNotifier extends _$TaskNotificationSyncNotifier {
           (prev, curr) => const IterableEquality<TaskItem>().equals(prev, curr),
         )
         .pairwise(initialValue: [])
-        .listen((pair) {
-          syncLogic.updateNotifications(
+        .listen((pair) async {
+          await syncLogic.updateNotifications(
             setting: setting,
             previous: pair.$1,
             current: pair.$2,

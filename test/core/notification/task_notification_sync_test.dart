@@ -24,9 +24,9 @@ void main() {
   group('updateNotifications', () {
     group('通知が有効な場合', () {
       group('タスク追加', () {
-        test('scheduledAt があるタスクは通知が登録される', () {
+        test('scheduledAt があるタスクは通知が登録される', () async {
           final task = _makeScheduled(id: 1);
-          sync.updateNotifications(
+          await sync.updateNotifications(
             setting: enabledSetting,
             previous: [],
             current: [task],
@@ -36,9 +36,9 @@ void main() {
           expect(service.removed, isEmpty);
         });
 
-        test('scheduledAt がないタスクは通知が削除される', () {
+        test('scheduledAt がないタスクは通知が削除される', () async {
           final task = _makeIrregular(id: 1);
-          sync.updateNotifications(
+          await sync.updateNotifications(
             setting: enabledSetting,
             previous: [],
             current: [task],
@@ -48,12 +48,12 @@ void main() {
           expect(service.removed, [task]);
         });
 
-        test('scheduledAt ありとなしが混在する場合に正しく分類される', () {
+        test('scheduledAt ありとなしが混在する場合に正しく分類される', () async {
           final s1 = _makeScheduled(id: 1);
           final s2 = _makeScheduled(id: 2);
           final i1 = _makeIrregular(id: 3);
           final i2 = _makeIrregular(id: 4);
-          sync.updateNotifications(
+          await sync.updateNotifications(
             setting: enabledSetting,
             previous: [],
             current: [s1, s2, i1, i2],
@@ -65,9 +65,9 @@ void main() {
       });
 
       group('タスク削除', () {
-        test('削除されたタスクの通知が削除される', () {
+        test('削除されたタスクの通知が削除される', () async {
           final task = _makeScheduled(id: 1);
-          sync.updateNotifications(
+          await sync.updateNotifications(
             setting: enabledSetting,
             previous: [task],
             current: [],
@@ -77,10 +77,10 @@ void main() {
           expect(service.registered, isEmpty);
         });
 
-        test('複数タスクのうち一部だけ削除された場合、削除分のみ解除される', () {
+        test('複数タスクのうち一部だけ削除された場合、削除分のみ解除される', () async {
           final keep = _makeScheduled(id: 1);
           final remove = _makeScheduled(id: 2);
-          sync.updateNotifications(
+          await sync.updateNotifications(
             setting: enabledSetting,
             previous: [keep, remove],
             current: [keep],
@@ -92,10 +92,10 @@ void main() {
       });
 
       group('タスク更新', () {
-        test('スケジュールが変わったタスクは旧通知が削除されて新通知が登録される', () {
+        test('スケジュールが変わったタスクは旧通知が削除されて新通知が登録される', () async {
           final old = _makeScheduled(id: 1, scheduleValue: 7);
           final updated = _makeScheduled(id: 1, scheduleValue: 14);
-          sync.updateNotifications(
+          await sync.updateNotifications(
             setting: enabledSetting,
             previous: [old],
             current: [updated],
@@ -105,11 +105,11 @@ void main() {
           expect(service.registered, [updated]);
         });
 
-        test('変更されたタスクと変更されていないタスクが混在する場合、変更分のみ処理される', () {
+        test('変更されたタスクと変更されていないタスクが混在する場合、変更分のみ処理される', () async {
           final unchanged = _makeScheduled(id: 1);
           final old = _makeScheduled(id: 2, scheduleValue: 7);
           final updated = _makeScheduled(id: 2, scheduleValue: 14);
-          sync.updateNotifications(
+          await sync.updateNotifications(
             setting: enabledSetting,
             previous: [unchanged, old],
             current: [unchanged, updated],
@@ -121,9 +121,9 @@ void main() {
       });
 
       group('変化なし', () {
-        test('同じリストを渡した場合、通知メソッドは呼ばれない', () {
+        test('同じリストを渡した場合、通知メソッドは呼ばれない', () async {
           final tasks = [_makeScheduled(id: 1), _makeScheduled(id: 2)];
-          sync.updateNotifications(
+          await sync.updateNotifications(
             setting: enabledSetting,
             previous: tasks,
             current: tasks,
@@ -136,8 +136,8 @@ void main() {
     });
 
     group('通知が無効な場合', () {
-      test('すべての通知が削除される', () {
-        sync.updateNotifications(
+      test('すべての通知が削除される', () async {
+        await sync.updateNotifications(
           setting: disabledSetting,
           previous: [_makeScheduled(id: 1), _makeIrregular(id: 2)],
           current: [_makeScheduled(id: 3), _makeIrregular(id: 4)],
