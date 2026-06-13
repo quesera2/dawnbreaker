@@ -1,11 +1,10 @@
 import 'package:dawnbreaker/app/app_colors.dart';
-import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
+import 'package:dawnbreaker/ui/common/components/app_wheel_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 typedef NotificationTime = ({int dayOffset, int hour, int minute});
 
@@ -81,8 +80,6 @@ class _NotificationTimePickerSheet extends StatefulWidget {
 
 class _NotificationTimePickerSheetState
     extends State<_NotificationTimePickerSheet> {
-  static const _itemExtent = 52.0;
-  static const _wheelHeight = 200.0;
   static const _dayOffsets = [0, -1];
 
   late int _dayOffset;
@@ -117,48 +114,8 @@ class _NotificationTimePickerSheetState
     super.dispose();
   }
 
-  TextStyle _wheelTextStyle(AppColorScheme c, bool isSelected) =>
-      AppTextStyle.headline.copyWith(color: isSelected ? c.text : c.textMuted);
-
-  Positioned _topFadeEdge(Color color) => Positioned(
-    top: 0,
-    left: 0,
-    right: 0,
-    child: IgnorePointer(
-      child: Container(
-        height: 72,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [color, color.withAlpha(0)],
-          ),
-        ),
-      ),
-    ),
-  );
-
-  Positioned _bottomFadeEdge(Color color) => Positioned(
-    bottom: 0,
-    left: 0,
-    right: 0,
-    child: IgnorePointer(
-      child: Container(
-        height: 72,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-            colors: [color, color.withAlpha(0)],
-          ),
-        ),
-      ),
-    ),
-  );
-
   @override
   Widget build(BuildContext context) {
-    final c = context.appColorScheme;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return Padding(
@@ -172,107 +129,35 @@ class _NotificationTimePickerSheetState
             style: AppTextStyle.headline,
           ),
           const SizedBox(height: 16),
-          Container(
-            height: _wheelHeight,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: c.bgSubtle,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              border: Border.all(color: c.border),
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: (_wheelHeight - _itemExtent) / 2,
-                  left: 0,
-                  right: 0,
-                  child: IgnorePointer(
-                    child: Container(
-                      height: _itemExtent,
-                      margin: const EdgeInsets.symmetric(horizontal: 20),
-                      decoration: BoxDecoration(
-                        color: c.trackBg,
-                        borderRadius: BorderRadius.circular(AppRadius.md),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: ListWheelScrollView(
-                          controller: _dayController,
-                          itemExtent: _itemExtent,
-                          physics: const FixedExtentScrollPhysics(),
-                          onSelectedItemChanged: (i) {
-                            HapticFeedback.selectionClick();
-                            setState(() => _dayOffset = _dayOffsets[i]);
-                          },
-                          children: _dayOffsets.map((offset) {
-                            final label = offset == 0
-                                ? context.l10n.settingsNotificationTimeSameDay
-                                : context.l10n.settingsNotificationTimePrevDay;
-                            return Center(
-                              child: Text(
-                                label,
-                                style: _wheelTextStyle(c, offset == _dayOffset),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: ListWheelScrollView.useDelegate(
-                          controller: _hourController,
-                          itemExtent: _itemExtent,
-                          physics: const FixedExtentScrollPhysics(),
-                          onSelectedItemChanged: (i) {
-                            HapticFeedback.selectionClick();
-                            setState(() => _hour = i);
-                          },
-                          childDelegate: ListWheelChildBuilderDelegate(
-                            childCount: 24,
-                            builder: (context, i) => Center(
-                              child: Text(
-                                i.toString().padLeft(2, '0'),
-                                style: _wheelTextStyle(c, i == _hour),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: ListWheelScrollView.useDelegate(
-                          controller: _minuteController,
-                          itemExtent: _itemExtent,
-                          physics: const FixedExtentScrollPhysics(),
-                          onSelectedItemChanged: (i) {
-                            HapticFeedback.selectionClick();
-                            setState(() => _minute = i);
-                          },
-                          childDelegate: ListWheelChildBuilderDelegate(
-                            childCount: 60,
-                            builder: (context, i) => Center(
-                              child: Text(
-                                i.toString().padLeft(2, '0'),
-                                style: _wheelTextStyle(c, i == _minute),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                _topFadeEdge(c.bgSubtle),
-                _bottomFadeEdge(c.bgSubtle),
-              ],
-            ),
+          AppWheelPicker(
+            children: [
+              WheelColumn<int>(
+                items: _dayOffsets,
+                selected: _dayOffset,
+                controller: _dayController,
+                flex: 3,
+                labelOf: (offset) => offset == 0
+                    ? context.l10n.settingsNotificationTimeSameDay
+                    : context.l10n.settingsNotificationTimePrevDay,
+                onChanged: (offset) => setState(() => _dayOffset = offset),
+              ),
+              WheelIntColumn(
+                count: 24,
+                selected: _hour,
+                controller: _hourController,
+                flex: 2,
+                labelOf: (i) => i.toString().padLeft(2, '0'),
+                onChanged: (i) => setState(() => _hour = i),
+              ),
+              WheelIntColumn(
+                count: 60,
+                selected: _minute,
+                controller: _minuteController,
+                flex: 2,
+                labelOf: (i) => i.toString().padLeft(2, '0'),
+                onChanged: (i) => setState(() => _minute = i),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           Row(
