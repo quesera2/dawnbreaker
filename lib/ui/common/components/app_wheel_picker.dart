@@ -138,7 +138,8 @@ class _WheelColumnState<T> extends State<WheelColumn<T>> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.items.indexOf(widget.initialSelected);
+    final index = widget.items.indexOf(widget.initialSelected);
+    _selectedIndex = index < 0 ? 0 : index;
     _controller = FixedExtentScrollController(initialItem: _selectedIndex);
   }
 
