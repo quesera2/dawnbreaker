@@ -118,7 +118,7 @@ class _SpanPickerSheetState extends State<_SpanPickerSheet> {
           const SizedBox(height: 16),
           AppWheelPicker(
             children: [
-              WheelIntColumn(
+              WheelColumn.integers(
                 count: _maxValue,
                 selected: _value - 1,
                 controller: _valueController,

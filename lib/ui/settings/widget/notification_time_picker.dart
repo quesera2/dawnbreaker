@@ -143,7 +143,7 @@ class _NotificationTimePickerSheetState
                 },
                 onChanged: (day) => setState(() => _notifyDay = day),
               ),
-              WheelIntColumn(
+              WheelColumn.integers(
                 count: 24,
                 selected: _hour,
                 controller: _hourController,
@@ -151,7 +151,7 @@ class _NotificationTimePickerSheetState
                 labelOf: (i) => i.toString().padLeft(2, '0'),
                 onChanged: (i) => setState(() => _hour = i),
               ),
-              WheelIntColumn(
+              WheelColumn.integers(
                 count: 60,
                 selected: _minute,
                 controller: _minuteController,

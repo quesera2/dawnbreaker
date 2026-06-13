@@ -103,6 +103,25 @@ class WheelColumn<T> extends StatelessWidget {
     this.flex = 1,
   });
 
+  /// 0〜[count)-1 の整数列を生成するコンストラクタ。
+  static WheelColumn<int> integers({
+    Key? key,
+    required int count,
+    required int selected,
+    required FixedExtentScrollController controller,
+    required ValueChanged<int> onChanged,
+    String Function(int)? labelOf,
+    int flex = 1,
+  }) => WheelColumn<int>(
+    key: key,
+    items: List.generate(count, (i) => i),
+    selected: selected,
+    controller: controller,
+    labelOf: labelOf ?? (i) => '$i',
+    onChanged: onChanged,
+    flex: flex,
+  );
+
   final List<T> items;
   final T selected;
   final FixedExtentScrollController controller;
@@ -131,52 +150,6 @@ class WheelColumn<T> extends StatelessWidget {
             ),
           );
         }).toList(),
-      ),
-    );
-  }
-}
-
-/// 0〜[count)-1 の整数をスクロール選択するホイール列。
-class WheelIntColumn extends StatelessWidget {
-  const WheelIntColumn({
-    super.key,
-    required this.count,
-    required this.selected,
-    required this.controller,
-    required this.onChanged,
-    this.labelOf,
-    this.flex = 1,
-  });
-
-  final int count;
-  final int selected;
-  final FixedExtentScrollController controller;
-  final ValueChanged<int> onChanged;
-  final String Function(int)? labelOf;
-  final int flex;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.appColorScheme;
-    return Expanded(
-      flex: flex,
-      child: ListWheelScrollView.useDelegate(
-        controller: controller,
-        itemExtent: AppWheelPicker.itemExtent,
-        physics: const FixedExtentScrollPhysics(),
-        onSelectedItemChanged: (i) {
-          HapticFeedback.selectionClick();
-          onChanged(i);
-        },
-        childDelegate: ListWheelChildBuilderDelegate(
-          childCount: count,
-          builder: (context, i) => Center(
-            child: Text(
-              labelOf != null ? labelOf!(i) : '$i',
-              style: wheelItemTextStyle(c, isSelected: i == selected),
-            ),
-          ),
-        ),
       ),
     );
   }

@@ -7,8 +7,8 @@ part 'notification_setting.g.dart';
 
 @JsonEnum()
 enum NotifyDay {
-  today,
-  yesterday;
+  yesterday,
+  today;
 
   int get dayOffset => switch (this) {
     .today => 0,
