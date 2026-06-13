@@ -47,8 +47,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
   NotificationSetting _loadNotificationSetting() {
     final stored = _manager.get(notificationSettingKey, defaultValue: '');
-    if (stored.isNotEmpty) return NotificationSetting.decode(stored);
-    return const NotificationSetting();
+    return NotificationSetting.decode(stored);
   }
 
   @override

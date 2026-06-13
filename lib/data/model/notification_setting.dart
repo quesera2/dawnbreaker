@@ -32,6 +32,7 @@ abstract class NotificationSetting with _$NotificationSetting {
 
   String encode() => jsonEncode(toJson());
 
+  /// [encoded] が空文字・不正な JSON・範囲外の値を含む場合はデフォルト値を返す。
   static NotificationSetting decode(String encoded) {
     try {
       final setting = NotificationSetting.fromJson(
