@@ -2,7 +2,8 @@ import 'package:app_settings/app_settings.dart';
 import 'package:app_settings/app_settings_platform_interface.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
-import 'package:dawnbreaker/data/model/notification_setting.dart';
+import 'package:dawnbreaker/data/model/notification_setting.dart'
+    show NotificationSetting, NotifyDay;
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -280,29 +281,36 @@ void main() {
 
         test('通知時間が更新される', () async {
           await viewModel.setNotificationTime(
-            dayOffset: -1,
+            notifyDay: NotifyDay.yesterday,
             hour: 20,
             minute: 30,
           );
           await pumpEventQueue();
-          expect(viewState.notificationSetting.dayOffset, -1);
+          expect(viewState.notificationSetting.notifyDay, NotifyDay.yesterday);
           expect(viewState.notificationSetting.hour, 20);
           expect(viewState.notificationSetting.minute, 30);
         });
 
         test('通知のON/OFFは変わらない', () async {
-          await viewModel.setNotificationTime(dayOffset: 0, hour: 8, minute: 0);
+          await viewModel.setNotificationTime(
+            notifyDay: NotifyDay.today,
+            hour: 8,
+            minute: 0,
+          );
           await pumpEventQueue();
           expect(viewState.notificationSetting.enabled, true);
         });
 
         test('リポジトリに保存される', () async {
           await viewModel.setNotificationTime(
-            dayOffset: -1,
+            notifyDay: NotifyDay.yesterday,
             hour: 22,
             minute: 0,
           );
-          expect(fakeSettingsRepository.notificationSetting.dayOffset, -1);
+          expect(
+            fakeSettingsRepository.notificationSetting.notifyDay,
+            NotifyDay.yesterday,
+          );
           expect(fakeSettingsRepository.notificationSetting.hour, 22);
         });
       });

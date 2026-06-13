@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dawnbreaker/core/notification/notification_service.dart';
+import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 
 class FakeNotificationService implements NotificationService {
@@ -40,7 +41,7 @@ class FakeNotificationService implements NotificationService {
   @override
   Future<void> registerNotification(
     TaskItem task, {
-    required int dayOffset,
+    required NotifyDay notifyDay,
     required int hour,
     required int minute,
   }) async => registered.add(task);

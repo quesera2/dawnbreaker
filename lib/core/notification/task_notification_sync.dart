@@ -28,7 +28,7 @@ class TaskNotificationSync {
       if (task.scheduledAt != null) {
         _service.registerNotification(
           task,
-          dayOffset: setting.dayOffset,
+          notifyDay: setting.notifyDay,
           hour: setting.hour,
           minute: setting.minute,
         );

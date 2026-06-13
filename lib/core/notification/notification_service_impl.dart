@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dawnbreaker/core/notification/notification_service.dart';
+import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/l10n/app_localizations.dart';
 import 'package:dawnbreaker/l10n/app_localizations_provider.dart';
@@ -118,7 +119,7 @@ class NotificationServiceImpl implements NotificationService {
   @override
   Future<void> registerNotification(
     TaskItem task, {
-    required int dayOffset,
+    required NotifyDay notifyDay,
     required int hour,
     required int minute,
   }) async {
@@ -128,7 +129,7 @@ class NotificationServiceImpl implements NotificationService {
       return;
     }
 
-    final baseDate = scheduledAt.add(Duration(days: dayOffset));
+    final baseDate = scheduledAt.add(Duration(days: notifyDay.dayOffset));
     final notifyAt = tz.TZDateTime(
       tz.local,
       baseDate.year,

@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
-import 'package:dawnbreaker/data/model/notification_setting.dart';
+import 'package:dawnbreaker/data/model/notification_setting.dart'
+    show NotificationSetting, NotifyDay;
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/preferences/preference_key.dart'
     show
@@ -31,7 +32,7 @@ void main() {
       test('デフォルト値（enabled: false, 当日9:00）が流れる', () async {
         final setting = await repository.watchNotificationSetting().first;
         expect(setting.enabled, false);
-        expect(setting.dayOffset, 0);
+        expect(setting.notifyDay, NotifyDay.today);
         expect(setting.hour, 9);
         expect(setting.minute, 0);
       });
@@ -40,7 +41,10 @@ void main() {
     group('保存済みの設定がある場合', () {
       setUp(() async {
         manager = await FakePreferencesManager.create(
-          mockValues: {notificationSettingKey.rawKey: 'true:-1:22:30'},
+          mockValues: {
+            notificationSettingKey.rawKey:
+                '{"enabled":true,"notifyDay":"yesterday","hour":22,"minute":30}',
+          },
         );
         repository = SettingsRepositoryImpl(manager);
       });
@@ -48,7 +52,7 @@ void main() {
       test('保存済みの設定が流れる', () async {
         final setting = await repository.watchNotificationSetting().first;
         expect(setting.enabled, true);
-        expect(setting.dayOffset, -1);
+        expect(setting.notifyDay, NotifyDay.yesterday);
         expect(setting.hour, 22);
         expect(setting.minute, 30);
       });
@@ -82,16 +86,18 @@ void main() {
     test('変更した値がストレージに保存される', () async {
       const updated = NotificationSetting(
         enabled: true,
-        dayOffset: -1,
+        notifyDay: NotifyDay.yesterday,
         hour: 20,
         minute: 0,
       );
       await repository.setNotificationSetting(updated);
 
-      expect(
-        manager.get(notificationSettingKey, defaultValue: ''),
-        'true:-1:20:0',
-      );
+      final stored = manager.get(notificationSettingKey, defaultValue: '');
+      final decoded = NotificationSetting.decode(stored);
+      expect(decoded.enabled, true);
+      expect(decoded.notifyDay, NotifyDay.yesterday);
+      expect(decoded.hour, 20);
+      expect(decoded.minute, 0);
     });
 
     test('変更後の新しいsubscriberは最新値を受け取る', () async {

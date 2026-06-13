@@ -59,12 +59,12 @@ class SettingsViewModel extends _$SettingsViewModel {
   }
 
   Future<void> setNotificationTime({
-    required int dayOffset,
+    required NotifyDay notifyDay,
     required int hour,
     required int minute,
   }) async {
     final updated = state.notificationSetting.copyWith(
-      dayOffset: dayOffset,
+      notifyDay: notifyDay,
       hour: hour,
       minute: minute,
     );

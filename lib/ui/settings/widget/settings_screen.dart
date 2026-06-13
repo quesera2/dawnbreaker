@@ -103,7 +103,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           child: NotificationTimeTile(
             setting: setting,
             onChanged: (t) => _viewModel.setNotificationTime(
-              dayOffset: t.dayOffset,
+              notifyDay: t.notifyDay,
               hour: t.hour,
               minute: t.minute,
             ),

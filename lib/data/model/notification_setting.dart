@@ -1,6 +1,18 @@
+import 'dart:convert';
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'notification_setting.freezed.dart';
+
+enum NotifyDay {
+  today,
+  yesterday;
+
+  int get dayOffset => switch (this) {
+    .today => 0,
+    .yesterday => -1,
+  };
+}
 
 @freezed
 abstract class NotificationSetting with _$NotificationSetting {
@@ -8,24 +20,31 @@ abstract class NotificationSetting with _$NotificationSetting {
 
   const factory NotificationSetting({
     @Default(false) bool enabled,
-    // 0=当日, -1=前日
-    @Default(0) int dayOffset,
+    @Default(NotifyDay.today) NotifyDay notifyDay,
     @Default(9) int hour,
     @Default(0) int minute,
   }) = _NotificationSetting;
 
-  static final _pattern = RegExp(r'^(true|false):(-?\d+):(\d+):(\d+)$');
-
-  String encode() => '$enabled:$dayOffset:$hour:$minute';
+  String encode() => jsonEncode({
+    'enabled': enabled,
+    'notifyDay': notifyDay.name,
+    'hour': hour,
+    'minute': minute,
+  });
 
   static NotificationSetting decode(String encoded) {
-    final match = _pattern.firstMatch(encoded);
-    if (match == null) return const NotificationSetting();
-    return NotificationSetting(
-      enabled: match.group(1) == 'true',
-      dayOffset: int.parse(match.group(2)!),
-      hour: int.parse(match.group(3)!),
-      minute: int.parse(match.group(4)!),
-    );
+    try {
+      final map = jsonDecode(encoded) as Map<String, dynamic>;
+      return NotificationSetting(
+        enabled: map['enabled'] as bool? ?? false,
+        notifyDay: NotifyDay.values.byName(
+          map['notifyDay'] as String? ?? NotifyDay.today.name,
+        ),
+        hour: map['hour'] as int? ?? 9,
+        minute: map['minute'] as int? ?? 0,
+      );
+    } catch (_) {
+      return const NotificationSetting();
+    }
   }
 }

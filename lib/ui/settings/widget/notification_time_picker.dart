@@ -6,7 +6,7 @@ import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_wheel_picker.dart';
 import 'package:flutter/material.dart';
 
-typedef NotificationTime = ({int dayOffset, int hour, int minute});
+typedef NotificationTime = ({NotifyDay notifyDay, int hour, int minute});
 
 class NotificationTimeTile extends StatelessWidget {
   const NotificationTimeTile({
@@ -21,9 +21,10 @@ class NotificationTimeTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.appColorScheme;
-    final dayLabel = setting.dayOffset == 0
-        ? context.l10n.settingsNotificationTimeSameDay
-        : context.l10n.settingsNotificationTimePrevDay;
+    final dayLabel = switch (setting.notifyDay) {
+      NotifyDay.today => context.l10n.settingsNotificationTimeSameDay,
+      NotifyDay.yesterday => context.l10n.settingsNotificationTimePrevDay,
+    };
     final timeLabel =
         '$dayLabel '
         '${setting.hour.toString().padLeft(2, '0')}:'
@@ -51,7 +52,7 @@ class NotificationTimeTile extends StatelessWidget {
       context: context,
       showDragHandle: true,
       builder: (_) => _NotificationTimePickerSheet(
-        initialDayOffset: setting.dayOffset,
+        initialNotifyDay: setting.notifyDay,
         initialHour: setting.hour,
         initialMinute: setting.minute,
       ),
@@ -64,12 +65,12 @@ class NotificationTimeTile extends StatelessWidget {
 
 class _NotificationTimePickerSheet extends StatefulWidget {
   const _NotificationTimePickerSheet({
-    required this.initialDayOffset,
+    required this.initialNotifyDay,
     required this.initialHour,
     required this.initialMinute,
   });
 
-  final int initialDayOffset;
+  final NotifyDay initialNotifyDay;
   final int initialHour;
   final int initialMinute;
 
@@ -80,9 +81,7 @@ class _NotificationTimePickerSheet extends StatefulWidget {
 
 class _NotificationTimePickerSheetState
     extends State<_NotificationTimePickerSheet> {
-  static const _dayOffsets = [0, -1];
-
-  late int _dayOffset;
+  late NotifyDay _notifyDay;
   late int _hour;
   late int _minute;
   late final FixedExtentScrollController _dayController;
@@ -92,11 +91,11 @@ class _NotificationTimePickerSheetState
   @override
   void initState() {
     super.initState();
-    _dayOffset = widget.initialDayOffset;
+    _notifyDay = widget.initialNotifyDay;
     _hour = widget.initialHour;
     _minute = widget.initialMinute;
     _dayController = FixedExtentScrollController(
-      initialItem: _dayOffsets.indexOf(widget.initialDayOffset),
+      initialItem: NotifyDay.values.indexOf(widget.initialNotifyDay),
     );
     _hourController = FixedExtentScrollController(
       initialItem: widget.initialHour,
@@ -131,15 +130,18 @@ class _NotificationTimePickerSheetState
           const SizedBox(height: 16),
           AppWheelPicker(
             children: [
-              WheelColumn<int>(
-                items: _dayOffsets,
-                selected: _dayOffset,
+              WheelColumn<NotifyDay>(
+                items: NotifyDay.values,
+                selected: _notifyDay,
                 controller: _dayController,
                 flex: 3,
-                labelOf: (offset) => offset == 0
-                    ? context.l10n.settingsNotificationTimeSameDay
-                    : context.l10n.settingsNotificationTimePrevDay,
-                onChanged: (offset) => setState(() => _dayOffset = offset),
+                labelOf: (day) => switch (day) {
+                  NotifyDay.today =>
+                    context.l10n.settingsNotificationTimeSameDay,
+                  NotifyDay.yesterday =>
+                    context.l10n.settingsNotificationTimePrevDay,
+                },
+                onChanged: (day) => setState(() => _notifyDay = day),
               ),
               WheelIntColumn(
                 count: 24,
@@ -181,7 +183,7 @@ class _NotificationTimePickerSheetState
                   fullWidth: true,
                   onPressed: () => Navigator.of(
                     context,
-                  ).pop((dayOffset: _dayOffset, hour: _hour, minute: _minute)),
+                  ).pop((notifyDay: _notifyDay, hour: _hour, minute: _minute)),
                 ),
               ),
             ],
