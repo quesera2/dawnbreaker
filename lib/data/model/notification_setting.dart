@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'notification_setting.freezed.dart';
+part 'notification_setting.g.dart';
 
+@JsonEnum()
 enum NotifyDay {
   today,
   yesterday;
@@ -25,23 +27,15 @@ abstract class NotificationSetting with _$NotificationSetting {
     @Default(0) int minute,
   }) = _NotificationSetting;
 
-  String encode() => jsonEncode({
-    'enabled': enabled,
-    'notifyDay': notifyDay.name,
-    'hour': hour,
-    'minute': minute,
-  });
+  factory NotificationSetting.fromJson(Map<String, dynamic> json) =>
+      _$NotificationSettingFromJson(json);
+
+  String encode() => jsonEncode(toJson());
 
   static NotificationSetting decode(String encoded) {
     try {
-      final map = jsonDecode(encoded) as Map<String, dynamic>;
-      return NotificationSetting(
-        enabled: map['enabled'] as bool? ?? false,
-        notifyDay: NotifyDay.values.byName(
-          map['notifyDay'] as String? ?? NotifyDay.today.name,
-        ),
-        hour: map['hour'] as int? ?? 9,
-        minute: map['minute'] as int? ?? 0,
+      return NotificationSetting.fromJson(
+        jsonDecode(encoded) as Map<String, dynamic>,
       );
     } catch (_) {
       return const NotificationSetting();
