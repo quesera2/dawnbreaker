@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/ui/common/components/app_button_size.dart';
@@ -118,7 +120,7 @@ class _AppLongPressButtonState extends State<AppLongPressButton>
   void _onPointerDown(PointerDownEvent event) {
     _isFinished = false;
     _startPosition = event.localPosition;
-    _controller.forward(from: _controller.value);
+    unawaited(_controller.forward(from: _controller.value));
   }
 
   void _onPointerMove(PointerMoveEvent event) {
@@ -142,10 +144,12 @@ class _AppLongPressButtonState extends State<AppLongPressButton>
 
   void _cancelAnimation() {
     if (_isFinished) return;
-    _controller.animateBack(
-      0,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
+    unawaited(
+      _controller.animateBack(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      ),
     );
   }
 }

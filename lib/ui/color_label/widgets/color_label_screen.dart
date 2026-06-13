@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
@@ -220,7 +222,8 @@ class _SortModeContentState extends State<_SortModeContent>
     _controller = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
-    )..forward();
+    );
+    unawaited(_controller.forward());
   }
 
   @override

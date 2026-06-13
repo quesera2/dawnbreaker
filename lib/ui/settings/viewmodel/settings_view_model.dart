@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:app_settings/app_settings.dart';
@@ -26,7 +27,7 @@ class SettingsViewModel extends _$SettingsViewModel {
   @override
   SettingsUiState build() {
     _repository = ref.read(settingsRepositoryProvider);
-    _initialize();
+    unawaited(_initialize());
     return const SettingsUiState();
   }
 
@@ -43,7 +44,7 @@ class SettingsViewModel extends _$SettingsViewModel {
         );
       },
     );
-    ref.onDispose(disposable);
+    ref.onDispose(() => unawaited(disposable()));
 
     final info = await PackageInfo.fromPlatform();
     if (!ref.mounted) return;

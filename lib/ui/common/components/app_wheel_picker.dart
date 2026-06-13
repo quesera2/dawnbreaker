@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
-import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -157,7 +158,7 @@ class _WheelColumnState<T> extends State<WheelColumn<T>> {
         itemExtent: AppWheelPicker.itemExtent,
         physics: const FixedExtentScrollPhysics(),
         onSelectedItemChanged: (i) {
-          HapticFeedback.selectionClick();
+          unawaited(HapticFeedback.selectionClick());
           setState(() => _selectedIndex = i);
           widget.onChanged(widget.items[i]);
         },

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest4;
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
@@ -46,7 +48,7 @@ class HomeViewModel extends _$HomeViewModel {
         progressBarAnimationEnabled: progressBarAnimationEnabled,
       ),
     );
-    ref.onDispose(disposable);
+    ref.onDispose(() => unawaited(disposable()));
   }
 
   Future<void> updateDisplayMode(HomeDisplayMode mode) async {

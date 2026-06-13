@@ -14,7 +14,7 @@ part 'settings_repository_impl.g.dart';
 SettingsRepository settingsRepository(Ref ref) {
   final manager = ref.watch(preferencesManagerProvider);
   final repo = SettingsRepositoryImpl(manager);
-  ref.onDispose(repo.dispose);
+  ref.onDispose(() => unawaited(repo.dispose()));
   return repo;
 }
 
@@ -92,10 +92,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
     _progressBarAnimationController.add(value);
   }
 
-  void dispose() {
-    _notificationSettingController.close();
-    _homeSortModeController.close();
-    _colorSettingsController.close();
-    _progressBarAnimationController.close();
+  Future<void> dispose() async {
+    await _notificationSettingController.close();
+    await _homeSortModeController.close();
+    await _colorSettingsController.close();
+    await _progressBarAnimationController.close();
   }
 }

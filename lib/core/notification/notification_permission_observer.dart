@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
@@ -21,7 +23,7 @@ class NotificationPermissionObserver extends _$NotificationPermissionObserver
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _syncPermission();
+      unawaited(_syncPermission());
     }
   }
 
