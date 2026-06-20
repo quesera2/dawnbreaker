@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
@@ -41,7 +42,8 @@ class EditorViewModel extends _$EditorViewModel {
         scheduleValue: task.scheduleValueOrDefault,
         scheduleUnit: task.scheduleUnitOrDefault,
       );
-    } on TaskRepositoryException {
+    } on TaskRepositoryException catch (e, s) {
+      logger.e('_loadTask failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
       state = state.copyWith(
         isLoading: false,
@@ -78,7 +80,8 @@ class EditorViewModel extends _$EditorViewModel {
       }
       if (!ref.mounted) return;
       state = newState;
-    } on TaskRepositoryException {
+    } on TaskRepositoryException catch (e, s) {
+      logger.e('save failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
       state = state.copyWith(
         isSaving: false,

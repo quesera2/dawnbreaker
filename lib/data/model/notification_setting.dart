@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'notification_setting.freezed.dart';
@@ -42,7 +43,8 @@ abstract class NotificationSetting with _$NotificationSetting {
         hour: setting.hour.clamp(0, 23),
         minute: setting.minute.clamp(0, 59),
       );
-    } catch (_) {
+    } catch (e, s) {
+      logger.w('NotificationSetting.decode failed', error: e, stackTrace: s);
       return const NotificationSetting();
     }
   }

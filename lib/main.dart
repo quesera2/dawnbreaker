@@ -27,6 +27,7 @@ void main() async {
       ? prod_options.DefaultFirebaseOptions.currentPlatform
       : dev_options.DefaultFirebaseOptions.currentPlatform;
   await Firebase.initializeApp(options: firebaseOptions);
+  await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
   PlatformDispatcher.instance.onError = (error, stack) {
     unawaited(
