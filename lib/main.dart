@@ -3,6 +3,10 @@ import 'package:dawnbreaker/core/notification/notification_permission_observer.d
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/task_notification_sync_notifier.dart';
 import 'package:dawnbreaker/data/preferences/shared_preferences_provider.dart';
+import 'package:dawnbreaker/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +18,13 @@ import 'package:timezone/timezone.dart' as tz;
 
 void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await initializeDateFormatting();
   tz.initializeTimeZones();
