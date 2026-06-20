@@ -20,7 +20,6 @@
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		FB332CD42FE6885700861C1F /* GoogleService-Info-Dev.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB332CD22FE6885700861C1F /* GoogleService-Info-Dev.plist */; };
 		FB332CD52FE6885700861C1F /* GoogleService-Info-Prod.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB332CD32FE6885700861C1F /* GoogleService-Info-Prod.plist */; };
-		FB565963390FAE12C817D3B1 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A11F47C70FB056896C85A518 /* GoogleService-Info.plist */; };
 		FBF0FB462F8CE8340018646D /* FuriganaTranslate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF0FB452F8CE82C0018646D /* FuriganaTranslate.swift */; };
 /* End PBXBuildFile section */
 
@@ -323,7 +322,6 @@
 				FB332CD52FE6885700861C1F /* GoogleService-Info-Prod.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
-				FB565963390FAE12C817D3B1 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
