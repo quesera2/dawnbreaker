@@ -998,6 +998,12 @@ abstract class AppLocalizations {
   /// **'カラー設定をリセットしました'**
   String get settingsDebugColorSettingsReset;
 
+  /// No description provided for @settingsDebugForceCrash.
+  ///
+  /// In ja, this message translates to:
+  /// **'クラッシュさせる'**
+  String get settingsDebugForceCrash;
+
   /// No description provided for @notificationGroupTask.
   ///
   /// In ja, this message translates to:
