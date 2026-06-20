@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
@@ -23,7 +24,8 @@ class OnboardingViewModel extends _$OnboardingViewModel {
     state = state.copyWith(isLoading: true);
     try {
       await _repository.saveCompletion();
-    } on OnboardingRepositoryException {
+    } on OnboardingRepositoryException catch (e, s) {
+      logger.e('onClickDone failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
       state = state.copyWith(
         isLoading: false,
@@ -54,7 +56,8 @@ class OnboardingViewModel extends _$OnboardingViewModel {
 
     try {
       await _repository.enableNotificationSettings();
-    } on OnboardingRepositoryException {
+    } on OnboardingRepositoryException catch (e, s) {
+      logger.e('onRequestNotification failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
       state = state.copyWith(dialogMessage: OnboardingSaveErrorMessage());
       return;
@@ -93,7 +96,8 @@ class OnboardingViewModel extends _$OnboardingViewModel {
     state = state.copyWith(isLoading: true);
     try {
       await _repository.saveCompletion();
-    } on OnboardingRepositoryException {
+    } on OnboardingRepositoryException catch (e, s) {
+      logger.e('onClickSkip failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
       state = state.copyWith(
         isLoading: false,

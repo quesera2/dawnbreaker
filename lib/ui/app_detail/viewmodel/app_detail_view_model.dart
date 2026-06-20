@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
@@ -41,7 +42,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
               state = state.updateTaskItem(task);
             }
           },
-          onError: (e) {
+          onError: (Object e, StackTrace s) {
+            logger.e('watchTaskById stream error', error: e, stackTrace: s);
             if (!ref.mounted) return;
             state = state.copyWith(isLoading: false, shouldPop: true);
           },
@@ -70,7 +72,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
           ),
         ),
       );
-    } on TaskRepositoryException {
+    } on TaskRepositoryException catch (e, s) {
+      logger.e('updateExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
       state = state.copyWith(
         dialogMessage: TaskUpdateErrorMessage(
@@ -111,7 +114,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
           handler: () => _repository.restoreTask(task),
         ),
       );
-    } on TaskRepositoryException {
+    } on TaskRepositoryException catch (e, s) {
+      logger.e('deleteTask failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
       state = state.copyWith(
         dialogMessage: TaskDeleteErrorMessage(primaryHandler: deleteTask),
@@ -137,7 +141,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
           handler: () => _repository.deleteExecution(history.id),
         ),
       );
-    } on TaskRepositoryException {
+    } on TaskRepositoryException catch (e, s) {
+      logger.e('recordExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
       state = state.copyWith(
         dialogMessage: TaskSaveErrorMessage(
@@ -162,7 +167,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
           ),
         ),
       );
-    } on TaskRepositoryException {
+    } on TaskRepositoryException catch (e, s) {
+      logger.e('deleteExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
       state = state.copyWith(
         dialogMessage: TaskExecutionDeleteErrorMessage(

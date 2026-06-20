@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:flutter/services.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -23,8 +23,8 @@ class FuriganaTranslateImpl implements FuriganaTranslate {
     try {
       return await _platform.invokeMethod(_methodTranslateToFurigana, text) ??
           '';
-    } on PlatformException catch (e) {
-      debugPrint(e.message);
+    } on PlatformException catch (e, s) {
+      logger.w('furigana translation failed', error: e, stackTrace: s);
       return '';
     } on MissingPluginException {
       return '';

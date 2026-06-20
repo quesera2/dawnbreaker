@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -32,7 +33,8 @@ abstract class ColorSetting with _$ColorSetting {
         order: int.parse(match.group(2)!),
         alias: match.group(3)!,
       );
-    } on ArgumentError {
+    } on ArgumentError catch (e, s) {
+      logger.w('ColorSetting.decode failed', error: e, stackTrace: s);
       return null;
     }
   }

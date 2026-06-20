@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest4;
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
@@ -83,7 +84,8 @@ class HomeViewModel extends _$HomeViewModel {
           handler: () => _taskRepository.deleteExecution(history.id),
         ),
       );
-    } on TaskRepositoryException {
+    } on TaskRepositoryException catch (e, s) {
+      logger.e('recordExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
       state = state.copyWith(
         dialogMessage: TaskSaveErrorMessage(
