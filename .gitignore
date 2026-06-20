@@ -26,6 +26,10 @@ coverage/
 # Firebase（API キーを含むため gitignore）
 lib/firebase_options_dev.dart
 lib/firebase_options_prod.dart
+android/app/src/dev/google-services.json
+android/app/src/prod/google-services.json
+ios/Runner/GoogleService-Info-Dev.plist
+ios/Runner/GoogleService-Info-Prod.plist
 
 # claude code
 .claude/*
