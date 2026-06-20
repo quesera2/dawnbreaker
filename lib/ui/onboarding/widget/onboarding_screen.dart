@@ -9,6 +9,7 @@ import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_view_model.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_pages.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -40,6 +41,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     _pageController = PageController();
     _viewState = onboardingViewModelProvider(mode: widget.mode);
     _viewModel = ref.read(_viewState.notifier);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FlutterNativeSplash.remove();
+    });
   }
 
   @override

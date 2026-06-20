@@ -485,6 +485,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsDebugColorSettingsReset => 'カラー設定をリセットしました';
 
   @override
+  String get settingsDebugForceCrash => 'クラッシュさせる';
+
+  @override
   String get notificationGroupTask => 'タスク通知';
 
   @override

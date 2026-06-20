@@ -236,6 +236,7 @@
   "settingsDebugLogPendingNotifications": "Log pending notifications",
   "settingsDebugResetColorSettings": "Reset color settings",
   "settingsDebugColorSettingsReset": "Color settings reset",
+  "settingsDebugForceCrash": "Force crash",
   "notificationGroupTask": "Task Notifications",
   "notificationChannelTask": "Individual Task Notification",
   "notificationTaskBody": "It's due today"

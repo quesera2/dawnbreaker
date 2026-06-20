@@ -1,4 +1,5 @@
 import 'package:dawnbreaker/app/app_colors.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
@@ -298,7 +299,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .bottom,
+        type: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugResetColorSettings),
@@ -309,6 +310,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           ),
         ),
         onTap: () => viewModel.resetColorSettings(),
+      ),
+      divider,
+      AppListCell(
+        type: .bottom,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(context.l10n.settingsDebugForceCrash),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: colorScheme.textMuted,
+          ),
+        ),
+        onTap: () => FirebaseCrashlytics.instance.crash(),
       ),
     ];
   }

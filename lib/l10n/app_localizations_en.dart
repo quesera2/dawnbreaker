@@ -496,6 +496,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsDebugColorSettingsReset => 'Color settings reset';
 
   @override
+  String get settingsDebugForceCrash => 'Force crash';
+
+  @override
   String get notificationGroupTask => 'Task Notifications';
 
   @override
