@@ -17,6 +17,16 @@
     {
       "matchPackageNames": ["dev.flutter.flutter-plugin-loader.gradle.plugin"],
       "enabled": false
+    },
+    {
+      "matchPackagePrefixes": ["firebase_"],
+      "matchManagers": ["pub"],
+      "groupName": "Firebase Flutter packages"
+    },
+    {
+      "matchPackagePrefixes": ["com.google.firebase", "com.google.gms"],
+      "matchManagers": ["gradle"],
+      "groupName": "Firebase Gradle plugins"
     }
   ],
 }
