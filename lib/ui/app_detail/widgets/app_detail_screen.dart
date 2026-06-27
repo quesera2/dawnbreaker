@@ -37,14 +37,21 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
   @override
   Widget build(BuildContext context) {
     final provider = appDetailViewModelProvider(taskId: widget.taskId);
-    listenMessages(provider);
+    listenAsyncMessages(provider);
 
-    ref.listen(provider.select((s) => s.shouldPop), (_, shouldPop) {
-      if (shouldPop) context.pop();
+    ref.listen(provider, (_, next) {
+      if (next case AsyncData(:final value) when value.shouldPop) {
+        context.pop();
+      }
     });
 
-    final uiState = ref.watch(provider);
+    final uiState = ref.watch(provider).value;
     final viewModel = ref.read(provider.notifier);
+
+    if (uiState == null) {
+      return Scaffold(backgroundColor: context.appColorScheme.bg);
+    }
+
     final task = uiState.task;
     final historyStats = uiState.historyStats;
 

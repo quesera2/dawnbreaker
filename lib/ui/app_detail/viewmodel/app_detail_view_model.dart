@@ -1,4 +1,5 @@
 import 'package:dawnbreaker/core/logger/app_logger.dart';
+import 'package:dawnbreaker/core/util/async_value_extension.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
@@ -17,8 +18,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
   late TaskRepository _repository;
 
   @override
-  AppDetailUiState build({required String taskId}) {
-    _repository = ref.read(taskRepositoryProvider);
+  Future<AppDetailUiState> build({required String taskId}) async {
+    _repository = await ref.read(taskRepositoryProvider.future);
     _loadTask(taskId);
     return const AppDetailUiState();
   }
@@ -30,22 +31,26 @@ class AppDetailViewModel extends _$AppDetailViewModel {
           (task) {
             // 削除されたときは前の画面に戻る
             if (!ref.mounted || task == null) {
-              state = state.copyWith(
-                isLoading: false,
-                task: null,
-                historyStats: null,
-                daysSinceLastExecution: null,
-                averageIntervalDays: null,
-                shouldPop: true,
+              state = state.update(
+                (s) => s.copyWith(
+                  isLoading: false,
+                  task: null,
+                  historyStats: null,
+                  daysSinceLastExecution: null,
+                  averageIntervalDays: null,
+                  shouldPop: true,
+                ),
               );
             } else {
-              state = state.updateTaskItem(task);
+              state = state.update((s) => s.updateTaskItem(task));
             }
           },
           onError: (Object e, StackTrace s) {
             logger.e('watchTaskById stream error', error: e, stackTrace: s);
             if (!ref.mounted) return;
-            state = state.copyWith(isLoading: false, shouldPop: true);
+            state = state.update(
+              (s) => s.copyWith(isLoading: false, shouldPop: true),
+            );
           },
         );
     ref.onDispose(subscription.cancel);
@@ -63,24 +68,28 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         comment: comment,
       );
       if (!ref.mounted) return;
-      state = state.copyWith(
-        snackBarMessage: TaskExecutionUpdateSuccess(
-          handler: () => updateExecution(
-            history,
-            executedAt: history.executedAt,
-            comment: history.comment,
+      state = state.update(
+        (s) => s.copyWith(
+          snackBarMessage: TaskExecutionUpdateSuccess(
+            handler: () => updateExecution(
+              history,
+              executedAt: history.executedAt,
+              comment: history.comment,
+            ),
           ),
         ),
       );
     } on TaskRepositoryException catch (e, s) {
       logger.e('updateExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.copyWith(
-        dialogMessage: TaskUpdateErrorMessage(
-          primaryHandler: () => updateExecution(
-            history,
-            executedAt: executedAt,
-            comment: comment,
+      state = state.update(
+        (s) => s.copyWith(
+          dialogMessage: TaskUpdateErrorMessage(
+            primaryHandler: () => updateExecution(
+              history,
+              executedAt: executedAt,
+              comment: comment,
+            ),
           ),
         ),
       );
@@ -88,37 +97,41 @@ class AppDetailViewModel extends _$AppDetailViewModel {
   }
 
   void showDeleteTaskDialog() {
-    final task = state.task;
+    final task = state.requireValue.task;
     if (task == null) return;
-
-    state = state.copyWith(
-      dialogMessage: DeleteTaskConfirmMessage(
-        task.name,
-        primaryHandler: () => deleteTask(),
+    state = state.update(
+      (s) => s.copyWith(
+        dialogMessage: DeleteTaskConfirmMessage(
+          task.name,
+          primaryHandler: () => deleteTask(),
+        ),
       ),
     );
   }
 
   @visibleForTesting
   Future<void> deleteTask() async {
-    final task = state.task;
+    final task = state.requireValue.task;
     if (task == null) return;
-
     try {
       await _repository.deleteTask(task.id);
       if (!ref.mounted) return;
       // タスク削除で watchTaskById で前の画面に戻る処理が走る
-      state = state.copyWith(
-        snackBarMessage: TaskDeleteSuccess(
-          taskName: task.name,
-          handler: () => _repository.restoreTask(task),
+      state = state.update(
+        (s) => s.copyWith(
+          snackBarMessage: TaskDeleteSuccess(
+            taskName: task.name,
+            handler: () => _repository.restoreTask(task),
+          ),
         ),
       );
     } on TaskRepositoryException catch (e, s) {
       logger.e('deleteTask failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.copyWith(
-        dialogMessage: TaskDeleteErrorMessage(primaryHandler: deleteTask),
+      state = state.update(
+        (s) => s.copyWith(
+          dialogMessage: TaskDeleteErrorMessage(primaryHandler: deleteTask),
+        ),
       );
     }
   }
@@ -135,18 +148,22 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         comment: comment,
       );
       if (!ref.mounted) return;
-      state = state.copyWith(
-        snackBarMessage: TaskCompleteSuccess(
-          taskName: task.name,
-          handler: () => _repository.deleteExecution(history.id),
+      state = state.update(
+        (s) => s.copyWith(
+          snackBarMessage: TaskCompleteSuccess(
+            taskName: task.name,
+            handler: () => _repository.deleteExecution(history.id),
+          ),
         ),
       );
     } on TaskRepositoryException catch (e, s) {
       logger.e('recordExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.copyWith(
-        dialogMessage: TaskSaveErrorMessage(
-          primaryHandler: () => recordExecution(task, executedAt, comment),
+      state = state.update(
+        (s) => s.copyWith(
+          dialogMessage: TaskSaveErrorMessage(
+            primaryHandler: () => recordExecution(task, executedAt, comment),
+          ),
         ),
       );
     }
@@ -156,23 +173,27 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     try {
       await _repository.deleteExecution(history.id);
       if (!ref.mounted) return;
-      state = state.copyWith(
-        snackBarMessage: TaskExecutionDeleteSuccess(
-          taskName: task.name,
-          executedAt: history.executedAt,
-          handler: () => _repository.recordExecution(
-            task.id,
+      state = state.update(
+        (s) => s.copyWith(
+          snackBarMessage: TaskExecutionDeleteSuccess(
+            taskName: task.name,
             executedAt: history.executedAt,
-            comment: history.comment,
+            handler: () => _repository.recordExecution(
+              task.id,
+              executedAt: history.executedAt,
+              comment: history.comment,
+            ),
           ),
         ),
       );
     } on TaskRepositoryException catch (e, s) {
       logger.e('deleteExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.copyWith(
-        dialogMessage: TaskExecutionDeleteErrorMessage(
-          primaryHandler: () => deleteExecution(task, history),
+      state = state.update(
+        (s) => s.copyWith(
+          dialogMessage: TaskExecutionDeleteErrorMessage(
+            primaryHandler: () => deleteExecution(task, history),
+          ),
         ),
       );
     }

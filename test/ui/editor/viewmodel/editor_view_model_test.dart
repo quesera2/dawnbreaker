@@ -33,9 +33,11 @@ void main() {
     Future<void> setUpLoaded({String? taskId}) async {
       setUpContainer();
       final p = editorViewModelProvider(taskId: taskId);
-      await waitUntil(container, p, (s) => !s.isLoading);
+      await waitUntilAsync(container, p, (s) => !s.isLoading);
       viewModel = container.read(p.notifier);
-      container.listen(p, (_, next) => viewState = next, fireImmediately: true);
+      container.listen(p, (_, next) {
+        if (next.hasValue) viewState = next.requireValue;
+      }, fireImmediately: true);
     }
 
     tearDown(() {
@@ -44,15 +46,14 @@ void main() {
     });
 
     group('新規作成モード', () {
-      setUp(() {
+      setUp(() async {
         setUpContainer();
         final p = editorViewModelProvider();
         viewModel = container.read(p.notifier);
-        container.listen(
-          p,
-          (_, next) => viewState = next,
-          fireImmediately: true,
-        );
+        viewState = await container.read(p.future);
+        container.listen(p, (_, next) {
+          if (next.hasValue) viewState = next.requireValue;
+        }, fireImmediately: false);
       });
 
       test('初期状態が正しい', () {
@@ -148,12 +149,15 @@ void main() {
         );
         final p = editorViewModelProvider();
         EditorUiState? localState;
-        c.listen(p, (_, next) => localState = next, fireImmediately: true);
         addTearDown(() {
           c.dispose();
           throwingRepo.dispose();
         });
         final n = c.read(p.notifier);
+        localState = await c.read(p.future);
+        c.listen(p, (_, next) {
+          if (next.hasValue) localState = next.requireValue;
+        }, fireImmediately: false);
         n.updateName('散髪');
         await n.save();
         expect(localState!.isSaved, false);

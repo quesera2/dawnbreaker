@@ -37,25 +37,21 @@ void main() {
     Future<void> setUpLoaded({String? taskId}) async {
       final id = taskId ?? _taskOneHistory.id;
       setUpContainer(taskId: id);
-      await waitUntil(container, provider, (s) => !s.isLoading);
+      await waitUntilAsync(container, provider, (s) => !s.isLoading);
       viewModel = container.read(provider.notifier);
-      container.listen(
-        provider,
-        (_, next) => viewState = next,
-        fireImmediately: true,
-      );
+      container.listen(provider, (_, next) {
+        if (next.hasValue) viewState = next.requireValue;
+      }, fireImmediately: true);
     }
 
     Future<void> setUpLoadedWithThrow() async {
       setUpContainer();
       fakeRepository.shouldThrow = true;
-      await waitUntil(container, provider, (s) => !s.isLoading);
+      await waitUntilAsync(container, provider, (s) => !s.isLoading);
       viewModel = container.read(provider.notifier);
-      container.listen(
-        provider,
-        (_, next) => viewState = next,
-        fireImmediately: true,
-      );
+      container.listen(provider, (_, next) {
+        if (next.hasValue) viewState = next.requireValue;
+      }, fireImmediately: true);
     }
 
     tearDown(() {
@@ -69,9 +65,9 @@ void main() {
       test('データ取得前はローディング中でタスクは表示されない', () {
         final state = container.read(provider);
         expect(state.isLoading, true);
-        expect(state.task, isNull);
-        expect(state.historyStats, isNull);
-        expect(state.shouldPop, false);
+        expect(state.value?.task, isNull);
+        expect(state.value?.historyStats, isNull);
+        expect(state.value?.shouldPop ?? false, false);
       });
     });
 
