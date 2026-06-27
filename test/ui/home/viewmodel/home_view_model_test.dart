@@ -38,7 +38,7 @@ void main() {
   final now = DateTime.now();
   final classificationTasks = [
     TaskItem.scheduled(
-      id: 10,
+      id: 'task-10',
       name: '超過',
       furigana: '',
       icon: '📝',
@@ -47,14 +47,14 @@ void main() {
       scheduleUnit: ScheduleUnit.day,
       taskHistory: [
         TaskHistory(
-          id: 10,
+          id: 'h-10',
           executedAt: now.subtract(const Duration(days: 10)),
           comment: null,
         ),
       ],
     ),
     TaskItem.scheduled(
-      id: 11,
+      id: 'task-11',
       name: '今日',
       furigana: '',
       icon: '📝',
@@ -63,14 +63,14 @@ void main() {
       scheduleUnit: ScheduleUnit.day,
       taskHistory: [
         TaskHistory(
-          id: 11,
+          id: 'h-11',
           executedAt: now.subtract(const Duration(days: 7)),
           comment: null,
         ),
       ],
     ),
     TaskItem.scheduled(
-      id: 12,
+      id: 'task-12',
       name: '今週',
       furigana: '',
       icon: '📝',
@@ -79,24 +79,24 @@ void main() {
       scheduleUnit: ScheduleUnit.day,
       taskHistory: [
         TaskHistory(
-          id: 12,
+          id: 'h-12',
           executedAt: now.subtract(const Duration(days: 4)),
           comment: null,
         ),
       ],
     ),
     TaskItem.scheduled(
-      id: 13,
+      id: 'task-13',
       name: '将来',
       furigana: '',
       icon: '📝',
       color: TaskColor.none,
       scheduleValue: 14,
       scheduleUnit: ScheduleUnit.day,
-      taskHistory: [TaskHistory(id: 13, executedAt: now, comment: null)],
+      taskHistory: [TaskHistory(id: 'h-13', executedAt: now, comment: null)],
     ),
     const TaskItem.period(
-      id: 14,
+      id: 'task-14',
       name: '不定期',
       furigana: '',
       icon: '📝',
@@ -443,7 +443,7 @@ void main() {
 
 final _colorTasks = [
   const TaskItem.period(
-    id: 30,
+    id: 'task-30',
     name: 'レッドA',
     furigana: 'れっどえー',
     icon: '📝',
@@ -451,7 +451,7 @@ final _colorTasks = [
     taskHistory: [],
   ),
   const TaskItem.period(
-    id: 31,
+    id: 'task-31',
     name: 'レッドB',
     furigana: 'れっどびー',
     icon: '📝',
@@ -459,7 +459,7 @@ final _colorTasks = [
     taskHistory: [],
   ),
   const TaskItem.period(
-    id: 32,
+    id: 'task-32',
     name: 'ブルー',
     furigana: 'ぶるー',
     icon: '📝',
@@ -467,7 +467,7 @@ final _colorTasks = [
     taskHistory: [],
   ),
   const TaskItem.period(
-    id: 33,
+    id: 'task-33',
     name: 'グレー',
     furigana: 'ぐれー',
     icon: '📝',
@@ -478,23 +478,23 @@ final _colorTasks = [
 
 final _testTasks = [
   TaskItem.period(
-    id: 1,
+    id: 'task-1',
     name: '歯ブラシ交換',
     furigana: 'はぶらしこうかん',
     icon: '📝',
     color: TaskColor.blue,
     taskHistory: [
-      TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null),
+      TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
     ],
   ),
   TaskItem.period(
-    id: 2,
+    id: 'task-2',
     name: '散髪',
     furigana: 'さんぱつ',
     icon: '📝',
     color: TaskColor.none,
     taskHistory: [
-      TaskHistory(id: 2, executedAt: DateTime(2026, 1, 1), comment: null),
+      TaskHistory(id: 'h-2', executedAt: DateTime(2026, 1, 1), comment: null),
     ],
   ),
 ];

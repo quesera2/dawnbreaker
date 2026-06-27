@@ -30,7 +30,7 @@ void main() {
       );
     }
 
-    Future<void> setUpLoaded({int? taskId}) async {
+    Future<void> setUpLoaded({String? taskId}) async {
       setUpContainer();
       final p = editorViewModelProvider(taskId: taskId);
       await waitUntil(container, p, (s) => !s.isLoading);
@@ -134,11 +134,11 @@ void main() {
         expect(viewState.snackBarMessage, isA<TaskCreateSuccess>());
 
         // undo 前はタスクが存在する
-        expect(fakeRepository.containsTask(100), true);
+        expect(fakeRepository.containsTask('100'), true);
 
         await viewState.snackBarMessage!.handler!();
 
-        expect(fakeRepository.containsTask(100), false);
+        expect(fakeRepository.containsTask('100'), false);
       });
 
       test('save() でリポジトリがエラーを返すと errorMessage が設定される', () async {
@@ -167,14 +167,16 @@ void main() {
         setUp(setUpContainer);
 
         test('データ取得中である', () {
-          final state = container.read(editorViewModelProvider(taskId: 1));
+          final state = container.read(
+            editorViewModelProvider(taskId: 'task-1'),
+          );
           expect(state.isLoading, true);
         });
       });
 
       group('ロード後', () {
         group('period タスク', () {
-          setUp(() async => setUpLoaded(taskId: 1));
+          setUp(() async => setUpLoaded(taskId: 'task-1'));
 
           test('タスクの内容が反映される', () {
             expect(viewState.isLoading, false);
@@ -187,7 +189,7 @@ void main() {
         });
 
         group('scheduled タスク', () {
-          setUp(() async => setUpLoaded(taskId: 2));
+          setUp(() async => setUpLoaded(taskId: 'task-2'));
 
           test('スケジュール設定が反映される', () {
             expect(viewState.isLoading, false);
@@ -198,7 +200,7 @@ void main() {
         });
 
         group('タスクが存在しない場合', () {
-          setUp(() async => setUpLoaded(taskId: 999));
+          setUp(() async => setUpLoaded(taskId: 'non-existent'));
 
           test('読み込みエラーが通知される', () {
             expect(viewState.isLoading, false);
@@ -215,7 +217,7 @@ void main() {
         });
 
         group('save', () {
-          setUp(() async => setUpLoaded(taskId: 1));
+          setUp(() async => setUpLoaded(taskId: 'task-1'));
 
           group('正常系', () {
             test('編集内容を保存できる', () async {
@@ -243,14 +245,14 @@ void main() {
               expect(viewState.snackBarMessage, isA<TaskUpdateSuccess>());
 
               // undo 前は更新後の値
-              expect(fakeRepository.taskById(1)?.name, '新しい名前');
-              expect(fakeRepository.taskById(1)?.color, TaskColor.green);
+              expect(fakeRepository.taskById('task-1')?.name, '新しい名前');
+              expect(fakeRepository.taskById('task-1')?.color, TaskColor.green);
 
               await viewState.snackBarMessage!.handler!();
 
               // undo 後は元の値に戻っている
-              expect(fakeRepository.taskById(1)?.name, '歯ブラシ交換');
-              expect(fakeRepository.taskById(1)?.color, TaskColor.blue);
+              expect(fakeRepository.taskById('task-1')?.name, '歯ブラシ交換');
+              expect(fakeRepository.taskById('task-1')?.color, TaskColor.blue);
             });
           });
         });
@@ -261,17 +263,17 @@ void main() {
 
 final _testTasks = [
   TaskItem.period(
-    id: 1,
+    id: 'task-1',
     name: '歯ブラシ交換',
     furigana: 'はぶらしこうかん',
     icon: '🪥',
     color: TaskColor.blue,
     taskHistory: [
-      TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null),
+      TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
     ],
   ),
   TaskItem.scheduled(
-    id: 2,
+    id: 'task-2',
     name: '虫避け交換',
     furigana: 'むしよけこうかん',
     icon: '🐝',
@@ -279,7 +281,7 @@ final _testTasks = [
     scheduleValue: 2,
     scheduleUnit: ScheduleUnit.week,
     taskHistory: [
-      TaskHistory(id: 2, executedAt: DateTime(2026, 1, 1), comment: null),
+      TaskHistory(id: 'h-2', executedAt: DateTime(2026, 1, 1), comment: null),
     ],
   ),
 ];
