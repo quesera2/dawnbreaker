@@ -9,7 +9,7 @@ sealed class TaskRepositoryException implements Exception {
 
 class TaskNotFoundException extends TaskRepositoryException {
   const TaskNotFoundException({required this.taskId}) : super();
-  final int taskId;
+  final String taskId;
 }
 
 class TaskLoadException extends TaskRepositoryException {

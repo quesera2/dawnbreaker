@@ -20,7 +20,7 @@ class EditorViewModel extends _$EditorViewModel {
   late TaskRepository _repository;
 
   @override
-  EditorUiState build({int? taskId}) {
+  EditorUiState build({String? taskId}) {
     _repository = ref.read(taskRepositoryProvider);
     if (taskId != null) {
       unawaited(_loadTask(taskId));
@@ -29,7 +29,7 @@ class EditorViewModel extends _$EditorViewModel {
     return const EditorUiState();
   }
 
-  Future<void> _loadTask(int taskId) async {
+  Future<void> _loadTask(String taskId) async {
     try {
       final task = await _repository.findTaskById(taskId);
       if (!ref.mounted) return;
@@ -109,7 +109,7 @@ class EditorViewModel extends _$EditorViewModel {
     );
   }
 
-  Future<EditorUiState> _updateTask(int id) async {
+  Future<EditorUiState> _updateTask(String id) async {
     final originalTask = await _repository.findTaskById(id);
     await _repository.updateTask(
       taskId: id,

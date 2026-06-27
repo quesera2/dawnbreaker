@@ -17,13 +17,13 @@ class AppDetailViewModel extends _$AppDetailViewModel {
   late TaskRepository _repository;
 
   @override
-  AppDetailUiState build({required int taskId}) {
+  AppDetailUiState build({required String taskId}) {
     _repository = ref.read(taskRepositoryProvider);
     _loadTask(taskId);
     return const AppDetailUiState();
   }
 
-  void _loadTask(int taskId) {
+  void _loadTask(String taskId) {
     final subscription = _repository
         .watchTaskById(taskId)
         .listen(

@@ -11,8 +11,11 @@ import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:drift/drift.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 
 part 'task_repository_impl.g.dart';
+
+const _uuid = Uuid();
 
 @riverpod
 TaskRepository taskRepository(Ref ref) {
@@ -34,7 +37,7 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Stream<TaskItem?> watchTaskById(int taskId) {
+  Stream<TaskItem?> watchTaskById(String taskId) {
     return _baseTaskQuery(
       where: _db.taskDefinitions.id.equals(taskId),
     ).watch().map((rows) {
@@ -44,7 +47,7 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<TaskItem> findTaskById(int taskId) async {
+  Future<TaskItem> findTaskById(String taskId) async {
     try {
       final rows = await _baseTaskQuery(
         where: _db.taskDefinitions.id.equals(taskId),
@@ -148,7 +151,7 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<int> addTask({
+  Future<String> addTask({
     required TaskType taskType,
     required String name,
     required String icon,
@@ -164,11 +167,13 @@ class TaskRepositoryImpl implements TaskRepository {
     }
     try {
       final furigana = await _furiganaTranslate.translate(name);
-      return await _db.transaction(() async {
-        final id = await _db
+      final id = _uuid.v4();
+      await _db.transaction(() async {
+        await _db
             .into(_db.taskDefinitions)
             .insert(
               TaskDefinitionsCompanion.insert(
+                id: id,
                 taskType: taskType,
                 name: name,
                 furigana: furigana,
@@ -181,14 +186,14 @@ class TaskRepositoryImpl implements TaskRepository {
               .into(_db.taskScheduledConfigs)
               .insert(
                 TaskScheduledConfigsCompanion.insert(
-                  taskDefinitionId: Value(id),
+                  taskDefinitionId: id,
                   scheduleValue: scheduleValue!,
                   scheduleUnit: scheduleUnit!,
                 ),
               );
         }
-        return id;
       });
+      return id;
     } catch (e) {
       throw TaskSaveException(e.toString());
     }
@@ -196,15 +201,17 @@ class TaskRepositoryImpl implements TaskRepository {
 
   @override
   Future<TaskHistory> recordExecution(
-    int taskId, {
+    String taskId, {
     required DateTime executedAt,
     String? comment,
   }) async {
     try {
-      final id = await _db
+      final id = _uuid.v4();
+      await _db
           .into(_db.taskExecutions)
           .insert(
             TaskExecutionsCompanion.insert(
+              id: id,
               taskDefinitionId: taskId,
               executedAt: executedAt,
               comment: Value(comment),
@@ -218,7 +225,7 @@ class TaskRepositoryImpl implements TaskRepository {
 
   @override
   Future<void> updateExecution(
-    int executionId, {
+    String executionId, {
     required DateTime executedAt,
     String? comment,
   }) async {
@@ -237,7 +244,7 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> deleteExecution(int executionId) async {
+  Future<void> deleteExecution(String executionId) async {
     try {
       await (_db.delete(
         _db.taskExecutions,
@@ -249,7 +256,7 @@ class TaskRepositoryImpl implements TaskRepository {
 
   @override
   Future<void> updateTask({
-    required int taskId,
+    required String taskId,
     required TaskType taskType,
     required String name,
     required String icon,
@@ -287,7 +294,7 @@ class TaskRepositoryImpl implements TaskRepository {
                 .into(_db.taskScheduledConfigs)
                 .insertOnConflictUpdate(
                   TaskScheduledConfigsCompanion.insert(
-                    taskDefinitionId: Value(taskId),
+                    taskDefinitionId: taskId,
                     scheduleValue: scheduleValue,
                     scheduleUnit: scheduleUnit,
                   ),
@@ -302,7 +309,7 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> deleteTask(int taskId) async {
+  Future<void> deleteTask(String taskId) async {
     try {
       await (_db.delete(
         _db.taskDefinitions,
@@ -325,11 +332,13 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<void> restoreTask(TaskItem taskItem) async {
     try {
+      final newId = _uuid.v4();
       await _db.transaction(() async {
-        final id = await _db
+        await _db
             .into(_db.taskDefinitions)
             .insert(
               TaskDefinitionsCompanion.insert(
+                id: newId,
                 taskType: taskItem.taskType,
                 name: taskItem.name,
                 furigana: taskItem.furigana,
@@ -342,7 +351,7 @@ class TaskRepositoryImpl implements TaskRepository {
               .into(_db.taskScheduledConfigs)
               .insert(
                 TaskScheduledConfigsCompanion.insert(
-                  taskDefinitionId: Value(id),
+                  taskDefinitionId: newId,
                   scheduleValue: taskItem.scheduleValueOrDefault,
                   scheduleUnit: taskItem.scheduleUnitOrDefault,
                 ),
@@ -353,7 +362,8 @@ class TaskRepositoryImpl implements TaskRepository {
             _db.taskExecutions,
             taskItem.taskHistory.map(
               (history) => TaskExecutionsCompanion.insert(
-                taskDefinitionId: id,
+                id: _uuid.v4(),
+                taskDefinitionId: newId,
                 executedAt: history.executedAt,
                 comment: Value(history.comment),
               ),

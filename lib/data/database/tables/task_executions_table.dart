@@ -6,12 +6,15 @@ import 'package:drift/drift.dart';
   columns: {#taskDefinitionId, #executedAt},
 )
 class TaskExecutions extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  TextColumn get id => text()();
 
-  IntColumn get taskDefinitionId =>
-      integer().references(TaskDefinitions, #id, onDelete: KeyAction.cascade)();
+  TextColumn get taskDefinitionId =>
+      text().references(TaskDefinitions, #id, onDelete: KeyAction.cascade)();
 
   DateTimeColumn get executedAt => dateTime()();
 
   TextColumn get comment => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }

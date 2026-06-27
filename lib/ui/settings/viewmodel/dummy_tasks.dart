@@ -25,32 +25,37 @@ List<TaskItem> buildDummyTasks({
     );
     if (dates.isEmpty) continue;
 
+    final taskIdStr = taskId.toString();
     final history = [
       for (final (index, date) in dates.indexed)
-        TaskHistory(id: index + 1, executedAt: date, comment: null),
+        TaskHistory(
+          id: '$taskIdStr-${index + 1}',
+          executedAt: date,
+          comment: null,
+        ),
     ];
 
     final item = switch (def.taskType) {
       TaskType.irregular => TaskItem.irregular(
-        id: taskId,
+        id: taskIdStr,
         name: def.name,
-        furigana: '',
+        furigana: def.furigana,
         icon: def.icon,
         color: def.color,
         taskHistory: history,
       ),
       TaskType.period => TaskItem.period(
-        id: taskId,
+        id: taskIdStr,
         name: def.name,
-        furigana: '',
+        furigana: def.furigana,
         icon: def.icon,
         color: def.color,
         taskHistory: history,
       ),
       TaskType.scheduled => TaskItem.scheduled(
-        id: taskId,
+        id: taskIdStr,
         name: def.name,
-        furigana: '',
+        furigana: def.furigana,
         icon: def.icon,
         color: def.color,
         scheduleValue: def.scheduleValue!,
@@ -88,6 +93,7 @@ List<DateTime> _generateDates({
 const _dummyTaskDefinition = [
   (
     name: '歯ブラシ交換',
+    furigana: 'はぶらしこうかん',
     icon: '🪥',
     color: TaskColor.none,
     taskType: TaskType.scheduled,
@@ -98,6 +104,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: 'エアコンフィルター清掃',
+    furigana: 'えあこんふぃるたーせいそう',
     icon: '🌬️',
     color: TaskColor.blue,
     taskType: TaskType.scheduled,
@@ -108,6 +115,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: 'エアコン本体クリーニング',
+    furigana: 'えあこんほんたいくりーにんぐ',
     icon: '❄️',
     color: TaskColor.blue,
     taskType: TaskType.scheduled,
@@ -118,6 +126,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: 'オイル交換',
+    furigana: 'おいるこうかん',
     icon: '🔧',
     color: TaskColor.none,
     taskType: TaskType.scheduled,
@@ -128,6 +137,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: '洗車',
+    furigana: 'せんしゃ',
     icon: '🚗',
     color: TaskColor.none,
     taskType: TaskType.scheduled,
@@ -138,6 +148,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: 'タイヤローテーション',
+    furigana: 'たいやろーてーしょん',
     icon: '🔩',
     color: TaskColor.none,
     taskType: TaskType.scheduled,
@@ -148,6 +159,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: 'スニーカー洗濯',
+    furigana: 'すにーかーせんたく',
     icon: '👟',
     color: TaskColor.none,
     taskType: TaskType.scheduled,
@@ -158,6 +170,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: 'ベランダ掃除',
+    furigana: 'べらんだそうじ',
     icon: '🧹',
     color: TaskColor.orange,
     taskType: TaskType.scheduled,
@@ -168,6 +181,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: 'お風呂の防カビ剤交換',
+    furigana: 'おふろのぼうかびざいこうかん',
     icon: '🛁',
     color: TaskColor.none,
     taskType: TaskType.scheduled,
@@ -178,6 +192,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: '植物への施肥',
+    furigana: 'しょくぶつへのせひ',
     icon: '🌱',
     color: TaskColor.green,
     taskType: TaskType.scheduled,
@@ -188,6 +203,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: '冷蔵庫の霜取り',
+    furigana: 'れいぞうこのしもとり',
     icon: '🧊',
     color: TaskColor.none,
     taskType: TaskType.scheduled,
@@ -198,6 +214,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: '排水口パイプ掃除',
+    furigana: 'はいすいこうぱいぷそうじ',
     icon: '💧',
     color: TaskColor.none,
     taskType: TaskType.scheduled,
@@ -208,6 +225,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: '美容院',
+    furigana: 'びよういん',
     icon: '✂️',
     color: TaskColor.none,
     taskType: TaskType.period,
@@ -218,6 +236,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: '窓ガラスの拭き掃除',
+    furigana: 'まどがらすのふきそうじ',
     icon: '🪟',
     color: TaskColor.none,
     taskType: TaskType.scheduled,
@@ -228,6 +247,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: '健康診断',
+    furigana: 'けんこうしんだん',
     icon: '🏥',
     color: TaskColor.red,
     taskType: TaskType.scheduled,
@@ -238,6 +258,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: '虫除けスプレー交換',
+    furigana: 'むしよけすぷれーこうかん',
     icon: '🦟',
     color: TaskColor.orange,
     taskType: TaskType.scheduled,
@@ -248,6 +269,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: '猫の健康診断',
+    furigana: 'ねこのけんこうしんだん',
     icon: '🐱',
     color: TaskColor.none,
     taskType: TaskType.scheduled,
@@ -258,6 +280,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: '布団干し',
+    furigana: 'ふとんほし',
     icon: '☀️',
     color: TaskColor.yellow,
     taskType: TaskType.period,
@@ -268,6 +291,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: '冬服クリーニング',
+    furigana: 'ふゆふくくりーにんぐ',
     icon: '🧥',
     color: TaskColor.blue,
     taskType: TaskType.irregular,
@@ -278,6 +302,7 @@ const _dummyTaskDefinition = [
   ),
   (
     name: '財布の残高チェック',
+    furigana: 'さいふのざんだかちぇっく',
     icon: '👛',
     color: TaskColor.none,
     taskType: TaskType.irregular,

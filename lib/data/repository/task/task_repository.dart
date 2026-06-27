@@ -7,11 +7,11 @@ import 'package:dawnbreaker/data/model/task_type.dart';
 abstract interface class TaskRepository {
   Stream<List<TaskItem>> allTaskItems();
 
-  Stream<TaskItem?> watchTaskById(int taskId);
+  Stream<TaskItem?> watchTaskById(String taskId);
 
-  Future<TaskItem> findTaskById(int taskId);
+  Future<TaskItem> findTaskById(String taskId);
 
-  Future<int> addTask({
+  Future<String> addTask({
     required TaskType taskType,
     required String name,
     required String icon,
@@ -21,7 +21,7 @@ abstract interface class TaskRepository {
   });
 
   Future<void> updateTask({
-    required int taskId,
+    required String taskId,
     required TaskType taskType,
     required String name,
     required String icon,
@@ -31,20 +31,20 @@ abstract interface class TaskRepository {
   });
 
   Future<TaskHistory> recordExecution(
-    int taskId, {
+    String taskId, {
     required DateTime executedAt,
     String? comment,
   });
 
   Future<void> updateExecution(
-    int executionId, {
+    String executionId, {
     required DateTime executedAt,
     String? comment,
   });
 
-  Future<void> deleteExecution(int executionId);
+  Future<void> deleteExecution(String executionId);
 
-  Future<void> deleteTask(int taskId);
+  Future<void> deleteTask(String taskId);
 
   Future<void> deleteAllTasks();
 

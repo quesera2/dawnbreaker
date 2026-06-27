@@ -54,7 +54,7 @@ void main() {
     group('findTaskById', () {
       test('タスクを取得できない', () async {
         await expectLater(
-          () => repository.findTaskById(1),
+          () => repository.findTaskById('non-existent'),
           throwsA(isA<TaskLoadException>()),
         );
       });
@@ -63,7 +63,10 @@ void main() {
     group('recordExecution', () {
       test('実行を記録できない', () async {
         await expectLater(
-          () => repository.recordExecution(1, executedAt: DateTime.now()),
+          () => repository.recordExecution(
+            'non-existent',
+            executedAt: DateTime.now(),
+          ),
           throwsA(isA<TaskSaveException>()),
         );
       });
@@ -72,7 +75,10 @@ void main() {
     group('updateExecution', () {
       test('実行を更新できない', () async {
         await expectLater(
-          () => repository.updateExecution(1, executedAt: DateTime.now()),
+          () => repository.updateExecution(
+            'non-existent',
+            executedAt: DateTime.now(),
+          ),
           throwsA(isA<TaskUpdateException>()),
         );
       });
@@ -81,7 +87,7 @@ void main() {
     group('deleteExecution', () {
       test('実行を削除できない', () async {
         await expectLater(
-          () => repository.deleteExecution(1),
+          () => repository.deleteExecution('non-existent'),
           throwsA(isA<TaskDeleteException>()),
         );
       });
@@ -91,7 +97,7 @@ void main() {
       test('タスクを更新できない', () async {
         await expectLater(
           () => repository.updateTask(
-            taskId: 1,
+            taskId: 'non-existent',
             taskType: TaskType.period,
             name: 'x',
             icon: '📝',
@@ -105,7 +111,7 @@ void main() {
     group('deleteTask', () {
       test('タスクを削除できない', () async {
         await expectLater(
-          () => repository.deleteTask(1),
+          () => repository.deleteTask('non-existent'),
           throwsA(isA<TaskDeleteException>()),
         );
       });
@@ -114,7 +120,7 @@ void main() {
     group('restoreTask', () {
       test('タスクを復元できない', () async {
         const task = TaskItem.period(
-          id: 1,
+          id: 'test-id',
           name: 'x',
           furigana: '',
           icon: '📝',
@@ -136,6 +142,7 @@ void main() {
             .into(db.taskDefinitions)
             .insert(
               TaskDefinitionsCompanion.insert(
+                id: 'test-broken-id',
                 taskType: TaskType.scheduled,
                 name: 'config なしタスク',
                 furigana: '',
@@ -358,7 +365,7 @@ void main() {
 
     test('存在しないタスクは取得できない', () async {
       expect(
-        () => repository.findTaskById(999),
+        () => repository.findTaskById('non-existent'),
         throwsA(isA<TaskRepositoryException>()),
       );
     });
@@ -460,7 +467,7 @@ void main() {
   });
 
   group('updateExecution', () {
-    late int taskId;
+    late String taskId;
 
     setUp(() async {
       taskId = await repository.addTask(
@@ -682,7 +689,7 @@ void main() {
     });
 
     test('存在しない ID のとき null を emit する', () async {
-      final result = await repository.watchTaskById(999).first;
+      final result = await repository.watchTaskById('non-existent').first;
       expect(result, isNull);
     });
 
