@@ -3,7 +3,7 @@ import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:drift/drift.dart';
 
 class TaskDefinitions extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  TextColumn get id => text()();
 
   TextColumn get taskType =>
       text().map(const EnumNameConverter(TaskType.values))();
@@ -16,4 +16,7 @@ class TaskDefinitions extends Table {
 
   TextColumn get color =>
       text().map(const EnumNameConverter(TaskColor.values))();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }

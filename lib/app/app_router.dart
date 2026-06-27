@@ -37,13 +37,12 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/app-detail/:taskId',
         builder: (_, state) =>
-            AppDetailScreen(taskId: int.parse(state.pathParameters['taskId']!)),
+            AppDetailScreen(taskId: state.pathParameters['taskId']!),
         routes: [
           GoRoute(
             path: 'edit',
-            builder: (_, state) => EditorScreen(
-              taskId: int.parse(state.pathParameters['taskId']!),
-            ),
+            builder: (_, state) =>
+                EditorScreen(taskId: state.pathParameters['taskId']!),
           ),
         ],
       ),

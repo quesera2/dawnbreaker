@@ -143,9 +143,9 @@ class NotificationServiceImpl implements NotificationService {
       return;
     }
 
-    await _plugin.cancel(id: task.id);
+    await _plugin.cancel(id: _notificationId(task.id));
     await _plugin.zonedSchedule(
-      id: task.id,
+      id: _notificationId(task.id),
       title: task.name,
       body: _l10n.notificationTaskBody,
       scheduledDate: notifyAt,
@@ -162,7 +162,7 @@ class NotificationServiceImpl implements NotificationService {
         ),
       ),
       androidScheduleMode: await _resolveAndroidScheduleMode(),
-      payload: task.id.toString(),
+      payload: task.id,
     );
   }
 
@@ -196,7 +196,7 @@ class NotificationServiceImpl implements NotificationService {
 
   @override
   Future<void> removeNotification(TaskItem task) async {
-    await _plugin.cancel(id: task.id);
+    await _plugin.cancel(id: _notificationId(task.id));
   }
 
   @override
@@ -214,4 +214,8 @@ class NotificationServiceImpl implements NotificationService {
     }
     debugPrint('================================================');
   }
+
+  // Dart の int は 64bit なのでそのまま Android に渡すと問題が生じるため、
+  // 32bitの正の数にマスクする
+  int _notificationId(String taskId) => taskId.hashCode & 0x7FFFFFFF;
 }

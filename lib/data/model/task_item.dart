@@ -12,7 +12,7 @@ sealed class TaskItem with _$TaskItem {
   const TaskItem._();
 
   const factory TaskItem.irregular({
-    required int id,
+    required String id,
     required String name,
     required String furigana,
     required String icon,
@@ -21,7 +21,7 @@ sealed class TaskItem with _$TaskItem {
   }) = IrregularTaskItem;
 
   const factory TaskItem.period({
-    required int id,
+    required String id,
     required String name,
     required String furigana,
     required String icon,
@@ -30,7 +30,7 @@ sealed class TaskItem with _$TaskItem {
   }) = PeriodTaskItem;
 
   const factory TaskItem.scheduled({
-    required int id,
+    required String id,
     required String name,
     required String furigana,
     required String icon,

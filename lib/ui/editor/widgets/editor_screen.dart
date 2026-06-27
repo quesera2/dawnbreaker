@@ -22,7 +22,7 @@ import 'package:go_router/go_router.dart';
 class EditorScreen extends ConsumerStatefulWidget {
   const EditorScreen({super.key, this.taskId});
 
-  final int? taskId;
+  final String? taskId;
 
   @override
   ConsumerState<EditorScreen> createState() => _EditorScreenState();

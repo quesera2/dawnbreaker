@@ -30,7 +30,7 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Stream<TaskItem?> watchTaskById(int taskId) {
+  Stream<TaskItem?> watchTaskById(String taskId) {
     unawaited(
       Future.microtask(() {
         if (!_controller.isClosed) _controller.add(List.of(_tasks));
@@ -42,7 +42,7 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Future<TaskItem> findTaskById(int taskId) async {
+  Future<TaskItem> findTaskById(String taskId) async {
     if (shouldThrow) throw const TaskLoadException('テストエラー');
     final task = _tasks.where((t) => t.id == taskId).firstOrNull;
     if (task == null) throw TaskNotFoundException(taskId: taskId);
@@ -50,7 +50,7 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Future<int> addTask({
+  Future<String> addTask({
     required TaskType taskType,
     required String name,
     required String icon,
@@ -61,7 +61,7 @@ class FakeTaskRepository implements TaskRepository {
     if (shouldThrow) throw const TaskSaveException('テストエラー');
     final id = _nextId++;
     final item = _buildTask(
-      id: id,
+      id: id.toString(),
       taskType: taskType,
       name: name,
       furigana: '',
@@ -73,12 +73,12 @@ class FakeTaskRepository implements TaskRepository {
     );
     _tasks.add(item);
     _notify();
-    return id;
+    return id.toString();
   }
 
   @override
   Future<void> updateTask({
-    required int taskId,
+    required String taskId,
     required TaskType taskType,
     required String name,
     required String icon,
@@ -108,18 +108,23 @@ class FakeTaskRepository implements TaskRepository {
 
   @override
   Future<TaskHistory> recordExecution(
-    int taskId, {
+    String taskId, {
     required DateTime executedAt,
     String? comment,
   }) async {
     if (shouldThrow) throw const TaskSaveException('テストエラー');
     lastRecordedComment = comment;
-    return TaskHistory(id: _nextId++, executedAt: executedAt, comment: comment);
+    final newTaskId = _nextId++;
+    return TaskHistory(
+      id: newTaskId.toString(),
+      executedAt: executedAt,
+      comment: comment,
+    );
   }
 
   @override
   Future<void> updateExecution(
-    int executionId, {
+    String executionId, {
     required DateTime executedAt,
     String? comment,
   }) async {
@@ -127,12 +132,12 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Future<void> deleteExecution(int executionId) async {
+  Future<void> deleteExecution(String executionId) async {
     if (shouldThrow) throw const TaskDeleteException('テストエラー');
   }
 
   @override
-  Future<void> deleteTask(int taskId) async {
+  Future<void> deleteTask(String taskId) async {
     if (shouldThrow) throw const TaskDeleteException('テストエラー');
     _tasks.removeWhere((t) => t.id == taskId);
     _notify();
@@ -156,9 +161,9 @@ class FakeTaskRepository implements TaskRepository {
     if (!_controller.isClosed) _controller.addError(error);
   }
 
-  bool containsTask(int taskId) => _tasks.any((t) => t.id == taskId);
+  bool containsTask(String taskId) => _tasks.any((t) => t.id == taskId);
 
-  TaskItem? taskById(int taskId) =>
+  TaskItem? taskById(String taskId) =>
       _tasks.where((t) => t.id == taskId).firstOrNull;
 
   void dispose() => _controller.close();
@@ -168,7 +173,7 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   static TaskItem _buildTask({
-    required int id,
+    required String id,
     required TaskType taskType,
     required String name,
     required String furigana,

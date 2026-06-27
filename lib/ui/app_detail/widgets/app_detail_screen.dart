@@ -26,7 +26,7 @@ import 'package:go_router/go_router.dart';
 class AppDetailScreen extends ConsumerStatefulWidget {
   const AppDetailScreen({super.key, required this.taskId});
 
-  final int taskId;
+  final String taskId;
 
   @override
   ConsumerState<AppDetailScreen> createState() => _AppDetailScreenState();

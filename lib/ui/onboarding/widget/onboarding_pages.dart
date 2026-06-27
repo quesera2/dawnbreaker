@@ -187,7 +187,7 @@ class _OnboardingPage1Description extends StatelessWidget {
   static List<TaskItem> _demoTasks(DateTime now, BuildContext context) {
     return [
       TaskItem.scheduled(
-        id: 0,
+        id: 'dummy-1',
         name: context.l10n.onboardingDemoTask1,
         furigana: '',
         icon: '🐝',
@@ -196,14 +196,14 @@ class _OnboardingPage1Description extends StatelessWidget {
         scheduleUnit: ScheduleUnit.month,
         taskHistory: [
           TaskHistory(
-            id: 0,
+            id: 'dummy-1-1',
             executedAt: DateTime(now.year, now.month - 6, now.day),
             comment: null,
           ),
         ],
       ),
       TaskItem.scheduled(
-        id: 0,
+        id: 'dummy-2',
         name: context.l10n.onboardingDemoTask2,
         furigana: '',
         icon: '🚗',
@@ -212,14 +212,14 @@ class _OnboardingPage1Description extends StatelessWidget {
         scheduleUnit: ScheduleUnit.month,
         taskHistory: [
           TaskHistory(
-            id: 0,
+            id: 'dummy-2-1',
             executedAt: DateTime(now.year, now.month - 5, now.day - 1),
             comment: null,
           ),
         ],
       ),
       TaskItem.scheduled(
-        id: 0,
+        id: 'dummy-3',
         name: context.l10n.onboardingDemoTask3,
         furigana: '',
         icon: '🪥',
@@ -228,14 +228,14 @@ class _OnboardingPage1Description extends StatelessWidget {
         scheduleUnit: ScheduleUnit.month,
         taskHistory: [
           TaskHistory(
-            id: 0,
+            id: 'dummy-3-1',
             executedAt: DateTime(now.year, now.month, now.day - 3),
             comment: null,
           ),
         ],
       ),
       TaskItem.scheduled(
-        id: 0,
+        id: 'dummy-4',
         name: context.l10n.onboardingDemoTask4,
         furigana: '',
         icon: '🧪',
@@ -244,14 +244,14 @@ class _OnboardingPage1Description extends StatelessWidget {
         scheduleUnit: ScheduleUnit.week,
         taskHistory: [
           TaskHistory(
-            id: 0,
+            id: 'dummy-4-1',
             executedAt: DateTime(now.year, now.month, now.day - 7),
             comment: null,
           ),
         ],
       ),
       TaskItem.scheduled(
-        id: 0,
+        id: 'dummy-5',
         name: context.l10n.onboardingDemoTask5,
         furigana: '',
         icon: '👟',
@@ -260,7 +260,7 @@ class _OnboardingPage1Description extends StatelessWidget {
         scheduleUnit: ScheduleUnit.month,
         taskHistory: [
           TaskHistory(
-            id: 0,
+            id: 'dummy-5-1',
             executedAt: DateTime(now.year, now.month - 1, now.day),
             comment: null,
           ),
@@ -328,7 +328,7 @@ class _OnboardingPage2Description extends StatelessWidget {
             _titleArea(
               context,
               TaskItem.scheduled(
-                id: 0,
+                id: '0',
                 name: context.l10n.onboardingDemoTask6,
                 furigana: '',
                 icon: '✂️',

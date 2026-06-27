@@ -24,7 +24,7 @@ void main() {
     late AppDetailViewModel viewModel;
     late AppDetailUiState viewState;
 
-    void setUpContainer({int? taskId}) {
+    void setUpContainer({String? taskId}) {
       fakeRepository = FakeTaskRepository(initialTasks: _testTasks);
       container = ProviderContainer(
         overrides: [taskRepositoryProvider.overrideWith((_) => fakeRepository)],
@@ -34,7 +34,7 @@ void main() {
       );
     }
 
-    Future<void> setUpLoaded({int? taskId}) async {
+    Future<void> setUpLoaded({String? taskId}) async {
       final id = taskId ?? _taskOneHistory.id;
       setUpContainer(taskId: id);
       await waitUntil(container, provider, (s) => !s.isLoading);
@@ -528,7 +528,7 @@ void main() {
           ]) {
             test('$descriptionの履歴を削除後 undo で元のコメントが再作成される', () async {
               final history = TaskHistory(
-                id: 1,
+                id: 'h-test',
                 executedAt: DateTime(2026, 1, 1),
                 comment: comment,
               );
@@ -589,7 +589,7 @@ void main() {
 
 // Jan 1, Feb 1 (31 days), Mar 4 (31 days) → averageIntervalDays = 31
 const _taskNoHistory = TaskItem.period(
-  id: 1,
+  id: 'task-1',
   name: 'タスク（履歴なし）',
   furigana: 'たすく',
   icon: '📝',
@@ -598,26 +598,26 @@ const _taskNoHistory = TaskItem.period(
 );
 
 final _taskOneHistory = TaskItem.period(
-  id: 2,
+  id: 'task-2',
   name: 'タスク（履歴1件）',
   furigana: 'たすく',
   icon: '📝',
   color: TaskColor.blue,
   taskHistory: [
-    TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null),
+    TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
   ],
 );
 
 final _taskMultiHistory = TaskItem.period(
-  id: 3,
+  id: 'task-3',
   name: 'タスク（複数履歴）',
   furigana: 'たすく',
   icon: '📝',
   color: TaskColor.green,
   taskHistory: [
-    TaskHistory(id: 1, executedAt: DateTime(2026, 1, 1), comment: null),
-    TaskHistory(id: 2, executedAt: DateTime(2026, 2, 1), comment: null),
-    TaskHistory(id: 3, executedAt: DateTime(2026, 3, 4), comment: null),
+    TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
+    TaskHistory(id: 'h-2', executedAt: DateTime(2026, 2, 1), comment: null),
+    TaskHistory(id: 'h-3', executedAt: DateTime(2026, 3, 4), comment: null),
   ],
 );
 

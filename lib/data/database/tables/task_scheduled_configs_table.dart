@@ -5,8 +5,8 @@ import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:drift/drift.dart';
 
 class TaskScheduledConfigs extends Table {
-  IntColumn get taskDefinitionId =>
-      integer().references(TaskDefinitions, #id, onDelete: KeyAction.cascade)();
+  TextColumn get taskDefinitionId =>
+      text().references(TaskDefinitions, #id, onDelete: KeyAction.cascade)();
 
   IntColumn get scheduleValue => integer()();
 
