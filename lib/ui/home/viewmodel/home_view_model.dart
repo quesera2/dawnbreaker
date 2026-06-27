@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dawnbreaker/core/logger/app_logger.dart';
+import 'package:dawnbreaker/core/util/async_value_extension.dart';
 import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest4;
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
@@ -23,8 +24,8 @@ class HomeViewModel extends _$HomeViewModel {
   late SettingsRepository _settingsRepository;
 
   @override
-  HomeUiState build() {
-    _taskRepository = ref.read(taskRepositoryProvider);
+  Future<HomeUiState> build() async {
+    _taskRepository = await ref.read(taskRepositoryProvider.future);
     _settingsRepository = ref.read(settingsRepositoryProvider);
     _initialize();
     return const HomeUiState(isLoading: true);
@@ -41,12 +42,14 @@ class HomeViewModel extends _$HomeViewModel {
         HomeDisplayMode mode,
         List<ColorSetting> colorSettings,
         bool progressBarAnimationEnabled,
-      ) => state = state.copyWith(
-        isLoading: false,
-        tasks: tasks,
-        displayMode: mode,
-        colorSettings: colorSettings,
-        progressBarAnimationEnabled: progressBarAnimationEnabled,
+      ) => state = state.update(
+        (s) => s.copyWith(
+          isLoading: false,
+          tasks: tasks,
+          displayMode: mode,
+          colorSettings: colorSettings,
+          progressBarAnimationEnabled: progressBarAnimationEnabled,
+        ),
       ),
     );
     ref.onDispose(() => unawaited(disposable()));
@@ -57,13 +60,13 @@ class HomeViewModel extends _$HomeViewModel {
   }
 
   void updateSearchQuery(String query) {
-    if (query == state.searchQuery) return;
-    state = state.copyWith(searchQuery: query);
+    if (query == state.requireValue.searchQuery) return;
+    state = state.update((s) => s.copyWith(searchQuery: query));
   }
 
   void updateFilter(HomeFilter filter) {
-    if (filter == state.selectedFilter) return;
-    state = state.copyWith(selectedFilter: filter);
+    if (filter == state.requireValue.selectedFilter) return;
+    state = state.update((s) => s.copyWith(selectedFilter: filter));
   }
 
   Future<void> recordExecution(
@@ -78,18 +81,22 @@ class HomeViewModel extends _$HomeViewModel {
         comment: comment,
       );
       if (!ref.mounted) return;
-      state = state.copyWith(
-        snackBarMessage: TaskCompleteSuccess(
-          taskName: task.name,
-          handler: () => _taskRepository.deleteExecution(history.id),
+      state = state.update(
+        (s) => s.copyWith(
+          snackBarMessage: TaskCompleteSuccess(
+            taskName: task.name,
+            handler: () => _taskRepository.deleteExecution(history.id),
+          ),
         ),
       );
     } on TaskRepositoryException catch (e, s) {
       logger.e('recordExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.copyWith(
-        dialogMessage: TaskSaveErrorMessage(
-          primaryHandler: () => recordExecution(task, executedAt, comment),
+      state = state.update(
+        (s) => s.copyWith(
+          dialogMessage: TaskSaveErrorMessage(
+            primaryHandler: () => recordExecution(task, executedAt, comment),
+          ),
         ),
       );
     }

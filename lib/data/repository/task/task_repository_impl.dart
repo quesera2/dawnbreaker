@@ -7,8 +7,11 @@ import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
+import 'package:dawnbreaker/core/auth/app_user.dart';
+import 'package:dawnbreaker/data/repository/task/firestore_task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
+import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:drift/drift.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
@@ -18,11 +21,15 @@ part 'task_repository_impl.g.dart';
 const _uuid = Uuid();
 
 @riverpod
-TaskRepository taskRepository(Ref ref) {
-  return TaskRepositoryImpl(
-    db: ref.watch(appDatabaseProvider),
-    furiganaTranslate: ref.watch(furiganaTranslateProvider),
-  );
+Future<TaskRepository> taskRepository(Ref ref) async {
+  final user = await ref.watch(currentUserProvider.future);
+  return switch (user) {
+    LocalUser() => TaskRepositoryImpl(
+      db: ref.watch(appDatabaseProvider),
+      furiganaTranslate: ref.watch(furiganaTranslateProvider),
+    ),
+    FirebaseAppUser(:final id) => FirestoreTaskRepository(userId: id),
+  };
 }
 
 class TaskRepositoryImpl implements TaskRepository {

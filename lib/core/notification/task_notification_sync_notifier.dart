@@ -21,7 +21,7 @@ class TaskNotificationSyncNotifier extends _$TaskNotificationSyncNotifier {
     await ref.watch(canScheduleExactAlarmsProvider.future);
     final service = await ref.read(notificationServiceProvider.future);
     final syncLogic = TaskNotificationSync(service);
-    final repository = ref.read(taskRepositoryProvider);
+    final repository = await ref.read(taskRepositoryProvider.future);
 
     final sub = repository
         .allTaskItems()

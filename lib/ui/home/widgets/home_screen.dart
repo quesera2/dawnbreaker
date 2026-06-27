@@ -38,17 +38,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    listenMessages(homeViewModelProvider);
-    ref.listen(homeViewModelProvider.select((s) => s.isLoading), (
-      _,
-      isLoading,
-    ) {
-      if (!isLoading) FlutterNativeSplash.remove();
+    listenAsyncMessages(homeViewModelProvider);
+    ref.listen(homeViewModelProvider, (_, next) {
+      if (next case AsyncData(:final value) when !value.isLoading) {
+        FlutterNativeSplash.remove();
+      }
     });
-    final uiState = ref.watch(homeViewModelProvider);
+    final uiState = ref.watch(homeViewModelProvider).value;
     final viewModel = ref.read(homeViewModelProvider.notifier);
 
-    if (uiState.isLoading) {
+    if (uiState == null || uiState.isLoading) {
       return const Scaffold();
     }
 
