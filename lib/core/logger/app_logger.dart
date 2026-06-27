@@ -5,20 +5,19 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 
-final logger = _buildLogger();
-
-Logger _buildLogger() {
-  final isTest = Platform.environment.containsKey('FLUTTER_TEST');
-  final LogOutput output = isTest
-      ? ConsoleOutput()
-      : kDebugMode
-      ? MultiOutput([ConsoleOutput(), _CrashlyticsOutput()])
-      : _CrashlyticsOutput();
-  final LogPrinter printer = kDebugMode
+final logger = Logger(
+  output: switch ((
+    Platform.environment.containsKey('FLUTTER_TEST'),
+    kDebugMode,
+  )) {
+    (true, _) => ConsoleOutput(),
+    (_, true) => MultiOutput([ConsoleOutput(), _CrashlyticsOutput()]),
+    _ => _CrashlyticsOutput(),
+  },
+  printer: kDebugMode
       ? PrettyPrinter(methodCount: 2)
-      : SimplePrinter(printTime: true, colors: false);
-  return Logger(output: output, printer: printer);
-}
+      : SimplePrinter(printTime: true, colors: false),
+);
 
 final class _CrashlyticsOutput extends LogOutput {
   final _crashlytics = FirebaseCrashlytics.instance;
