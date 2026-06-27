@@ -1,13 +1,19 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 
 final logger = Logger(
-  output: kDebugMode
-      ? MultiOutput([ConsoleOutput(), _CrashlyticsOutput()])
-      : _CrashlyticsOutput(),
+  output: switch ((
+    Platform.environment.containsKey('FLUTTER_TEST'),
+    kDebugMode,
+  )) {
+    (true, _) => ConsoleOutput(),
+    (_, true) => MultiOutput([ConsoleOutput(), _CrashlyticsOutput()]),
+    _ => _CrashlyticsOutput(),
+  },
   printer: kDebugMode
       ? PrettyPrinter(methodCount: 2)
       : SimplePrinter(printTime: true, colors: false),
