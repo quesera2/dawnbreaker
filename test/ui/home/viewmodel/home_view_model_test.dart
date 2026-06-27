@@ -131,13 +131,15 @@ void main() {
       FakeSettingsRepository? settings,
     }) async {
       setUpContainer(tasks: tasks, settings: settings);
-      await waitUntil(container, homeViewModelProvider, (s) => !s.isLoading);
-      viewModel = container.read(homeViewModelProvider.notifier);
-      container.listen(
+      await waitUntilAsync(
+        container,
         homeViewModelProvider,
-        (_, next) => viewState = next,
-        fireImmediately: true,
+        (s) => !s.isLoading,
       );
+      viewModel = container.read(homeViewModelProvider.notifier);
+      container.listen(homeViewModelProvider, (_, next) {
+        if (next.hasValue) viewState = next.requireValue;
+      }, fireImmediately: true);
     }
 
     tearDown(() {
@@ -151,12 +153,15 @@ void main() {
       test('ローディング中でタスクが表示されない', () {
         final state = container.read(homeViewModelProvider);
         expect(state.isLoading, true);
-        expect(state.tasks, isEmpty);
-        expect(state.searchQuery, '');
+        expect(state.value?.tasks ?? [], isEmpty);
+        expect(state.value?.searchQuery ?? '', '');
       });
 
       test('タスクがない', () {
-        expect(container.read(homeViewModelProvider).hasTasks, false);
+        expect(
+          container.read(homeViewModelProvider).value?.hasTasks ?? false,
+          false,
+        );
       });
     });
 
