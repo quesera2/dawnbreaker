@@ -39,9 +39,9 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
     final provider = appDetailViewModelProvider(taskId: widget.taskId);
     listenAsyncMessages(provider);
 
-    ref.listen(provider, (_, next) {
+    ref.listen(provider, (prev, next) {
       if (next case AsyncData(:final value) when value.shouldPop) {
-        context.pop();
+        if (prev?.value?.shouldPop != true) context.pop();
       }
     });
 

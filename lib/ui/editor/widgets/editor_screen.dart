@@ -54,9 +54,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
     final provider = editorViewModelProvider(taskId: widget.taskId);
     listenAsyncMessages(provider);
 
-    ref.listen(provider, (_, next) {
+
+    ref.listen(provider, (prev, next) {
       if (next case AsyncData(:final value) when value.isSaved) {
-        context.pop();
+        if (prev?.value?.isSaved != true) context.pop();
       }
     });
 
