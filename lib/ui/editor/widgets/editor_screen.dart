@@ -33,17 +33,6 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
   late final _nameController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final state = ref
-          .read(editorViewModelProvider(taskId: widget.taskId))
-          .value;
-      _nameController.text = state?.name ?? '';
-    });
-  }
-
-  @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
@@ -54,9 +43,17 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
     final provider = editorViewModelProvider(taskId: widget.taskId);
     listenAsyncMessages(provider);
 
-    ref.listen(provider, (_, next) {
+    if (widget.taskId != null) {
+      ref.listen(provider.select((s) => s.value?.isLoading), (prev, next) {
+        if (next == false && prev != false) {
+          _nameController.text = ref.read(provider).value?.name ?? '';
+        }
+      });
+    }
+
+    ref.listen(provider, (prev, next) {
       if (next case AsyncData(:final value) when value.isSaved) {
-        context.pop();
+        if (prev?.value?.isSaved != true) context.pop();
       }
     });
 
