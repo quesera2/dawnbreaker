@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/core/util/furigana_translate.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
@@ -454,7 +455,7 @@ class FirestoreTaskRepository implements TaskRepository {
       final bDate = current.executedAt.truncateTime;
       return bDate.difference(aDate).inDays;
     }).toList();
-    final avgDays = intervals.reduce((a, b) => a + b) / intervals.length;
-    return taskHistory.last.executedAt.add(Duration(days: avgDays.round()));
+    final avgDays = intervals.average.round();
+    return taskHistory.last.executedAt.add(Duration(days: avgDays));
   }
 }
