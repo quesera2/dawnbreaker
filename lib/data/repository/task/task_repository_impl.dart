@@ -8,6 +8,7 @@ import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/core/auth/app_user.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' hide Expression;
 import 'package:dawnbreaker/data/repository/task/firestore_task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
@@ -31,6 +32,7 @@ Future<TaskRepository> taskRepository(Ref ref) async {
     FirebaseAppUser(:final id) => FirestoreTaskRepository(
       userId: id,
       furiganaTranslate: ref.watch(furiganaTranslateProvider),
+      firestore: FirebaseFirestore.instance,
     ),
   };
 }

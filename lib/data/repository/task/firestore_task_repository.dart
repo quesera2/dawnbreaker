@@ -14,10 +14,9 @@ const _uuid = Uuid();
 class FirestoreTaskRepository implements TaskRepository {
   FirestoreTaskRepository({
     required this.userId,
-    required FuriganaTranslate furiganaTranslate,
-    FirebaseFirestore? firestore,
-  }) : _furiganaTranslate = furiganaTranslate,
-       _firestore = firestore ?? FirebaseFirestore.instance;
+    required this._furiganaTranslate,
+    required this._firestore,
+  });
 
   final String userId;
   final FuriganaTranslate _furiganaTranslate;
