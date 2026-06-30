@@ -14,7 +14,7 @@ void main() {
     test('履歴が1件のとき null を返す', () {
       final task = _periodTask(
         taskHistory: [
-          TaskHistory(id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
         ],
       );
       expect(task.scheduledAt, isNull);
@@ -24,8 +24,8 @@ void main() {
       // 間隔: 31日 → 平均31日 → 2/1 + 31日 = 3/4
       final task = _periodTask(
         taskHistory: [
-          TaskHistory(id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
-          TaskHistory(id: '2', executedAt: DateTime(2025, 2, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '2', executedAt: DateTime(2025, 2, 1), comment: null),
         ],
       );
       expect(task.scheduledAt, DateTime(2025, 3, 4));
@@ -35,13 +35,15 @@ void main() {
       // 間隔: 10日, 20日 → 平均15日 → 1/31 + 15日 = 2/15
       final task = _periodTask(
         taskHistory: [
-          TaskHistory(id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
           TaskHistory(
+            taskId: 'task-1',
             id: '2',
             executedAt: DateTime(2025, 1, 11),
             comment: null,
           ),
           TaskHistory(
+            taskId: 'task-1',
             id: '3',
             executedAt: DateTime(2025, 1, 31),
             comment: null,
@@ -66,7 +68,7 @@ void main() {
         scheduleValue: 14,
         scheduleUnit: ScheduleUnit.day,
         taskHistory: [
-          TaskHistory(id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
         ],
       );
       expect(task.scheduledAt, DateTime(2025, 1, 15));
@@ -77,7 +79,7 @@ void main() {
         scheduleValue: 2,
         scheduleUnit: ScheduleUnit.week,
         taskHistory: [
-          TaskHistory(id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
         ],
       );
       expect(task.scheduledAt, DateTime(2025, 1, 15));
@@ -89,6 +91,7 @@ void main() {
         scheduleUnit: ScheduleUnit.month,
         taskHistory: [
           TaskHistory(
+            taskId: 'task-1',
             id: '1',
             executedAt: DateTime(2025, 1, 10),
             comment: null,
@@ -103,7 +106,7 @@ void main() {
     test('履歴が1件のとき空リストを返す', () {
       final task = _periodTask(
         taskHistory: [
-          TaskHistory(id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
         ],
       );
       expect(task.executionIntervalDays, isEmpty);
@@ -112,8 +115,8 @@ void main() {
     test('深夜0時の履歴: 1/1→2/1 は31日', () {
       final task = _periodTask(
         taskHistory: [
-          TaskHistory(id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
-          TaskHistory(id: '2', executedAt: DateTime(2025, 2, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '2', executedAt: DateTime(2025, 2, 1), comment: null),
         ],
       );
       expect(task.executionIntervalDays, [31]);
@@ -123,11 +126,13 @@ void main() {
       final task = _periodTask(
         taskHistory: [
           TaskHistory(
+            taskId: 'task-1',
             id: '1',
             executedAt: DateTime(2025, 1, 1, 22, 0),
             comment: null,
           ),
           TaskHistory(
+            taskId: 'task-1',
             id: '2',
             executedAt: DateTime(2025, 1, 2, 8, 0),
             comment: null,
@@ -143,16 +148,19 @@ void main() {
       final task = _periodTask(
         taskHistory: [
           TaskHistory(
+            taskId: 'task-1',
             id: '1',
             executedAt: DateTime(2025, 1, 1, 14, 0),
             comment: null,
           ),
           TaskHistory(
+            taskId: 'task-1',
             id: '2',
             executedAt: DateTime(2025, 2, 1, 8, 0),
             comment: null,
           ),
           TaskHistory(
+            taskId: 'task-1',
             id: '3',
             executedAt: DateTime(2025, 3, 4, 22, 0),
             comment: null,
@@ -175,7 +183,7 @@ void main() {
       // PeriodTask で履歴1件 → 間隔が計算できず期日未定
       final task = _periodTask(
         taskHistory: [
-          TaskHistory(id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
         ],
       );
       expect(task.computeProgress(DateTime(2025, 2, 1)), isA<NoDueDate>());
@@ -185,8 +193,8 @@ void main() {
       // lastExecutedAt=1/1, scheduledAt=3/4(+62日), now=2/1(+31日) → progress=0.5
       final task = _periodTask(
         taskHistory: [
-          TaskHistory(id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
-          TaskHistory(id: '2', executedAt: DateTime(2025, 3, 4), comment: null),
+          TaskHistory(taskId: 'task-1', id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '2', executedAt: DateTime(2025, 3, 4), comment: null),
         ],
       );
       // scheduledAt = 3/4 + 62日 = 5/5
@@ -202,7 +210,7 @@ void main() {
         scheduleValue: 30,
         scheduleUnit: ScheduleUnit.day,
         taskHistory: [
-          TaskHistory(id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
         ],
       );
       // scheduledAt = 1/31, now = 2/15 → 超過
@@ -219,7 +227,7 @@ void main() {
         scheduleValue: 0,
         scheduleUnit: ScheduleUnit.day,
         taskHistory: [
-          TaskHistory(id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
         ],
       );
       final progress = task.computeProgress(DateTime(2025, 1, 1));
@@ -235,6 +243,7 @@ void main() {
           scheduleUnit: ScheduleUnit.day,
           taskHistory: [
             TaskHistory(
+              taskId: 'task-1',
               id: '1',
               executedAt: DateTime(2026, 4, 23),
               comment: null,
@@ -252,6 +261,7 @@ void main() {
           scheduleUnit: ScheduleUnit.day,
           taskHistory: [
             TaskHistory(
+              taskId: 'task-1',
               id: '1',
               executedAt: DateTime(2026, 4, 24),
               comment: null,
@@ -273,6 +283,7 @@ void main() {
           scheduleUnit: ScheduleUnit.day,
           taskHistory: [
             TaskHistory(
+              taskId: 'task-1',
               id: '1',
               executedAt: DateTime(2025, 1, 1, 14, 0),
               comment: null,
@@ -291,7 +302,7 @@ void main() {
         scheduleValue: 30,
         scheduleUnit: ScheduleUnit.day,
         taskHistory: [
-          TaskHistory(id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
+          TaskHistory(taskId: 'task-1', id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
         ],
       );
 

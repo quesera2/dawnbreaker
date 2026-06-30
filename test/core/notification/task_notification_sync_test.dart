@@ -170,6 +170,7 @@ TaskItem _makeScheduled({
   scheduleUnit: ScheduleUnit.day,
   taskHistory: [
     TaskHistory(
+      taskId: 'task-1',
       id: id * 10,
       executedAt: DateTime.now().truncateTime.subtract(Duration(days: daysAgo)),
       comment: null,

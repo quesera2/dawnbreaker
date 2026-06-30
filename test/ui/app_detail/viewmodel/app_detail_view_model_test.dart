@@ -524,6 +524,7 @@ void main() {
           ]) {
             test('$descriptionの履歴を削除後 undo で元のコメントが再作成される', () async {
               final history = TaskHistory(
+                taskId: 'task-1',
                 id: 'h-test',
                 executedAt: DateTime(2026, 1, 1),
                 comment: comment,
@@ -600,7 +601,7 @@ final _taskOneHistory = TaskItem.period(
   icon: '📝',
   color: TaskColor.blue,
   taskHistory: [
-    TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
+    TaskHistory(taskId: 'task-1', id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
   ],
 );
 
@@ -611,9 +612,9 @@ final _taskMultiHistory = TaskItem.period(
   icon: '📝',
   color: TaskColor.green,
   taskHistory: [
-    TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
-    TaskHistory(id: 'h-2', executedAt: DateTime(2026, 2, 1), comment: null),
-    TaskHistory(id: 'h-3', executedAt: DateTime(2026, 3, 4), comment: null),
+    TaskHistory(taskId: 'task-1', id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
+    TaskHistory(taskId: 'task-1', id: 'h-2', executedAt: DateTime(2026, 2, 1), comment: null),
+    TaskHistory(taskId: 'task-1', id: 'h-3', executedAt: DateTime(2026, 3, 4), comment: null),
   ],
 );
 

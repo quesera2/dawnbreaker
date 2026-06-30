@@ -64,6 +64,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     try {
       await _repository.updateExecution(
         history.id,
+        taskId: history.taskId,
         executedAt: executedAt,
         comment: comment,
       );
@@ -152,7 +153,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         (s) => s.copyWith(
           snackBarMessage: TaskCompleteSuccess(
             taskName: task.name,
-            handler: () => _repository.deleteExecution(history.id),
+            handler: () =>
+                _repository.deleteExecution(history.id, taskId: history.taskId),
           ),
         ),
       );
@@ -171,7 +173,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
 
   Future<void> deleteExecution(TaskItem task, TaskHistory history) async {
     try {
-      await _repository.deleteExecution(history.id);
+      await _repository.deleteExecution(history.id, taskId: history.taskId);
       if (!ref.mounted) return;
       state = state.update(
         (s) => s.copyWith(

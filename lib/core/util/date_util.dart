@@ -3,8 +3,14 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
+int compareNullableDateAsc(DateTime? a, DateTime? b) {
+  if (a == null) return 1;
+  if (b == null) return -1;
+  return a.compareTo(b);
+}
+
 extension DateTimeUtil on DateTime {
-  DateTime get truncateTime => DateTime(year, month, day);
+  DateTime get truncateTime => DateTime.utc(year, month, day);
 
   /// "2024年1月1日(月)" のように曜日つきでフォーマット
   String localizedWithWeekday(BuildContext context) {
