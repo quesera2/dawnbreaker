@@ -35,6 +35,11 @@ abstract class NotificationSetting with _$NotificationSetting {
 
   /// [encoded] が空文字・不正な JSON・範囲外の値を含む場合はデフォルト値を返す。
   static NotificationSetting decode(String encoded) {
+    // 何も保存されていない場合、初期設定を返す
+    if (encoded.isEmpty) {
+      return const NotificationSetting();
+    }
+
     try {
       final setting = NotificationSetting.fromJson(
         jsonDecode(encoded) as Map<String, dynamic>,
