@@ -117,6 +117,7 @@ class FakeTaskRepository implements TaskRepository {
     final newTaskId = _nextId++;
     return TaskHistory(
       id: newTaskId.toString(),
+      taskId: taskId,
       executedAt: executedAt,
       comment: comment,
     );
@@ -125,6 +126,7 @@ class FakeTaskRepository implements TaskRepository {
   @override
   Future<void> updateExecution(
     String executionId, {
+    required String taskId,
     required DateTime executedAt,
     String? comment,
   }) async {
@@ -132,7 +134,10 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Future<void> deleteExecution(String executionId) async {
+  Future<void> deleteExecution(
+    String executionId, {
+    required String taskId,
+  }) async {
     if (shouldThrow) throw const TaskDeleteException('テストエラー');
   }
 

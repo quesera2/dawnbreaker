@@ -85,7 +85,10 @@ class HomeViewModel extends _$HomeViewModel {
         (s) => s.copyWith(
           snackBarMessage: TaskCompleteSuccess(
             taskName: task.name,
-            handler: () => _taskRepository.deleteExecution(history.id),
+            handler: () => _taskRepository.deleteExecution(
+              history.id,
+              taskId: history.taskId,
+            ),
           ),
         ),
       );

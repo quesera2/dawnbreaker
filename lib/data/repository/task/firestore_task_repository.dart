@@ -164,7 +164,12 @@ class FirestoreTaskRepository implements TaskRepository {
             ),
           );
       await _updateCache(taskId);
-      return TaskHistory(id: id, executedAt: executedAt, comment: comment);
+      return TaskHistory(
+        id: id,
+        taskId: taskId,
+        executedAt: executedAt,
+        comment: comment,
+      );
     } catch (e) {
       throw TaskSaveException(e.toString());
     }
@@ -173,12 +178,11 @@ class FirestoreTaskRepository implements TaskRepository {
   @override
   Future<void> updateExecution(
     String executionId, {
+    required String taskId,
     required DateTime executedAt,
     String? comment,
   }) async {
     try {
-      final taskId = await _findTaskIdForExecution(executionId);
-      if (taskId == null) throw TaskUpdateException('not found: $executionId');
       await _executionsRef(taskId).doc(executionId).update({
         'executedAt': Timestamp.fromDate(executedAt),
         'comment': comment,
@@ -192,10 +196,11 @@ class FirestoreTaskRepository implements TaskRepository {
   }
 
   @override
-  Future<void> deleteExecution(String executionId) async {
+  Future<void> deleteExecution(
+    String executionId, {
+    required String taskId,
+  }) async {
     try {
-      final taskId = await _findTaskIdForExecution(executionId);
-      if (taskId == null) return;
       await _executionsRef(taskId).doc(executionId).delete();
       await _updateCache(taskId);
     } catch (e) {
@@ -321,6 +326,7 @@ class FirestoreTaskRepository implements TaskRepository {
       final eData = e.data();
       return TaskHistory(
         id: e.id,
+        taskId: taskId,
         executedAt: (eData['executedAt'] as Timestamp).toDate(),
         comment: eData['comment'] as String?,
       );
@@ -380,16 +386,6 @@ class FirestoreTaskRepository implements TaskRepository {
     );
   }
 
-  // O(n) scan across task definitions — acceptable for a personal app with few tasks.
-  Future<String?> _findTaskIdForExecution(String executionId) async {
-    final taskDefs = await _taskDefinitionsRef().get();
-    for (final taskDef in taskDefs.docs) {
-      final execDoc = await _executionsRef(taskDef.id).doc(executionId).get();
-      if (execDoc.exists) return taskDef.id;
-    }
-    return null;
-  }
-
   Future<void> _deleteAllExecutions(String taskId) async {
     final executions = await _executionsRef(taskId).get();
     await Future.wait(executions.docs.map((doc) => doc.reference.delete()));
@@ -412,6 +408,7 @@ class FirestoreTaskRepository implements TaskRepository {
       final data = e.data();
       return TaskHistory(
         id: e.id,
+        taskId: taskId,
         executedAt: (data['executedAt'] as Timestamp).toDate(),
         comment: data['comment'] as String?,
       );

@@ -77,6 +77,7 @@ void main() {
         await expectLater(
           () => repository.updateExecution(
             'non-existent',
+            taskId: 'non-existent-task',
             executedAt: DateTime.now(),
           ),
           throwsA(isA<TaskUpdateException>()),
@@ -87,7 +88,10 @@ void main() {
     group('deleteExecution', () {
       test('実行を削除できない', () async {
         await expectLater(
-          () => repository.deleteExecution('non-existent'),
+          () => repository.deleteExecution(
+            'non-existent',
+            taskId: 'non-existent-task',
+          ),
           throwsA(isA<TaskDeleteException>()),
         );
       });
@@ -492,6 +496,7 @@ void main() {
       test('日付を更新できる', () async {
         await repository.updateExecution(
           history.id,
+          taskId: history.taskId,
           executedAt: DateTime(2025, 7, 1),
         );
 
@@ -505,6 +510,7 @@ void main() {
 
         await repository.updateExecution(
           history.id,
+          taskId: history.taskId,
           executedAt: history.executedAt,
           comment: '更新コメント',
         );
@@ -521,6 +527,7 @@ void main() {
         );
         await repository.updateExecution(
           history.id,
+          taskId: history.taskId,
           executedAt: DateTime(2025, 7, 1),
         );
 
@@ -548,6 +555,7 @@ void main() {
 
         await repository.updateExecution(
           history.id,
+          taskId: history.taskId,
           executedAt: history.executedAt,
         );
 
@@ -753,7 +761,7 @@ void main() {
         executedAt: DateTime(2025, 6, 1),
       );
 
-      await repository.deleteExecution(target.id);
+      await repository.deleteExecution(target.id, taskId: target.taskId);
 
       final task = await repository.findTaskById(id);
       expect(task.taskHistory, hasLength(1));
@@ -774,7 +782,7 @@ void main() {
       );
       await repository.recordExecution(id, executedAt: DateTime(2025, 9, 1));
 
-      await repository.deleteExecution(target.id);
+      await repository.deleteExecution(target.id, taskId: target.taskId);
 
       final task = await repository.findTaskById(id);
       expect(task.taskHistory, hasLength(2));

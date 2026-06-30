@@ -47,6 +47,7 @@ void main() {
       scheduleUnit: ScheduleUnit.day,
       taskHistory: [
         TaskHistory(
+          taskId: 'task-1',
           id: 'h-10',
           executedAt: now.subtract(const Duration(days: 10)),
           comment: null,
@@ -63,6 +64,7 @@ void main() {
       scheduleUnit: ScheduleUnit.day,
       taskHistory: [
         TaskHistory(
+          taskId: 'task-1',
           id: 'h-11',
           executedAt: now.subtract(const Duration(days: 7)),
           comment: null,
@@ -79,6 +81,7 @@ void main() {
       scheduleUnit: ScheduleUnit.day,
       taskHistory: [
         TaskHistory(
+          taskId: 'task-1',
           id: 'h-12',
           executedAt: now.subtract(const Duration(days: 4)),
           comment: null,
@@ -93,7 +96,7 @@ void main() {
       color: TaskColor.none,
       scheduleValue: 14,
       scheduleUnit: ScheduleUnit.day,
-      taskHistory: [TaskHistory(id: 'h-13', executedAt: now, comment: null)],
+      taskHistory: [TaskHistory(taskId: 'task-1', id: 'h-13', executedAt: now, comment: null)],
     ),
     const TaskItem.period(
       id: 'task-14',
@@ -489,7 +492,7 @@ final _testTasks = [
     icon: '📝',
     color: TaskColor.blue,
     taskHistory: [
-      TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
+      TaskHistory(taskId: 'task-1', id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
     ],
   ),
   TaskItem.period(
@@ -499,7 +502,7 @@ final _testTasks = [
     icon: '📝',
     color: TaskColor.none,
     taskHistory: [
-      TaskHistory(id: 'h-2', executedAt: DateTime(2026, 1, 1), comment: null),
+      TaskHistory(taskId: 'task-1', id: 'h-2', executedAt: DateTime(2026, 1, 1), comment: null),
     ],
   ),
 ];

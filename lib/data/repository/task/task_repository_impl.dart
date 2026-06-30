@@ -116,6 +116,7 @@ class TaskRepositoryImpl implements TaskRepository {
         .map(
           (e) => TaskHistory(
             id: e.id,
+            taskId: def.id,
             executedAt: e.executedAt,
             comment: e.comment,
           ),
@@ -222,7 +223,12 @@ class TaskRepositoryImpl implements TaskRepository {
               comment: Value(comment),
             ),
           );
-      return TaskHistory(id: id, executedAt: executedAt, comment: comment);
+      return TaskHistory(
+        id: id,
+        taskId: taskId,
+        executedAt: executedAt,
+        comment: comment,
+      );
     } catch (e) {
       throw TaskSaveException(e.toString());
     }
@@ -231,6 +237,7 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<void> updateExecution(
     String executionId, {
+    required String taskId,
     required DateTime executedAt,
     String? comment,
   }) async {
@@ -249,7 +256,10 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> deleteExecution(String executionId) async {
+  Future<void> deleteExecution(
+    String executionId, {
+    required String taskId,
+  }) async {
     try {
       await (_db.delete(
         _db.taskExecutions,

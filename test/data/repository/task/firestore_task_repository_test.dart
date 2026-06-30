@@ -294,6 +294,7 @@ void main() {
       test('日付を更新できる', () async {
         await repository.updateExecution(
           executionId,
+          taskId: taskId,
           executedAt: DateTime(2025, 7, 1),
         );
 
@@ -305,6 +306,7 @@ void main() {
       test('コメントを追加できる', () async {
         await repository.updateExecution(
           executionId,
+          taskId: taskId,
           executedAt: DateTime(2025, 6, 1),
           comment: '更新コメント',
         );
@@ -330,6 +332,7 @@ void main() {
       test('コメントを削除できる', () async {
         await repository.updateExecution(
           executionId,
+          taskId: taskId,
           executedAt: DateTime(2025, 6, 1),
         );
 
@@ -467,7 +470,7 @@ void main() {
         executedAt: DateTime(2025, 6, 1),
       );
 
-      await repository.deleteExecution(target.id);
+      await repository.deleteExecution(target.id, taskId: target.taskId);
 
       final task = await repository.findTaskById(id);
       expect(task.taskHistory, hasLength(1));
@@ -488,7 +491,7 @@ void main() {
       );
       await repository.recordExecution(id, executedAt: DateTime(2025, 9, 1));
 
-      await repository.deleteExecution(target.id);
+      await repository.deleteExecution(target.id, taskId: target.taskId);
 
       final task = await repository.findTaskById(id);
       expect(task.taskHistory, hasLength(2));
@@ -513,7 +516,7 @@ void main() {
         executedAt: DateTime(2025, 2, 1),
       );
 
-      await repository.deleteExecution(second.id);
+      await repository.deleteExecution(second.id, taskId: second.taskId);
 
       final doc = await firestore
           .collection('users')

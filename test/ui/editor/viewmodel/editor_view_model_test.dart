@@ -273,7 +273,7 @@ final _testTasks = [
     icon: '🪥',
     color: TaskColor.blue,
     taskHistory: [
-      TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
+      TaskHistory(taskId: 'task-1', id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
     ],
   ),
   TaskItem.scheduled(
@@ -285,7 +285,7 @@ final _testTasks = [
     scheduleValue: 2,
     scheduleUnit: ScheduleUnit.week,
     taskHistory: [
-      TaskHistory(id: 'h-2', executedAt: DateTime(2026, 1, 1), comment: null),
+      TaskHistory(taskId: 'task-1', id: 'h-2', executedAt: DateTime(2026, 1, 1), comment: null),
     ],
   ),
 ];
