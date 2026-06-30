@@ -20,15 +20,6 @@ class FirestoreTaskRepository implements TaskRepository {
     required this._firestore,
   });
 
-  factory FirestoreTaskRepository.fromFirebase({
-    required String userId,
-    required FuriganaTranslate furiganaTranslate,
-  }) => FirestoreTaskRepository(
-    userId: userId,
-    furiganaTranslate: furiganaTranslate,
-    firestore: FirebaseFirestore.instance,
-  );
-
   final String userId;
   final FuriganaTranslate _furiganaTranslate;
   final FirebaseFirestore _firestore;

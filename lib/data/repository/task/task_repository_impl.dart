@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
 import 'package:collection/collection.dart';
 import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/core/util/furigana_translate.dart';
@@ -29,9 +30,10 @@ Future<TaskRepository> taskRepository(Ref ref) async {
       db: ref.watch(appDatabaseProvider),
       furiganaTranslate: ref.watch(furiganaTranslateProvider),
     ),
-    FirebaseAppUser(:final id) => FirestoreTaskRepository.fromFirebase(
+    FirebaseAppUser(:final id) => FirestoreTaskRepository(
       userId: id,
       furiganaTranslate: ref.watch(furiganaTranslateProvider),
+      firestore: firestore.FirebaseFirestore.instance,
     ),
   };
 }
