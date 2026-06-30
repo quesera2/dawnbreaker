@@ -22,15 +22,15 @@ class FirestoreTaskRepository implements TaskRepository {
   final FuriganaTranslate _furiganaTranslate;
   final FirebaseFirestore _firestore;
 
-  CollectionReference<Map<String, dynamic>> get _taskDefsRef =>
+  CollectionReference<Map<String, dynamic>> _taskDefinitionsRef() =>
       _firestore.collection('users').doc(userId).collection('taskDefinitions');
 
   CollectionReference<Map<String, dynamic>> _executionsRef(String taskId) =>
-      _taskDefsRef.doc(taskId).collection('executions');
+      _taskDefinitionsRef().doc(taskId).collection('executions');
 
   @override
   Stream<List<TaskItem>> allTaskItems() {
-    return _taskDefsRef.snapshots().asyncMap((snapshot) async {
+    return _taskDefinitionsRef().snapshots().asyncMap((snapshot) async {
       final items = await Future.wait(snapshot.docs.map(_buildTaskItem));
       return items..sort((a, b) {
         final aDate = a.scheduledAt;
@@ -44,7 +44,7 @@ class FirestoreTaskRepository implements TaskRepository {
 
   @override
   Stream<TaskItem?> watchTaskById(String taskId) {
-    return _taskDefsRef.doc(taskId).snapshots().asyncMap((snap) async {
+    return _taskDefinitionsRef().doc(taskId).snapshots().asyncMap((snap) async {
       if (!snap.exists) return null;
       return _buildTaskItem(snap);
     });
@@ -53,7 +53,7 @@ class FirestoreTaskRepository implements TaskRepository {
   @override
   Future<TaskItem> findTaskById(String taskId) async {
     try {
-      final snap = await _taskDefsRef.doc(taskId).get();
+      final snap = await _taskDefinitionsRef().doc(taskId).get();
       if (!snap.exists) throw TaskNotFoundException(taskId: taskId);
       return _buildTaskItem(snap);
     } on TaskRepositoryException {
@@ -81,7 +81,7 @@ class FirestoreTaskRepository implements TaskRepository {
     try {
       final furigana = await _furiganaTranslate.translate(name);
       final id = _uuid.v4();
-      await _taskDefsRef.doc(id).set({
+      await _taskDefinitionsRef().doc(id).set({
         'taskType': taskType.name,
         'name': name,
         'furigana': furigana,
@@ -121,7 +121,7 @@ class FirestoreTaskRepository implements TaskRepository {
     }
     try {
       final furigana = await _furiganaTranslate.translate(name);
-      await _taskDefsRef.doc(taskId).update({
+      await _taskDefinitionsRef().doc(taskId).update({
         'taskType': taskType.name,
         'name': name,
         'furigana': furigana,
@@ -198,7 +198,7 @@ class FirestoreTaskRepository implements TaskRepository {
   Future<void> deleteTask(String taskId) async {
     try {
       await _deleteAllExecutions(taskId);
-      await _taskDefsRef.doc(taskId).delete();
+      await _taskDefinitionsRef().doc(taskId).delete();
     } catch (e) {
       throw TaskDeleteException(e.toString());
     }
@@ -207,7 +207,7 @@ class FirestoreTaskRepository implements TaskRepository {
   @override
   Future<void> deleteAllTasks() async {
     try {
-      final taskDefs = await _taskDefsRef.get();
+      final taskDefs = await _taskDefinitionsRef().get();
       await Future.wait(
         taskDefs.docs.map((doc) async {
           await _deleteAllExecutions(doc.id);
@@ -238,7 +238,7 @@ class FirestoreTaskRepository implements TaskRepository {
           'scheduleUnit': taskItem.scheduleUnitOrDefault.name,
         };
       }
-      await _taskDefsRef.doc(newId).set(data);
+      await _taskDefinitionsRef().doc(newId).set(data);
 
       for (final history in taskItem.taskHistory) {
         final execId = _uuid.v4();
@@ -335,7 +335,7 @@ class FirestoreTaskRepository implements TaskRepository {
 
   // O(n) scan across task definitions — acceptable for a personal app with few tasks.
   Future<String?> _findTaskIdForExecution(String executionId) async {
-    final taskDefs = await _taskDefsRef.get();
+    final taskDefs = await _taskDefinitionsRef().get();
     for (final taskDef in taskDefs.docs) {
       final execDoc = await _executionsRef(taskDef.id).doc(executionId).get();
       if (execDoc.exists) return taskDef.id;
@@ -354,7 +354,7 @@ class FirestoreTaskRepository implements TaskRepository {
     ).orderBy('executedAt').get();
 
     if (executionSnap.docs.isEmpty) {
-      await _taskDefsRef.doc(taskId).update({
+      await _taskDefinitionsRef().doc(taskId).update({
         'lastExecutedAt': null,
         'nextScheduledAt': null,
       });
@@ -372,7 +372,7 @@ class FirestoreTaskRepository implements TaskRepository {
 
     final lastExecutedAt = taskHistory.last.executedAt;
 
-    final taskDefSnap = await _taskDefsRef.doc(taskId).get();
+    final taskDefSnap = await _taskDefinitionsRef().doc(taskId).get();
     final taskType = TaskType.values.byName(
       taskDefSnap.data()!['taskType'] as String,
     );
@@ -392,7 +392,7 @@ class FirestoreTaskRepository implements TaskRepository {
       }(),
     };
 
-    await _taskDefsRef.doc(taskId).update({
+    await _taskDefinitionsRef().doc(taskId).update({
       'lastExecutedAt': Timestamp.fromDate(lastExecutedAt),
       'nextScheduledAt': nextScheduledAt != null
           ? Timestamp.fromDate(nextScheduledAt)
