@@ -203,6 +203,19 @@ void main() {
         throwsA(isA<TaskRepositoryException>()),
       );
     });
+
+    test('読み戻した TaskHistory の taskId がタスク ID と一致する', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+      );
+      await repository.recordExecution(id, executedAt: DateTime(2025, 6, 1));
+
+      final task = await repository.findTaskById(id);
+      expect(task.taskHistory.first.taskId, id);
+    });
   });
 
   group('recordExecution', () {
@@ -246,6 +259,21 @@ void main() {
       );
 
       expect(history.comment, isNull);
+    });
+
+    test('戻り値の taskId が記録したタスクの ID と一致する', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+      );
+      final history = await repository.recordExecution(
+        id,
+        executedAt: DateTime(2025, 6, 1),
+      );
+
+      expect(history.taskId, id);
     });
 
     test('コメントありで記録すると履歴にコメントが保持される', () async {
@@ -501,6 +529,24 @@ void main() {
       );
     });
 
+    test('誤った taskId を渡しても実行履歴は削除されない', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+      );
+      final target = await repository.recordExecution(
+        id,
+        executedAt: DateTime(2025, 6, 1),
+      );
+
+      await repository.deleteExecution(target.id, taskId: 'wrong-task-id');
+
+      final task = await repository.findTaskById(id);
+      expect(task.taskHistory, hasLength(1));
+    });
+
     test('削除後にキャッシュが更新される', () async {
       final id = await repository.addTask(
         taskType: TaskType.scheduled,
@@ -663,6 +709,28 @@ void main() {
 
         final task = await repository.findTaskById(id);
         expect(task.scheduledAt, isNotNull);
+      });
+
+      test('時刻成分を含む executedAt でも日付単位で間隔が計算される', () async {
+        final id = await repository.addTask(
+          taskType: TaskType.period,
+          name: '散髪',
+          icon: '📝',
+          color: TaskColor.none,
+        );
+        // 1日間隔: 15:00 → 翌日 09:00（時刻成分あり）
+        await repository.recordExecution(
+          id,
+          executedAt: DateTime(2025, 1, 1, 15, 0),
+        );
+        await repository.recordExecution(
+          id,
+          executedAt: DateTime(2025, 1, 2, 9, 0),
+        );
+
+        final task = await repository.findTaskById(id);
+        // 1日間隔 → lastExecutedAt(1/2) + 1日 = 1/3
+        expect(task.scheduledAt, DateTime(2025, 1, 3, 9, 0));
       });
     });
   });

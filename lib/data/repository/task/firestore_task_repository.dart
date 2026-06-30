@@ -201,7 +201,9 @@ class FirestoreTaskRepository implements TaskRepository {
     required String taskId,
   }) async {
     try {
-      await _executionsRef(taskId).doc(executionId).delete();
+      final ref = _executionsRef(taskId).doc(executionId);
+      if (!(await ref.get()).exists) return;
+      await ref.delete();
       await _updateCache(taskId);
     } catch (e) {
       throw TaskDeleteException(e.toString());

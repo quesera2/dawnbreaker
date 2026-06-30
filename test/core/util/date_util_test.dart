@@ -17,5 +17,10 @@ void main() {
       final b = DateTime(2025, 6, 1, 23, 59);
       expect(b.truncateTime.difference(a.truncateTime).inDays, 0);
     });
+
+    test('戻り値は UTC DateTime である', () {
+      final dt = DateTime(2025, 6, 1, 15, 30);
+      expect(dt.truncateTime.isUtc, isTrue);
+    });
   });
 }
