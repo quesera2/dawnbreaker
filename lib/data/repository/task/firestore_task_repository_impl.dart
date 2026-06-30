@@ -214,9 +214,9 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   @override
   Future<void> deleteAllTasks() async {
     try {
-      final taskDefs = await _taskDefinitionsRef().get();
+      final taskDefinitions = await _taskDefinitionsRef().get();
       await Future.wait(
-        taskDefs.docs.map((doc) async {
+        taskDefinitions.docs.map((doc) async {
           await _deleteAllExecutions(doc.id);
           await doc.reference.delete();
         }),
@@ -305,7 +305,8 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     DocumentSnapshot<Map<String, dynamic>> doc,
   ) async {
     final taskId = doc.id;
-    final data = doc.data()!;
+    final data = doc.data();
+    if (data == null) throw TaskNotFoundException(taskId: taskId);
     final taskType = TaskType.values.byName(data['taskType'] as String);
     final name = data['name'] as String;
     final furigana = data['furigana'] as String;
@@ -409,17 +410,16 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
 
     final lastExecutedAt = taskHistory.last.executedAt;
 
-    final taskDefSnap = await _taskDefinitionsRef().doc(taskId).get();
-    final taskType = TaskType.values.byName(
-      taskDefSnap.data()!['taskType'] as String,
-    );
+    final taskDefinitionSnap = await _taskDefinitionsRef().doc(taskId).get();
+    final taskDefData = taskDefinitionSnap.data();
+    if (taskDefData == null) throw TaskNotFoundException(taskId: taskId);
+    final taskType = TaskType.values.byName(taskDefData['taskType'] as String);
 
     final DateTime? nextScheduledAt = switch (taskType) {
       TaskType.irregular => null,
       TaskType.period => _computePeriodNextAt(taskHistory),
       TaskType.scheduled => () {
-        final config =
-            taskDefSnap.data()!['scheduleConfig'] as Map<String, dynamic>?;
+        final config = taskDefData['scheduleConfig'] as Map<String, dynamic>?;
         if (config == null) return null;
         final value = config['scheduleValue'] as int;
         final unit = ScheduleUnit.values.byName(
