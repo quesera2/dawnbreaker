@@ -86,20 +86,19 @@ class FirestoreTaskRepository implements TaskRepository {
     try {
       final furigana = await _furiganaTranslate.translate(name);
       final id = _uuid.v4();
-      await _taskDefinitionsRef().doc(id).set({
-        'taskType': taskType.name,
-        'name': name,
-        'furigana': furigana,
-        'icon': icon,
-        'color': color.name,
-        if (taskType == TaskType.scheduled)
-          'scheduleConfig': {
-            'scheduleValue': scheduleValue,
-            'scheduleUnit': scheduleUnit!.name,
-          },
-        'lastExecutedAt': null,
-        'nextScheduledAt': null,
-      });
+      await _taskDefinitionsRef()
+          .doc(id)
+          .set(
+            _taskDefinitionData(
+              taskType: taskType,
+              name: name,
+              furigana: furigana,
+              icon: icon,
+              color: color,
+              scheduleValue: scheduleValue,
+              scheduleUnit: scheduleUnit,
+            ),
+          );
       return id;
     } on TaskRepositoryException {
       rethrow;
@@ -154,11 +153,15 @@ class FirestoreTaskRepository implements TaskRepository {
   }) async {
     try {
       final id = _uuid.v4();
-      await _executionsRef(taskId).doc(id).set({
-        'executedAt': Timestamp.fromDate(executedAt),
-        'comment': comment,
-        'taskDefinitionId': taskId,
-      });
+      await _executionsRef(taskId)
+          .doc(id)
+          .set(
+            _executionData(
+              taskDefinitionId: taskId,
+              executedAt: executedAt,
+              comment: comment,
+            ),
+          );
       await _updateCache(taskId);
       return TaskHistory(id: id, executedAt: executedAt, comment: comment);
     } catch (e) {
@@ -228,30 +231,35 @@ class FirestoreTaskRepository implements TaskRepository {
   Future<void> restoreTask(TaskItem taskItem) async {
     try {
       final newId = _uuid.v4();
-      final data = <String, dynamic>{
-        'taskType': taskItem.taskType.name,
-        'name': taskItem.name,
-        'furigana': taskItem.furigana,
-        'icon': taskItem.icon,
-        'color': taskItem.color.name,
-        'lastExecutedAt': null,
-        'nextScheduledAt': null,
-      };
-      if (taskItem.taskType == TaskType.scheduled) {
-        data['scheduleConfig'] = {
-          'scheduleValue': taskItem.scheduleValueOrDefault,
-          'scheduleUnit': taskItem.scheduleUnitOrDefault.name,
-        };
-      }
-      await _taskDefinitionsRef().doc(newId).set(data);
+      await _taskDefinitionsRef()
+          .doc(newId)
+          .set(
+            _taskDefinitionData(
+              taskType: taskItem.taskType,
+              name: taskItem.name,
+              furigana: taskItem.furigana,
+              icon: taskItem.icon,
+              color: taskItem.color,
+              scheduleValue: taskItem.taskType == TaskType.scheduled
+                  ? taskItem.scheduleValueOrDefault
+                  : null,
+              scheduleUnit: taskItem.taskType == TaskType.scheduled
+                  ? taskItem.scheduleUnitOrDefault
+                  : null,
+            ),
+          );
 
       for (final history in taskItem.taskHistory) {
         final execId = _uuid.v4();
-        await _executionsRef(newId).doc(execId).set({
-          'executedAt': Timestamp.fromDate(history.executedAt),
-          'comment': history.comment,
-          'taskDefinitionId': newId,
-        });
+        await _executionsRef(newId)
+            .doc(execId)
+            .set(
+              _executionData(
+                taskDefinitionId: newId,
+                executedAt: history.executedAt,
+                comment: history.comment,
+              ),
+            );
       }
       if (taskItem.taskHistory.isNotEmpty) {
         await _updateCache(newId);
@@ -260,6 +268,39 @@ class FirestoreTaskRepository implements TaskRepository {
       throw TaskSaveException(e.toString());
     }
   }
+
+  Map<String, dynamic> _taskDefinitionData({
+    required TaskType taskType,
+    required String name,
+    required String furigana,
+    required String icon,
+    required TaskColor color,
+    int? scheduleValue,
+    ScheduleUnit? scheduleUnit,
+  }) => {
+    'taskType': taskType.name,
+    'name': name,
+    'furigana': furigana,
+    'icon': icon,
+    'color': color.name,
+    if (taskType == TaskType.scheduled)
+      'scheduleConfig': {
+        'scheduleValue': scheduleValue,
+        'scheduleUnit': scheduleUnit!.name,
+      },
+    'lastExecutedAt': null,
+    'nextScheduledAt': null,
+  };
+
+  Map<String, dynamic> _executionData({
+    required String taskDefinitionId,
+    required DateTime executedAt,
+    String? comment,
+  }) => {
+    'executedAt': Timestamp.fromDate(executedAt),
+    'comment': comment,
+    'taskDefinitionId': taskDefinitionId,
+  };
 
   Future<TaskItem> _buildTaskItem(
     DocumentSnapshot<Map<String, dynamic>> doc,
