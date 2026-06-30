@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/core/util/furigana_translate.dart';
 import 'package:dawnbreaker/data/database/app_database.dart';
 import 'package:dawnbreaker/data/database/app_database_provider.dart';
@@ -101,13 +102,7 @@ class TaskRepositoryImpl implements TaskRepository {
 
     final items = grouped.values.map(_buildTaskItemFromRows).toList();
 
-    items.sort((a, b) {
-      final aDate = a.scheduledAt;
-      final bDate = b.scheduledAt;
-      if (aDate == null) return 1;
-      if (bDate == null) return -1;
-      return aDate.compareTo(bDate);
-    });
+    items.sort((a, b) => compareNullableDateAsc(a.scheduledAt, b.scheduledAt));
 
     return items;
   }

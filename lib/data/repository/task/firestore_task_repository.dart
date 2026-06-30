@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/core/util/furigana_translate.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
@@ -41,13 +42,8 @@ class FirestoreTaskRepository implements TaskRepository {
   Stream<List<TaskItem>> allTaskItems() {
     return _taskDefinitionsRef().snapshots().asyncMap((snapshot) async {
       final items = await Future.wait(snapshot.docs.map(_buildTaskItem));
-      return items..sort((a, b) {
-        final aDate = a.scheduledAt;
-        final bDate = b.scheduledAt;
-        if (aDate == null) return 1;
-        if (bDate == null) return -1;
-        return aDate.compareTo(bDate);
-      });
+      return items
+        ..sort((a, b) => compareNullableDateAsc(a.scheduledAt, b.scheduledAt));
     });
   }
 
