@@ -450,10 +450,8 @@ class FirestoreTaskRepository implements TaskRepository {
     if (taskHistory.length < 2) return null;
     final intervals = taskHistory.skip(1).indexed.map((item) {
       final (index, current) = item;
-      final a = taskHistory[index].executedAt;
-      final b = current.executedAt;
-      final aDate = DateTime(a.year, a.month, a.day);
-      final bDate = DateTime(b.year, b.month, b.day);
+      final aDate = taskHistory[index].executedAt.truncateTime;
+      final bDate = current.executedAt.truncateTime;
       return bDate.difference(aDate).inDays;
     }).toList();
     final avgDays = intervals.reduce((a, b) => a + b) / intervals.length;
