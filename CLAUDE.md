@@ -24,6 +24,16 @@
 fvm flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
+## 変数・識別子の命名
+
+略語・省略形は使わない。ただし以下は Dart/Flutter の慣習として許容する：
+
+- `ref`（Riverpod の Ref）
+- `e` / `s`（catch ブロックのエラー・スタックトレース）
+- `i`（ループカウンタ）
+- `_` / `(_, _)`（未使用引数）
+- `ctx`（BuildContext）
+
 ## Dart スタイル
 
 Dart 3.7 以降の構文を積極的に使う：
