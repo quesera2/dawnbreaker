@@ -41,18 +41,20 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
 
   @override
   Stream<TaskItem?> watchTaskById(String taskId) {
-    return _taskDefinitionsRef().doc(taskId).snapshots().asyncMap((snap) async {
-      if (!snap.exists) return null;
-      return _buildTaskItem(snap);
+    return _taskDefinitionsRef().doc(taskId).snapshots().asyncMap((
+      snapshot,
+    ) async {
+      if (!snapshot.exists) return null;
+      return _buildTaskItem(snapshot);
     });
   }
 
   @override
   Future<TaskItem> findTaskById(String taskId) async {
     try {
-      final snap = await _taskDefinitionsRef().doc(taskId).get();
-      if (!snap.exists) throw TaskNotFoundException(taskId: taskId);
-      return _buildTaskItem(snap);
+      final snapshot = await _taskDefinitionsRef().doc(taskId).get();
+      if (!snapshot.exists) throw TaskNotFoundException(taskId: taskId);
+      return _buildTaskItem(snapshot);
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
@@ -192,9 +194,9 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     required String taskId,
   }) async {
     try {
-      final ref = _executionsRef(taskId).doc(executionId);
-      if (!(await ref.get()).exists) return;
-      await ref.delete();
+      final executionRef = _executionsRef(taskId).doc(executionId);
+      if (!(await executionRef.get()).exists) return;
+      await executionRef.delete();
       await _updateCache(taskId);
     } catch (e) {
       throw TaskDeleteException(e.toString());
@@ -214,13 +216,24 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   @override
   Future<void> deleteAllTasks() async {
     try {
-      final taskDefs = await _taskDefinitionsRef().get();
-      await Future.wait(
-        taskDefs.docs.map((doc) async {
-          await _deleteAllExecutions(doc.id);
-          await doc.reference.delete();
-        }),
+      final taskDefinitions = await _taskDefinitionsRef().get();
+      final executionSnapshots = await Future.wait(
+        taskDefinitions.docs.map((doc) => _executionsRef(doc.id).get()),
       );
+
+      final allReferences = [
+        ...taskDefinitions.docs.map((d) => d.reference),
+        for (final snapshot in executionSnapshots)
+          ...snapshot.docs.map((d) => d.reference),
+      ];
+
+      for (var i = 0; i < allReferences.length; i += 500) {
+        final batch = _firestore.batch();
+        for (final reference in allReferences.skip(i).take(500)) {
+          batch.delete(reference);
+        }
+        await batch.commit();
+      }
     } catch (e) {
       throw TaskDeleteException(e.toString());
     }
@@ -230,39 +243,46 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   Future<void> restoreTask(TaskItem taskItem) async {
     try {
       final newId = _uuid.v4();
-      await _taskDefinitionsRef()
-          .doc(newId)
-          .set(
-            _taskDefinitionData(
-              taskType: taskItem.taskType,
-              name: taskItem.name,
-              furigana: taskItem.furigana,
-              icon: taskItem.icon,
-              color: taskItem.color,
-              scheduleValue: taskItem.taskType == TaskType.scheduled
-                  ? taskItem.scheduleValueOrDefault
-                  : null,
-              scheduleUnit: taskItem.taskType == TaskType.scheduled
-                  ? taskItem.scheduleUnitOrDefault
-                  : null,
-            ),
-          );
+      final batch = _firestore.batch();
+
+      final lastExecutedAt = taskItem.taskHistory.isEmpty
+          ? null
+          : taskItem.taskHistory.last.executedAt;
+
+      batch.set(_taskDefinitionsRef().doc(newId), {
+        ..._taskDefinitionData(
+          taskType: taskItem.taskType,
+          name: taskItem.name,
+          furigana: taskItem.furigana,
+          icon: taskItem.icon,
+          color: taskItem.color,
+          scheduleValue: taskItem.taskType == TaskType.scheduled
+              ? taskItem.scheduleValueOrDefault
+              : null,
+          scheduleUnit: taskItem.taskType == TaskType.scheduled
+              ? taskItem.scheduleUnitOrDefault
+              : null,
+        ),
+        'lastExecutedAt': lastExecutedAt != null
+            ? Timestamp.fromDate(lastExecutedAt)
+            : null,
+        'nextScheduledAt': taskItem.scheduledAt != null
+            ? Timestamp.fromDate(taskItem.scheduledAt!)
+            : null,
+      });
 
       for (final history in taskItem.taskHistory) {
-        final execId = _uuid.v4();
-        await _executionsRef(newId)
-            .doc(execId)
-            .set(
-              _executionData(
-                taskDefinitionId: newId,
-                executedAt: history.executedAt,
-                comment: history.comment,
-              ),
-            );
+        batch.set(
+          _executionsRef(newId).doc(_uuid.v4()),
+          _executionData(
+            taskDefinitionId: newId,
+            executedAt: history.executedAt,
+            comment: history.comment,
+          ),
+        );
       }
-      if (taskItem.taskHistory.isNotEmpty) {
-        await _updateCache(newId);
-      }
+
+      await batch.commit();
     } catch (e) {
       throw TaskSaveException(e.toString());
     }
@@ -305,7 +325,8 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     DocumentSnapshot<Map<String, dynamic>> doc,
   ) async {
     final taskId = doc.id;
-    final data = doc.data()!;
+    final data = doc.data();
+    if (data == null) throw TaskNotFoundException(taskId: taskId);
     final taskType = TaskType.values.byName(data['taskType'] as String);
     final name = data['name'] as String;
     final furigana = data['furigana'] as String;
@@ -409,17 +430,16 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
 
     final lastExecutedAt = taskHistory.last.executedAt;
 
-    final taskDefSnap = await _taskDefinitionsRef().doc(taskId).get();
-    final taskType = TaskType.values.byName(
-      taskDefSnap.data()!['taskType'] as String,
-    );
+    final taskDefinitionSnap = await _taskDefinitionsRef().doc(taskId).get();
+    final taskDefData = taskDefinitionSnap.data();
+    if (taskDefData == null) throw TaskNotFoundException(taskId: taskId);
+    final taskType = TaskType.values.byName(taskDefData['taskType'] as String);
 
     final DateTime? nextScheduledAt = switch (taskType) {
       TaskType.irregular => null,
       TaskType.period => _computePeriodNextAt(taskHistory),
       TaskType.scheduled => () {
-        final config =
-            taskDefSnap.data()!['scheduleConfig'] as Map<String, dynamic>?;
+        final config = taskDefData['scheduleConfig'] as Map<String, dynamic>?;
         if (config == null) return null;
         final value = config['scheduleValue'] as int;
         final unit = ScheduleUnit.values.byName(
