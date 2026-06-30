@@ -5,7 +5,7 @@ import 'package:dawnbreaker/core/notification/notification_permission_observer.d
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/task_notification_sync_notifier.dart';
 import 'package:dawnbreaker/data/preferences/shared_preferences_provider.dart';
-import 'package:dawnbreaker/data/repository/task/task_repository_impl.dart';
+import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/firebase_options_dev.dart' as dev_options;
 import 'package:dawnbreaker/firebase_options_prod.dart' as prod_options;
