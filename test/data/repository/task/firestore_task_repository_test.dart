@@ -2,7 +2,7 @@ import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
-import 'package:dawnbreaker/data/repository/task/firestore_task_repository.dart';
+import 'package:dawnbreaker/data/repository/task/firestore_task_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -16,7 +16,7 @@ void main() {
 
   setUp(() {
     firestore = FakeFirebaseFirestore();
-    repository = FirestoreTaskRepository(
+    repository = FirestoreTaskRepositoryImpl(
       userId: 'test-user',
       furiganaTranslate: const FakeFuriganaTranslate({
         '散髪': 'さんぱつ',

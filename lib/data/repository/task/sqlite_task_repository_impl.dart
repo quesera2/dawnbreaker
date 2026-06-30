@@ -1,45 +1,24 @@
-import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
 import 'package:collection/collection.dart';
 import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/core/util/furigana_translate.dart';
 import 'package:dawnbreaker/data/database/app_database.dart';
-import 'package:dawnbreaker/data/database/app_database_provider.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
-import 'package:dawnbreaker/core/auth/app_user.dart';
-import 'package:dawnbreaker/data/repository/task/firestore_task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
-import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:drift/drift.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
-
-part 'task_repository_impl.g.dart';
 
 const _uuid = Uuid();
 
-@riverpod
-Future<TaskRepository> taskRepository(Ref ref) async {
-  final user = await ref.watch(currentUserProvider.future);
-  return switch (user) {
-    LocalUser() => TaskRepositoryImpl(
-      db: ref.watch(appDatabaseProvider),
-      furiganaTranslate: ref.watch(furiganaTranslateProvider),
-    ),
-    FirebaseAppUser(:final id) => FirestoreTaskRepository(
-      userId: id,
-      furiganaTranslate: ref.watch(furiganaTranslateProvider),
-      firestore: firestore.FirebaseFirestore.instance,
-    ),
-  };
-}
-
-class TaskRepositoryImpl implements TaskRepository {
-  TaskRepositoryImpl({required this._db, required this._furiganaTranslate});
+class SQLiteTaskRepositoryImpl implements TaskRepository {
+  SQLiteTaskRepositoryImpl({
+    required this._db,
+    required this._furiganaTranslate,
+  });
 
   final AppDatabase _db;
   final FuriganaTranslate _furiganaTranslate;
@@ -74,88 +53,6 @@ class TaskRepositoryImpl implements TaskRepository {
     } catch (e) {
       throw TaskLoadException(e.toString());
     }
-  }
-
-  JoinedSelectStatement<HasResultSet, dynamic> _baseTaskQuery({
-    Expression<bool>? where,
-  }) {
-    final query = _db.select(_db.taskDefinitions).join([
-      leftOuterJoin(
-        _db.taskScheduledConfigs,
-        _db.taskScheduledConfigs.taskDefinitionId.equalsExp(
-          _db.taskDefinitions.id,
-        ),
-      ),
-      leftOuterJoin(
-        _db.taskExecutions,
-        _db.taskExecutions.taskDefinitionId.equalsExp(_db.taskDefinitions.id),
-      ),
-    ])..orderBy([OrderingTerm.asc(_db.taskExecutions.executedAt)]);
-    if (where != null) {
-      query.where(where);
-    }
-    return query;
-  }
-
-  List<TaskItem> _buildAllTaskItemsFromRows(List<TypedResult> rows) {
-    final grouped = rows.groupListsBy(
-      (row) => row.readTable(_db.taskDefinitions).id,
-    );
-
-    final items = grouped.values.map(_buildTaskItemFromRows).toList();
-
-    items.sort((a, b) => compareNullableDateAsc(a.scheduledAt, b.scheduledAt));
-
-    return items;
-  }
-
-  TaskItem _buildTaskItemFromRows(List<TypedResult> rows) {
-    final def = rows.first.readTable(_db.taskDefinitions);
-    final config = rows.first.readTableOrNull(_db.taskScheduledConfigs);
-    final taskHistory = rows
-        .map((r) => r.readTableOrNull(_db.taskExecutions))
-        .nonNulls
-        .map(
-          (e) => TaskHistory(
-            id: e.id,
-            taskId: def.id,
-            executedAt: e.executedAt,
-            comment: e.comment,
-          ),
-        )
-        .toList();
-
-    return switch (def.taskType) {
-      TaskType.irregular => TaskItem.irregular(
-        id: def.id,
-        name: def.name,
-        furigana: def.furigana,
-        icon: def.icon,
-        color: def.color,
-        taskHistory: taskHistory,
-      ),
-      TaskType.period => TaskItem.period(
-        id: def.id,
-        name: def.name,
-        furigana: def.furigana,
-        icon: def.icon,
-        color: def.color,
-        taskHistory: taskHistory,
-      ),
-      TaskType.scheduled =>
-        config != null
-            ? TaskItem.scheduled(
-                id: def.id,
-                name: def.name,
-                furigana: def.furigana,
-                icon: def.icon,
-                color: def.color,
-                scheduleValue: config.scheduleValue,
-                scheduleUnit: config.scheduleUnit,
-                taskHistory: taskHistory,
-              )
-            : throw TaskNotFoundException(taskId: def.id),
-    };
   }
 
   @override
@@ -391,5 +288,87 @@ class TaskRepositoryImpl implements TaskRepository {
     } catch (e) {
       throw TaskSaveException(e.toString());
     }
+  }
+
+  JoinedSelectStatement<HasResultSet, dynamic> _baseTaskQuery({
+    Expression<bool>? where,
+  }) {
+    final query = _db.select(_db.taskDefinitions).join([
+      leftOuterJoin(
+        _db.taskScheduledConfigs,
+        _db.taskScheduledConfigs.taskDefinitionId.equalsExp(
+          _db.taskDefinitions.id,
+        ),
+      ),
+      leftOuterJoin(
+        _db.taskExecutions,
+        _db.taskExecutions.taskDefinitionId.equalsExp(_db.taskDefinitions.id),
+      ),
+    ])..orderBy([OrderingTerm.asc(_db.taskExecutions.executedAt)]);
+    if (where != null) {
+      query.where(where);
+    }
+    return query;
+  }
+
+  List<TaskItem> _buildAllTaskItemsFromRows(List<TypedResult> rows) {
+    final grouped = rows.groupListsBy(
+      (row) => row.readTable(_db.taskDefinitions).id,
+    );
+
+    final items = grouped.values.map(_buildTaskItemFromRows).toList();
+
+    items.sort((a, b) => compareNullableDateAsc(a.scheduledAt, b.scheduledAt));
+
+    return items;
+  }
+
+  TaskItem _buildTaskItemFromRows(List<TypedResult> rows) {
+    final def = rows.first.readTable(_db.taskDefinitions);
+    final config = rows.first.readTableOrNull(_db.taskScheduledConfigs);
+    final taskHistory = rows
+        .map((r) => r.readTableOrNull(_db.taskExecutions))
+        .nonNulls
+        .map(
+          (e) => TaskHistory(
+            id: e.id,
+            taskId: def.id,
+            executedAt: e.executedAt,
+            comment: e.comment,
+          ),
+        )
+        .toList();
+
+    return switch (def.taskType) {
+      TaskType.irregular => TaskItem.irregular(
+        id: def.id,
+        name: def.name,
+        furigana: def.furigana,
+        icon: def.icon,
+        color: def.color,
+        taskHistory: taskHistory,
+      ),
+      TaskType.period => TaskItem.period(
+        id: def.id,
+        name: def.name,
+        furigana: def.furigana,
+        icon: def.icon,
+        color: def.color,
+        taskHistory: taskHistory,
+      ),
+      TaskType.scheduled =>
+        config != null
+            ? TaskItem.scheduled(
+                id: def.id,
+                name: def.name,
+                furigana: def.furigana,
+                icon: def.icon,
+                color: def.color,
+                scheduleValue: config.scheduleValue,
+                scheduleUnit: config.scheduleUnit,
+                taskHistory: taskHistory,
+              )
+            : throw TaskNotFoundException(taskId: def.id),
+    };
   }
 }

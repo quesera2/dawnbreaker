@@ -13,8 +13,8 @@ import 'package:uuid/uuid.dart';
 
 const _uuid = Uuid();
 
-class FirestoreTaskRepository implements TaskRepository {
-  FirestoreTaskRepository({
+class FirestoreTaskRepositoryImpl implements TaskRepository {
+  FirestoreTaskRepositoryImpl({
     required this.userId,
     required this._furiganaTranslate,
     required this._firestore,
