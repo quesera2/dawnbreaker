@@ -28,7 +28,10 @@ Future<TaskRepository> taskRepository(Ref ref) async {
       db: ref.watch(appDatabaseProvider),
       furiganaTranslate: ref.watch(furiganaTranslateProvider),
     ),
-    FirebaseAppUser(:final id) => FirestoreTaskRepository(userId: id),
+    FirebaseAppUser(:final id) => FirestoreTaskRepository(
+      userId: id,
+      furiganaTranslate: ref.watch(furiganaTranslateProvider),
+    ),
   };
 }
 
