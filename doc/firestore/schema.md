@@ -56,6 +56,7 @@ users/
 
 | フィールド | 型 | 説明 |
 |---|---|---|
-| taskDefinitionId | string | 親タスクの ID（逆引き用） |
 | executedAt | timestamp | 実行日時 |
 | comment | string? | メモ（任意）|
+
+親タスクの ID はドキュメントパス（`taskDefinitions/{taskDefinitionId}/executions/...`）から得られるため、フィールドとしては持たない。
