@@ -122,12 +122,7 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
               comment: Value(comment),
             ),
           );
-      return TaskHistory(
-        id: id,
-        taskId: taskId,
-        executedAt: executedAt,
-        comment: comment,
-      );
+      return TaskHistory(id: id, executedAt: executedAt, comment: comment);
     } catch (e) {
       throw TaskSaveException(e.toString());
     }
@@ -332,7 +327,6 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
         .map(
           (e) => TaskHistory(
             id: e.id,
-            taskId: def.id,
             executedAt: e.executedAt,
             comment: e.comment,
           ),

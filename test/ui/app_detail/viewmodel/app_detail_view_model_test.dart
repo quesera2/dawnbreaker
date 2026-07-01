@@ -197,6 +197,7 @@ void main() {
 
           test('成功時はエラーなし', () async {
             await viewModel.updateExecution(
+              _taskOneHistory,
               _taskOneHistory.taskHistory.first,
               executedAt: DateTime(2026, 2, 1),
             );
@@ -205,6 +206,7 @@ void main() {
 
           test('コメントありで更新してもエラーなし', () async {
             await viewModel.updateExecution(
+              _taskOneHistory,
               _taskOneHistory.taskHistory.first,
               executedAt: DateTime(2026, 2, 1),
               comment: '更新コメント',
@@ -214,6 +216,7 @@ void main() {
 
           test('成功時に更新完了の通知がセットされる', () async {
             await viewModel.updateExecution(
+              _taskOneHistory,
               _taskOneHistory.taskHistory.first,
               executedAt: DateTime(2026, 2, 1),
             );
@@ -225,6 +228,7 @@ void main() {
 
           test('undo ハンドラを呼び出すと元の日時・コメントで再更新される', () async {
             await viewModel.updateExecution(
+              _taskOneHistory,
               _taskOneHistory.taskHistory.first,
               executedAt: DateTime(2026, 2, 1),
               comment: '変更後',
@@ -243,6 +247,7 @@ void main() {
 
           test('失敗時に更新エラーの通知がセットされる', () async {
             await viewModel.updateExecution(
+              _taskOneHistory,
               _taskOneHistory.taskHistory.first,
               executedAt: DateTime(2026, 2, 1),
             );
@@ -251,6 +256,7 @@ void main() {
 
           test('失敗時に再試行できる', () async {
             await viewModel.updateExecution(
+              _taskOneHistory,
               _taskOneHistory.taskHistory.first,
               executedAt: DateTime(2026, 2, 1),
             );
@@ -259,6 +265,7 @@ void main() {
 
           test('リトライハンドラを呼び出すと再度更新が試みられ成功する', () async {
             await viewModel.updateExecution(
+              _taskOneHistory,
               _taskOneHistory.taskHistory.first,
               executedAt: DateTime(2026, 2, 1),
             );
@@ -524,7 +531,6 @@ void main() {
           ]) {
             test('$descriptionの履歴を削除後 undo で元のコメントが再作成される', () async {
               final history = TaskHistory(
-                taskId: 'task-1',
                 id: 'h-test',
                 executedAt: DateTime(2026, 1, 1),
                 comment: comment,
@@ -601,7 +607,7 @@ final _taskOneHistory = TaskItem.period(
   icon: '📝',
   color: TaskColor.blue,
   taskHistory: [
-    TaskHistory(taskId: 'task-1', id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
+    TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
   ],
 );
 
@@ -612,9 +618,9 @@ final _taskMultiHistory = TaskItem.period(
   icon: '📝',
   color: TaskColor.green,
   taskHistory: [
-    TaskHistory(taskId: 'task-1', id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
-    TaskHistory(taskId: 'task-1', id: 'h-2', executedAt: DateTime(2026, 2, 1), comment: null),
-    TaskHistory(taskId: 'task-1', id: 'h-3', executedAt: DateTime(2026, 3, 4), comment: null),
+    TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
+    TaskHistory(id: 'h-2', executedAt: DateTime(2026, 2, 1), comment: null),
+    TaskHistory(id: 'h-3', executedAt: DateTime(2026, 3, 4), comment: null),
   ],
 );
 

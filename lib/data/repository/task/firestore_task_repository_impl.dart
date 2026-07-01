@@ -147,22 +147,11 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   }) async {
     try {
       final id = _uuid.v4();
-      await _executionsRef(taskId)
-          .doc(id)
-          .set(
-            _executionData(
-              taskDefinitionId: taskId,
-              executedAt: executedAt,
-              comment: comment,
-            ),
-          );
+      await _executionsRef(
+        taskId,
+      ).doc(id).set(_executionData(executedAt: executedAt, comment: comment));
       await _updateCache(taskId);
-      return TaskHistory(
-        id: id,
-        taskId: taskId,
-        executedAt: executedAt,
-        comment: comment,
-      );
+      return TaskHistory(id: id, executedAt: executedAt, comment: comment);
     } catch (e) {
       throw TaskSaveException(e.toString());
     }
@@ -275,7 +264,6 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
         batch.set(
           _executionsRef(newId).doc(_uuid.v4()),
           _executionData(
-            taskDefinitionId: newId,
             executedAt: history.executedAt,
             comment: history.comment,
           ),
@@ -312,14 +300,9 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   };
 
   Map<String, dynamic> _executionData({
-    required String taskDefinitionId,
     required DateTime executedAt,
     String? comment,
-  }) => {
-    'executedAt': Timestamp.fromDate(executedAt),
-    'comment': comment,
-    'taskDefinitionId': taskDefinitionId,
-  };
+  }) => {'executedAt': Timestamp.fromDate(executedAt), 'comment': comment};
 
   Future<TaskItem> _buildTaskItem(
     DocumentSnapshot<Map<String, dynamic>> doc,
@@ -340,7 +323,6 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
       final eData = e.data();
       return TaskHistory(
         id: e.id,
-        taskId: taskId,
         executedAt: (eData['executedAt'] as Timestamp).toDate(),
         comment: eData['comment'] as String?,
       );
@@ -422,7 +404,6 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
       final data = e.data();
       return TaskHistory(
         id: e.id,
-        taskId: taskId,
         executedAt: (data['executedAt'] as Timestamp).toDate(),
         comment: data['comment'] as String?,
       );

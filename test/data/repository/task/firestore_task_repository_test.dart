@@ -204,18 +204,6 @@ void main() {
       );
     });
 
-    test('読み戻した TaskHistory の taskId がタスク ID と一致する', () async {
-      final id = await repository.addTask(
-        taskType: TaskType.period,
-        name: '散髪',
-        icon: '📝',
-        color: TaskColor.none,
-      );
-      await repository.recordExecution(id, executedAt: DateTime(2025, 6, 1));
-
-      final task = await repository.findTaskById(id);
-      expect(task.taskHistory.first.taskId, id);
-    });
   });
 
   group('recordExecution', () {
@@ -259,21 +247,6 @@ void main() {
       );
 
       expect(history.comment, isNull);
-    });
-
-    test('戻り値の taskId が記録したタスクの ID と一致する', () async {
-      final id = await repository.addTask(
-        taskType: TaskType.period,
-        name: '散髪',
-        icon: '📝',
-        color: TaskColor.none,
-      );
-      final history = await repository.recordExecution(
-        id,
-        executedAt: DateTime(2025, 6, 1),
-      );
-
-      expect(history.taskId, id);
     });
 
     test('コメントありで記録すると履歴にコメントが保持される', () async {
@@ -498,7 +471,7 @@ void main() {
         executedAt: DateTime(2025, 6, 1),
       );
 
-      await repository.deleteExecution(target.id, taskId: target.taskId);
+      await repository.deleteExecution(target.id, taskId: id);
 
       final task = await repository.findTaskById(id);
       expect(task.taskHistory, hasLength(1));
@@ -519,7 +492,7 @@ void main() {
       );
       await repository.recordExecution(id, executedAt: DateTime(2025, 9, 1));
 
-      await repository.deleteExecution(target.id, taskId: target.taskId);
+      await repository.deleteExecution(target.id, taskId: id);
 
       final task = await repository.findTaskById(id);
       expect(task.taskHistory, hasLength(2));
@@ -562,7 +535,7 @@ void main() {
         executedAt: DateTime(2025, 2, 1),
       );
 
-      await repository.deleteExecution(second.id, taskId: second.taskId);
+      await repository.deleteExecution(second.id, taskId: id);
 
       final doc = await firestore
           .collection('users')

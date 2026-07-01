@@ -496,7 +496,7 @@ void main() {
       test('日付を更新できる', () async {
         await repository.updateExecution(
           history.id,
-          taskId: history.taskId,
+          taskId: taskId,
           executedAt: DateTime(2025, 7, 1),
         );
 
@@ -510,7 +510,7 @@ void main() {
 
         await repository.updateExecution(
           history.id,
-          taskId: history.taskId,
+          taskId: taskId,
           executedAt: history.executedAt,
           comment: '更新コメント',
         );
@@ -527,7 +527,7 @@ void main() {
         );
         await repository.updateExecution(
           history.id,
-          taskId: history.taskId,
+          taskId: taskId,
           executedAt: DateTime(2025, 7, 1),
         );
 
@@ -555,7 +555,7 @@ void main() {
 
         await repository.updateExecution(
           history.id,
-          taskId: history.taskId,
+          taskId: taskId,
           executedAt: history.executedAt,
         );
 
@@ -761,7 +761,7 @@ void main() {
         executedAt: DateTime(2025, 6, 1),
       );
 
-      await repository.deleteExecution(target.id, taskId: target.taskId);
+      await repository.deleteExecution(target.id, taskId: id);
 
       final task = await repository.findTaskById(id);
       expect(task.taskHistory, hasLength(1));
@@ -782,7 +782,7 @@ void main() {
       );
       await repository.recordExecution(id, executedAt: DateTime(2025, 9, 1));
 
-      await repository.deleteExecution(target.id, taskId: target.taskId);
+      await repository.deleteExecution(target.id, taskId: id);
 
       final task = await repository.findTaskById(id);
       expect(task.taskHistory, hasLength(2));
