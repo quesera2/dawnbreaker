@@ -151,12 +151,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
         taskId,
       ).doc(id).set(_executionData(executedAt: executedAt, comment: comment));
       await _updateCache(taskId);
-      return TaskHistory(
-        id: id,
-        taskId: taskId,
-        executedAt: executedAt,
-        comment: comment,
-      );
+      return TaskHistory(id: id, executedAt: executedAt, comment: comment);
     } catch (e) {
       throw TaskSaveException(e.toString());
     }
@@ -328,7 +323,6 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
       final eData = e.data();
       return TaskHistory(
         id: e.id,
-        taskId: taskId,
         executedAt: (eData['executedAt'] as Timestamp).toDate(),
         comment: eData['comment'] as String?,
       );
@@ -410,7 +404,6 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
       final data = e.data();
       return TaskHistory(
         id: e.id,
-        taskId: taskId,
         executedAt: (data['executedAt'] as Timestamp).toDate(),
         comment: data['comment'] as String?,
       );

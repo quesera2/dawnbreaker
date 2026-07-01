@@ -242,6 +242,7 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
         initialDate: entry.executedAt,
         initialComment: entry.comment,
         onConfirm: (date, comment) => viewModel.updateExecution(
+          task,
           entry,
           executedAt: date,
           comment: comment,

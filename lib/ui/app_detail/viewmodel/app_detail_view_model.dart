@@ -57,6 +57,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
   }
 
   Future<void> updateExecution(
+    TaskItem task,
     TaskHistory history, {
     required DateTime executedAt,
     String? comment,
@@ -64,7 +65,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     try {
       await _repository.updateExecution(
         history.id,
-        taskId: history.taskId,
+        taskId: task.id,
         executedAt: executedAt,
         comment: comment,
       );
@@ -73,6 +74,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         (s) => s.copyWith(
           snackBarMessage: TaskExecutionUpdateSuccess(
             handler: () => updateExecution(
+              task,
               history,
               executedAt: history.executedAt,
               comment: history.comment,
@@ -87,6 +89,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         (s) => s.copyWith(
           dialogMessage: TaskUpdateErrorMessage(
             primaryHandler: () => updateExecution(
+              task,
               history,
               executedAt: executedAt,
               comment: comment,
@@ -154,7 +157,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
           snackBarMessage: TaskCompleteSuccess(
             taskName: task.name,
             handler: () =>
-                _repository.deleteExecution(history.id, taskId: history.taskId),
+                _repository.deleteExecution(history.id, taskId: task.id),
           ),
         ),
       );
@@ -173,7 +176,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
 
   Future<void> deleteExecution(TaskItem task, TaskHistory history) async {
     try {
-      await _repository.deleteExecution(history.id, taskId: history.taskId);
+      await _repository.deleteExecution(history.id, taskId: task.id);
       if (!ref.mounted) return;
       state = state.update(
         (s) => s.copyWith(

@@ -30,7 +30,6 @@ List<TaskItem> buildDummyTasks({
       for (final (index, date) in dates.indexed)
         TaskHistory(
           id: '$taskIdStr-${index + 1}',
-          taskId: taskIdStr,
           executedAt: date,
           comment: null,
         ),

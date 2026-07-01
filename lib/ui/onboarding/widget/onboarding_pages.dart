@@ -197,7 +197,6 @@ class _OnboardingPage1Description extends StatelessWidget {
         taskHistory: [
           TaskHistory(
             id: 'dummy-1-1',
-            taskId: 'dummy-1',
             executedAt: DateTime(now.year, now.month - 6, now.day),
             comment: null,
           ),
@@ -214,7 +213,6 @@ class _OnboardingPage1Description extends StatelessWidget {
         taskHistory: [
           TaskHistory(
             id: 'dummy-2-1',
-            taskId: 'dummy-2',
             executedAt: DateTime(now.year, now.month - 5, now.day - 1),
             comment: null,
           ),
@@ -231,7 +229,6 @@ class _OnboardingPage1Description extends StatelessWidget {
         taskHistory: [
           TaskHistory(
             id: 'dummy-3-1',
-            taskId: 'dummy-3',
             executedAt: DateTime(now.year, now.month, now.day - 3),
             comment: null,
           ),
@@ -248,7 +245,6 @@ class _OnboardingPage1Description extends StatelessWidget {
         taskHistory: [
           TaskHistory(
             id: 'dummy-4-1',
-            taskId: 'dummy-4',
             executedAt: DateTime(now.year, now.month, now.day - 7),
             comment: null,
           ),
@@ -265,7 +261,6 @@ class _OnboardingPage1Description extends StatelessWidget {
         taskHistory: [
           TaskHistory(
             id: 'dummy-5-1',
-            taskId: 'dummy-5',
             executedAt: DateTime(now.year, now.month - 1, now.day),
             comment: null,
           ),

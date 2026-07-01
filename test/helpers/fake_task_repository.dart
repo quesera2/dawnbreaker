@@ -117,7 +117,6 @@ class FakeTaskRepository implements TaskRepository {
     final newTaskId = _nextId++;
     return TaskHistory(
       id: newTaskId.toString(),
-      taskId: taskId,
       executedAt: executedAt,
       comment: comment,
     );
