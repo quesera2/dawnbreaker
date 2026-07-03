@@ -203,7 +203,6 @@ void main() {
         throwsA(isA<TaskRepositoryException>()),
       );
     });
-
   });
 
   group('recordExecution', () {
@@ -707,4 +706,28 @@ void main() {
       });
     });
   });
+
+  group('直近履歴の上限', () {
+    test('実行履歴が10件を超えると直近10件のみ taskHistory に含まれる', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+      );
+      for (var i = 1; i <= 12; i++) {
+        await repository.recordExecution(id, executedAt: DateTime(2025, 1, i));
+      }
+
+      final task = await repository.findTaskById(id);
+
+      expect(task.taskHistory, hasLength(10));
+      expect(task.taskHistory.first.executedAt, DateTime(2025, 1, 3));
+      expect(task.taskHistory.last.executedAt, DateTime(2025, 1, 12));
+    });
+  });
+
+  // fetchOlderHistory は FieldPath.documentId をカーソルに使っており、
+  // fake_cloud_firestore がこれを正しく解決できないため自動テストできない。
+  // 境界の正しさ（取りこぼし・重複がないこと）は手動で確認すること。
 }

@@ -5,6 +5,8 @@ import 'package:dawnbreaker/data/database/app_database.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
+import 'package:dawnbreaker/data/model/task_history_cursor.dart';
+import 'package:dawnbreaker/data/model/task_history_page.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
@@ -54,6 +56,14 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
       throw TaskLoadException(e.toString());
     }
   }
+
+  // taskHistory は常に全件取得済みのため、続きのページは存在しない
+  @override
+  Future<TaskHistoryPage> fetchOlderHistory(
+    String taskId, {
+    required TaskHistoryCursor cursor,
+    int limit = 20,
+  }) async => const TaskHistoryPage(items: [], hasMore: false);
 
   @override
   Future<String> addTask({

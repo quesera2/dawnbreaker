@@ -8,6 +8,7 @@ import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_history_stats.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_ui_state.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_view_model.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/app_detail_history_item.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
@@ -57,18 +58,22 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
 
     return Scaffold(
       backgroundColor: context.appColorScheme.bg,
-      body: CustomScrollView(
-        slivers: [
-          _buildAppBar(task, viewModel),
-          if (!uiState.isLoading && task != null && historyStats != null)
-            ..._buildContentAreas(
-              task,
-              historyStats,
-              uiState.daysSinceLastExecution,
-              uiState.averageIntervalDays,
-              viewModel,
-            ),
-        ],
+      body: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          const loadMoreThreshold = 200;
+          if (notification.metrics.pixels >=
+              notification.metrics.maxScrollExtent - loadMoreThreshold) {
+            unawaited(viewModel.loadMoreHistory());
+          }
+          return false;
+        },
+        child: CustomScrollView(
+          slivers: [
+            _buildAppBar(task, viewModel),
+            if (!uiState.isLoading && task != null && historyStats != null)
+              ..._buildContentAreas(task, historyStats, uiState, viewModel),
+          ],
+        ),
       ),
       bottomNavigationBar: task != null
           ? _RecordExecutionBar(
@@ -128,18 +133,22 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
   List<Widget> _buildContentAreas(
     TaskItem task,
     TaskHistoryStats historyStats,
-    int? daysSinceLastExecution,
-    int? averageIntervalDays,
+    AppDetailUiState uiState,
     AppDetailViewModel viewModel,
   ) {
     return [
       _statsArea(
         task,
         historyStats,
-        daysSinceLastExecution,
-        averageIntervalDays,
+        uiState.daysSinceLastExecution,
+        uiState.averageIntervalDays,
       ),
-      _historyArea(task, historyStats.historyAndInterval, viewModel),
+      _historyArea(
+        task,
+        uiState.displayedHistoryAndInterval,
+        uiState.isLoadingMoreHistory,
+        viewModel,
+      ),
       const SliverPadding(padding: EdgeInsets.only(bottom: 20)),
     ];
   }
@@ -166,6 +175,7 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
   Widget _historyArea(
     TaskItem task,
     List<(TaskHistory, int?)> historyAndInterval,
+    bool isLoadingMoreHistory,
     AppDetailViewModel viewModel,
   ) {
     if (historyAndInterval.isEmpty) {
@@ -225,6 +235,19 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
               },
             ),
           ),
+          if (isLoadingMoreHistory)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              ),
+            ),
         ],
       );
     }

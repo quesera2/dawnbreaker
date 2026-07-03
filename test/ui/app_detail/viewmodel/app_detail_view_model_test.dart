@@ -238,6 +238,20 @@ void main() {
             await handler!();
             expect(viewState.dialogMessage, isNull);
           });
+
+          test('成功時にローカルの taskHistory が更新される', () async {
+            await viewModel.updateExecution(
+              _taskOneHistory,
+              _taskOneHistory.taskHistory.first,
+              executedAt: DateTime(2026, 2, 1),
+              comment: '更新コメント',
+            );
+            final updated = viewState.task?.taskHistory.firstWhere(
+              (h) => h.id == _taskOneHistory.taskHistory.first.id,
+            );
+            expect(updated?.executedAt, DateTime(2026, 2, 1));
+            expect(updated?.comment, '更新コメント');
+          });
         });
 
         group('異常系', () {
@@ -329,6 +343,18 @@ void main() {
             expect(handler, isNotNull);
             await handler!();
             expect(viewState.dialogMessage, isNull);
+          });
+
+          test('成功時にローカルの taskHistory に日付順で追加される', () async {
+            await viewModel.recordExecution(
+              _taskOneHistory,
+              DateTime(2026, 4, 1),
+              null,
+            );
+            expect(viewState.task?.taskHistory.map((h) => h.executedAt), [
+              DateTime(2026, 1, 1),
+              DateTime(2026, 4, 1),
+            ]);
           });
 
           for (final (comment, expectedComment, description) in [
@@ -523,6 +549,14 @@ void main() {
             expect(handler, isNotNull);
             await handler!();
             expect(viewState.dialogMessage, isNull);
+          });
+
+          test('成功時にローカルの taskHistory から削除される', () async {
+            await viewModel.deleteExecution(
+              _taskOneHistory,
+              _taskOneHistory.taskHistory.first,
+            );
+            expect(viewState.task?.taskHistory, isEmpty);
           });
 
           for (final (comment, expectedComment, description) in [
