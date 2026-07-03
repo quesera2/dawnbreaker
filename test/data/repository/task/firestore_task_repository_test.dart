@@ -99,7 +99,7 @@ void main() {
 
   group('addTask', () {
     test('period タスクを追加できる', () async {
-      await repository.addTask(
+      final id = await repository.addTask(
         taskType: TaskType.period,
         name: '散髪',
         icon: '📝',
@@ -113,11 +113,11 @@ void main() {
       expect(task.name, '散髪');
       expect(task.furigana, 'さんぱつ');
       expect(task.color, TaskColor.none);
-      expect(task.taskHistory, isEmpty);
+      expect(await repository.watchTaskHistory(id).first, isEmpty);
     });
 
     test('scheduled タスクを追加できる', () async {
-      await repository.addTask(
+      final id = await repository.addTask(
         taskType: TaskType.scheduled,
         name: '虫避け交換',
         icon: '📝',
@@ -133,7 +133,7 @@ void main() {
       expect(task.furigana, 'むしよけこうかん');
       expect(task.scheduleValue, 2);
       expect(task.scheduleUnit, ScheduleUnit.week);
-      expect(task.taskHistory, isEmpty);
+      expect(await repository.watchTaskHistory(id).first, isEmpty);
     });
 
     test('irregular タスクを追加できる', () async {
@@ -215,8 +215,7 @@ void main() {
       );
       await repository.recordExecution(id, executedAt: DateTime(2025, 6, 1));
 
-      final tasks = await repository.allTaskItems().first;
-      expect(tasks.first.taskHistory, hasLength(1));
+      expect(await repository.watchTaskHistory(id).first, hasLength(1));
     });
 
     test('period タスクで履歴が2件以上になると scheduledAt が算出される', () async {
@@ -261,8 +260,8 @@ void main() {
         comment: '良い感じ',
       );
 
-      final task = await repository.findTaskById(id);
-      final recorded = task.taskHistory.firstWhere((h) => h.id == history.id);
+      final taskHistory = await repository.watchTaskHistory(id).first;
+      final recorded = taskHistory.firstWhere((h) => h.id == history.id);
       expect(recorded.comment, '良い感じ');
     });
   });
@@ -298,8 +297,8 @@ void main() {
           executedAt: DateTime(2025, 7, 1),
         );
 
-        final task = await repository.findTaskById(taskId);
-        final updated = task.taskHistory.firstWhere((h) => h.id == executionId);
+        final taskHistory = await repository.watchTaskHistory(taskId).first;
+        final updated = taskHistory.firstWhere((h) => h.id == executionId);
         expect(updated.executedAt, DateTime(2025, 7, 1));
       });
 
@@ -311,8 +310,8 @@ void main() {
           comment: '更新コメント',
         );
 
-        final task = await repository.findTaskById(taskId);
-        final updated = task.taskHistory.firstWhere((h) => h.id == executionId);
+        final taskHistory = await repository.watchTaskHistory(taskId).first;
+        final updated = taskHistory.firstWhere((h) => h.id == executionId);
         expect(updated.comment, '更新コメント');
       });
     });
@@ -336,8 +335,8 @@ void main() {
           executedAt: DateTime(2025, 6, 1),
         );
 
-        final task = await repository.findTaskById(taskId);
-        final updated = task.taskHistory.firstWhere((h) => h.id == executionId);
+        final taskHistory = await repository.watchTaskHistory(taskId).first;
+        final updated = taskHistory.firstWhere((h) => h.id == executionId);
         expect(updated.comment, isNull);
       });
     });
@@ -433,6 +432,31 @@ void main() {
         throwsA(isA<TaskRepositoryException>()),
       );
     });
+
+    test('scheduled タイプの間隔を変更するとキャッシュされた次回予定日も更新される', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.scheduled,
+        name: '虫避け交換',
+        icon: '📝',
+        color: TaskColor.orange,
+        scheduleValue: 7,
+        scheduleUnit: ScheduleUnit.day,
+      );
+      await repository.recordExecution(id, executedAt: DateTime(2025, 1, 1));
+
+      await repository.updateTask(
+        taskId: id,
+        taskType: TaskType.scheduled,
+        name: '虫避け交換',
+        icon: '📝',
+        color: TaskColor.orange,
+        scheduleValue: 14,
+        scheduleUnit: ScheduleUnit.day,
+      );
+
+      final tasks = await repository.allTaskItems().first;
+      expect(tasks.first.scheduledAt, DateTime(2025, 1, 15));
+    });
   });
 
   group('watchTaskById', () {
@@ -472,9 +496,9 @@ void main() {
 
       await repository.deleteExecution(target.id, taskId: id);
 
-      final task = await repository.findTaskById(id);
-      expect(task.taskHistory, hasLength(1));
-      expect(task.taskHistory.first.executedAt, DateTime(2025, 1, 1));
+      final taskHistory = await repository.watchTaskHistory(id).first;
+      expect(taskHistory, hasLength(1));
+      expect(taskHistory.first.executedAt, DateTime(2025, 1, 1));
     });
 
     test('他の履歴には影響しない', () async {
@@ -493,10 +517,10 @@ void main() {
 
       await repository.deleteExecution(target.id, taskId: id);
 
-      final task = await repository.findTaskById(id);
-      expect(task.taskHistory, hasLength(2));
+      final taskHistory = await repository.watchTaskHistory(id).first;
+      expect(taskHistory, hasLength(2));
       expect(
-        task.taskHistory.map((h) => h.executedAt),
+        taskHistory.map((h) => h.executedAt),
         isNot(contains(DateTime(2025, 6, 1))),
       );
     });
@@ -515,8 +539,8 @@ void main() {
 
       await repository.deleteExecution(target.id, taskId: 'wrong-task-id');
 
-      final task = await repository.findTaskById(id);
-      expect(task.taskHistory, hasLength(1));
+      final taskHistory = await repository.watchTaskHistory(id).first;
+      expect(taskHistory, hasLength(1));
     });
 
     test('削除後にキャッシュが更新される', () async {
@@ -614,9 +638,9 @@ void main() {
       await repository.recordExecution(id, executedAt: DateTime(2025, 1, 1));
       await repository.recordExecution(id, executedAt: DateTime(2025, 6, 1));
       final deleted = await repository.findTaskById(id);
-      await repository.deleteTask(id);
+      final deletedHistory = await repository.deleteTask(id);
 
-      await repository.restoreTask(deleted);
+      await repository.restoreTask(deleted, deletedHistory);
 
       final tasks = await repository.allTaskItems().first;
       expect(tasks, hasLength(1));
@@ -624,7 +648,10 @@ void main() {
       expect(restored, isA<PeriodTaskItem>());
       expect(restored.name, '散髪');
       expect(restored.icon, '✂️');
-      expect(restored.taskHistory, hasLength(2));
+      expect(
+        await repository.watchTaskHistory(restored.id).first,
+        hasLength(2),
+      );
     });
 
     test('削除した scheduled タスクを scheduleConfig ごと復元できる', () async {
@@ -637,9 +664,9 @@ void main() {
         scheduleUnit: ScheduleUnit.week,
       );
       final deleted = await repository.findTaskById(id) as ScheduledTaskItem;
-      await repository.deleteTask(id);
+      final deletedHistory = await repository.deleteTask(id);
 
-      await repository.restoreTask(deleted);
+      await repository.restoreTask(deleted, deletedHistory);
 
       final tasks = await repository.allTaskItems().first;
       expect(tasks, hasLength(1));
@@ -658,19 +685,11 @@ void main() {
       for (var i = 1; i <= 12; i++) {
         await repository.recordExecution(id, executedAt: DateTime(2025, 1, i));
       }
+      final deleted = await repository.findTaskById(id);
       final deletedHistory = await repository.deleteTask(id);
       expect(deletedHistory, hasLength(12));
 
-      await repository.restoreTask(
-        TaskItem.period(
-          id: id,
-          name: '散髪',
-          furigana: 'さんぱつ',
-          icon: '✂️',
-          color: TaskColor.none,
-          taskHistory: deletedHistory,
-        ),
-      );
+      await repository.restoreTask(deleted, deletedHistory);
 
       final restoredId = (await repository.allTaskItems().first).first.id;
       final executions = await firestore
@@ -743,7 +762,7 @@ void main() {
   });
 
   group('直近履歴の上限', () {
-    test('実行履歴が10件を超えると直近10件のみ taskHistory に含まれる', () async {
+    test('実行履歴が10件を超えると直近10件のみ watchTaskHistory に含まれる', () async {
       final id = await repository.addTask(
         taskType: TaskType.period,
         name: '散髪',
@@ -754,11 +773,11 @@ void main() {
         await repository.recordExecution(id, executedAt: DateTime(2025, 1, i));
       }
 
-      final task = await repository.findTaskById(id);
+      final taskHistory = await repository.watchTaskHistory(id).first;
 
-      expect(task.taskHistory, hasLength(10));
-      expect(task.taskHistory.first.executedAt, DateTime(2025, 1, 3));
-      expect(task.taskHistory.last.executedAt, DateTime(2025, 1, 12));
+      expect(taskHistory, hasLength(10));
+      expect(taskHistory.first.executedAt, DateTime(2025, 1, 3));
+      expect(taskHistory.last.executedAt, DateTime(2025, 1, 12));
     });
   });
 

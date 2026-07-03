@@ -13,12 +13,19 @@ import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart'
 class FakeTaskRepository implements TaskRepository {
   FakeTaskRepository({
     List<TaskItem> initialTasks = const [],
+    Map<String, List<TaskHistory>> initialHistory = const {},
     this.shouldThrow = false,
-  }) : _tasks = List.of(initialTasks);
+  }) : _tasks = List.of(initialTasks),
+       _history = {
+         for (final entry in initialHistory.entries)
+           entry.key: List.of(entry.value),
+       };
 
   bool shouldThrow;
   final List<TaskItem> _tasks;
+  final Map<String, List<TaskHistory>> _history;
   final _controller = StreamController<List<TaskItem>>.broadcast();
+  final _historyControllers = <String, StreamController<List<TaskHistory>>>{};
   int _nextId = 100;
 
   @override
@@ -51,7 +58,20 @@ class FakeTaskRepository implements TaskRepository {
     return task;
   }
 
-  // taskHistory は常に全件をTaskItemに乗せているため、続きのページは存在しない
+  @override
+  Stream<List<TaskHistory>> watchTaskHistory(String taskId) {
+    final controller = _historyControllerFor(taskId);
+    unawaited(
+      Future.microtask(() {
+        if (!controller.isClosed) {
+          controller.add(List.of(_history[taskId] ?? []));
+        }
+      }),
+    );
+    return controller.stream;
+  }
+
+  // watchTaskHistory に全件を乗せているため、続きのページは存在しない
   @override
   Future<TaskHistoryPage> fetchOlderHistory(
     String taskId, {
@@ -79,7 +99,8 @@ class FakeTaskRepository implements TaskRepository {
       color: color,
       scheduleValue: scheduleValue,
       scheduleUnit: scheduleUnit,
-      taskHistory: [],
+      lastExecutedAt: null,
+      cachedScheduledAt: null,
     );
     _tasks.add(item);
     _notify();
@@ -109,7 +130,8 @@ class FakeTaskRepository implements TaskRepository {
       color: color,
       scheduleValue: scheduleValue,
       scheduleUnit: scheduleUnit,
-      taskHistory: original.taskHistory,
+      lastExecutedAt: original.lastExecutedAt,
+      cachedScheduledAt: original.scheduledAt,
     );
     _notify();
   }
@@ -153,10 +175,10 @@ class FakeTaskRepository implements TaskRepository {
   @override
   Future<List<TaskHistory>> deleteTask(String taskId) async {
     if (shouldThrow) throw const TaskDeleteException('テストエラー');
-    final task = _tasks.where((t) => t.id == taskId).firstOrNull;
+    final history = _history.remove(taskId) ?? [];
     _tasks.removeWhere((t) => t.id == taskId);
     _notify();
-    return task?.taskHistory ?? [];
+    return history;
   }
 
   @override
@@ -167,23 +189,26 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Future<void> restoreTask(TaskItem taskItem) async {
+  Future<void> restoreTask(
+    TaskItem taskItem,
+    List<TaskHistory> taskHistory,
+  ) async {
     if (shouldThrow) throw const TaskSaveException('テストエラー');
     _tasks.add(taskItem);
+    _history[taskItem.id] = List.of(taskHistory);
     _notify();
+    _notifyHistory(taskItem.id);
   }
 
   void emitError(Object error) {
     if (!_controller.isClosed) _controller.addError(error);
   }
 
-  // Firestore の limitToLast のように、直近件数のみに絞られた taskHistory を
-  // 持つ状態でストリームが再emitされる状況を再現する
+  // Firestore の limitToLast のように、直近件数のみに絞られた履歴で
+  // watchTaskHistory が再emitされる状況を再現する
   void replaceTaskHistory(String taskId, List<TaskHistory> taskHistory) {
-    final index = _tasks.indexWhere((t) => t.id == taskId);
-    if (index == -1) return;
-    _tasks[index] = _tasks[index].copyWith(taskHistory: taskHistory);
-    _notify();
+    _history[taskId] = List.of(taskHistory);
+    _notifyHistory(taskId);
   }
 
   bool containsTask(String taskId) => _tasks.any((t) => t.id == taskId);
@@ -191,11 +216,29 @@ class FakeTaskRepository implements TaskRepository {
   TaskItem? taskById(String taskId) =>
       _tasks.where((t) => t.id == taskId).firstOrNull;
 
-  void dispose() => _controller.close();
+  void dispose() {
+    unawaited(_controller.close());
+    for (final controller in _historyControllers.values) {
+      unawaited(controller.close());
+    }
+  }
 
   void _notify() {
     if (!_controller.isClosed) _controller.add(List.of(_tasks));
   }
+
+  void _notifyHistory(String taskId) {
+    final controller = _historyControllers[taskId];
+    if (controller != null && !controller.isClosed) {
+      controller.add(List.of(_history[taskId] ?? []));
+    }
+  }
+
+  StreamController<List<TaskHistory>> _historyControllerFor(String taskId) =>
+      _historyControllers.putIfAbsent(
+        taskId,
+        () => StreamController<List<TaskHistory>>.broadcast(),
+      );
 
   static TaskItem _buildTask({
     required String id,
@@ -206,7 +249,8 @@ class FakeTaskRepository implements TaskRepository {
     required TaskColor color,
     required int? scheduleValue,
     required ScheduleUnit? scheduleUnit,
-    required List<TaskHistory> taskHistory,
+    required DateTime? lastExecutedAt,
+    required DateTime? cachedScheduledAt,
   }) => switch (taskType) {
     TaskType.irregular => TaskItem.irregular(
       id: id,
@@ -214,7 +258,7 @@ class FakeTaskRepository implements TaskRepository {
       furigana: furigana,
       icon: icon,
       color: color,
-      taskHistory: taskHistory,
+      lastExecutedAt: lastExecutedAt,
     ),
     TaskType.period => TaskItem.period(
       id: id,
@@ -222,7 +266,8 @@ class FakeTaskRepository implements TaskRepository {
       furigana: furigana,
       icon: icon,
       color: color,
-      taskHistory: taskHistory,
+      lastExecutedAt: lastExecutedAt,
+      cachedScheduledAt: cachedScheduledAt,
     ),
     TaskType.scheduled => TaskItem.scheduled(
       id: id,
@@ -232,7 +277,7 @@ class FakeTaskRepository implements TaskRepository {
       color: color,
       scheduleValue: scheduleValue!,
       scheduleUnit: scheduleUnit!,
-      taskHistory: taskHistory,
+      lastExecutedAt: lastExecutedAt,
     ),
   };
 }

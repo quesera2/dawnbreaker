@@ -1,6 +1,5 @@
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
-import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -21,7 +20,6 @@ abstract class EditorUiState with _$EditorUiState implements BaseUiState {
     @Default(TaskColor.none) TaskColor color,
     @Default(1) int scheduleValue,
     @Default(ScheduleUnit.week) ScheduleUnit scheduleUnit,
-    @Default([]) List<TaskHistory> taskHistory,
     DialogMessage? dialogMessage,
     SnackBarMessage? snackBarMessage,
     @Default(false) bool isSaving,

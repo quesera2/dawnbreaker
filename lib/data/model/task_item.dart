@@ -1,7 +1,5 @@
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
-import 'package:dawnbreaker/data/model/task_history.dart';
-import 'package:dawnbreaker/data/model/task_history_interval.dart';
 import 'package:dawnbreaker/data/model/task_progress.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -18,7 +16,7 @@ sealed class TaskItem with _$TaskItem {
     required String furigana,
     required String icon,
     required TaskColor color,
-    required List<TaskHistory> taskHistory,
+    required DateTime? lastExecutedAt,
   }) = IrregularTaskItem;
 
   const factory TaskItem.period({
@@ -27,7 +25,8 @@ sealed class TaskItem with _$TaskItem {
     required String furigana,
     required String icon,
     required TaskColor color,
-    required List<TaskHistory> taskHistory,
+    required DateTime? lastExecutedAt,
+    required DateTime? cachedScheduledAt,
   }) = PeriodTaskItem;
 
   const factory TaskItem.scheduled({
@@ -38,26 +37,22 @@ sealed class TaskItem with _$TaskItem {
     required TaskColor color,
     required int scheduleValue,
     required ScheduleUnit scheduleUnit,
-    required List<TaskHistory> taskHistory,
+    required DateTime? lastExecutedAt,
   }) = ScheduledTaskItem;
 
-  DateTime? get lastExecutedAt =>
-      taskHistory.isEmpty ? null : taskHistory.last.executedAt;
-
+  // PeriodTaskItem は複数実行の間隔平均が必要で taskHistory 全体がないと
+  // 計算できないため、リポジトリ側で計算済みの値を cachedScheduledAt として保持する
   DateTime? get scheduledAt => switch (this) {
     IrregularTaskItem() => null,
-    PeriodTaskItem() => _computePeriodNextAt(
-      executionIntervalDays,
-      taskHistory,
-    ),
+    PeriodTaskItem(:final cachedScheduledAt) => cachedScheduledAt,
     ScheduledTaskItem(
-      :final taskHistory,
+      :final lastExecutedAt,
       :final scheduleValue,
       :final scheduleUnit,
     ) =>
-      taskHistory.isEmpty
+      lastExecutedAt == null
           ? null
-          : scheduleUnit.addTo(taskHistory.last.executedAt, scheduleValue),
+          : scheduleUnit.addTo(lastExecutedAt, scheduleValue),
   };
 
   TaskProgress computeProgress([DateTime? now]) => TaskProgress.from(
@@ -83,15 +78,4 @@ sealed class TaskItem with _$TaskItem {
     PeriodTaskItem() => ScheduleUnit.week,
     ScheduledTaskItem(:final scheduleUnit) => scheduleUnit,
   };
-
-  List<int> get executionIntervalDays => intervalDaysForHistory(taskHistory);
-
-  static DateTime? _computePeriodNextAt(
-    List<int> intervals,
-    List<TaskHistory> taskHistory,
-  ) {
-    if (intervals.isEmpty) return null;
-    final avgDays = intervals.reduce((a, b) => a + b) / intervals.length;
-    return taskHistory.last.executedAt.add(Duration(days: avgDays.round()));
-  }
 }

@@ -8,6 +8,7 @@ import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_history_cursor.dart';
 import 'package:dawnbreaker/data/model/task_history_page.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/data/model/task_schedule.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
@@ -55,6 +56,15 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
     } catch (e) {
       throw TaskLoadException(e.toString());
     }
+  }
+
+  @override
+  Stream<List<TaskHistory>> watchTaskHistory(String taskId) {
+    return (_db.select(_db.taskExecutions)
+          ..where((t) => t.taskDefinitionId.equals(taskId))
+          ..orderBy([(t) => OrderingTerm.asc(t.executedAt)]))
+        .watch()
+        .map((rows) => rows.map(_taskHistoryFromRow).toList());
   }
 
   // taskHistory は常に全件取得済みのため、続きのページは存在しない
@@ -230,12 +240,14 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
   @override
   Future<List<TaskHistory>> deleteTask(String taskId) async {
     try {
-      final task = await findTaskById(taskId);
+      final rows = await (_db.select(
+        _db.taskExecutions,
+      )..where((t) => t.taskDefinitionId.equals(taskId))).get();
       await (_db.delete(
         _db.taskDefinitions,
       )..where((t) => t.id.equals(taskId))).go();
       // task_executions / task_scheduled_configs はカスケード削除
-      return task.taskHistory;
+      return rows.map(_taskHistoryFromRow).toList();
     } catch (e) {
       throw TaskDeleteException(e.toString());
     }
@@ -251,7 +263,10 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> restoreTask(TaskItem taskItem) async {
+  Future<void> restoreTask(
+    TaskItem taskItem,
+    List<TaskHistory> taskHistory,
+  ) async {
     try {
       final newId = _uuid.v4();
       await _db.transaction(() async {
@@ -281,7 +296,7 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
         await _db.batch((batch) {
           batch.insertAll(
             _db.taskExecutions,
-            taskItem.taskHistory.map(
+            taskHistory.map(
               (history) => TaskExecutionsCompanion.insert(
                 id: _uuid.v4(),
                 taskDefinitionId: newId,
@@ -318,6 +333,9 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
     return query;
   }
 
+  TaskHistory _taskHistoryFromRow(TaskExecution row) =>
+      TaskHistory(id: row.id, executedAt: row.executedAt, comment: row.comment);
+
   List<TaskItem> _buildAllTaskItemsFromRows(List<TypedResult> rows) {
     final grouped = rows.groupListsBy(
       (row) => row.readTable(_db.taskDefinitions).id,
@@ -333,17 +351,12 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
   TaskItem _buildTaskItemFromRows(List<TypedResult> rows) {
     final def = rows.first.readTable(_db.taskDefinitions);
     final config = rows.first.readTableOrNull(_db.taskScheduledConfigs);
-    final taskHistory = rows
+    final ascendingHistory = rows
         .map((r) => r.readTableOrNull(_db.taskExecutions))
         .nonNulls
-        .map(
-          (e) => TaskHistory(
-            id: e.id,
-            executedAt: e.executedAt,
-            comment: e.comment,
-          ),
-        )
+        .map(_taskHistoryFromRow)
         .toList();
+    final lastExecutedAt = computeLastExecutedAt(ascendingHistory);
 
     return switch (def.taskType) {
       TaskType.irregular => TaskItem.irregular(
@@ -352,7 +365,7 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
         furigana: def.furigana,
         icon: def.icon,
         color: def.color,
-        taskHistory: taskHistory,
+        lastExecutedAt: lastExecutedAt,
       ),
       TaskType.period => TaskItem.period(
         id: def.id,
@@ -360,7 +373,11 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
         furigana: def.furigana,
         icon: def.icon,
         color: def.color,
-        taskHistory: taskHistory,
+        lastExecutedAt: lastExecutedAt,
+        cachedScheduledAt: computeScheduledAt(
+          taskType: TaskType.period,
+          ascendingHistory: ascendingHistory,
+        ),
       ),
       TaskType.scheduled =>
         config != null
@@ -372,7 +389,7 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
                 color: def.color,
                 scheduleValue: config.scheduleValue,
                 scheduleUnit: config.scheduleUnit,
-                taskHistory: taskHistory,
+                lastExecutedAt: lastExecutedAt,
               )
             : throw TaskNotFoundException(taskId: def.id),
     };

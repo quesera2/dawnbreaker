@@ -1,6 +1,5 @@
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
-import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
@@ -188,7 +187,6 @@ void main() {
             expect(viewState.icon, '🪥');
             expect(viewState.type, TaskType.period);
             expect(viewState.color, TaskColor.blue);
-            expect(viewState.taskHistory, hasLength(1));
           });
         });
 
@@ -272,9 +270,8 @@ final _testTasks = [
     furigana: 'はぶらしこうかん',
     icon: '🪥',
     color: TaskColor.blue,
-    taskHistory: [
-      TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
-    ],
+    lastExecutedAt: DateTime(2026, 1, 1),
+    cachedScheduledAt: null,
   ),
   TaskItem.scheduled(
     id: 'task-2',
@@ -284,8 +281,6 @@ final _testTasks = [
     color: TaskColor.orange,
     scheduleValue: 2,
     scheduleUnit: ScheduleUnit.week,
-    taskHistory: [
-      TaskHistory(id: 'h-2', executedAt: DateTime(2026, 1, 1), comment: null),
-    ],
+    lastExecutedAt: DateTime(2026, 1, 1),
   ),
 ];

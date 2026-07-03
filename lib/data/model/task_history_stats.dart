@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_history_interval.dart';
-import 'package:dawnbreaker/data/model/task_item.dart';
 
 class TaskHistoryStats {
   TaskHistoryStats._({
@@ -9,10 +8,10 @@ class TaskHistoryStats {
     required this.averageIntervalDays,
   });
 
-  factory TaskHistoryStats.from(TaskItem task) {
-    final intervals = task.executionIntervalDays;
+  factory TaskHistoryStats.from(List<TaskHistory> ascendingHistory) {
+    final intervals = intervalDaysForHistory(ascendingHistory);
     return TaskHistoryStats._(
-      historyAndInterval: historyAndIntervalPairs(task.taskHistory),
+      historyAndInterval: historyAndIntervalPairs(ascendingHistory),
       averageIntervalDays: intervals.isEmpty ? null : intervals.average,
     );
   }
