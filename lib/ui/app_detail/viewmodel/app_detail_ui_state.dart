@@ -1,4 +1,5 @@
 import 'package:dawnbreaker/core/util/date_util.dart';
+import 'package:dawnbreaker/core/util/iterable_util.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_history_interval.dart';
 import 'package:dawnbreaker/data/model/task_history_stats.dart';
@@ -43,19 +44,14 @@ abstract class AppDetailUiState with _$AppDetailUiState implements BaseUiState {
   // task.taskHistory（直近のリアルタイム反映分）と olderHistory（追加ロード分）を
   // idで重複排除したうえで executedAt により全体を再ソートした、画面表示用の履歴一覧。
   // 「どちらの配列に入っているか」に依存せず、実際の日付で正しい順序になる。
+  // taskHistory（headの最新情報）を後に渡し、同idの場合はそちらを優先する。
   List<TaskHistory> get mergedAscendingHistory {
     final currentTask = task;
     if (currentTask == null) return [];
-    final byId = <String, TaskHistory>{};
-    for (final h in olderHistory) {
-      byId[h.id] = h;
-    }
-    // taskHistory（headの最新情報）が同idの場合は優先して上書きする
-    for (final h in currentTask.taskHistory) {
-      byId[h.id] = h;
-    }
-    return byId.values.toList()
-      ..sort((a, b) => a.executedAt.compareTo(b.executedAt));
+    return distinctBy([
+      ...olderHistory,
+      ...currentTask.taskHistory,
+    ], (h) => h.id)..sort((a, b) => a.executedAt.compareTo(b.executedAt));
   }
 
   List<(TaskHistory, int?)> get displayedHistoryAndInterval =>
