@@ -224,10 +224,11 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> deleteTask(String taskId) async {
+  Future<List<TaskHistory>> deleteTask(String taskId) async {
     try {
-      await _deleteAllExecutions(taskId);
+      final deletedHistory = await _deleteAllExecutions(taskId);
       await _taskDefinitionsRef().doc(taskId).delete();
+      return deletedHistory;
     } catch (e) {
       throw TaskDeleteException(e.toString());
     }
@@ -413,9 +414,17 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     );
   }
 
-  Future<void> _deleteAllExecutions(String taskId) async {
+  Future<List<TaskHistory>> _deleteAllExecutions(String taskId) async {
     final executions = await _executionsRef(taskId).get();
     await Future.wait(executions.docs.map((doc) => doc.reference.delete()));
+    return executions.docs.map((doc) {
+      final data = doc.data();
+      return TaskHistory(
+        id: doc.id,
+        executedAt: (data['executedAt'] as Timestamp).toDate(),
+        comment: data['comment'] as String?,
+      );
+    }).toList();
   }
 
   Future<void> _updateCache(String taskId) async {

@@ -228,12 +228,14 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> deleteTask(String taskId) async {
+  Future<List<TaskHistory>> deleteTask(String taskId) async {
     try {
+      final task = await findTaskById(taskId);
       await (_db.delete(
         _db.taskDefinitions,
       )..where((t) => t.id.equals(taskId))).go();
       // task_executions / task_scheduled_configs はカスケード削除
+      return task.taskHistory;
     } catch (e) {
       throw TaskDeleteException(e.toString());
     }

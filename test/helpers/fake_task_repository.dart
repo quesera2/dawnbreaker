@@ -151,10 +151,12 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Future<void> deleteTask(String taskId) async {
+  Future<List<TaskHistory>> deleteTask(String taskId) async {
     if (shouldThrow) throw const TaskDeleteException('テストエラー');
+    final task = _tasks.where((t) => t.id == taskId).firstOrNull;
     _tasks.removeWhere((t) => t.id == taskId);
     _notify();
+    return task?.taskHistory ?? [];
   }
 
   @override
@@ -173,6 +175,15 @@ class FakeTaskRepository implements TaskRepository {
 
   void emitError(Object error) {
     if (!_controller.isClosed) _controller.addError(error);
+  }
+
+  // Firestore の limitToLast のように、直近件数のみに絞られた taskHistory を
+  // 持つ状態でストリームが再emitされる状況を再現する
+  void replaceTaskHistory(String taskId, List<TaskHistory> taskHistory) {
+    final index = _tasks.indexWhere((t) => t.id == taskId);
+    if (index == -1) return;
+    _tasks[index] = _tasks[index].copyWith(taskHistory: taskHistory);
+    _notify();
   }
 
   bool containsTask(String taskId) => _tasks.any((t) => t.id == taskId);

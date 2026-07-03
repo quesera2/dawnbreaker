@@ -647,6 +647,41 @@ void main() {
       expect(restored.scheduleValue, 2);
       expect(restored.scheduleUnit, ScheduleUnit.week);
     });
+
+    test('deleteTask が返す履歴で復元すると直近保持件数を超えても欠損しない', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '✂️',
+        color: TaskColor.none,
+      );
+      for (var i = 1; i <= 12; i++) {
+        await repository.recordExecution(id, executedAt: DateTime(2025, 1, i));
+      }
+      final deletedHistory = await repository.deleteTask(id);
+      expect(deletedHistory, hasLength(12));
+
+      await repository.restoreTask(
+        TaskItem.period(
+          id: id,
+          name: '散髪',
+          furigana: 'さんぱつ',
+          icon: '✂️',
+          color: TaskColor.none,
+          taskHistory: deletedHistory,
+        ),
+      );
+
+      final restoredId = (await repository.allTaskItems().first).first.id;
+      final executions = await firestore
+          .collection('users')
+          .doc('test-user')
+          .collection('taskDefinitions')
+          .doc(restoredId)
+          .collection('executions')
+          .get();
+      expect(executions.docs, hasLength(12));
+    });
   });
 
   group('_updateCache', () {

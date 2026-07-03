@@ -171,6 +171,26 @@ void main() {
         });
       });
 
+      group('タスクが外部で直近件数のみに絞られて再emitされたとき', () {
+        setUp(() async {
+          await setUpLoaded(taskId: _taskMultiHistory.id);
+        });
+
+        test('画面から見えていた履歴が消えない', () async {
+          // Firestore の limitToLast(10) 相当。直近2件だけを持つ状態で再emitされても
+          // 溢れた1件目は olderHistory 側に退避され、表示件数は変わらない
+          final headOnly = _taskMultiHistory.taskHistory.sublist(1);
+          fakeRepository.replaceTaskHistory(_taskMultiHistory.id, headOnly);
+          await pumpEventQueue();
+
+          expect(viewState.mergedAscendingHistory, hasLength(3));
+          expect(
+            viewState.mergedAscendingHistory.map((h) => h.id),
+            containsAll(['h-1', 'h-2', 'h-3']),
+          );
+        });
+      });
+
       group('タスクデータの取得中にエラーが発生したとき', () {
         setUp(() async {
           await setUpLoaded();

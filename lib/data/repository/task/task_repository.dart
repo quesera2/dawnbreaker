@@ -53,7 +53,9 @@ abstract interface class TaskRepository {
 
   Future<void> deleteExecution(String executionId, {required String taskId});
 
-  Future<void> deleteTask(String taskId);
+  // 削除した実行履歴（全件）を返す。restoreTask にそのまま渡すことで
+  // taskHistory が直近件数に絞られている場合でも履歴を欠損なく復元できる
+  Future<List<TaskHistory>> deleteTask(String taskId);
 
   Future<void> deleteAllTasks();
 

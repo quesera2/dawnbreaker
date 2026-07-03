@@ -43,7 +43,17 @@ class AppDetailViewModel extends _$AppDetailViewModel {
                 ),
               );
             } else {
-              state = state.update((s) => s.updateTaskItem(task));
+              state = state.update(
+                (s) => s
+                    .copyWith(
+                      olderHistory: _reconcileOlderHistory(
+                        previousTask: s.task,
+                        newTask: task,
+                        olderHistory: s.olderHistory,
+                      ),
+                    )
+                    .updateTaskItem(task),
+              );
             }
           },
           onError: (Object e, StackTrace s) {
@@ -129,14 +139,17 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     final task = state.requireValue.task;
     if (task == null) return;
     try {
-      await _repository.deleteTask(task.id);
+      // task.taskHistory は直近件数に絞られている場合があるため、
+      // 復元用には削除で返る全件の履歴を使う
+      final deletedHistory = await _repository.deleteTask(task.id);
       if (!ref.mounted) return;
+      final taskToRestore = task.copyWith(taskHistory: deletedHistory);
       // タスク削除で watchTaskById で前の画面に戻る処理が走る
       state = state.update(
         (s) => s.copyWith(
           snackBarMessage: TaskDeleteSuccess(
             taskName: task.name,
-            handler: () => _repository.restoreTask(task),
+            handler: () => _repository.restoreTask(taskToRestore),
           ),
         ),
       );
@@ -264,6 +277,24 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       if (!ref.mounted) return;
       state = state.update((s) => s.copyWith(isLoadingMoreHistory: false));
     }
+  }
+
+  // task.taskHistory は直近件数のみを保持するため、書き込みを契機にストリームが
+  // 再emitされると新しいheadからあふれた項目が画面から消えてしまう。
+  // 消えた項目を olderHistory 側に退避し、mergedAscendingHistory で拾えるようにする
+  List<TaskHistory> _reconcileOlderHistory({
+    required TaskItem? previousTask,
+    required TaskItem newTask,
+    required List<TaskHistory> olderHistory,
+  }) {
+    if (previousTask == null) return olderHistory;
+    final newHeadIds = newTask.taskHistory.map((h) => h.id).toSet();
+    final olderIds = olderHistory.map((h) => h.id).toSet();
+    final droppedFromHead = previousTask.taskHistory.where(
+      (h) => !newHeadIds.contains(h.id) && !olderIds.contains(h.id),
+    );
+    if (droppedFromHead.isEmpty) return olderHistory;
+    return [...olderHistory, ...droppedFromHead];
   }
 
   List<TaskHistory> _patchOlderHistory(
