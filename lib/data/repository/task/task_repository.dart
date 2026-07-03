@@ -1,6 +1,8 @@
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
+import 'package:dawnbreaker/data/model/task_history_cursor.dart';
+import 'package:dawnbreaker/data/model/task_history_page.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 
@@ -10,6 +12,12 @@ abstract interface class TaskRepository {
   Stream<TaskItem?> watchTaskById(String taskId);
 
   Future<TaskItem> findTaskById(String taskId);
+
+  Future<TaskHistoryPage> fetchOlderHistory(
+    String taskId, {
+    required TaskHistoryCursor cursor,
+    int limit = 20,
+  });
 
   Future<String> addTask({
     required TaskType taskType,
@@ -45,7 +53,9 @@ abstract interface class TaskRepository {
 
   Future<void> deleteExecution(String executionId, {required String taskId});
 
-  Future<void> deleteTask(String taskId);
+  // 削除した実行履歴（全件）を返す。restoreTask にそのまま渡すことで
+  // taskHistory が直近件数に絞られている場合でも履歴を欠損なく復元できる
+  Future<List<TaskHistory>> deleteTask(String taskId);
 
   Future<void> deleteAllTasks();
 

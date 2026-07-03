@@ -2,6 +2,7 @@ import 'package:dawnbreaker/data/database/app_database.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
+import 'package:dawnbreaker/data/model/task_history_cursor.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
@@ -890,6 +891,32 @@ void main() {
       final tasks = await repository.allTaskItems().first;
       expect(tasks, hasLength(1));
       expect(tasks.first.name, '歯ブラシ交換');
+    });
+  });
+
+  group('fetchOlderHistory', () {
+    test('taskHistory に全件含まれているため続きは存在しない', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+      );
+      final history = await repository.recordExecution(
+        id,
+        executedAt: DateTime(2025, 1, 1),
+      );
+
+      final page = await repository.fetchOlderHistory(
+        id,
+        cursor: TaskHistoryCursor(
+          executedAt: history.executedAt,
+          id: history.id,
+        ),
+      );
+
+      expect(page.items, isEmpty);
+      expect(page.hasMore, isFalse);
     });
   });
 }

@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/util/async_value_extension.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
+import 'package:dawnbreaker/data/model/task_history_cursor.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
@@ -42,7 +43,17 @@ class AppDetailViewModel extends _$AppDetailViewModel {
                 ),
               );
             } else {
-              state = state.update((s) => s.updateTaskItem(task));
+              state = state.update(
+                (s) => s
+                    .copyWith(
+                      olderHistory: _reconcileOlderHistory(
+                        previousTask: s.task,
+                        newTask: task,
+                        olderHistory: s.olderHistory,
+                      ),
+                    )
+                    .updateTaskItem(task),
+              );
             }
           },
           onError: (Object e, StackTrace s) {
@@ -70,8 +81,18 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         comment: comment,
       );
       if (!ref.mounted) return;
-      state = state.update(
-        (s) => s.copyWith(
+      final updatedHistory = history.copyWith(
+        executedAt: executedAt,
+        comment: comment,
+      );
+      state = state.update((s) {
+        final currentTask = s.task;
+        final patchedTask = currentTask == null
+            ? null
+            : _patchTaskHistory(currentTask, updatedHistory);
+        final updated = patchedTask == null ? s : s.updateTaskItem(patchedTask);
+        return updated.copyWith(
+          olderHistory: _patchOlderHistory(s.olderHistory, updatedHistory),
           snackBarMessage: TaskExecutionUpdateSuccess(
             handler: () => updateExecution(
               task,
@@ -80,8 +101,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
               comment: history.comment,
             ),
           ),
-        ),
-      );
+        );
+      });
     } on TaskRepositoryException catch (e, s) {
       logger.e('updateExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -118,14 +139,17 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     final task = state.requireValue.task;
     if (task == null) return;
     try {
-      await _repository.deleteTask(task.id);
+      // task.taskHistory は直近件数に絞られている場合があるため、
+      // 復元用には削除で返る全件の履歴を使う
+      final deletedHistory = await _repository.deleteTask(task.id);
       if (!ref.mounted) return;
+      final taskToRestore = task.copyWith(taskHistory: deletedHistory);
       // タスク削除で watchTaskById で前の画面に戻る処理が走る
       state = state.update(
         (s) => s.copyWith(
           snackBarMessage: TaskDeleteSuccess(
             taskName: task.name,
-            handler: () => _repository.restoreTask(task),
+            handler: () => _repository.restoreTask(taskToRestore),
           ),
         ),
       );
@@ -152,15 +176,19 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         comment: comment,
       );
       if (!ref.mounted) return;
-      state = state.update(
-        (s) => s.copyWith(
+      state = state.update((s) {
+        final currentTask = s.task;
+        final updated = currentTask == null
+            ? s
+            : s.updateTaskItem(_insertIntoTaskHistory(currentTask, history));
+        return updated.copyWith(
           snackBarMessage: TaskCompleteSuccess(
             taskName: task.name,
             handler: () =>
                 _repository.deleteExecution(history.id, taskId: task.id),
           ),
-        ),
-      );
+        );
+      });
     } on TaskRepositoryException catch (e, s) {
       logger.e('recordExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -178,8 +206,22 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     try {
       await _repository.deleteExecution(history.id, taskId: task.id);
       if (!ref.mounted) return;
-      state = state.update(
-        (s) => s.copyWith(
+      state = state.update((s) {
+        final currentTask = s.task;
+        final removedFromTask = currentTask == null
+            ? null
+            : currentTask.copyWith(
+                taskHistory: currentTask.taskHistory
+                    .where((h) => h.id != history.id)
+                    .toList(),
+              );
+        final updated = removedFromTask == null
+            ? s
+            : s.updateTaskItem(removedFromTask);
+        return updated.copyWith(
+          olderHistory: s.olderHistory
+              .where((h) => h.id != history.id)
+              .toList(),
           snackBarMessage: TaskExecutionDeleteSuccess(
             taskName: task.name,
             executedAt: history.executedAt,
@@ -189,8 +231,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
               comment: history.comment,
             ),
           ),
-        ),
-      );
+        );
+      });
     } on TaskRepositoryException catch (e, s) {
       logger.e('deleteExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -202,5 +244,83 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         ),
       );
     }
+  }
+
+  Future<void> loadMoreHistory() async {
+    final current = state.value;
+    final task = current?.task;
+    if (current == null || task == null) return;
+    if (!current.hasMoreHistory || current.isLoadingMoreHistory) return;
+
+    final oldestLoaded = current.mergedAscendingHistory.firstOrNull;
+    if (oldestLoaded == null) return;
+
+    state = state.update((s) => s.copyWith(isLoadingMoreHistory: true));
+    try {
+      final page = await _repository.fetchOlderHistory(
+        task.id,
+        cursor: TaskHistoryCursor(
+          executedAt: oldestLoaded.executedAt,
+          id: oldestLoaded.id,
+        ),
+      );
+      if (!ref.mounted) return;
+      state = state.update(
+        (s) => s.copyWith(
+          olderHistory: [...page.items.reversed, ...s.olderHistory],
+          hasMoreHistory: page.hasMore,
+          isLoadingMoreHistory: false,
+        ),
+      );
+    } on TaskRepositoryException catch (e, s) {
+      logger.e('fetchOlderHistory failed', error: e, stackTrace: s);
+      if (!ref.mounted) return;
+      state = state.update((s) => s.copyWith(isLoadingMoreHistory: false));
+    }
+  }
+
+  // task.taskHistory は直近件数のみを保持するため、書き込みを契機にストリームが
+  // 再emitされると新しいheadからあふれた項目が画面から消えてしまう。
+  // 消えた項目を olderHistory 側に退避し、mergedAscendingHistory で拾えるようにする
+  List<TaskHistory> _reconcileOlderHistory({
+    required TaskItem? previousTask,
+    required TaskItem newTask,
+    required List<TaskHistory> olderHistory,
+  }) {
+    if (previousTask == null) return olderHistory;
+    final newHeadIds = newTask.taskHistory.map((h) => h.id).toSet();
+    final olderIds = olderHistory.map((h) => h.id).toSet();
+    final droppedFromHead = previousTask.taskHistory.where(
+      (h) => !newHeadIds.contains(h.id) && !olderIds.contains(h.id),
+    );
+    if (droppedFromHead.isEmpty) return olderHistory;
+    return [...olderHistory, ...droppedFromHead];
+  }
+
+  List<TaskHistory> _patchOlderHistory(
+    List<TaskHistory> olderHistory,
+    TaskHistory updated,
+  ) {
+    final index = olderHistory.indexWhere((h) => h.id == updated.id);
+    if (index == -1) return olderHistory;
+    final patched = [...olderHistory]..[index] = updated;
+    patched.sort((a, b) => a.executedAt.compareTo(b.executedAt));
+    return patched;
+  }
+
+  TaskItem _insertIntoTaskHistory(TaskItem task, TaskHistory history) {
+    if (task.taskHistory.any((h) => h.id == history.id)) return task;
+    final updated = [...task.taskHistory, history]
+      ..sort((a, b) => a.executedAt.compareTo(b.executedAt));
+    return task.copyWith(taskHistory: updated);
+  }
+
+  // task.taskHistory（head）内に対象のidがなければ null（変更なし）を返す
+  TaskItem? _patchTaskHistory(TaskItem task, TaskHistory updated) {
+    final index = task.taskHistory.indexWhere((h) => h.id == updated.id);
+    if (index == -1) return null;
+    final patched = [...task.taskHistory]..[index] = updated;
+    patched.sort((a, b) => a.executedAt.compareTo(b.executedAt));
+    return task.copyWith(taskHistory: patched);
   }
 }

@@ -203,7 +203,6 @@ void main() {
         throwsA(isA<TaskRepositoryException>()),
       );
     });
-
   });
 
   group('recordExecution', () {
@@ -648,6 +647,41 @@ void main() {
       expect(restored.scheduleValue, 2);
       expect(restored.scheduleUnit, ScheduleUnit.week);
     });
+
+    test('deleteTask が返す履歴で復元すると直近保持件数を超えても欠損しない', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '✂️',
+        color: TaskColor.none,
+      );
+      for (var i = 1; i <= 12; i++) {
+        await repository.recordExecution(id, executedAt: DateTime(2025, 1, i));
+      }
+      final deletedHistory = await repository.deleteTask(id);
+      expect(deletedHistory, hasLength(12));
+
+      await repository.restoreTask(
+        TaskItem.period(
+          id: id,
+          name: '散髪',
+          furigana: 'さんぱつ',
+          icon: '✂️',
+          color: TaskColor.none,
+          taskHistory: deletedHistory,
+        ),
+      );
+
+      final restoredId = (await repository.allTaskItems().first).first.id;
+      final executions = await firestore
+          .collection('users')
+          .doc('test-user')
+          .collection('taskDefinitions')
+          .doc(restoredId)
+          .collection('executions')
+          .get();
+      expect(executions.docs, hasLength(12));
+    });
   });
 
   group('_updateCache', () {
@@ -707,4 +741,28 @@ void main() {
       });
     });
   });
+
+  group('直近履歴の上限', () {
+    test('実行履歴が10件を超えると直近10件のみ taskHistory に含まれる', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+      );
+      for (var i = 1; i <= 12; i++) {
+        await repository.recordExecution(id, executedAt: DateTime(2025, 1, i));
+      }
+
+      final task = await repository.findTaskById(id);
+
+      expect(task.taskHistory, hasLength(10));
+      expect(task.taskHistory.first.executedAt, DateTime(2025, 1, 3));
+      expect(task.taskHistory.last.executedAt, DateTime(2025, 1, 12));
+    });
+  });
+
+  // fetchOlderHistory は FieldPath.documentId をカーソルに使っており、
+  // fake_cloud_firestore がこれを正しく解決できないため自動テストできない。
+  // 境界の正しさ（取りこぼし・重複がないこと）は手動で確認すること。
 }

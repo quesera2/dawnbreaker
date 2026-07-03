@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
+import 'package:dawnbreaker/data/model/task_history_interval.dart';
 import 'package:dawnbreaker/data/model/task_progress.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -83,17 +84,7 @@ sealed class TaskItem with _$TaskItem {
     ScheduledTaskItem(:final scheduleUnit) => scheduleUnit,
   };
 
-  List<int> get executionIntervalDays {
-    if (taskHistory.length < 2) return [];
-    return taskHistory.skip(1).indexed.map((item) {
-      final (index, current) = item;
-      final a = taskHistory[index].executedAt;
-      final b = current.executedAt;
-      final aDate = DateTime(a.year, a.month, a.day);
-      final bDate = DateTime(b.year, b.month, b.day);
-      return bDate.difference(aDate).inDays;
-    }).toList();
-  }
+  List<int> get executionIntervalDays => intervalDaysForHistory(taskHistory);
 
   static DateTime? _computePeriodNextAt(
     List<int> intervals,

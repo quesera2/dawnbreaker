@@ -5,6 +5,8 @@ import 'package:dawnbreaker/core/util/furigana_translate.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
+import 'package:dawnbreaker/data/model/task_history_cursor.dart';
+import 'package:dawnbreaker/data/model/task_history_page.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
@@ -19,6 +21,8 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     required this._furiganaTranslate,
     required this._firestore,
   });
+
+  static const _recentHistoryLimit = 10;
 
   final String userId;
   final FuriganaTranslate _furiganaTranslate;
@@ -57,6 +61,33 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
       return _buildTaskItem(snapshot);
     } on TaskRepositoryException {
       rethrow;
+    } catch (e) {
+      throw TaskLoadException(e.toString());
+    }
+  }
+
+  @override
+  Future<TaskHistoryPage> fetchOlderHistory(
+    String taskId, {
+    required TaskHistoryCursor cursor,
+    int limit = 20,
+  }) async {
+    try {
+      final snapshot = await _executionsRef(taskId)
+          .orderBy('executedAt', descending: true)
+          .orderBy(FieldPath.documentId, descending: true)
+          .startAfter([Timestamp.fromDate(cursor.executedAt), cursor.id])
+          .limit(limit)
+          .get();
+      final items = snapshot.docs.map((e) {
+        final data = e.data();
+        return TaskHistory(
+          id: e.id,
+          executedAt: (data['executedAt'] as Timestamp).toDate(),
+          comment: data['comment'] as String?,
+        );
+      }).toList();
+      return TaskHistoryPage(items: items, hasMore: items.length == limit);
     } catch (e) {
       throw TaskLoadException(e.toString());
     }
@@ -193,10 +224,11 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> deleteTask(String taskId) async {
+  Future<List<TaskHistory>> deleteTask(String taskId) async {
     try {
-      await _deleteAllExecutions(taskId);
+      final deletedHistory = await _deleteAllExecutions(taskId);
       await _taskDefinitionsRef().doc(taskId).delete();
+      return deletedHistory;
     } catch (e) {
       throw TaskDeleteException(e.toString());
     }
@@ -318,7 +350,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
 
     final executionSnap = await _executionsRef(
       taskId,
-    ).orderBy('executedAt').get();
+    ).orderBy('executedAt').limitToLast(_recentHistoryLimit).get();
     final taskHistory = executionSnap.docs.map((e) {
       final eData = e.data();
       return TaskHistory(
@@ -382,15 +414,23 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     );
   }
 
-  Future<void> _deleteAllExecutions(String taskId) async {
+  Future<List<TaskHistory>> _deleteAllExecutions(String taskId) async {
     final executions = await _executionsRef(taskId).get();
     await Future.wait(executions.docs.map((doc) => doc.reference.delete()));
+    return executions.docs.map((doc) {
+      final data = doc.data();
+      return TaskHistory(
+        id: doc.id,
+        executedAt: (data['executedAt'] as Timestamp).toDate(),
+        comment: data['comment'] as String?,
+      );
+    }).toList();
   }
 
   Future<void> _updateCache(String taskId) async {
     final executionSnap = await _executionsRef(
       taskId,
-    ).orderBy('executedAt').get();
+    ).orderBy('executedAt').limitToLast(_recentHistoryLimit).get();
 
     if (executionSnap.docs.isEmpty) {
       await _taskDefinitionsRef().doc(taskId).update({
