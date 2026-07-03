@@ -13,13 +13,12 @@ abstract interface class TaskRepository {
 
   Future<TaskItem> findTaskById(String taskId);
 
-  // 直近の実行履歴（新しい順ではなく実行日時の昇順）をストリームで返す。
-  // 詳細画面での表示専用で、ホーム画面の一覧取得（allTaskItems）はこれを購読しない
-  Stream<List<TaskHistory>> watchTaskHistory(String taskId);
-
-  Future<TaskHistoryPage> fetchOlderHistory(
+  // 実行履歴を新しい方から遡ってページ単位で取得する（返却順は新しい順）。
+  // cursor が null のときは最新のページを返す。詳細画面での表示専用で、
+  // ホーム画面の一覧取得（allTaskItems）はこれを呼ばない
+  Future<TaskHistoryPage> fetchTaskHistory(
     String taskId, {
-    required TaskHistoryCursor cursor,
+    TaskHistoryCursor? cursor,
     int limit = 20,
   });
 

@@ -58,22 +58,24 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
     }
   }
 
+  // ローカルDBなので初回で全件返し、続きのページは存在しない
   @override
-  Stream<List<TaskHistory>> watchTaskHistory(String taskId) {
-    return (_db.select(_db.taskExecutions)
-          ..where((t) => t.taskDefinitionId.equals(taskId))
-          ..orderBy([(t) => OrderingTerm.asc(t.executedAt)]))
-        .watch()
-        .map((rows) => rows.map(_taskHistoryFromRow).toList());
-  }
-
-  // taskHistory は常に全件取得済みのため、続きのページは存在しない
-  @override
-  Future<TaskHistoryPage> fetchOlderHistory(
+  Future<TaskHistoryPage> fetchTaskHistory(
     String taskId, {
-    required TaskHistoryCursor cursor,
+    TaskHistoryCursor? cursor,
     int limit = 20,
-  }) async => const TaskHistoryPage(items: [], hasMore: false);
+  }) async {
+    if (cursor != null) return const TaskHistoryPage(items: [], hasMore: false);
+    final rows =
+        await (_db.select(_db.taskExecutions)
+              ..where((t) => t.taskDefinitionId.equals(taskId))
+              ..orderBy([(t) => OrderingTerm.desc(t.executedAt)]))
+            .get();
+    return TaskHistoryPage(
+      items: rows.map(_taskHistoryFromRow).toList(),
+      hasMore: false,
+    );
+  }
 
   @override
   Future<String> addTask({

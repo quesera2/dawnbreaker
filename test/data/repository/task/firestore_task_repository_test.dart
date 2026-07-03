@@ -113,7 +113,7 @@ void main() {
       expect(task.name, '散髪');
       expect(task.furigana, 'さんぱつ');
       expect(task.color, TaskColor.none);
-      expect(await repository.watchTaskHistory(id).first, isEmpty);
+      expect((await repository.fetchTaskHistory(id)).items, isEmpty);
     });
 
     test('scheduled タスクを追加できる', () async {
@@ -133,7 +133,7 @@ void main() {
       expect(task.furigana, 'むしよけこうかん');
       expect(task.scheduleValue, 2);
       expect(task.scheduleUnit, ScheduleUnit.week);
-      expect(await repository.watchTaskHistory(id).first, isEmpty);
+      expect((await repository.fetchTaskHistory(id)).items, isEmpty);
     });
 
     test('irregular タスクを追加できる', () async {
@@ -215,7 +215,7 @@ void main() {
       );
       await repository.recordExecution(id, executedAt: DateTime(2025, 6, 1));
 
-      expect(await repository.watchTaskHistory(id).first, hasLength(1));
+      expect((await repository.fetchTaskHistory(id)).items, hasLength(1));
     });
 
     test('period タスクで履歴が2件以上になると scheduledAt が算出される', () async {
@@ -260,7 +260,7 @@ void main() {
         comment: '良い感じ',
       );
 
-      final taskHistory = await repository.watchTaskHistory(id).first;
+      final taskHistory = (await repository.fetchTaskHistory(id)).items;
       final recorded = taskHistory.firstWhere((h) => h.id == history.id);
       expect(recorded.comment, '良い感じ');
     });
@@ -297,7 +297,7 @@ void main() {
           executedAt: DateTime(2025, 7, 1),
         );
 
-        final taskHistory = await repository.watchTaskHistory(taskId).first;
+        final taskHistory = (await repository.fetchTaskHistory(taskId)).items;
         final updated = taskHistory.firstWhere((h) => h.id == executionId);
         expect(updated.executedAt, DateTime(2025, 7, 1));
       });
@@ -310,7 +310,7 @@ void main() {
           comment: '更新コメント',
         );
 
-        final taskHistory = await repository.watchTaskHistory(taskId).first;
+        final taskHistory = (await repository.fetchTaskHistory(taskId)).items;
         final updated = taskHistory.firstWhere((h) => h.id == executionId);
         expect(updated.comment, '更新コメント');
       });
@@ -335,7 +335,7 @@ void main() {
           executedAt: DateTime(2025, 6, 1),
         );
 
-        final taskHistory = await repository.watchTaskHistory(taskId).first;
+        final taskHistory = (await repository.fetchTaskHistory(taskId)).items;
         final updated = taskHistory.firstWhere((h) => h.id == executionId);
         expect(updated.comment, isNull);
       });
@@ -496,7 +496,7 @@ void main() {
 
       await repository.deleteExecution(target.id, taskId: id);
 
-      final taskHistory = await repository.watchTaskHistory(id).first;
+      final taskHistory = (await repository.fetchTaskHistory(id)).items;
       expect(taskHistory, hasLength(1));
       expect(taskHistory.first.executedAt, DateTime(2025, 1, 1));
     });
@@ -517,7 +517,7 @@ void main() {
 
       await repository.deleteExecution(target.id, taskId: id);
 
-      final taskHistory = await repository.watchTaskHistory(id).first;
+      final taskHistory = (await repository.fetchTaskHistory(id)).items;
       expect(taskHistory, hasLength(2));
       expect(
         taskHistory.map((h) => h.executedAt),
@@ -539,7 +539,7 @@ void main() {
 
       await repository.deleteExecution(target.id, taskId: 'wrong-task-id');
 
-      final taskHistory = await repository.watchTaskHistory(id).first;
+      final taskHistory = (await repository.fetchTaskHistory(id)).items;
       expect(taskHistory, hasLength(1));
     });
 
@@ -649,7 +649,7 @@ void main() {
       expect(restored.name, '散髪');
       expect(restored.icon, '✂️');
       expect(
-        await repository.watchTaskHistory(restored.id).first,
+        (await repository.fetchTaskHistory(restored.id)).items,
         hasLength(2),
       );
     });
@@ -761,8 +761,8 @@ void main() {
     });
   });
 
-  group('直近履歴の上限', () {
-    test('実行履歴が10件を超えると直近10件のみ watchTaskHistory に含まれる', () async {
+  group('fetchTaskHistory', () {
+    test('新しい順に返り、limit を超える件数があると hasMore が true になる', () async {
       final id = await repository.addTask(
         taskType: TaskType.period,
         name: '散髪',
@@ -773,15 +773,16 @@ void main() {
         await repository.recordExecution(id, executedAt: DateTime(2025, 1, i));
       }
 
-      final taskHistory = await repository.watchTaskHistory(id).first;
+      final page = await repository.fetchTaskHistory(id, limit: 10);
 
-      expect(taskHistory, hasLength(10));
-      expect(taskHistory.first.executedAt, DateTime(2025, 1, 3));
-      expect(taskHistory.last.executedAt, DateTime(2025, 1, 12));
+      expect(page.items, hasLength(10));
+      expect(page.items.first.executedAt, DateTime(2025, 1, 12));
+      expect(page.items.last.executedAt, DateTime(2025, 1, 3));
+      expect(page.hasMore, isTrue);
     });
   });
 
-  // fetchOlderHistory は FieldPath.documentId をカーソルに使っており、
+  // fetchTaskHistory は cursor 継続時に FieldPath.documentId を使っており、
   // fake_cloud_firestore がこれを正しく解決できないため自動テストできない。
   // 境界の正しさ（取りこぼし・重複がないこと）は手動で確認すること。
 }

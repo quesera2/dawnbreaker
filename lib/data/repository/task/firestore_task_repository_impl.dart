@@ -65,27 +65,22 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Stream<List<TaskHistory>> watchTaskHistory(String taskId) {
-    return _executionsRef(taskId)
-        .orderBy('executedAt')
-        .limitToLast(_recentHistoryLimit)
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map(_taskHistoryFromDoc).toList());
-  }
-
-  @override
-  Future<TaskHistoryPage> fetchOlderHistory(
+  Future<TaskHistoryPage> fetchTaskHistory(
     String taskId, {
-    required TaskHistoryCursor cursor,
+    TaskHistoryCursor? cursor,
     int limit = 20,
   }) async {
     try {
-      final snapshot = await _executionsRef(taskId)
+      var query = _executionsRef(taskId)
           .orderBy('executedAt', descending: true)
-          .orderBy(FieldPath.documentId, descending: true)
-          .startAfter([Timestamp.fromDate(cursor.executedAt), cursor.id])
-          .limit(limit)
-          .get();
+          .orderBy(FieldPath.documentId, descending: true);
+      if (cursor != null) {
+        query = query.startAfter([
+          Timestamp.fromDate(cursor.executedAt),
+          cursor.id,
+        ]);
+      }
+      final snapshot = await query.limit(limit).get();
       final items = snapshot.docs.map(_taskHistoryFromDoc).toList();
       return TaskHistoryPage(items: items, hasMore: items.length == limit);
     } catch (e) {

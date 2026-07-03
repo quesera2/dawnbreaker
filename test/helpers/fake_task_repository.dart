@@ -25,7 +25,6 @@ class FakeTaskRepository implements TaskRepository {
   final List<TaskItem> _tasks;
   final Map<String, List<TaskHistory>> _history;
   final _controller = StreamController<List<TaskItem>>.broadcast();
-  final _historyControllers = <String, StreamController<List<TaskHistory>>>{};
   int _nextId = 100;
 
   @override
@@ -59,25 +58,22 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Stream<List<TaskHistory>> watchTaskHistory(String taskId) {
-    final controller = _historyControllerFor(taskId);
-    unawaited(
-      Future.microtask(() {
-        if (!controller.isClosed) {
-          controller.add(List.of(_history[taskId] ?? []));
-        }
-      }),
-    );
-    return controller.stream;
-  }
-
-  // watchTaskHistory に全件を乗せているため、続きのページは存在しない
-  @override
-  Future<TaskHistoryPage> fetchOlderHistory(
+  Future<TaskHistoryPage> fetchTaskHistory(
     String taskId, {
-    required TaskHistoryCursor cursor,
+    TaskHistoryCursor? cursor,
     int limit = 20,
-  }) async => const TaskHistoryPage(items: [], hasMore: false);
+  }) async {
+    final descending = <TaskHistory>[...?_history[taskId]]
+      ..sort((a, b) => b.executedAt.compareTo(a.executedAt));
+    final startIndex = cursor == null
+        ? 0
+        : descending.indexWhere((h) => h.id == cursor.id) + 1;
+    final page = descending.skip(startIndex).take(limit).toList();
+    return TaskHistoryPage(
+      items: page,
+      hasMore: startIndex + page.length < descending.length,
+    );
+  }
 
   @override
   Future<String> addTask({
@@ -197,18 +193,10 @@ class FakeTaskRepository implements TaskRepository {
     _tasks.add(taskItem);
     _history[taskItem.id] = List.of(taskHistory);
     _notify();
-    _notifyHistory(taskItem.id);
   }
 
   void emitError(Object error) {
     if (!_controller.isClosed) _controller.addError(error);
-  }
-
-  // Firestore の limitToLast のように、直近件数のみに絞られた履歴で
-  // watchTaskHistory が再emitされる状況を再現する
-  void replaceTaskHistory(String taskId, List<TaskHistory> taskHistory) {
-    _history[taskId] = List.of(taskHistory);
-    _notifyHistory(taskId);
   }
 
   bool containsTask(String taskId) => _tasks.any((t) => t.id == taskId);
@@ -218,27 +206,11 @@ class FakeTaskRepository implements TaskRepository {
 
   void dispose() {
     unawaited(_controller.close());
-    for (final controller in _historyControllers.values) {
-      unawaited(controller.close());
-    }
   }
 
   void _notify() {
     if (!_controller.isClosed) _controller.add(List.of(_tasks));
   }
-
-  void _notifyHistory(String taskId) {
-    final controller = _historyControllers[taskId];
-    if (controller != null && !controller.isClosed) {
-      controller.add(List.of(_history[taskId] ?? []));
-    }
-  }
-
-  StreamController<List<TaskHistory>> _historyControllerFor(String taskId) =>
-      _historyControllers.putIfAbsent(
-        taskId,
-        () => StreamController<List<TaskHistory>>.broadcast(),
-      );
 
   static TaskItem _buildTask({
     required String id,

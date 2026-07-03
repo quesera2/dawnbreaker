@@ -174,26 +174,6 @@ void main() {
         });
       });
 
-      group('タスクが外部で直近件数のみに絞られて再emitされたとき', () {
-        setUp(() async {
-          await setUpLoaded(taskId: _taskMultiHistory.id);
-        });
-
-        test('画面から見えていた履歴が消えない', () async {
-          // Firestore の limitToLast(10) 相当。直近2件だけを持つ状態で再emitされても
-          // 溢れた1件目は olderHistory 側に退避され、表示件数は変わらない
-          final headOnly = _taskMultiHistoryEntries.sublist(1);
-          fakeRepository.replaceTaskHistory(_taskMultiHistory.id, headOnly);
-          await pumpEventQueue();
-
-          expect(viewState.mergedAscendingHistory, hasLength(3));
-          expect(
-            viewState.mergedAscendingHistory.map((h) => h.id),
-            containsAll(['h-1', 'h-2', 'h-3']),
-          );
-        });
-      });
-
       group('タスクデータの取得中にエラーが発生したとき', () {
         setUp(() async {
           await setUpLoaded();
@@ -262,14 +242,14 @@ void main() {
             expect(viewState.dialogMessage, isNull);
           });
 
-          test('成功時にローカルの recentHistory が更新される', () async {
+          test('成功時にローカルの history が更新される', () async {
             await viewModel.updateExecution(
               _taskOneHistory,
               _taskOneHistoryEntries.first,
               executedAt: DateTime(2026, 2, 1),
               comment: '更新コメント',
             );
-            final updated = viewState.recentHistory.firstWhere(
+            final updated = viewState.history.firstWhere(
               (h) => h.id == _taskOneHistoryEntries.first.id,
             );
             expect(updated.executedAt, DateTime(2026, 2, 1));
@@ -368,13 +348,13 @@ void main() {
             expect(viewState.dialogMessage, isNull);
           });
 
-          test('成功時にローカルの recentHistory に日付順で追加される', () async {
+          test('成功時にローカルの history に日付順で追加される', () async {
             await viewModel.recordExecution(
               _taskOneHistory,
               DateTime(2026, 4, 1),
               null,
             );
-            expect(viewState.recentHistory.map((h) => h.executedAt), [
+            expect(viewState.history.map((h) => h.executedAt), [
               DateTime(2026, 1, 1),
               DateTime(2026, 4, 1),
             ]);
@@ -574,12 +554,12 @@ void main() {
             expect(viewState.dialogMessage, isNull);
           });
 
-          test('成功時にローカルの recentHistory から削除される', () async {
+          test('成功時にローカルの history から削除される', () async {
             await viewModel.deleteExecution(
               _taskOneHistory,
               _taskOneHistoryEntries.first,
             );
-            expect(viewState.recentHistory, isEmpty);
+            expect(viewState.history, isEmpty);
           });
 
           for (final (comment, expectedComment, description) in [
