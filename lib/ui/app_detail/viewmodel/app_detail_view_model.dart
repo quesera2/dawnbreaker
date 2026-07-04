@@ -274,6 +274,9 @@ class AppDetailViewModel extends _$AppDetailViewModel {
           return;
         }
         state = state.update((s) => s.updateTaskItem(task));
+        // task 側の更新だけでは実行履歴の変更（他端末からの記録・編集・削除）が
+        // 画面に反映されないため、直近の履歴を Future ベースで取り直して補う
+        unawaited(_refreshRecentHistory(taskId));
       },
       onError: (e, s) {
         logger.e('タスク詳細の取得に失敗', error: e, stackTrace: s);
@@ -284,6 +287,35 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       },
     );
     ref.onDispose(() => unawaited(cancel()));
+  }
+
+  // タスクが外部で更新されたたびに直近ページを取り直し、ページング済みの
+  // 古い履歴はそのまま残しつつ直近ウィンドウ内の追加・編集・削除だけ反映する
+  Future<void> _refreshRecentHistory(String taskId) async {
+    try {
+      final page = await _repository.fetchTaskHistory(taskId);
+      if (!ref.mounted) return;
+      state = state.update((s) {
+        if (page.items.isEmpty) return s.updateHistory(const []);
+        final oldestFresh = page.items
+            .map((h) => h.executedAt)
+            .reduce((a, b) => a.isBefore(b) ? a : b);
+        final keptOlder = s.history
+            .where((h) => h.executedAt.isBefore(oldestFresh))
+            .toList();
+        final merged = [...keptOlder, ...page.items.reversed]
+          ..sort((a, b) => a.executedAt.compareTo(b.executedAt));
+        return s
+            .updateHistory(merged)
+            .copyWith(
+              hasMoreHistory: keptOlder.isEmpty
+                  ? page.hasMore
+                  : s.hasMoreHistory,
+            );
+      });
+    } catch (e, s) {
+      logger.e('タスク詳細の履歴再取得に失敗', error: e, stackTrace: s);
+    }
   }
 
   List<TaskHistory> _insertIntoHistory(
