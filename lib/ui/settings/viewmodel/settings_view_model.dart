@@ -149,7 +149,7 @@ class SettingsViewModel extends _$SettingsViewModel {
       buildDummyTasks(
         now: DateTime.now(),
         random: Random(),
-      ).map((e) => repository.restoreTask(e.$1, e.$2)),
+      ).map((task) => repository.restoreTask(task.$1, task.$2)),
     );
     if (!ref.mounted) return;
     state = state.copyWith(snackBarMessage: DebugDummyTasksGeneratedMessage());

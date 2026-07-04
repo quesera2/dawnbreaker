@@ -377,7 +377,7 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
         color: def.color,
         lastExecutedAt: lastExecutedAt,
         cachedScheduledAt: computeScheduledAt(
-          taskType: TaskType.period,
+          taskType: .period,
           ascendingHistory: ascendingHistory,
         ),
       ),

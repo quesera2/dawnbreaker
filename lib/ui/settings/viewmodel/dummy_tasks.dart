@@ -54,7 +54,7 @@ List<(TaskItem, List<TaskHistory>)> buildDummyTasks({
         color: def.color,
         lastExecutedAt: lastExecutedAt,
         cachedScheduledAt: computeScheduledAt(
-          taskType: TaskType.period,
+          taskType: .period,
           ascendingHistory: history,
         ),
       ),
