@@ -2,29 +2,28 @@ import 'dart:async';
 
 typedef CancelCallback = Future<void> Function();
 
-// combineLatest3/4 と異なり、値そのものではなく受信済みフラグで「まだ来ていない」を
-// 判定する。ストリームの値が nullable な場合（null を正当な値として流す場合）に
-// 誤判定しないようにするため
+// combineLatest3/4 と同様、値そのもの（null かどうか）で「まだ来ていない」を
+// 判定する。ストリームが null を正当な値として流す場合は、呼び出し側で
+// 事前にフィルタしてから渡すこと（null 値も扱いたい場合はこの関数を使わない）
 CancelCallback combineLatest2<T, S>(
   Stream<T> stream1,
   Stream<S> stream2,
   void Function(T, S) combiner, {
   void Function(Object error, StackTrace stackTrace)? onError,
 }) {
-  late T v1;
-  late S v2;
-  var hasV1 = false;
-  var hasV2 = false;
+  T? v1;
+  S? v2;
 
   void tryEmit() {
-    if (!hasV1 || !hasV2) return;
-    combiner(v1, v2);
+    final a = v1;
+    final b = v2;
+    if (a == null || b == null) return;
+    combiner(a, b);
   }
 
   final sub1 = stream1.listen(
     (v) {
       v1 = v;
-      hasV1 = true;
       tryEmit();
     },
     onError: onError,
@@ -32,7 +31,6 @@ CancelCallback combineLatest2<T, S>(
   final sub2 = stream2.listen(
     (v) {
       v2 = v;
-      hasV2 = true;
       tryEmit();
     },
     onError: onError,

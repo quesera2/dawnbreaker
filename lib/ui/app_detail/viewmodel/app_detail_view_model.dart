@@ -237,32 +237,47 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     }
   }
 
-  // watchTaskById（ライブ更新）と fetchTaskHistory（初期表示用の1回きりの取得）を
-  // combineLatest2 でまとめて1つの更新経路にする。build() は初期状態を同期的に返し
-  // ここでの更新はすべて state.update 経由になるため、「build() 完了前に2件目の
-  // イベントが来て state がまだ値を持たない」という競合が起きない。
-  // 最初の1回だけ history も含めて反映し、以降は task 側の更新のみ反映する
+  // watchTaskById は「タスクが削除された（null）」の検知と、fetchTaskHistory との
+  // combineLatest2 の2つの用途で2回 listen するため、複数購読できるようにしておく
   void _listenForTaskUpdates(String taskId) {
+    final taskStream = _repository.watchTaskById(taskId).asBroadcastStream();
+
+    void handleError(Object error, StackTrace stackTrace) {
+      logger.e('タスク詳細の取得に失敗', error: error, stackTrace: stackTrace);
+      if (!ref.mounted) return;
+      state = state.update(
+        (s) => s.copyWith(isLoading: false, shouldPop: true),
+      );
+    }
+
+    // タスクが削除されると null が流れてくるので、history 側を待たずに前の画面に戻る
+    final taskDeletedSubscription = taskStream.listen((task) {
+      if (task != null) return;
+      if (!ref.mounted) return;
+      state = state.update(
+        (s) => s.copyWith(
+          isLoading: false,
+          task: null,
+          history: [],
+          historyStats: null,
+          daysSinceLastExecution: null,
+          averageIntervalDays: null,
+          shouldPop: true,
+        ),
+      );
+    }, onError: handleError);
+
+    // タスクが存在する場合だけ fetchTaskHistory（初期表示用の1回きりの取得）と
+    // combineLatest2 でまとめて1つの更新経路にする。build() は初期状態を同期的に
+    // 返し、ここでの更新はすべて state.update 経由になるため、「build() 完了前に
+    // 2件目のイベントが来て state がまだ値を持たない」という競合が起きない。
+    // 最初の1回だけ history も含めて反映し、以降は task 側の更新のみ反映する
     var isFirstEmission = true;
-    final cancel = combineLatest2(
-      _repository.watchTaskById(taskId),
+    final cancelCombine = combineLatest2(
+      taskStream.where((task) => task != null).cast<TaskItem>(),
       _repository.fetchTaskHistory(taskId).asStream(),
-      (TaskItem? task, TaskHistoryPage historyPage) {
+      (TaskItem task, TaskHistoryPage historyPage) {
         if (!ref.mounted) return;
-        if (task == null) {
-          state = state.update(
-            (s) => s.copyWith(
-              isLoading: false,
-              task: null,
-              history: [],
-              historyStats: null,
-              daysSinceLastExecution: null,
-              averageIntervalDays: null,
-              shouldPop: true,
-            ),
-          );
-          return;
-        }
         if (isFirstEmission) {
           isFirstEmission = false;
           state = state.update(
@@ -278,15 +293,13 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         // 画面に反映されないため、直近の履歴を Future ベースで取り直して補う
         unawaited(_refreshRecentHistory(taskId));
       },
-      onError: (e, s) {
-        logger.e('タスク詳細の取得に失敗', error: e, stackTrace: s);
-        if (!ref.mounted) return;
-        state = state.update(
-          (s) => s.copyWith(isLoading: false, shouldPop: true),
-        );
-      },
+      onError: handleError,
     );
-    ref.onDispose(() => unawaited(cancel()));
+
+    ref.onDispose(() {
+      unawaited(taskDeletedSubscription.cancel());
+      unawaited(cancelCombine());
+    });
   }
 
   // タスクが外部で更新されたたびに直近ページを取り直し、ページング済みの
