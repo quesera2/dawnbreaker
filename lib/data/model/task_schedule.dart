@@ -17,10 +17,9 @@ DateTime? computeScheduledAt({
   return switch (taskType) {
     .irregular => null,
     .period => _computePeriodNextAt(ascendingHistory),
-    .scheduled => scheduleUnit!.addTo(
-      ascendingHistory.last.executedAt,
-      scheduleValue!,
-    ),
+    .scheduled => scheduleUnit == null || scheduleValue == null
+        ? null
+        : scheduleUnit.addTo(ascendingHistory.last.executedAt, scheduleValue),
   };
 }
 
