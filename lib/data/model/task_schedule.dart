@@ -1,7 +1,6 @@
-import 'package:collection/collection.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
-import 'package:dawnbreaker/data/model/task_history_interval.dart';
+import 'package:dawnbreaker/data/model/task_history_stats.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 
 // scheduledAt/lastExecutedAt のキャッシュ計算に使う直近件数の上限。
@@ -50,9 +49,13 @@ DateTime? computeFixedIntervalScheduledAt({
   return scheduleUnit.addTo(lastExecutedAt, scheduleValue);
 }
 
+// 平均間隔日数は TaskHistoryStats（画面表示用の統計）と同じ計算を使う
 DateTime? _computePeriodNextAt(List<TaskHistory> ascendingHistory) {
-  final intervals = intervalDaysForHistory(ascendingHistory);
-  if (intervals.isEmpty) return null;
-  final avgDays = intervals.average.round();
-  return ascendingHistory.last.executedAt.add(Duration(days: avgDays));
+  final averageIntervalDays = TaskHistoryStats.from(
+    ascendingHistory,
+  ).averageIntervalDays;
+  if (averageIntervalDays == null) return null;
+  return ascendingHistory.last.executedAt.add(
+    Duration(days: averageIntervalDays.round()),
+  );
 }
