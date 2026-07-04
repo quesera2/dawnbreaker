@@ -322,12 +322,14 @@ class AppDetailViewModel extends _$AppDetailViewModel {
   }
 
   // history をローカルで書き換えた直後、サーバーとの再同期を待たずに
-  // lastExecutedAt/scheduledAt を画面に即時反映するための再計算
+  // lastExecutedAt/scheduledAt を画面に即時反映するための再計算。
+  // サーバー側（_updateCache）と同じ直近件数で計算し、再同期後の値と食い違わないようにする
   TaskItem _withRecomputedSchedule(
     TaskItem task,
     List<TaskHistory> ascendingHistory,
   ) {
-    final lastExecutedAt = computeLastExecutedAt(ascendingHistory);
+    final recentHistory = recentHistoryForSchedule(ascendingHistory);
+    final lastExecutedAt = computeLastExecutedAt(recentHistory);
     return switch (task) {
       IrregularTaskItem() => task.copyWith(lastExecutedAt: lastExecutedAt),
       ScheduledTaskItem() => task.copyWith(lastExecutedAt: lastExecutedAt),
@@ -335,7 +337,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         lastExecutedAt: lastExecutedAt,
         cachedScheduledAt: computeScheduledAt(
           taskType: task.taskType,
-          ascendingHistory: ascendingHistory,
+          ascendingHistory: recentHistory,
         ),
       ),
     };

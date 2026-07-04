@@ -701,6 +701,33 @@ void main() {
           .get();
       expect(executions.docs, hasLength(12));
     });
+
+    test('直近保持件数を超える履歴で復元すると nextScheduledAt は直近分だけで計算される', () async {
+      final id = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '✂️',
+        color: TaskColor.none,
+      );
+      final base = DateTime(2025, 1, 1);
+      // 最初の1件だけ大きく間隔を空け、残り10件は1日間隔にする
+      await repository.recordExecution(id, executedAt: base);
+      for (var i = 1; i <= 10; i++) {
+        await repository.recordExecution(
+          id,
+          executedAt: base.add(Duration(days: 100 + i)),
+        );
+      }
+      final deleted = await repository.findTaskById(id);
+      final deletedHistory = await repository.deleteTask(id);
+      expect(deletedHistory, hasLength(11));
+
+      await repository.restoreTask(deleted, deletedHistory);
+
+      final restored = (await repository.allTaskItems().first).first;
+      // 直近10件（1日間隔）だけを使うので、平均間隔は1日 → 最終実行(day110) + 1日 = day111
+      expect(restored.scheduledAt, base.add(const Duration(days: 111)));
+    });
   });
 
   group('_updateCache', () {

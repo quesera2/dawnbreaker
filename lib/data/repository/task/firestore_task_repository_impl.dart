@@ -22,8 +22,6 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     required this._firestore,
   });
 
-  static const _recentHistoryLimit = 10;
-
   final String userId;
   final FuriganaTranslate _furiganaTranslate;
   final FirebaseFirestore _firestore;
@@ -268,16 +266,14 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
 
       final ascendingHistory = [...taskHistory]
         ..sort((a, b) => a.executedAt.compareTo(b.executedAt));
-      final lastExecutedAt = computeLastExecutedAt(ascendingHistory);
+      // _updateCache と同じ直近件数に揃えて計算する（全件は executions として別途保存する）
+      final recentHistory = recentHistoryForSchedule(ascendingHistory);
+      final lastExecutedAt = computeLastExecutedAt(recentHistory);
       final scheduledAt = computeScheduledAt(
         taskType: taskItem.taskType,
-        ascendingHistory: ascendingHistory,
-        scheduleValue: taskItem.taskType == TaskType.scheduled
-            ? taskItem.scheduleValueOrDefault
-            : null,
-        scheduleUnit: taskItem.taskType == TaskType.scheduled
-            ? taskItem.scheduleUnitOrDefault
-            : null,
+        ascendingHistory: recentHistory,
+        scheduleValue: taskItem.scheduleValueOrDefault,
+        scheduleUnit: taskItem.scheduleUnitOrDefault,
       );
 
       batch.set(_taskDefinitionsRef().doc(newId), {
@@ -287,12 +283,8 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
           furigana: taskItem.furigana,
           icon: taskItem.icon,
           color: taskItem.color,
-          scheduleValue: taskItem.taskType == TaskType.scheduled
-              ? taskItem.scheduleValueOrDefault
-              : null,
-          scheduleUnit: taskItem.taskType == TaskType.scheduled
-              ? taskItem.scheduleUnitOrDefault
-              : null,
+          scheduleValue: taskItem.scheduleValueOrDefault,
+          scheduleUnit: taskItem.scheduleUnitOrDefault,
         ),
         'lastExecutedAt': lastExecutedAt != null
             ? Timestamp.fromDate(lastExecutedAt)
@@ -433,7 +425,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   Future<void> _updateCache(String taskId) async {
     final executionSnap = await _executionsRef(
       taskId,
-    ).orderBy('executedAt').limitToLast(_recentHistoryLimit).get();
+    ).orderBy('executedAt').limitToLast(scheduleHistoryLimit).get();
     final ascendingHistory = executionSnap.docs
         .map(_taskHistoryFromDoc)
         .toList();

@@ -4,6 +4,18 @@ import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_history_interval.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 
+// scheduledAt/lastExecutedAt のキャッシュ計算に使う直近件数の上限。
+// Firestore の _updateCache がクエリ段階でこの件数に絞っているのに合わせて、
+// restoreTask や画面側での楽観的な再計算も同じ件数に統一する
+const scheduleHistoryLimit = 10;
+
+List<TaskHistory> recentHistoryForSchedule(List<TaskHistory> ascendingHistory) {
+  if (ascendingHistory.length <= scheduleHistoryLimit) return ascendingHistory;
+  return ascendingHistory.sublist(
+    ascendingHistory.length - scheduleHistoryLimit,
+  );
+}
+
 DateTime? computeLastExecutedAt(List<TaskHistory> ascendingHistory) =>
     ascendingHistory.isEmpty ? null : ascendingHistory.last.executedAt;
 
