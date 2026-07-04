@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/core/util/furigana_translate.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
@@ -157,7 +158,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
             : FieldValue.delete(),
       });
       // taskType やスケジュール設定の変更で nextScheduledAt の算出方法が変わるため再計算する
-      await _updateCache(taskId);
+      await _updateCacheOrLog(taskId);
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
@@ -176,7 +177,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
       await _executionsRef(
         taskId,
       ).doc(id).set(_executionData(executedAt: executedAt, comment: comment));
-      await _updateCache(taskId);
+      await _updateCacheOrLog(taskId);
       return TaskHistory(id: id, executedAt: executedAt, comment: comment);
     } catch (e) {
       throw TaskSaveException(e.toString());
@@ -195,7 +196,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
         'executedAt': Timestamp.fromDate(executedAt),
         'comment': comment,
       });
-      await _updateCache(taskId);
+      await _updateCacheOrLog(taskId);
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
@@ -212,7 +213,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
       final executionRef = _executionsRef(taskId).doc(executionId);
       if (!(await executionRef.get()).exists) return;
       await executionRef.delete();
-      await _updateCache(taskId);
+      await _updateCacheOrLog(taskId);
     } catch (e) {
       throw TaskDeleteException(e.toString());
     }
@@ -420,6 +421,18 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     final executions = await _executionsRef(taskId).get();
     await Future.wait(executions.docs.map((doc) => doc.reference.delete()));
     return executions.docs.map(_taskHistoryFromDoc).toList();
+  }
+
+  // 実行の記録・更新・削除自体はすでに成功しているため、直後のキャッシュ再計算だけが
+  // 失敗しても呼び出し元には例外を伝えない。ここで失敗を伝えると呼び出し元が同じ内容で
+  // 再試行し、実行記録そのものが重複してしまうため。古いキャッシュは次回の
+  // recordExecution/updateExecution/deleteExecution/updateTask で再計算されて解消される
+  Future<void> _updateCacheOrLog(String taskId) async {
+    try {
+      await _updateCache(taskId);
+    } catch (e, s) {
+      logger.e('タスクのキャッシュ再計算に失敗 taskId=$taskId', error: e, stackTrace: s);
+    }
   }
 
   Future<void> _updateCache(String taskId) async {
