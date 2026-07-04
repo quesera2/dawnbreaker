@@ -730,7 +730,7 @@ void main() {
     });
   });
 
-  group('_updateCache', () {
+  group('_recalculateScheduleFromHistory', () {
     group('period タスクの nextScheduledAt 計算', () {
       test('履歴1件のときは nextScheduledAt が null になる', () async {
         final id = await repository.addTask(

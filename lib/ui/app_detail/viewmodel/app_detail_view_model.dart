@@ -341,7 +341,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
 
   // history をローカルで書き換えた直後、サーバーとの再同期を待たずに
   // lastExecutedAt/scheduledAt を画面に即時反映するための再計算。
-  // サーバー側（_updateCache）と同じ直近件数で計算し、再同期後の値と食い違わないようにする
+  // サーバー側（_recalculateScheduleFromHistory）と同じ直近件数で計算し、
+  // 再同期後の値と食い違わないようにする
   TaskItem _withRecomputedSchedule(
     TaskItem task,
     List<TaskHistory> ascendingHistory,

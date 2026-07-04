@@ -159,7 +159,7 @@ class FakeTaskRepository implements TaskRepository {
       comment: comment,
     );
     (_history[taskId] ??= []).add(history);
-    _updateCache(taskId);
+    _recalculateScheduleFromHistory(taskId);
     _notify();
     return history;
   }
@@ -180,7 +180,7 @@ class FakeTaskRepository implements TaskRepository {
       executedAt: executedAt,
       comment: comment,
     );
-    _updateCache(taskId);
+    _recalculateScheduleFromHistory(taskId);
     _notify();
   }
 
@@ -191,7 +191,7 @@ class FakeTaskRepository implements TaskRepository {
   }) async {
     if (shouldThrow) throw const TaskDeleteException('テストエラー');
     _history[taskId]?.removeWhere((h) => h.id == executionId);
-    _updateCache(taskId);
+    _recalculateScheduleFromHistory(taskId);
     _notify();
   }
 
@@ -264,7 +264,7 @@ class FakeTaskRepository implements TaskRepository {
 
   // 実行履歴の記録・更新・削除のたびに、実際のリポジトリ実装と同様に
   // lastExecutedAt/cachedScheduledAt を履歴から再計算する
-  void _updateCache(String taskId) {
+  void _recalculateScheduleFromHistory(String taskId) {
     final index = _tasks.indexWhere((t) => t.id == taskId);
     if (index == -1) return;
     final task = _tasks[index];

@@ -158,7 +158,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
             : FieldValue.delete(),
       });
       // taskType やスケジュール設定の変更で nextScheduledAt の算出方法が変わるため再計算する
-      await _updateCacheOrLog(taskId);
+      await _recalculateScheduleFromHistoryOrLog(taskId);
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
@@ -177,7 +177,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
       await _executionsRef(
         taskId,
       ).doc(id).set(_executionData(executedAt: executedAt, comment: comment));
-      await _updateCacheOrLog(taskId);
+      await _recalculateScheduleFromHistoryOrLog(taskId);
       return TaskHistory(id: id, executedAt: executedAt, comment: comment);
     } catch (e) {
       throw TaskSaveException(e.toString());
@@ -196,7 +196,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
         'executedAt': Timestamp.fromDate(executedAt),
         'comment': comment,
       });
-      await _updateCacheOrLog(taskId);
+      await _recalculateScheduleFromHistoryOrLog(taskId);
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
@@ -213,7 +213,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
       final executionRef = _executionsRef(taskId).doc(executionId);
       if (!(await executionRef.get()).exists) return;
       await executionRef.delete();
-      await _updateCacheOrLog(taskId);
+      await _recalculateScheduleFromHistoryOrLog(taskId);
     } catch (e) {
       throw TaskDeleteException(e.toString());
     }
@@ -267,7 +267,8 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
 
       final ascendingHistory = [...taskHistory]
         ..sort((a, b) => a.executedAt.compareTo(b.executedAt));
-      // _updateCache と同じ直近件数に揃えて計算する（全件は executions として別途保存する）
+      // _recalculateScheduleFromHistory と同じ直近件数に揃えて計算する
+      // （全件は executions として別途保存する）
       final recentHistory = recentHistoryForSchedule(ascendingHistory);
       final lastExecutedAt = computeLastExecutedAt(recentHistory);
       final scheduledAt = computeScheduledAt(
@@ -423,19 +424,21 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     return executions.docs.map(_taskHistoryFromDoc).toList();
   }
 
-  // 実行の記録・更新・削除自体はすでに成功しているため、直後のキャッシュ再計算だけが
+  // 実行の記録・更新・削除自体はすでに成功しているため、直後の再計算だけが
   // 失敗しても呼び出し元には例外を伝えない。ここで失敗を伝えると呼び出し元が同じ内容で
-  // 再試行し、実行記録そのものが重複してしまうため。古いキャッシュは次回の
+  // 再試行し、実行記録そのものが重複してしまうため。古い値は次回の
   // recordExecution/updateExecution/deleteExecution/updateTask で再計算されて解消される
-  Future<void> _updateCacheOrLog(String taskId) async {
+  Future<void> _recalculateScheduleFromHistoryOrLog(String taskId) async {
     try {
-      await _updateCache(taskId);
+      await _recalculateScheduleFromHistory(taskId);
     } catch (e, s) {
-      logger.e('タスクのキャッシュ再計算に失敗 taskId=$taskId', error: e, stackTrace: s);
+      logger.e('スケジュールの再計算に失敗 taskId=$taskId', error: e, stackTrace: s);
     }
   }
 
-  Future<void> _updateCache(String taskId) async {
+  // 直近 scheduleHistoryLimit 件の実行履歴と taskDefinitions を Firestore から
+  // 読み直し、lastExecutedAt/nextScheduledAt を計算してドキュメントに書き戻す
+  Future<void> _recalculateScheduleFromHistory(String taskId) async {
     final executionSnap = await _executionsRef(
       taskId,
     ).orderBy('executedAt').limitToLast(scheduleHistoryLimit).get();
