@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/util/async_value_extension.dart';
+import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest2;
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_history_cursor.dart';
 import 'package:dawnbreaker/data/model/task_history_page.dart';
@@ -25,29 +26,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
   @override
   Future<AppDetailUiState> build({required String taskId}) async {
     _repository = await ref.read(taskRepositoryProvider.future);
-
-    final firstTask = Completer<TaskItem?>();
-    _listenForTaskUpdates(taskId, firstTask);
-
-    final TaskItem? initialTask;
-    final TaskHistoryPage initialPage;
-    try {
-      (initialTask, initialPage) = await (
-        firstTask.future,
-        _repository.fetchTaskHistory(taskId),
-      ).wait;
-    } catch (e, s) {
-      logger.e('タスク詳細の初期読み込みに失敗', error: e, stackTrace: s);
-      return const AppDetailUiState(isLoading: false, shouldPop: true);
-    }
-
-    if (initialTask == null) {
-      return const AppDetailUiState(isLoading: false, shouldPop: true);
-    }
-    return const AppDetailUiState()
-        .updateTaskItem(initialTask)
-        .updateHistory(initialPage.items.reversed.toList())
-        .copyWith(hasMoreHistory: initialPage.hasMore);
+    _listenForTaskUpdates(taskId);
+    return const AppDetailUiState();
   }
 
   Future<void> updateExecution(
@@ -257,47 +237,53 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     }
   }
 
-  // watchTaskById は1つの購読だけを維持する。最初の1件は build() が待つ初期値として
-  // firstTask 経由で渡し、2件目以降はここで直接 state を更新する
-  void _listenForTaskUpdates(String taskId, Completer<TaskItem?> firstTask) {
-    final subscription = _repository
-        .watchTaskById(taskId)
-        .listen(
-          (task) {
-            if (!firstTask.isCompleted) {
-              firstTask.complete(task);
-              return;
-            }
-            if (!ref.mounted) return;
-            if (task == null) {
-              state = state.update(
-                (s) => s.copyWith(
-                  isLoading: false,
-                  task: null,
-                  history: [],
-                  historyStats: null,
-                  daysSinceLastExecution: null,
-                  averageIntervalDays: null,
-                  shouldPop: true,
-                ),
-              );
-              return;
-            }
-            state = state.update((s) => s.updateTaskItem(task));
-          },
-          onError: (Object e, StackTrace s) {
-            logger.e('watchTaskById stream error', error: e, stackTrace: s);
-            if (!firstTask.isCompleted) {
-              firstTask.completeError(e, s);
-              return;
-            }
-            if (!ref.mounted) return;
-            state = state.update(
-              (s) => s.copyWith(isLoading: false, shouldPop: true),
-            );
-          },
+  // watchTaskById（ライブ更新）と fetchTaskHistory（初期表示用の1回きりの取得）を
+  // combineLatest2 でまとめて1つの更新経路にする。build() は初期状態を同期的に返し
+  // ここでの更新はすべて state.update 経由になるため、「build() 完了前に2件目の
+  // イベントが来て state がまだ値を持たない」という競合が起きない。
+  // 最初の1回だけ history も含めて反映し、以降は task 側の更新のみ反映する
+  void _listenForTaskUpdates(String taskId) {
+    var isFirstEmission = true;
+    final cancel = combineLatest2(
+      _repository.watchTaskById(taskId),
+      _repository.fetchTaskHistory(taskId).asStream(),
+      (TaskItem? task, TaskHistoryPage historyPage) {
+        if (!ref.mounted) return;
+        if (task == null) {
+          state = state.update(
+            (s) => s.copyWith(
+              isLoading: false,
+              task: null,
+              history: [],
+              historyStats: null,
+              daysSinceLastExecution: null,
+              averageIntervalDays: null,
+              shouldPop: true,
+            ),
+          );
+          return;
+        }
+        if (isFirstEmission) {
+          isFirstEmission = false;
+          state = state.update(
+            (s) => s
+                .updateTaskItem(task)
+                .updateHistory(historyPage.items.reversed.toList())
+                .copyWith(hasMoreHistory: historyPage.hasMore),
+          );
+          return;
+        }
+        state = state.update((s) => s.updateTaskItem(task));
+      },
+      onError: (e, s) {
+        logger.e('タスク詳細の取得に失敗', error: e, stackTrace: s);
+        if (!ref.mounted) return;
+        state = state.update(
+          (s) => s.copyWith(isLoading: false, shouldPop: true),
         );
-    ref.onDispose(subscription.cancel);
+      },
+    );
+    ref.onDispose(() => unawaited(cancel()));
   }
 
   List<TaskHistory> _insertIntoHistory(
