@@ -7,7 +7,6 @@ import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
-import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
 import 'package:dawnbreaker/ui/common/components/app_task_icon_tile.dart';
@@ -194,13 +193,7 @@ class _OnboardingPage1Description extends StatelessWidget {
         color: TaskColor.yellow,
         scheduleValue: 9,
         scheduleUnit: ScheduleUnit.month,
-        taskHistory: [
-          TaskHistory(
-            id: 'dummy-1-1',
-            executedAt: DateTime(now.year, now.month - 6, now.day),
-            comment: null,
-          ),
-        ],
+        lastExecutedAt: DateTime(now.year, now.month - 6, now.day),
       ),
       TaskItem.scheduled(
         id: 'dummy-2',
@@ -210,13 +203,7 @@ class _OnboardingPage1Description extends StatelessWidget {
         color: TaskColor.red,
         scheduleValue: 6,
         scheduleUnit: ScheduleUnit.month,
-        taskHistory: [
-          TaskHistory(
-            id: 'dummy-2-1',
-            executedAt: DateTime(now.year, now.month - 5, now.day - 1),
-            comment: null,
-          ),
-        ],
+        lastExecutedAt: DateTime(now.year, now.month - 5, now.day - 1),
       ),
       TaskItem.scheduled(
         id: 'dummy-3',
@@ -226,13 +213,7 @@ class _OnboardingPage1Description extends StatelessWidget {
         color: TaskColor.orange,
         scheduleValue: 1,
         scheduleUnit: ScheduleUnit.month,
-        taskHistory: [
-          TaskHistory(
-            id: 'dummy-3-1',
-            executedAt: DateTime(now.year, now.month, now.day - 3),
-            comment: null,
-          ),
-        ],
+        lastExecutedAt: DateTime(now.year, now.month, now.day - 3),
       ),
       TaskItem.scheduled(
         id: 'dummy-4',
@@ -242,13 +223,7 @@ class _OnboardingPage1Description extends StatelessWidget {
         color: TaskColor.green,
         scheduleValue: 2,
         scheduleUnit: ScheduleUnit.week,
-        taskHistory: [
-          TaskHistory(
-            id: 'dummy-4-1',
-            executedAt: DateTime(now.year, now.month, now.day - 7),
-            comment: null,
-          ),
-        ],
+        lastExecutedAt: DateTime(now.year, now.month, now.day - 7),
       ),
       TaskItem.scheduled(
         id: 'dummy-5',
@@ -258,13 +233,7 @@ class _OnboardingPage1Description extends StatelessWidget {
         color: TaskColor.blue,
         scheduleValue: 1,
         scheduleUnit: ScheduleUnit.month,
-        taskHistory: [
-          TaskHistory(
-            id: 'dummy-5-1',
-            executedAt: DateTime(now.year, now.month - 1, now.day),
-            comment: null,
-          ),
-        ],
+        lastExecutedAt: DateTime(now.year, now.month - 1, now.day),
       ),
     ];
   }
@@ -335,7 +304,7 @@ class _OnboardingPage2Description extends StatelessWidget {
                 color: TaskColor.blue,
                 scheduleValue: 1,
                 scheduleUnit: ScheduleUnit.month,
-                taskHistory: [],
+                lastExecutedAt: null,
               ),
             ),
             const SizedBox(height: 16),

@@ -5,14 +5,15 @@ import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/data/model/task_schedule.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 
-List<TaskItem> buildDummyTasks({
+List<(TaskItem, List<TaskHistory>)> buildDummyTasks({
   required DateTime now,
   required Random random,
 }) {
   final oneYearAgo = DateTime(now.year - 1, now.month, now.day);
-  final items = <TaskItem>[];
+  final items = <(TaskItem, List<TaskHistory>)>[];
   var taskId = 1;
 
   for (final def in _dummyTaskDefinition) {
@@ -34,6 +35,7 @@ List<TaskItem> buildDummyTasks({
           comment: null,
         ),
     ];
+    final lastExecutedAt = computeLastExecutedAt(history);
 
     final item = switch (def.taskType) {
       TaskType.irregular => TaskItem.irregular(
@@ -42,7 +44,7 @@ List<TaskItem> buildDummyTasks({
         furigana: def.furigana,
         icon: def.icon,
         color: def.color,
-        taskHistory: history,
+        lastExecutedAt: lastExecutedAt,
       ),
       TaskType.period => TaskItem.period(
         id: taskIdStr,
@@ -50,7 +52,11 @@ List<TaskItem> buildDummyTasks({
         furigana: def.furigana,
         icon: def.icon,
         color: def.color,
-        taskHistory: history,
+        lastExecutedAt: lastExecutedAt,
+        cachedScheduledAt: computeScheduledAt(
+          taskType: .period,
+          ascendingHistory: history,
+        ),
       ),
       TaskType.scheduled => TaskItem.scheduled(
         id: taskIdStr,
@@ -60,11 +66,11 @@ List<TaskItem> buildDummyTasks({
         color: def.color,
         scheduleValue: def.scheduleValue!,
         scheduleUnit: def.scheduleUnit!,
-        taskHistory: history,
+        lastExecutedAt: lastExecutedAt,
       ),
     };
 
-    items.add(item);
+    items.add((item, history));
     taskId++;
   }
 

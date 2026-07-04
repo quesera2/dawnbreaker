@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/util/async_value_extension.dart';
+import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest2;
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_history_cursor.dart';
+import 'package:dawnbreaker/data/model/task_history_page.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/data/model/task_schedule.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
@@ -21,50 +26,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
   @override
   Future<AppDetailUiState> build({required String taskId}) async {
     _repository = await ref.read(taskRepositoryProvider.future);
-    _loadTask(taskId);
+    _listenForTaskUpdates(taskId);
     return const AppDetailUiState();
-  }
-
-  void _loadTask(String taskId) {
-    final subscription = _repository
-        .watchTaskById(taskId)
-        .listen(
-          (task) {
-            // 削除されたときは前の画面に戻る
-            if (!ref.mounted || task == null) {
-              state = state.update(
-                (s) => s.copyWith(
-                  isLoading: false,
-                  task: null,
-                  historyStats: null,
-                  daysSinceLastExecution: null,
-                  averageIntervalDays: null,
-                  shouldPop: true,
-                ),
-              );
-            } else {
-              state = state.update(
-                (s) => s
-                    .copyWith(
-                      olderHistory: _reconcileOlderHistory(
-                        previousTask: s.task,
-                        newTask: task,
-                        olderHistory: s.olderHistory,
-                      ),
-                    )
-                    .updateTaskItem(task),
-              );
-            }
-          },
-          onError: (Object e, StackTrace s) {
-            logger.e('watchTaskById stream error', error: e, stackTrace: s);
-            if (!ref.mounted) return;
-            state = state.update(
-              (s) => s.copyWith(isLoading: false, shouldPop: true),
-            );
-          },
-        );
-    ref.onDispose(subscription.cancel);
   }
 
   Future<void> updateExecution(
@@ -86,13 +49,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         comment: comment,
       );
       state = state.update((s) {
-        final currentTask = s.task;
-        final patchedTask = currentTask == null
-            ? null
-            : _patchTaskHistory(currentTask, updatedHistory);
-        final updated = patchedTask == null ? s : s.updateTaskItem(patchedTask);
-        return updated.copyWith(
-          olderHistory: _patchOlderHistory(s.olderHistory, updatedHistory),
+        final patched = _patchHistory(s.history, updatedHistory);
+        return _applyHistoryChange(s, patched).copyWith(
           snackBarMessage: TaskExecutionUpdateSuccess(
             handler: () => updateExecution(
               task,
@@ -139,17 +97,15 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     final task = state.requireValue.task;
     if (task == null) return;
     try {
-      // task.taskHistory は直近件数に絞られている場合があるため、
-      // 復元用には削除で返る全件の履歴を使う
+      // deleteTask が返す削除時点の全履歴を、直近件数の制限なしにそのまま undo に使う
       final deletedHistory = await _repository.deleteTask(task.id);
       if (!ref.mounted) return;
-      final taskToRestore = task.copyWith(taskHistory: deletedHistory);
       // タスク削除で watchTaskById で前の画面に戻る処理が走る
       state = state.update(
         (s) => s.copyWith(
           snackBarMessage: TaskDeleteSuccess(
             taskName: task.name,
-            handler: () => _repository.restoreTask(taskToRestore),
+            handler: () => _repository.restoreTask(task, deletedHistory),
           ),
         ),
       );
@@ -177,11 +133,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       );
       if (!ref.mounted) return;
       state = state.update((s) {
-        final currentTask = s.task;
-        final updated = currentTask == null
-            ? s
-            : s.updateTaskItem(_insertIntoTaskHistory(currentTask, history));
-        return updated.copyWith(
+        final updated = _insertIntoHistory(s.history, history);
+        return _applyHistoryChange(s, updated).copyWith(
           snackBarMessage: TaskCompleteSuccess(
             taskName: task.name,
             handler: () =>
@@ -207,21 +160,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       await _repository.deleteExecution(history.id, taskId: task.id);
       if (!ref.mounted) return;
       state = state.update((s) {
-        final currentTask = s.task;
-        final removedFromTask = currentTask == null
-            ? null
-            : currentTask.copyWith(
-                taskHistory: currentTask.taskHistory
-                    .where((h) => h.id != history.id)
-                    .toList(),
-              );
-        final updated = removedFromTask == null
-            ? s
-            : s.updateTaskItem(removedFromTask);
-        return updated.copyWith(
-          olderHistory: s.olderHistory
-              .where((h) => h.id != history.id)
-              .toList(),
+        final updated = s.history.where((h) => h.id != history.id).toList();
+        return _applyHistoryChange(s, updated).copyWith(
           snackBarMessage: TaskExecutionDeleteSuccess(
             taskName: task.name,
             executedAt: history.executedAt,
@@ -248,17 +188,16 @@ class AppDetailViewModel extends _$AppDetailViewModel {
 
   Future<void> loadMoreHistory() async {
     final current = state.value;
-    final task = current?.task;
-    if (current == null || task == null) return;
+    if (current == null) return;
     if (!current.hasMoreHistory || current.isLoadingMoreHistory) return;
 
-    final oldestLoaded = current.mergedAscendingHistory.firstOrNull;
+    final oldestLoaded = current.history.firstOrNull;
     if (oldestLoaded == null) return;
 
     state = state.update((s) => s.copyWith(isLoadingMoreHistory: true));
     try {
-      final page = await _repository.fetchOlderHistory(
-        task.id,
+      final page = await _repository.fetchTaskHistory(
+        taskId,
         cursor: TaskHistoryCursor(
           executedAt: oldestLoaded.executedAt,
           id: oldestLoaded.id,
@@ -266,61 +205,138 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       );
       if (!ref.mounted) return;
       state = state.update(
-        (s) => s.copyWith(
-          olderHistory: [...page.items.reversed, ...s.olderHistory],
-          hasMoreHistory: page.hasMore,
-          isLoadingMoreHistory: false,
-        ),
+        (s) => s
+            .updateHistory([...page.items.reversed, ...s.history])
+            .copyWith(
+              hasMoreHistory: page.hasMore,
+              isLoadingMoreHistory: false,
+            ),
       );
     } on TaskRepositoryException catch (e, s) {
-      logger.e('fetchOlderHistory failed', error: e, stackTrace: s);
+      logger.e('fetchTaskHistory failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
       state = state.update((s) => s.copyWith(isLoadingMoreHistory: false));
     }
   }
 
-  // task.taskHistory は直近件数のみを保持するため、書き込みを契機にストリームが
-  // 再emitされると新しいheadからあふれた項目が画面から消えてしまう。
-  // 消えた項目を olderHistory 側に退避し、mergedAscendingHistory で拾えるようにする
-  List<TaskHistory> _reconcileOlderHistory({
-    required TaskItem? previousTask,
-    required TaskItem newTask,
-    required List<TaskHistory> olderHistory,
-  }) {
-    if (previousTask == null) return olderHistory;
-    final newHeadIds = newTask.taskHistory.map((h) => h.id).toSet();
-    final olderIds = olderHistory.map((h) => h.id).toSet();
-    final droppedFromHead = previousTask.taskHistory.where(
-      (h) => !newHeadIds.contains(h.id) && !olderIds.contains(h.id),
+  // watchTaskById は「タスクが削除された（null）」の検知と、fetchTaskHistory との
+  // combineLatest2 の2つの用途で2回 listen するため、複数購読できるようにしておく
+  void _listenForTaskUpdates(String taskId) {
+    final taskStream = _repository.watchTaskById(taskId).asBroadcastStream();
+
+    void handleError(Object error, StackTrace stackTrace) {
+      logger.e('タスク詳細の取得に失敗', error: error, stackTrace: stackTrace);
+      if (!ref.mounted) return;
+      state = state.update(
+        (s) => s.copyWith(isLoading: false, shouldPop: true),
+      );
+    }
+
+    // タスクが削除されると null が流れてくるので、history 側を待たずに前の画面に戻る
+    final taskDeletedSubscription = taskStream.listen((task) {
+      if (task != null) return;
+      if (!ref.mounted) return;
+      state = state.update(
+        (s) => s.copyWith(
+          isLoading: false,
+          task: null,
+          history: [],
+          historyStats: null,
+          daysSinceLastExecution: null,
+          averageIntervalDays: null,
+          shouldPop: true,
+        ),
+      );
+    }, onError: handleError);
+
+    // タスクが存在する場合だけ fetchTaskHistory（初期表示用の1回きりの取得）と
+    // combineLatest2 でまとめて1つの更新経路にする。build() は初期状態を同期的に
+    // 返し、ここでの更新はすべて state.update 経由になるため、「build() 完了前に
+    // 2件目のイベントが来て state がまだ値を持たない」という競合が起きない。
+    // 最初の1回だけ history も含めて反映し、以降は task 側の更新のみ反映する
+    var isFirstEmission = true;
+    final cancelCombine = combineLatest2(
+      taskStream.where((task) => task != null).cast<TaskItem>(),
+      _repository.fetchTaskHistory(taskId).asStream(),
+      (TaskItem task, TaskHistoryPage historyPage) {
+        if (!ref.mounted) return;
+        if (isFirstEmission) {
+          isFirstEmission = false;
+          state = state.update(
+            (s) => s
+                .updateTaskItem(task)
+                .updateHistory(historyPage.items.reversed.toList())
+                .copyWith(hasMoreHistory: historyPage.hasMore),
+          );
+          return;
+        }
+        state = state.update((s) => s.updateTaskItem(task));
+      },
+      onError: handleError,
     );
-    if (droppedFromHead.isEmpty) return olderHistory;
-    return [...olderHistory, ...droppedFromHead];
+
+    ref.onDispose(() {
+      unawaited(taskDeletedSubscription.cancel());
+      unawaited(cancelCombine());
+    });
   }
 
-  List<TaskHistory> _patchOlderHistory(
-    List<TaskHistory> olderHistory,
+  // updateExecution/recordExecution/deleteExecution で共通の、書き換え後の
+  // history を state に反映しつつ task 側の lastExecutedAt/scheduledAt も
+  // 再計算する処理。task が読み込めていない場合は history だけでは何もできないため
+  // 元の state をそのまま返す
+  AppDetailUiState _applyHistoryChange(
+    AppDetailUiState s,
+    List<TaskHistory> updatedHistory,
+  ) {
+    final currentTask = s.task;
+    if (currentTask == null) return s;
+    return s
+        .updateTaskItem(_withRecomputedSchedule(currentTask, updatedHistory))
+        .updateHistory(updatedHistory);
+  }
+
+  List<TaskHistory> _insertIntoHistory(
+    List<TaskHistory> history,
+    TaskHistory inserted,
+  ) {
+    if (history.any((h) => h.id == inserted.id)) return history;
+    final updated = [...history, inserted]
+      ..sort((a, b) => a.executedAt.compareTo(b.executedAt));
+    return updated;
+  }
+
+  List<TaskHistory> _patchHistory(
+    List<TaskHistory> history,
     TaskHistory updated,
   ) {
-    final index = olderHistory.indexWhere((h) => h.id == updated.id);
-    if (index == -1) return olderHistory;
-    final patched = [...olderHistory]..[index] = updated;
+    final index = history.indexWhere((h) => h.id == updated.id);
+    if (index == -1) return history;
+    final patched = [...history]..[index] = updated;
     patched.sort((a, b) => a.executedAt.compareTo(b.executedAt));
     return patched;
   }
 
-  TaskItem _insertIntoTaskHistory(TaskItem task, TaskHistory history) {
-    if (task.taskHistory.any((h) => h.id == history.id)) return task;
-    final updated = [...task.taskHistory, history]
-      ..sort((a, b) => a.executedAt.compareTo(b.executedAt));
-    return task.copyWith(taskHistory: updated);
-  }
-
-  // task.taskHistory（head）内に対象のidがなければ null（変更なし）を返す
-  TaskItem? _patchTaskHistory(TaskItem task, TaskHistory updated) {
-    final index = task.taskHistory.indexWhere((h) => h.id == updated.id);
-    if (index == -1) return null;
-    final patched = [...task.taskHistory]..[index] = updated;
-    patched.sort((a, b) => a.executedAt.compareTo(b.executedAt));
-    return task.copyWith(taskHistory: patched);
+  // history をローカルで書き換えた直後、サーバーとの再同期を待たずに
+  // lastExecutedAt/scheduledAt を画面に即時反映するための再計算。
+  // サーバー側（_recalculateScheduleFromHistory）と同じ直近件数で計算し、
+  // 再同期後の値と食い違わないようにする
+  TaskItem _withRecomputedSchedule(
+    TaskItem task,
+    List<TaskHistory> ascendingHistory,
+  ) {
+    final recentHistory = recentHistoryForSchedule(ascendingHistory);
+    final lastExecutedAt = computeLastExecutedAt(recentHistory);
+    return switch (task) {
+      IrregularTaskItem() => task.copyWith(lastExecutedAt: lastExecutedAt),
+      ScheduledTaskItem() => task.copyWith(lastExecutedAt: lastExecutedAt),
+      PeriodTaskItem() => task.copyWith(
+        lastExecutedAt: lastExecutedAt,
+        cachedScheduledAt: computeScheduledAt(
+          taskType: task.taskType,
+          ascendingHistory: recentHistory,
+        ),
+      ),
+    };
   }
 }

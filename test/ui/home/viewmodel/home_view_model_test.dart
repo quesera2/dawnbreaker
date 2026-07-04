@@ -1,7 +1,6 @@
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
-import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
@@ -45,13 +44,7 @@ void main() {
       color: TaskColor.none,
       scheduleValue: 5,
       scheduleUnit: ScheduleUnit.day,
-      taskHistory: [
-        TaskHistory(
-          id: 'h-10',
-          executedAt: now.subtract(const Duration(days: 10)),
-          comment: null,
-        ),
-      ],
+      lastExecutedAt: now.subtract(const Duration(days: 10)),
     ),
     TaskItem.scheduled(
       id: 'task-11',
@@ -61,13 +54,7 @@ void main() {
       color: TaskColor.none,
       scheduleValue: 7,
       scheduleUnit: ScheduleUnit.day,
-      taskHistory: [
-        TaskHistory(
-          id: 'h-11',
-          executedAt: now.subtract(const Duration(days: 7)),
-          comment: null,
-        ),
-      ],
+      lastExecutedAt: now.subtract(const Duration(days: 7)),
     ),
     TaskItem.scheduled(
       id: 'task-12',
@@ -77,13 +64,7 @@ void main() {
       color: TaskColor.none,
       scheduleValue: 7,
       scheduleUnit: ScheduleUnit.day,
-      taskHistory: [
-        TaskHistory(
-          id: 'h-12',
-          executedAt: now.subtract(const Duration(days: 4)),
-          comment: null,
-        ),
-      ],
+      lastExecutedAt: now.subtract(const Duration(days: 4)),
     ),
     TaskItem.scheduled(
       id: 'task-13',
@@ -93,7 +74,7 @@ void main() {
       color: TaskColor.none,
       scheduleValue: 14,
       scheduleUnit: ScheduleUnit.day,
-      taskHistory: [TaskHistory(id: 'h-13', executedAt: now, comment: null)],
+      lastExecutedAt: now,
     ),
     const TaskItem.period(
       id: 'task-14',
@@ -101,7 +82,8 @@ void main() {
       furigana: '',
       icon: '📝',
       color: TaskColor.none,
-      taskHistory: [],
+      lastExecutedAt: null,
+      cachedScheduledAt: null,
     ),
   ];
 
@@ -453,7 +435,8 @@ final _colorTasks = [
     furigana: 'れっどえー',
     icon: '📝',
     color: TaskColor.red,
-    taskHistory: [],
+    lastExecutedAt: null,
+    cachedScheduledAt: null,
   ),
   const TaskItem.period(
     id: 'task-31',
@@ -461,7 +444,8 @@ final _colorTasks = [
     furigana: 'れっどびー',
     icon: '📝',
     color: TaskColor.red,
-    taskHistory: [],
+    lastExecutedAt: null,
+    cachedScheduledAt: null,
   ),
   const TaskItem.period(
     id: 'task-32',
@@ -469,7 +453,8 @@ final _colorTasks = [
     furigana: 'ぶるー',
     icon: '📝',
     color: TaskColor.blue,
-    taskHistory: [],
+    lastExecutedAt: null,
+    cachedScheduledAt: null,
   ),
   const TaskItem.period(
     id: 'task-33',
@@ -477,7 +462,8 @@ final _colorTasks = [
     furigana: 'ぐれー',
     icon: '📝',
     color: TaskColor.none,
-    taskHistory: [],
+    lastExecutedAt: null,
+    cachedScheduledAt: null,
   ),
 ];
 
@@ -488,9 +474,8 @@ final _testTasks = [
     furigana: 'はぶらしこうかん',
     icon: '📝',
     color: TaskColor.blue,
-    taskHistory: [
-      TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
-    ],
+    lastExecutedAt: DateTime(2026, 1, 1),
+    cachedScheduledAt: null,
   ),
   TaskItem.period(
     id: 'task-2',
@@ -498,8 +483,7 @@ final _testTasks = [
     furigana: 'さんぱつ',
     icon: '📝',
     color: TaskColor.none,
-    taskHistory: [
-      TaskHistory(id: 'h-2', executedAt: DateTime(2026, 1, 1), comment: null),
-    ],
+    lastExecutedAt: DateTime(2026, 1, 1),
+    cachedScheduledAt: null,
   ),
 ];

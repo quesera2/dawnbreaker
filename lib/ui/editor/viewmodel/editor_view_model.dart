@@ -39,7 +39,6 @@ class EditorViewModel extends _$EditorViewModel {
           icon: task.icon,
           name: task.name,
           color: task.color,
-          taskHistory: task.taskHistory,
           type: task.taskType,
           scheduleValue: task.scheduleValueOrDefault,
           scheduleUnit: task.scheduleUnitOrDefault,

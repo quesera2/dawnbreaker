@@ -25,7 +25,10 @@ void main() {
     late AppDetailUiState viewState;
 
     void setUpContainer({String? taskId}) {
-      fakeRepository = FakeTaskRepository(initialTasks: _testTasks);
+      fakeRepository = FakeTaskRepository(
+        initialTasks: _testTasks,
+        initialHistory: _testHistory,
+      );
       container = ProviderContainer(
         overrides: [taskRepositoryProvider.overrideWith((_) => fakeRepository)],
       );
@@ -171,26 +174,6 @@ void main() {
         });
       });
 
-      group('タスクが外部で直近件数のみに絞られて再emitされたとき', () {
-        setUp(() async {
-          await setUpLoaded(taskId: _taskMultiHistory.id);
-        });
-
-        test('画面から見えていた履歴が消えない', () async {
-          // Firestore の limitToLast(10) 相当。直近2件だけを持つ状態で再emitされても
-          // 溢れた1件目は olderHistory 側に退避され、表示件数は変わらない
-          final headOnly = _taskMultiHistory.taskHistory.sublist(1);
-          fakeRepository.replaceTaskHistory(_taskMultiHistory.id, headOnly);
-          await pumpEventQueue();
-
-          expect(viewState.mergedAscendingHistory, hasLength(3));
-          expect(
-            viewState.mergedAscendingHistory.map((h) => h.id),
-            containsAll(['h-1', 'h-2', 'h-3']),
-          );
-        });
-      });
-
       group('タスクデータの取得中にエラーが発生したとき', () {
         setUp(() async {
           await setUpLoaded();
@@ -218,7 +201,7 @@ void main() {
           test('成功時はエラーなし', () async {
             await viewModel.updateExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
               executedAt: DateTime(2026, 2, 1),
             );
             expect(viewState.dialogMessage, isNull);
@@ -227,7 +210,7 @@ void main() {
           test('コメントありで更新してもエラーなし', () async {
             await viewModel.updateExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
               executedAt: DateTime(2026, 2, 1),
               comment: '更新コメント',
             );
@@ -237,7 +220,7 @@ void main() {
           test('成功時に更新完了の通知がセットされる', () async {
             await viewModel.updateExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
               executedAt: DateTime(2026, 2, 1),
             );
             expect(
@@ -249,7 +232,7 @@ void main() {
           test('undo ハンドラを呼び出すと元の日時・コメントで再更新される', () async {
             await viewModel.updateExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
               executedAt: DateTime(2026, 2, 1),
               comment: '変更後',
             );
@@ -259,18 +242,18 @@ void main() {
             expect(viewState.dialogMessage, isNull);
           });
 
-          test('成功時にローカルの taskHistory が更新される', () async {
+          test('成功時にローカルの history が更新される', () async {
             await viewModel.updateExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
               executedAt: DateTime(2026, 2, 1),
               comment: '更新コメント',
             );
-            final updated = viewState.task?.taskHistory.firstWhere(
-              (h) => h.id == _taskOneHistory.taskHistory.first.id,
+            final updated = viewState.history.firstWhere(
+              (h) => h.id == _taskOneHistoryEntries.first.id,
             );
-            expect(updated?.executedAt, DateTime(2026, 2, 1));
-            expect(updated?.comment, '更新コメント');
+            expect(updated.executedAt, DateTime(2026, 2, 1));
+            expect(updated.comment, '更新コメント');
           });
         });
 
@@ -282,7 +265,7 @@ void main() {
           test('失敗時に更新エラーの通知がセットされる', () async {
             await viewModel.updateExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
               executedAt: DateTime(2026, 2, 1),
             );
             expect(viewState.dialogMessage, isA<TaskUpdateErrorMessage>());
@@ -291,7 +274,7 @@ void main() {
           test('失敗時に再試行できる', () async {
             await viewModel.updateExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
               executedAt: DateTime(2026, 2, 1),
             );
             expect(viewState.dialogMessage?.primaryHandler, isNotNull);
@@ -300,7 +283,7 @@ void main() {
           test('リトライハンドラを呼び出すと再度更新が試みられ成功する', () async {
             await viewModel.updateExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
               executedAt: DateTime(2026, 2, 1),
             );
             final handler = viewState.dialogMessage?.primaryHandler;
@@ -365,13 +348,13 @@ void main() {
             expect(viewState.dialogMessage, isNull);
           });
 
-          test('成功時にローカルの taskHistory に日付順で追加される', () async {
+          test('成功時にローカルの history に日付順で追加される', () async {
             await viewModel.recordExecution(
               _taskOneHistory,
               DateTime(2026, 4, 1),
               null,
             );
-            expect(viewState.task?.taskHistory.map((h) => h.executedAt), [
+            expect(viewState.history.map((h) => h.executedAt), [
               DateTime(2026, 1, 1),
               DateTime(2026, 4, 1),
             ]);
@@ -536,7 +519,7 @@ void main() {
           test('成功時はエラーなし', () async {
             await viewModel.deleteExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
             );
             expect(viewState.dialogMessage, isNull);
           });
@@ -544,7 +527,7 @@ void main() {
           test('成功時に削除完了の通知がセットされる', () async {
             await viewModel.deleteExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
             );
             expect(
               viewState.snackBarMessage,
@@ -555,7 +538,7 @@ void main() {
           test('成功時の通知に undo ハンドラがある', () async {
             await viewModel.deleteExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
             );
             expect(viewState.snackBarMessage?.handler, isNotNull);
           });
@@ -563,7 +546,7 @@ void main() {
           test('undo ハンドラを呼び出してもエラーが発生しない', () async {
             await viewModel.deleteExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
             );
             final handler = viewState.snackBarMessage?.handler;
             expect(handler, isNotNull);
@@ -571,12 +554,12 @@ void main() {
             expect(viewState.dialogMessage, isNull);
           });
 
-          test('成功時にローカルの taskHistory から削除される', () async {
+          test('成功時にローカルの history から削除される', () async {
             await viewModel.deleteExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
             );
-            expect(viewState.task?.taskHistory, isEmpty);
+            expect(viewState.history, isEmpty);
           });
 
           for (final (comment, expectedComment, description) in [
@@ -605,7 +588,7 @@ void main() {
           test('失敗時に削除エラーの通知がセットされる', () async {
             await viewModel.deleteExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
             );
             expect(
               viewState.dialogMessage,
@@ -616,7 +599,7 @@ void main() {
           test('失敗時に再試行できる', () async {
             await viewModel.deleteExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
             );
             expect(viewState.dialogMessage?.primaryHandler, isNotNull);
           });
@@ -624,7 +607,7 @@ void main() {
           test('リトライハンドラを呼び出すと再度削除が試みられ成功する', () async {
             await viewModel.deleteExecution(
               _taskOneHistory,
-              _taskOneHistory.taskHistory.first,
+              _taskOneHistoryEntries.first,
             );
             final handler = viewState.dialogMessage?.primaryHandler;
             expect(handler, isNotNull);
@@ -644,15 +627,19 @@ void main() {
   });
 }
 
-// Jan 1, Feb 1 (31 days), Mar 4 (31 days) → averageIntervalDays = 31
 const _taskNoHistory = TaskItem.period(
   id: 'task-1',
   name: 'タスク（履歴なし）',
   furigana: 'たすく',
   icon: '📝',
   color: TaskColor.none,
-  taskHistory: [],
+  lastExecutedAt: null,
+  cachedScheduledAt: null,
 );
+
+final _taskOneHistoryEntries = [
+  TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
+];
 
 final _taskOneHistory = TaskItem.period(
   id: 'task-2',
@@ -660,10 +647,16 @@ final _taskOneHistory = TaskItem.period(
   furigana: 'たすく',
   icon: '📝',
   color: TaskColor.blue,
-  taskHistory: [
-    TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
-  ],
+  lastExecutedAt: DateTime(2026, 1, 1),
+  cachedScheduledAt: null,
 );
+
+// Jan 1, Feb 1 (31 days), Mar 4 (31 days) → averageIntervalDays = 31
+final _taskMultiHistoryEntries = [
+  TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
+  TaskHistory(id: 'h-2', executedAt: DateTime(2026, 2, 1), comment: null),
+  TaskHistory(id: 'h-3', executedAt: DateTime(2026, 3, 4), comment: null),
+];
 
 final _taskMultiHistory = TaskItem.period(
   id: 'task-3',
@@ -671,11 +664,12 @@ final _taskMultiHistory = TaskItem.period(
   furigana: 'たすく',
   icon: '📝',
   color: TaskColor.green,
-  taskHistory: [
-    TaskHistory(id: 'h-1', executedAt: DateTime(2026, 1, 1), comment: null),
-    TaskHistory(id: 'h-2', executedAt: DateTime(2026, 2, 1), comment: null),
-    TaskHistory(id: 'h-3', executedAt: DateTime(2026, 3, 4), comment: null),
-  ],
+  lastExecutedAt: DateTime(2026, 3, 4),
+  cachedScheduledAt: DateTime(2026, 3, 4).add(const Duration(days: 31)),
 );
 
 final _testTasks = [_taskNoHistory, _taskOneHistory, _taskMultiHistory];
+final _testHistory = {
+  _taskOneHistory.id: _taskOneHistoryEntries,
+  _taskMultiHistory.id: _taskMultiHistoryEntries,
+};

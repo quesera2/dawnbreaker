@@ -1,5 +1,4 @@
 import 'package:dawnbreaker/core/util/date_util.dart';
-import 'package:dawnbreaker/core/util/iterable_util.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_history_interval.dart';
 import 'package:dawnbreaker/data/model/task_history_stats.dart';
@@ -18,11 +17,11 @@ abstract class AppDetailUiState with _$AppDetailUiState implements BaseUiState {
   const factory AppDetailUiState({
     @Default(true) bool isLoading,
     TaskItem? task,
+    // 実行日時の昇順（新しい順ではない）。fetchTaskHistory でページを読み込むたびに先頭へ追加する
+    @Default([]) List<TaskHistory> history,
     TaskHistoryStats? historyStats,
     int? daysSinceLastExecution,
     int? averageIntervalDays,
-    // task.taskHistory（直近件のみ）より過去の履歴。スクロールで追加取得したページを保持する
-    @Default([]) List<TaskHistory> olderHistory,
     @Default(true) bool hasMoreHistory,
     @Default(false) bool isLoadingMoreHistory,
     @Default(false) bool shouldPop,
@@ -30,32 +29,24 @@ abstract class AppDetailUiState with _$AppDetailUiState implements BaseUiState {
     SnackBarMessage? snackBarMessage,
   }) = _AppDetailUiState;
 
-  AppDetailUiState updateTaskItem(TaskItem taskItem) {
-    final historyStats = TaskHistoryStats.from(taskItem);
+  AppDetailUiState updateTaskItem(TaskItem taskItem) => copyWith(
+    isLoading: false,
+    task: taskItem,
+    daysSinceLastExecution: _calculateDaysSinceLastExecution(taskItem),
+  );
+
+  AppDetailUiState updateHistory(List<TaskHistory> history) {
+    final historyStats = TaskHistoryStats.from(history);
     return copyWith(
       isLoading: false,
-      task: taskItem,
+      history: history,
       historyStats: historyStats,
-      daysSinceLastExecution: _calculateDaysSinceLastExecution(taskItem),
       averageIntervalDays: historyStats.averageIntervalDays?.round(),
     );
   }
 
-  // task.taskHistory（直近のリアルタイム反映分）と olderHistory（追加ロード分）を
-  // idで重複排除したうえで executedAt により全体を再ソートした、画面表示用の履歴一覧。
-  // 「どちらの配列に入っているか」に依存せず、実際の日付で正しい順序になる。
-  // taskHistory（headの最新情報）を後に渡し、同idの場合はそちらを優先する。
-  List<TaskHistory> get mergedAscendingHistory {
-    final currentTask = task;
-    if (currentTask == null) return [];
-    return distinctBy([
-      ...olderHistory,
-      ...currentTask.taskHistory,
-    ], (h) => h.id)..sort((a, b) => a.executedAt.compareTo(b.executedAt));
-  }
-
   List<(TaskHistory, int?)> get displayedHistoryAndInterval =>
-      historyAndIntervalPairs(mergedAscendingHistory);
+      historyAndIntervalPairs(history);
 
   int? _calculateDaysSinceLastExecution(TaskItem task) {
     final last = task.lastExecutedAt?.truncateTime;

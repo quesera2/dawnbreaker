@@ -3,7 +3,6 @@ import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
-import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -168,13 +167,7 @@ TaskItem _makeScheduled({
   color: TaskColor.none,
   scheduleValue: scheduleValue,
   scheduleUnit: ScheduleUnit.day,
-  taskHistory: [
-    TaskHistory(
-      id: id * 10,
-      executedAt: DateTime.now().truncateTime.subtract(Duration(days: daysAgo)),
-      comment: null,
-    ),
-  ],
+  lastExecutedAt: DateTime.now().truncateTime.subtract(Duration(days: daysAgo)),
 );
 
 TaskItem _makeIrregular({required String id}) => TaskItem.irregular(
@@ -183,5 +176,5 @@ TaskItem _makeIrregular({required String id}) => TaskItem.irregular(
   furigana: '',
   icon: '📝',
   color: TaskColor.none,
-  taskHistory: [],
+  lastExecutedAt: null,
 );
