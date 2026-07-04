@@ -6,6 +6,7 @@ import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_history_cursor.dart';
 import 'package:dawnbreaker/data/model/task_history_page.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/data/model/task_schedule.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
@@ -65,9 +66,13 @@ class FakeTaskRepository implements TaskRepository {
   }) async {
     final descending = <TaskHistory>[...?_history[taskId]]
       ..sort((a, b) => b.executedAt.compareTo(a.executedAt));
-    final startIndex = cursor == null
-        ? 0
-        : descending.indexWhere((h) => h.id == cursor.id) + 1;
+    final startIndex = switch (cursor) {
+      null => 0,
+      _ => switch (descending.indexWhere((h) => h.id == cursor.id)) {
+        -1 => descending.length,
+        final index => index + 1,
+      },
+    };
     final page = descending.skip(startIndex).take(limit).toList();
     return TaskHistoryPage(
       items: page,
@@ -116,7 +121,7 @@ class FakeTaskRepository implements TaskRepository {
     if (shouldThrow) throw const TaskUpdateException('テストエラー');
     final index = _tasks.indexWhere((t) => t.id == taskId);
     if (index == -1) throw TaskNotFoundException(taskId: taskId);
-    final original = _tasks[index];
+    final ascendingHistory = _ascendingHistory(taskId);
     _tasks[index] = _buildTask(
       id: taskId,
       taskType: taskType,
@@ -126,8 +131,13 @@ class FakeTaskRepository implements TaskRepository {
       color: color,
       scheduleValue: scheduleValue,
       scheduleUnit: scheduleUnit,
-      lastExecutedAt: original.lastExecutedAt,
-      cachedScheduledAt: original.scheduledAt,
+      lastExecutedAt: computeLastExecutedAt(ascendingHistory),
+      cachedScheduledAt: computeScheduledAt(
+        taskType: taskType,
+        ascendingHistory: ascendingHistory,
+        scheduleValue: scheduleValue,
+        scheduleUnit: scheduleUnit,
+      ),
     );
     _notify();
   }
@@ -143,11 +153,15 @@ class FakeTaskRepository implements TaskRepository {
     if (shouldThrow) throw const TaskSaveException('テストエラー');
     lastRecordedComment = comment;
     final newTaskId = _nextId++;
-    return TaskHistory(
+    final history = TaskHistory(
       id: newTaskId.toString(),
       executedAt: executedAt,
       comment: comment,
     );
+    (_history[taskId] ??= []).add(history);
+    _updateCache(taskId);
+    _notify();
+    return history;
   }
 
   @override
@@ -158,6 +172,16 @@ class FakeTaskRepository implements TaskRepository {
     String? comment,
   }) async {
     if (shouldThrow) throw const TaskUpdateException('テストエラー');
+    final list = _history[taskId];
+    if (list == null) return;
+    final index = list.indexWhere((h) => h.id == executionId);
+    if (index == -1) return;
+    list[index] = list[index].copyWith(
+      executedAt: executedAt,
+      comment: comment,
+    );
+    _updateCache(taskId);
+    _notify();
   }
 
   @override
@@ -166,6 +190,9 @@ class FakeTaskRepository implements TaskRepository {
     required String taskId,
   }) async {
     if (shouldThrow) throw const TaskDeleteException('テストエラー');
+    _history[taskId]?.removeWhere((h) => h.id == executionId);
+    _updateCache(taskId);
+    _notify();
   }
 
   @override
@@ -190,8 +217,27 @@ class FakeTaskRepository implements TaskRepository {
     List<TaskHistory> taskHistory,
   ) async {
     if (shouldThrow) throw const TaskSaveException('テストエラー');
-    _tasks.add(taskItem);
     _history[taskItem.id] = List.of(taskHistory);
+    final ascendingHistory = _ascendingHistory(taskItem.id);
+    _tasks.add(
+      _buildTask(
+        id: taskItem.id,
+        taskType: taskItem.taskType,
+        name: taskItem.name,
+        furigana: taskItem.furigana,
+        icon: taskItem.icon,
+        color: taskItem.color,
+        scheduleValue: taskItem.scheduleValueOrDefault,
+        scheduleUnit: taskItem.scheduleUnitOrDefault,
+        lastExecutedAt: computeLastExecutedAt(ascendingHistory),
+        cachedScheduledAt: computeScheduledAt(
+          taskType: taskItem.taskType,
+          ascendingHistory: ascendingHistory,
+          scheduleValue: taskItem.scheduleValueOrDefault,
+          scheduleUnit: taskItem.scheduleUnitOrDefault,
+        ),
+      ),
+    );
     _notify();
   }
 
@@ -210,6 +256,36 @@ class FakeTaskRepository implements TaskRepository {
 
   void _notify() {
     if (!_controller.isClosed) _controller.add(List.of(_tasks));
+  }
+
+  List<TaskHistory> _ascendingHistory(String taskId) =>
+      [...?_history[taskId]]
+        ..sort((a, b) => a.executedAt.compareTo(b.executedAt));
+
+  // 実行履歴の記録・更新・削除のたびに、実際のリポジトリ実装と同様に
+  // lastExecutedAt/cachedScheduledAt を履歴から再計算する
+  void _updateCache(String taskId) {
+    final index = _tasks.indexWhere((t) => t.id == taskId);
+    if (index == -1) return;
+    final task = _tasks[index];
+    final ascendingHistory = _ascendingHistory(taskId);
+    _tasks[index] = _buildTask(
+      id: taskId,
+      taskType: task.taskType,
+      name: task.name,
+      furigana: task.furigana,
+      icon: task.icon,
+      color: task.color,
+      scheduleValue: task.scheduleValueOrDefault,
+      scheduleUnit: task.scheduleUnitOrDefault,
+      lastExecutedAt: computeLastExecutedAt(ascendingHistory),
+      cachedScheduledAt: computeScheduledAt(
+        taskType: task.taskType,
+        ascendingHistory: ascendingHistory,
+        scheduleValue: task.scheduleValueOrDefault,
+        scheduleUnit: task.scheduleUnitOrDefault,
+      ),
+    );
   }
 
   static TaskItem _buildTask({
