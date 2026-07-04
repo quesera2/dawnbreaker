@@ -172,6 +172,24 @@ void main() {
           expect(viewState.historyStats, isNotNull);
           expect(viewState.historyStats!.historyAndInterval, hasLength(1));
         });
+
+        test('他端末で記録された実行履歴が画面を開いたまま反映される', () async {
+          await fakeRepository.recordExecution(
+            _taskOneHistory.id,
+            executedAt: DateTime(2026, 3, 1),
+          );
+          await pumpEventQueue();
+          expect(viewState.history, hasLength(2));
+        });
+
+        test('他端末で削除された実行履歴が画面を開いたまま反映される', () async {
+          await fakeRepository.deleteExecution(
+            _taskOneHistoryEntries.first.id,
+            taskId: _taskOneHistory.id,
+          );
+          await pumpEventQueue();
+          expect(viewState.history, isEmpty);
+        });
       });
 
       group('タスクデータの取得中にエラーが発生したとき', () {
