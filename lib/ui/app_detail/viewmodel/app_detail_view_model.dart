@@ -49,14 +49,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         comment: comment,
       );
       state = state.update((s) {
-        final currentTask = s.task;
         final patched = _patchHistory(s.history, updatedHistory);
-        final updated = currentTask == null
-            ? s
-            : s
-                  .updateTaskItem(_withRecomputedSchedule(currentTask, patched))
-                  .updateHistory(patched);
-        return updated.copyWith(
+        return _applyHistoryChange(s, patched).copyWith(
           snackBarMessage: TaskExecutionUpdateSuccess(
             handler: () => updateExecution(
               task,
@@ -139,14 +133,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       );
       if (!ref.mounted) return;
       state = state.update((s) {
-        final currentTask = s.task;
         final updated = _insertIntoHistory(s.history, history);
-        final updatedState = currentTask == null
-            ? s
-            : s
-                  .updateTaskItem(_withRecomputedSchedule(currentTask, updated))
-                  .updateHistory(updated);
-        return updatedState.copyWith(
+        return _applyHistoryChange(s, updated).copyWith(
           snackBarMessage: TaskCompleteSuccess(
             taskName: task.name,
             handler: () =>
@@ -172,14 +160,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       await _repository.deleteExecution(history.id, taskId: task.id);
       if (!ref.mounted) return;
       state = state.update((s) {
-        final currentTask = s.task;
         final updated = s.history.where((h) => h.id != history.id).toList();
-        final updatedState = currentTask == null
-            ? s
-            : s
-                  .updateTaskItem(_withRecomputedSchedule(currentTask, updated))
-                  .updateHistory(updated);
-        return updatedState.copyWith(
+        return _applyHistoryChange(s, updated).copyWith(
           snackBarMessage: TaskExecutionDeleteSuccess(
             taskName: task.name,
             executedAt: history.executedAt,
@@ -297,6 +279,21 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       unawaited(taskDeletedSubscription.cancel());
       unawaited(cancelCombine());
     });
+  }
+
+  // updateExecution/recordExecution/deleteExecution で共通の、書き換え後の
+  // history を state に反映しつつ task 側の lastExecutedAt/scheduledAt も
+  // 再計算する処理。task が読み込めていない場合は history だけでは何もできないため
+  // 元の state をそのまま返す
+  AppDetailUiState _applyHistoryChange(
+    AppDetailUiState s,
+    List<TaskHistory> updatedHistory,
+  ) {
+    final currentTask = s.task;
+    if (currentTask == null) return s;
+    return s
+        .updateTaskItem(_withRecomputedSchedule(currentTask, updatedHistory))
+        .updateHistory(updatedHistory);
   }
 
   List<TaskHistory> _insertIntoHistory(
