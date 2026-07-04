@@ -157,6 +157,19 @@ void main() {
           DateTime(2025, 4, 10),
         );
       });
+
+      test('scheduleValue/scheduleUnit が欠損しているとき null を返す', () {
+        final history = [
+          TaskHistory(id: '1', executedAt: DateTime(2025, 1, 1), comment: null),
+        ];
+        expect(
+          computeScheduledAt(
+            taskType: TaskType.scheduled,
+            ascendingHistory: history,
+          ),
+          isNull,
+        );
+      });
     });
   });
 }
