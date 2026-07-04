@@ -6,6 +6,10 @@ import 'package:dawnbreaker/data/model/task_history_page.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 
+// 実装は addTask/updateTask/recordExecution/updateExecution/deleteExecution/
+// restoreTask で実行履歴やスケジュール設定が変わるたびに、TaskItem の
+// lastExecutedAt/scheduledAt を最新の履歴から再計算して保持し続けること。
+// ここを怠るとホーム画面のソート順や次回予定日の表示が古いまま残る
 abstract interface class TaskRepository {
   Stream<List<TaskItem>> allTaskItems();
 
@@ -57,7 +61,7 @@ abstract interface class TaskRepository {
   Future<void> deleteExecution(String executionId, {required String taskId});
 
   // 削除した実行履歴（全件）を返す。restoreTask にそのまま渡すことで
-  // taskHistory が直近件数に絞られている場合でも履歴を欠損なく復元できる
+  // 履歴を欠損なく復元できる
   Future<List<TaskHistory>> deleteTask(String taskId);
 
   Future<void> deleteAllTasks();
