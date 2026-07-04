@@ -29,10 +29,25 @@ DateTime? computeScheduledAt({
   return switch (taskType) {
     .irregular => null,
     .period => _computePeriodNextAt(ascendingHistory),
-    .scheduled => scheduleUnit == null || scheduleValue == null
-        ? null
-        : scheduleUnit.addTo(ascendingHistory.last.executedAt, scheduleValue),
+    .scheduled => computeFixedIntervalScheduledAt(
+      lastExecutedAt: ascendingHistory.last.executedAt,
+      scheduleValue: scheduleValue,
+      scheduleUnit: scheduleUnit,
+    ),
   };
+}
+
+// ScheduledTaskItem.scheduledAt（履歴を持たず lastExecutedAt だけで計算する）と
+// computeScheduledAt の .scheduled ケースの両方から使う、単一の計算箇所
+DateTime? computeFixedIntervalScheduledAt({
+  required DateTime? lastExecutedAt,
+  required int? scheduleValue,
+  required ScheduleUnit? scheduleUnit,
+}) {
+  if (lastExecutedAt == null || scheduleValue == null || scheduleUnit == null) {
+    return null;
+  }
+  return scheduleUnit.addTo(lastExecutedAt, scheduleValue);
 }
 
 DateTime? _computePeriodNextAt(List<TaskHistory> ascendingHistory) {
