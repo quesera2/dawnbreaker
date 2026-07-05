@@ -1,14 +1,16 @@
+import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
+import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_ui_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('AppDetailUiState.updateHistory', () {
+  group('AppDetailUiState.updateTaskAndHistory', () {
     test('historyStats と averageIntervalDays が再計算される', () {
-      final state = const AppDetailUiState().updateHistory([
+      final state = const AppDetailUiState().updateTaskAndHistory(_task, [
         TaskHistory(id: 'h-1', executedAt: DateTime(2025, 1, 1), comment: null),
         TaskHistory(id: 'h-2', executedAt: DateTime(2025, 2, 1), comment: null),
-      ]);
+      ], hasMoreHistory: false);
 
       expect(state.history, hasLength(2));
       expect(state.historyStats?.historyAndInterval, hasLength(2));
@@ -16,9 +18,9 @@ void main() {
     });
 
     test('履歴が1件のとき averageIntervalDays は null', () {
-      final state = const AppDetailUiState().updateHistory([
+      final state = const AppDetailUiState().updateTaskAndHistory(_task, [
         TaskHistory(id: 'h-1', executedAt: DateTime(2025, 1, 1), comment: null),
-      ]);
+      ], hasMoreHistory: false);
 
       expect(state.averageIntervalDays, isNull);
     });
@@ -31,10 +33,20 @@ void main() {
     });
 
     test('新しい順に並び、連続する項目の間隔が計算される', () {
-      final state = const AppDetailUiState().updateHistory([
-        TaskHistory(id: 'h-1', executedAt: DateTime(2025, 1, 1), comment: null),
-        TaskHistory(id: 'h-2', executedAt: DateTime(2025, 1, 8), comment: null),
-      ]);
+      final state = const AppDetailUiState().copyWith(
+        history: [
+          TaskHistory(
+            id: 'h-1',
+            executedAt: DateTime(2025, 1, 1),
+            comment: null,
+          ),
+          TaskHistory(
+            id: 'h-2',
+            executedAt: DateTime(2025, 1, 8),
+            comment: null,
+          ),
+        ],
+      );
 
       final result = state.displayedHistoryAndInterval;
       expect(result.map((e) => e.$1.id), ['h-2', 'h-1']);
@@ -43,3 +55,12 @@ void main() {
     });
   });
 }
+
+const _task = TaskItem.irregular(
+  id: 'task-1',
+  name: 'タスク',
+  furigana: 'たすく',
+  icon: '📝',
+  color: TaskColor.blue,
+  lastExecutedAt: null,
+);

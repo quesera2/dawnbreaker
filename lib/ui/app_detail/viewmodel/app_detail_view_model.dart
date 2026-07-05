@@ -5,7 +5,6 @@ import 'package:dawnbreaker/core/util/async_value_extension.dart';
 import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest2;
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_history_cursor.dart';
-import 'package:dawnbreaker/data/model/task_history_page.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_schedule.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
@@ -19,9 +18,13 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_detail_view_model.g.dart';
 
+// history と hasMore を1つのストリームにまとめて流すためのスナップショット
+typedef _HistorySnapshot = ({List<TaskHistory> items, bool hasMore});
+
 @riverpod
 class AppDetailViewModel extends _$AppDetailViewModel {
   late TaskRepository _repository;
+  late StreamController<_HistorySnapshot> _historyUpdatesController;
 
   @override
   Future<AppDetailUiState> build({required String taskId}) async {
@@ -48,9 +51,9 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         executedAt: executedAt,
         comment: comment,
       );
-      state = state.update((s) {
-        final patched = _patchHistory(s.history, updatedHistory);
-        return _applyHistoryChange(s, patched).copyWith(
+      final patched = _patchHistory(state.requireValue.history, updatedHistory);
+      state = state.update(
+        (s) => s.copyWith(
           snackBarMessage: TaskExecutionUpdateSuccess(
             handler: () => updateExecution(
               task,
@@ -59,8 +62,12 @@ class AppDetailViewModel extends _$AppDetailViewModel {
               comment: history.comment,
             ),
           ),
-        );
-      });
+        ),
+      );
+      _historyUpdatesController.add((
+        items: patched,
+        hasMore: state.requireValue.hasMoreHistory,
+      ));
     } on TaskRepositoryException catch (e, s) {
       logger.e('updateExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -132,16 +139,20 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         comment: comment,
       );
       if (!ref.mounted) return;
-      state = state.update((s) {
-        final updated = _insertIntoHistory(s.history, history);
-        return _applyHistoryChange(s, updated).copyWith(
+      final updated = _insertIntoHistory(state.requireValue.history, history);
+      state = state.update(
+        (s) => s.copyWith(
           snackBarMessage: TaskCompleteSuccess(
             taskName: task.name,
             handler: () =>
                 _repository.deleteExecution(history.id, taskId: task.id),
           ),
-        );
-      });
+        ),
+      );
+      _historyUpdatesController.add((
+        items: updated,
+        hasMore: state.requireValue.hasMoreHistory,
+      ));
     } on TaskRepositoryException catch (e, s) {
       logger.e('recordExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -159,9 +170,11 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     try {
       await _repository.deleteExecution(history.id, taskId: task.id);
       if (!ref.mounted) return;
-      state = state.update((s) {
-        final updated = s.history.where((h) => h.id != history.id).toList();
-        return _applyHistoryChange(s, updated).copyWith(
+      final updated = state.requireValue.history
+          .where((h) => h.id != history.id)
+          .toList();
+      state = state.update(
+        (s) => s.copyWith(
           snackBarMessage: TaskExecutionDeleteSuccess(
             taskName: task.name,
             executedAt: history.executedAt,
@@ -171,8 +184,12 @@ class AppDetailViewModel extends _$AppDetailViewModel {
               comment: history.comment,
             ),
           ),
-        );
-      });
+        ),
+      );
+      _historyUpdatesController.add((
+        items: updated,
+        hasMore: state.requireValue.hasMoreHistory,
+      ));
     } on TaskRepositoryException catch (e, s) {
       logger.e('deleteExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -204,14 +221,9 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         ),
       );
       if (!ref.mounted) return;
-      state = state.update(
-        (s) => s
-            .updateHistory([...page.items.reversed, ...s.history])
-            .copyWith(
-              hasMoreHistory: page.hasMore,
-              isLoadingMoreHistory: false,
-            ),
-      );
+      final merged = [...page.items.reversed, ...state.requireValue.history];
+      state = state.update((s) => s.copyWith(isLoadingMoreHistory: false));
+      _historyUpdatesController.add((items: merged, hasMore: page.hasMore));
     } on TaskRepositoryException catch (e, s) {
       logger.e('fetchTaskHistory failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -219,10 +231,11 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     }
   }
 
-  // watchTaskById は「タスクが削除された（null）」の検知と、fetchTaskHistory との
+  // watchTaskById は「タスクが削除された（null）」の検知と、history との
   // combineLatest2 の2つの用途で2回 listen するため、複数購読できるようにしておく
   void _listenForTaskUpdates(String taskId) {
     final taskStream = _repository.watchTaskById(taskId).asBroadcastStream();
+    _historyUpdatesController = StreamController<_HistorySnapshot>.broadcast();
 
     void handleError(Object error, StackTrace stackTrace) {
       logger.e('タスク詳細の取得に失敗', error: error, stackTrace: stackTrace);
@@ -249,28 +262,31 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       );
     }, onError: handleError);
 
-    // タスクが存在する場合だけ fetchTaskHistory（初期表示用の1回きりの取得）と
-    // combineLatest2 でまとめて1つの更新経路にする。build() は初期状態を同期的に
-    // 返し、ここでの更新はすべて state.update 経由になるため、「build() 完了前に
-    // 2件目のイベントが来て state がまだ値を持たない」という競合が起きない。
-    // 最初の1回だけ history も含めて反映し、以降は task 側の更新のみ反映する
-    var isFirstEmission = true;
+    // 初回の履歴を取得する
+    unawaited(
+      _repository
+          .fetchTaskHistory(taskId)
+          .then(
+            (page) => _historyUpdatesController.add((
+              items: page.items.reversed.toList(),
+              hasMore: page.hasMore,
+            )),
+            onError: handleError,
+          ),
+    );
+
     final cancelCombine = combineLatest2(
       taskStream.where((task) => task != null).cast<TaskItem>(),
-      _repository.fetchTaskHistory(taskId).asStream(),
-      (TaskItem task, TaskHistoryPage historyPage) {
+      _historyUpdatesController.stream,
+      (TaskItem task, _HistorySnapshot history) {
         if (!ref.mounted) return;
-        if (isFirstEmission) {
-          isFirstEmission = false;
-          state = state.update(
-            (s) => s
-                .updateTaskItem(task)
-                .updateHistory(historyPage.items.reversed.toList())
-                .copyWith(hasMoreHistory: historyPage.hasMore),
-          );
-          return;
-        }
-        state = state.update((s) => s.updateTaskItem(task));
+        state = state.update(
+          (s) => s.updateTaskAndHistory(
+            _withRecomputedSchedule(task, history.items),
+            history.items,
+            hasMoreHistory: history.hasMore,
+          ),
+        );
       },
       onError: handleError,
     );
@@ -278,22 +294,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     ref.onDispose(() {
       unawaited(taskDeletedSubscription.cancel());
       unawaited(cancelCombine());
+      unawaited(_historyUpdatesController.close());
     });
-  }
-
-  // updateExecution/recordExecution/deleteExecution で共通の、書き換え後の
-  // history を state に反映しつつ task 側の lastExecutedAt/scheduledAt も
-  // 再計算する処理。task が読み込めていない場合は history だけでは何もできないため
-  // 元の state をそのまま返す
-  AppDetailUiState _applyHistoryChange(
-    AppDetailUiState s,
-    List<TaskHistory> updatedHistory,
-  ) {
-    final currentTask = s.task;
-    if (currentTask == null) return s;
-    return s
-        .updateTaskItem(_withRecomputedSchedule(currentTask, updatedHistory))
-        .updateHistory(updatedHistory);
   }
 
   List<TaskHistory> _insertIntoHistory(
