@@ -29,19 +29,21 @@ abstract class AppDetailUiState with _$AppDetailUiState implements BaseUiState {
     SnackBarMessage? snackBarMessage,
   }) = _AppDetailUiState;
 
-  AppDetailUiState updateTaskItem(TaskItem taskItem) => copyWith(
-    isLoading: false,
-    task: taskItem,
-    daysSinceLastExecution: _calculateDaysSinceLastExecution(taskItem),
-  );
-
-  AppDetailUiState updateHistory(List<TaskHistory> history) {
+  // task/history をまとめて1回の copyWith で反映する
+  AppDetailUiState updateTaskAndHistory(
+    TaskItem taskItem,
+    List<TaskHistory> history, {
+    required bool hasMoreHistory,
+  }) {
     final historyStats = TaskHistoryStats.from(history);
     return copyWith(
       isLoading: false,
+      task: taskItem,
+      daysSinceLastExecution: _calculateDaysSinceLastExecution(taskItem),
       history: history,
       historyStats: historyStats,
       averageIntervalDays: historyStats.averageIntervalDays?.round(),
+      hasMoreHistory: hasMoreHistory,
     );
   }
 

@@ -249,6 +249,15 @@ void main() {
               executedAt: DateTime(2026, 2, 1),
               comment: '更新コメント',
             );
+            await waitUntilAsync(
+              container,
+              provider,
+              (s) => s.history.any(
+                (h) =>
+                    h.id == _taskOneHistoryEntries.first.id &&
+                    h.executedAt == DateTime(2026, 2, 1),
+              ),
+            );
             final updated = viewState.history.firstWhere(
               (h) => h.id == _taskOneHistoryEntries.first.id,
             );
@@ -353,6 +362,11 @@ void main() {
               _taskOneHistory,
               DateTime(2026, 4, 1),
               null,
+            );
+            await waitUntilAsync(
+              container,
+              provider,
+              (s) => s.history.length == 2,
             );
             expect(viewState.history.map((h) => h.executedAt), [
               DateTime(2026, 1, 1),
@@ -559,6 +573,7 @@ void main() {
               _taskOneHistory,
               _taskOneHistoryEntries.first,
             );
+            await waitUntilAsync(container, provider, (s) => s.history.isEmpty);
             expect(viewState.history, isEmpty);
           });
 
