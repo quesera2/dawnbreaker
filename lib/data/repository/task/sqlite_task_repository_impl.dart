@@ -266,48 +266,49 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
 
   @override
   Future<void> restoreTask(
-    TaskItem taskItem,
-    List<TaskHistory> taskHistory,
+    List<(TaskItem, List<TaskHistory>)> taskItems,
   ) async {
     try {
       final newId = _uuid.v4();
       await _db.transaction(() async {
-        await _db
-            .into(_db.taskDefinitions)
-            .insert(
-              TaskDefinitionsCompanion.insert(
-                id: newId,
-                taskType: taskItem.taskType,
-                name: taskItem.name,
-                furigana: taskItem.furigana,
-                icon: taskItem.icon,
-                color: taskItem.color,
-              ),
-            );
-        if (taskItem.taskType == TaskType.scheduled) {
+        for (final (taskItem, taskHistory) in taskItems) {
           await _db
-              .into(_db.taskScheduledConfigs)
+              .into(_db.taskDefinitions)
               .insert(
-                TaskScheduledConfigsCompanion.insert(
-                  taskDefinitionId: newId,
-                  scheduleValue: taskItem.scheduleValueOrDefault,
-                  scheduleUnit: taskItem.scheduleUnitOrDefault,
+                TaskDefinitionsCompanion.insert(
+                  id: newId,
+                  taskType: taskItem.taskType,
+                  name: taskItem.name,
+                  furigana: taskItem.furigana,
+                  icon: taskItem.icon,
+                  color: taskItem.color,
                 ),
               );
-        }
-        await _db.batch((batch) {
-          batch.insertAll(
-            _db.taskExecutions,
-            taskHistory.map(
-              (history) => TaskExecutionsCompanion.insert(
-                id: _uuid.v4(),
-                taskDefinitionId: newId,
-                executedAt: history.executedAt,
-                comment: Value(history.comment),
+          if (taskItem.taskType == TaskType.scheduled) {
+            await _db
+                .into(_db.taskScheduledConfigs)
+                .insert(
+                  TaskScheduledConfigsCompanion.insert(
+                    taskDefinitionId: newId,
+                    scheduleValue: taskItem.scheduleValueOrDefault,
+                    scheduleUnit: taskItem.scheduleUnitOrDefault,
+                  ),
+                );
+          }
+          await _db.batch((batch) {
+            batch.insertAll(
+              _db.taskExecutions,
+              taskHistory.map(
+                (history) => TaskExecutionsCompanion.insert(
+                  id: _uuid.v4(),
+                  taskDefinitionId: newId,
+                  executedAt: history.executedAt,
+                  comment: Value(history.comment),
+                ),
               ),
-            ),
-          );
-        });
+            );
+          });
+        }
       });
     } catch (e) {
       throw TaskSaveException(e.toString());
