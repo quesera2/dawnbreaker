@@ -858,6 +858,52 @@ void main() {
       expect(watched, isNotNull);
       expect(watched!.name, '散髪');
     });
+
+    test('複数タスクをまとめて履歴ごと復元できる', () async {
+      final idA = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '✂️',
+        color: TaskColor.none,
+      );
+      await repository.recordExecution(idA, executedAt: DateTime(2025, 1, 1));
+      final idB = await repository.addTask(
+        taskType: TaskType.scheduled,
+        name: '虫避け交換',
+        icon: '📝',
+        color: TaskColor.orange,
+        scheduleValue: 2,
+        scheduleUnit: ScheduleUnit.week,
+      );
+      await repository.recordExecution(idB, executedAt: DateTime(2025, 2, 1));
+      await repository.recordExecution(idB, executedAt: DateTime(2025, 3, 1));
+
+      final deletedA = await repository.findTaskById(idA);
+      final deletedHistoryA = await repository.deleteTask(idA);
+      final deletedB = await repository.findTaskById(idB) as ScheduledTaskItem;
+      final deletedHistoryB = await repository.deleteTask(idB);
+
+      await repository.restoreTask([
+        (deletedA, deletedHistoryA),
+        (deletedB, deletedHistoryB),
+      ]);
+
+      final tasks = await repository.allTaskItems().first;
+      expect(tasks, hasLength(2));
+      final restoredA = tasks.firstWhere((t) => t.name == '散髪');
+      final restoredB =
+          tasks.firstWhere((t) => t.name == '虫避け交換') as ScheduledTaskItem;
+      expect(
+        (await repository.fetchTaskHistory(restoredA.id)).items,
+        hasLength(1),
+      );
+      expect(restoredB.scheduleValue, 2);
+      expect(restoredB.scheduleUnit, ScheduleUnit.week);
+      expect(
+        (await repository.fetchTaskHistory(restoredB.id)).items,
+        hasLength(2),
+      );
+    });
   });
 
   group('deleteTask', () {

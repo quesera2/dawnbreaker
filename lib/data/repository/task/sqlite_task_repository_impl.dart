@@ -269,9 +269,9 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
     List<(TaskItem, List<TaskHistory>)> taskItems,
   ) async {
     try {
-      final newId = _uuid.v4();
       await _db.transaction(() async {
         for (final (taskItem, taskHistory) in taskItems) {
+          final newId = _uuid.v4();
           await _db
               .into(_db.taskDefinitions)
               .insert(
