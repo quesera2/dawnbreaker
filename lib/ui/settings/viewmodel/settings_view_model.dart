@@ -145,11 +145,8 @@ class SettingsViewModel extends _$SettingsViewModel {
   Future<void> generateDummyTasks() async {
     final repository = await ref.read(taskRepositoryProvider.future);
     await repository.deleteAllTasks();
-    await Future.wait(
-      buildDummyTasks(
-        now: DateTime.now(),
-        random: Random(),
-      ).map((task) => repository.restoreTask(task.$1, task.$2)),
+    await repository.restoreTask(
+      buildDummyTasks(now: DateTime.now(), random: Random()),
     );
     if (!ref.mounted) return;
     state = state.copyWith(snackBarMessage: DebugDummyTasksGeneratedMessage());

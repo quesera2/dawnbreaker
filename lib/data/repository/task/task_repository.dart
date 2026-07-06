@@ -23,7 +23,7 @@ abstract interface class TaskRepository {
   Future<TaskHistoryPage> fetchTaskHistory(
     String taskId, {
     TaskHistoryCursor? cursor,
-    int limit = 20,
+    int limit = 10,
   });
 
   Future<String> addTask({
@@ -66,5 +66,5 @@ abstract interface class TaskRepository {
 
   Future<void> deleteAllTasks();
 
-  Future<void> restoreTask(TaskItem taskItem, List<TaskHistory> taskHistory);
+  Future<void> restoreTask(List<(TaskItem, List<TaskHistory>)> taskItems);
 }

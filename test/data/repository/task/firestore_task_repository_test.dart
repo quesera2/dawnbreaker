@@ -1,5 +1,6 @@
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/firestore_task_repository_impl.dart';
@@ -640,7 +641,7 @@ void main() {
       final deleted = await repository.findTaskById(id);
       final deletedHistory = await repository.deleteTask(id);
 
-      await repository.restoreTask(deleted, deletedHistory);
+      await repository.restoreTask([(deleted, deletedHistory)]);
 
       final tasks = await repository.allTaskItems().first;
       expect(tasks, hasLength(1));
@@ -666,7 +667,7 @@ void main() {
       final deleted = await repository.findTaskById(id) as ScheduledTaskItem;
       final deletedHistory = await repository.deleteTask(id);
 
-      await repository.restoreTask(deleted, deletedHistory);
+      await repository.restoreTask([(deleted, deletedHistory)]);
 
       final tasks = await repository.allTaskItems().first;
       expect(tasks, hasLength(1));
@@ -689,7 +690,7 @@ void main() {
       final deletedHistory = await repository.deleteTask(id);
       expect(deletedHistory, hasLength(12));
 
-      await repository.restoreTask(deleted, deletedHistory);
+      await repository.restoreTask([(deleted, deletedHistory)]);
 
       final restoredId = (await repository.allTaskItems().first).first.id;
       final executions = await firestore
@@ -722,11 +723,33 @@ void main() {
       final deletedHistory = await repository.deleteTask(id);
       expect(deletedHistory, hasLength(11));
 
-      await repository.restoreTask(deleted, deletedHistory);
+      await repository.restoreTask([(deleted, deletedHistory)]);
 
       final restored = (await repository.allTaskItems().first).first;
       // 直近10件（1日間隔）だけを使うので、平均間隔は1日 → 最終実行(day110) + 1日 = day111
       expect(restored.scheduledAt, base.add(const Duration(days: 111)));
+    });
+
+    test('書き込み件数が500件を超えるタスクをまとめて復元してもすべて保存される', () async {
+      final taskItems = [
+        for (var i = 0; i < 501; i++)
+          (
+            TaskItem.irregular(
+              id: 'dummy-$i',
+              name: 'タスク$i',
+              furigana: '',
+              icon: '📝',
+              color: TaskColor.none,
+              lastExecutedAt: null,
+            ),
+            const <TaskHistory>[],
+          ),
+      ];
+
+      await repository.restoreTask(taskItems);
+
+      final tasks = await repository.allTaskItems().first;
+      expect(tasks, hasLength(501));
     });
   });
 

@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dawnbreaker/core/logger/app_logger.dart';
+import 'package:collection/collection.dart';
 import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/core/util/furigana_translate.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
@@ -15,6 +15,8 @@ import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart'
 import 'package:uuid/uuid.dart';
 
 const _uuid = Uuid();
+typedef WriteData =
+    List<(DocumentReference<Map<String, dynamic>>, Map<String, dynamic>)>;
 
 class FirestoreTaskRepositoryImpl implements TaskRepository {
   FirestoreTaskRepositoryImpl({
@@ -67,7 +69,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   Future<TaskHistoryPage> fetchTaskHistory(
     String taskId, {
     TaskHistoryCursor? cursor,
-    int limit = 20,
+    int limit = 10,
   }) async {
     try {
       var query = _executionsRef(taskId)
@@ -144,21 +146,21 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     }
     try {
       final furigana = await _furiganaTranslate.translate(name);
-      await _taskDefinitionsRef().doc(taskId).update({
-        'taskType': taskType.name,
-        'name': name,
-        'furigana': furigana,
-        'icon': icon,
-        'color': color.name,
-        'scheduleConfig': taskType == TaskType.scheduled
-            ? {
-                'scheduleValue': scheduleValue,
-                'scheduleUnit': scheduleUnit!.name,
-              }
-            : FieldValue.delete(),
-      });
-      // taskType やスケジュール設定の変更で nextScheduledAt の算出方法が変わるため再計算する
-      await _recalculateScheduleFromHistoryOrLog(taskId);
+      final ascendingHistory = await _fetchAscendingHistory(taskId);
+      await _taskDefinitionsRef()
+          .doc(taskId)
+          .update(
+            _taskDefinitionData(
+              taskType: taskType,
+              name: name,
+              furigana: furigana,
+              icon: icon,
+              color: color,
+              scheduleValue: scheduleValue,
+              scheduleUnit: scheduleUnit,
+              taskHistory: ascendingHistory,
+            ),
+          );
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
@@ -174,11 +176,38 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   }) async {
     try {
       final id = _uuid.v4();
-      await _executionsRef(
-        taskId,
-      ).doc(id).set(_executionData(executedAt: executedAt, comment: comment));
-      await _recalculateScheduleFromHistoryOrLog(taskId);
-      return TaskHistory(id: id, executedAt: executedAt, comment: comment);
+      final newHistory = TaskHistory(
+        id: id,
+        executedAt: executedAt,
+        comment: comment,
+      );
+      final currentHistory = await _fetchAscendingHistory(taskId);
+      final (taskType, scheduleValue, scheduleUnit) =
+          await _fetchScheduleConfig(taskId);
+
+      final ascendingHistory = [...currentHistory, newHistory]
+        ..sort((a, b) => a.executedAt.compareTo(b.executedAt));
+      final schedule = _computeSchedule(
+        taskType: taskType,
+        ascendingHistory: ascendingHistory,
+        scheduleValue: scheduleValue,
+        scheduleUnit: scheduleUnit,
+      );
+
+      final batch = _firestore.batch();
+      batch.set(
+        _executionsRef(taskId).doc(id),
+        _executionData(executedAt: executedAt, comment: comment),
+      );
+      batch.update(
+        _taskDefinitionsRef().doc(taskId),
+        _scheduleFieldsData(schedule),
+      );
+      await batch.commit();
+
+      return newHistory;
+    } on TaskRepositoryException {
+      rethrow;
     } catch (e) {
       throw TaskSaveException(e.toString());
     }
@@ -192,11 +221,39 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     String? comment,
   }) async {
     try {
-      await _executionsRef(taskId).doc(executionId).update({
+      final updatedHistory = TaskHistory(
+        id: executionId,
+        executedAt: executedAt,
+        comment: comment,
+      );
+      final recentHistory = await _fetchAscendingHistory(
+        taskId,
+        limit: scheduleHistoryLimit + 1,
+      );
+      final (taskType, scheduleValue, scheduleUnit) =
+          await _fetchScheduleConfig(taskId);
+
+      final ascendingHistory = [
+        ...recentHistory.where((history) => history.id != executionId),
+        updatedHistory,
+      ]..sort((a, b) => a.executedAt.compareTo(b.executedAt));
+      final schedule = _computeSchedule(
+        taskType: taskType,
+        ascendingHistory: ascendingHistory,
+        scheduleValue: scheduleValue,
+        scheduleUnit: scheduleUnit,
+      );
+
+      final batch = _firestore.batch();
+      batch.update(_executionsRef(taskId).doc(executionId), {
         'executedAt': Timestamp.fromDate(executedAt),
         'comment': comment,
       });
-      await _recalculateScheduleFromHistoryOrLog(taskId);
+      batch.update(
+        _taskDefinitionsRef().doc(taskId),
+        _scheduleFieldsData(schedule),
+      );
+      await batch.commit();
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
@@ -212,8 +269,33 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     try {
       final executionRef = _executionsRef(taskId).doc(executionId);
       if (!(await executionRef.get()).exists) return;
-      await executionRef.delete();
-      await _recalculateScheduleFromHistoryOrLog(taskId);
+
+      final recentHistory = await _fetchAscendingHistory(
+        taskId,
+        limit: scheduleHistoryLimit + 1,
+      );
+      final (taskType, scheduleValue, scheduleUnit) =
+          await _fetchScheduleConfig(taskId);
+
+      final ascendingHistory = recentHistory
+          .where((history) => history.id != executionId)
+          .toList();
+      final schedule = _computeSchedule(
+        taskType: taskType,
+        ascendingHistory: ascendingHistory,
+        scheduleValue: scheduleValue,
+        scheduleUnit: scheduleUnit,
+      );
+
+      final batch = _firestore.batch();
+      batch.delete(executionRef);
+      batch.update(
+        _taskDefinitionsRef().doc(taskId),
+        _scheduleFieldsData(schedule),
+      );
+      await batch.commit();
+    } on TaskRepositoryException {
+      rethrow;
     } catch (e) {
       throw TaskDeleteException(e.toString());
     }
@@ -258,28 +340,33 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
 
   @override
   Future<void> restoreTask(
+    List<(TaskItem, List<TaskHistory>)> taskItems,
+  ) async {
+    final writes = taskItems
+        .expand((e) => _convertWriteData(e.$1, e.$2))
+        .toList();
+    try {
+      for (var i = 0; i < writes.length; i += 500) {
+        final batch = _firestore.batch();
+        for (final (def, data) in writes.skip(i).take(500)) {
+          batch.set(def, data);
+        }
+        await batch.commit();
+      }
+    } catch (e) {
+      throw TaskSaveException(e.toString());
+    }
+  }
+
+  WriteData _convertWriteData(
     TaskItem taskItem,
     List<TaskHistory> taskHistory,
-  ) async {
-    try {
-      final newId = _uuid.v4();
-      final batch = _firestore.batch();
-
-      final ascendingHistory = [...taskHistory]
-        ..sort((a, b) => a.executedAt.compareTo(b.executedAt));
-      // _recalculateScheduleFromHistory と同じ直近件数に揃えて計算する
-      // （全件は executions として別途保存する）
-      final recentHistory = recentHistoryForSchedule(ascendingHistory);
-      final lastExecutedAt = computeLastExecutedAt(recentHistory);
-      final scheduledAt = computeScheduledAt(
-        taskType: taskItem.taskType,
-        ascendingHistory: recentHistory,
-        scheduleValue: taskItem.scheduleValueOrDefault,
-        scheduleUnit: taskItem.scheduleUnitOrDefault,
-      );
-
-      batch.set(_taskDefinitionsRef().doc(newId), {
-        ..._taskDefinitionData(
+  ) {
+    final newId = _uuid.v4();
+    return [
+      (
+        _taskDefinitionsRef().doc(newId),
+        _taskDefinitionData(
           taskType: taskItem.taskType,
           name: taskItem.name,
           furigana: taskItem.furigana,
@@ -287,29 +374,18 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
           color: taskItem.color,
           scheduleValue: taskItem.scheduleValueOrDefault,
           scheduleUnit: taskItem.scheduleUnitOrDefault,
+          taskHistory: taskHistory,
         ),
-        'lastExecutedAt': lastExecutedAt != null
-            ? Timestamp.fromDate(lastExecutedAt)
-            : null,
-        'nextScheduledAt': scheduledAt != null
-            ? Timestamp.fromDate(scheduledAt)
-            : null,
-      });
-
-      for (final history in taskHistory) {
-        batch.set(
+      ),
+      for (final history in taskHistory)
+        (
           _executionsRef(newId).doc(_uuid.v4()),
           _executionData(
             executedAt: history.executedAt,
             comment: history.comment,
           ),
-        );
-      }
-
-      await batch.commit();
-    } catch (e) {
-      throw TaskSaveException(e.toString());
-    }
+        ),
+    ];
   }
 
   Map<String, dynamic> _taskDefinitionData({
@@ -320,20 +396,29 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     required TaskColor color,
     int? scheduleValue,
     ScheduleUnit? scheduleUnit,
-  }) => {
-    'taskType': taskType.name,
-    'name': name,
-    'furigana': furigana,
-    'icon': icon,
-    'color': color.name,
-    if (taskType == TaskType.scheduled)
-      'scheduleConfig': {
-        'scheduleValue': scheduleValue,
-        'scheduleUnit': scheduleUnit!.name,
-      },
-    'lastExecutedAt': null,
-    'nextScheduledAt': null,
-  };
+    List<TaskHistory> taskHistory = const [],
+  }) {
+    final ascendingHistory = taskHistory.sorted(
+      (a, b) => a.executedAt.compareTo(b.executedAt),
+    );
+    final schedule = _computeSchedule(
+      taskType: taskType,
+      ascendingHistory: ascendingHistory,
+      scheduleValue: scheduleValue,
+      scheduleUnit: scheduleUnit,
+    );
+    return {
+      'taskType': taskType.name,
+      'name': name,
+      'furigana': furigana,
+      'icon': icon,
+      'color': color.name,
+      'scheduleConfig': taskType == TaskType.scheduled
+          ? {'scheduleValue': scheduleValue, 'scheduleUnit': scheduleUnit!.name}
+          : null,
+      ..._scheduleFieldsData(schedule),
+    };
+  }
 
   Map<String, dynamic> _executionData({
     required DateTime executedAt,
@@ -424,51 +509,60 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     return executions.docs.map(_taskHistoryFromDoc).toList();
   }
 
-  // 実行の記録・更新・削除自体はすでに成功しているため、直後の再計算だけが
-  // 失敗しても呼び出し元には例外を伝えない。ここで失敗を伝えると呼び出し元が同じ内容で
-  // 再試行し、実行記録そのものが重複してしまうため。古い値は次回の
-  // recordExecution/updateExecution/deleteExecution/updateTask で再計算されて解消される
-  Future<void> _recalculateScheduleFromHistoryOrLog(String taskId) async {
-    try {
-      await _recalculateScheduleFromHistory(taskId);
-    } catch (e, s) {
-      logger.e('スケジュールの再計算に失敗 taskId=$taskId', error: e, stackTrace: s);
-    }
-  }
-
-  // 直近 scheduleHistoryLimit 件の実行履歴と taskDefinitions を Firestore から
-  // 読み直し、lastExecutedAt/nextScheduledAt を計算してドキュメントに書き戻す
-  Future<void> _recalculateScheduleFromHistory(String taskId) async {
+  // 直近 limit 件の実行履歴を昇順で取得する
+  Future<List<TaskHistory>> _fetchAscendingHistory(
+    String taskId, {
+    int limit = scheduleHistoryLimit,
+  }) async {
     final executionSnap = await _executionsRef(
       taskId,
-    ).orderBy('executedAt').limitToLast(scheduleHistoryLimit).get();
-    final ascendingHistory = executionSnap.docs
-        .map(_taskHistoryFromDoc)
-        .toList();
+    ).orderBy('executedAt').limitToLast(limit).get();
+    return executionSnap.docs.map(_taskHistoryFromDoc).toList();
+  }
 
+  Future<(TaskType, int?, ScheduleUnit?)> _fetchScheduleConfig(
+    String taskId,
+  ) async {
     final taskDefinitionSnap = await _taskDefinitionsRef().doc(taskId).get();
     final taskDefData = taskDefinitionSnap.data();
     if (taskDefData == null) throw TaskNotFoundException(taskId: taskId);
     final taskType = TaskType.values.byName(taskDefData['taskType'] as String);
     final config = taskDefData['scheduleConfig'] as Map<String, dynamic>?;
-
-    final lastExecutedAt = computeLastExecutedAt(ascendingHistory);
-    final scheduledAt = computeScheduledAt(
-      taskType: taskType,
-      ascendingHistory: ascendingHistory,
-      scheduleValue: config?['scheduleValue'] as int?,
-      scheduleUnit: config == null
+    return (
+      taskType,
+      config?['scheduleValue'] as int?,
+      config == null
           ? null
           : ScheduleUnit.values.byName(config['scheduleUnit'] as String),
     );
-
-    await _taskDefinitionsRef().doc(taskId).update({
-      'lastExecutedAt': lastExecutedAt != null
-          ? Timestamp.fromDate(lastExecutedAt)
-          : null,
-      'nextScheduledAt': scheduledAt != null
-          ? Timestamp.fromDate(scheduledAt)
-          : null,
-    });
   }
+
+  ({DateTime? lastExecutedAt, DateTime? scheduledAt}) _computeSchedule({
+    required TaskType taskType,
+    required List<TaskHistory> ascendingHistory,
+    int? scheduleValue,
+    ScheduleUnit? scheduleUnit,
+  }) {
+    final recentHistory = recentHistoryForSchedule(ascendingHistory);
+    return (
+      lastExecutedAt: computeLastExecutedAt(recentHistory),
+      scheduledAt: computeScheduledAt(
+        taskType: taskType,
+        ascendingHistory: recentHistory,
+        scheduleValue: scheduleValue,
+        scheduleUnit: scheduleUnit,
+      ),
+    );
+  }
+
+  Map<String, dynamic> _scheduleFieldsData(
+    ({DateTime? lastExecutedAt, DateTime? scheduledAt}) schedule,
+  ) => {
+    'lastExecutedAt': schedule.lastExecutedAt != null
+        ? Timestamp.fromDate(schedule.lastExecutedAt!)
+        : null,
+    'nextScheduledAt': schedule.scheduledAt != null
+        ? Timestamp.fromDate(schedule.scheduledAt!)
+        : null,
+  };
 }
