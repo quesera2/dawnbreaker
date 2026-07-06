@@ -36,7 +36,7 @@
 
 ## Phase6
 
-- [ ] restoreTask が500件バッチに対応していないのを修正するとともに、`List<TaskItem>` を受け取れるように改修する
+- [x] restoreTask が500件バッチに対応していないのを修正するとともに、`List<TaskItem>` を受け取れるように改修する
 
 ## Phase7
 
