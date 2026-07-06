@@ -17,6 +17,8 @@ final tc = context.appTaskColorScheme;  // AppTaskColorScheme
 `AppTaskColorScheme` — タスクのカラーラベル用。`base / soft / on` の3バリアント（`app_colors.dart`）
 
 
+`strong` / `strongOn` — 選択状態のチップや FAB など、強調フィルの背景・前景色。
+
 タスクカラーは `TaskColor` の extension でアクセスする。`appTaskColorScheme` を直接触らない。
 
 ```dart

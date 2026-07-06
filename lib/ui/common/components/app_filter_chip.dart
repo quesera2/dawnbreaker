@@ -29,9 +29,9 @@ class AppFilterChip extends StatelessWidget {
         height: 30,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: isSelected ? c.text : Colors.transparent,
+          color: isSelected ? c.strong : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.pill),
-          border: Border.all(color: isSelected ? c.text : c.border),
+          border: Border.all(color: isSelected ? c.strong : c.border),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -39,7 +39,7 @@ class AppFilterChip extends StatelessWidget {
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 120),
               style: AppTextStyle.caption.copyWith(
-                color: isSelected ? c.textInverse : c.textMuted,
+                color: isSelected ? c.strongOn : c.textMuted,
                 letterSpacing: 0.1,
                 height: 1,
               ),
@@ -51,7 +51,7 @@ class AppFilterChip extends StatelessWidget {
                 duration: const Duration(milliseconds: 120),
                 style: AppTextStyle.caption.copyWith(
                   color: isSelected
-                      ? c.textInverse.withValues(alpha: 0.7)
+                      ? c.strongOn.withValues(alpha: 0.7)
                       : c.textMuted.withValues(alpha: 0.7),
                   fontWeight: FontWeight.w400,
                   letterSpacing: 0.1,

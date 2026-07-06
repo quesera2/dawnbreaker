@@ -55,6 +55,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final taskList = uiState.taskList;
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push('/home/new_task'),
+        tooltip: context.l10n.homeBarAdd,
+        backgroundColor: colorScheme.strong,
+        foregroundColor: colorScheme.strongOn,
+        child: const Icon(Icons.add),
+      ),
       body: CustomScrollView(
         clipBehavior: Clip.none,
         slivers: [
@@ -100,7 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ),
           SliverPadding(
             padding: EdgeInsets.only(
-              bottom: 8 + MediaQuery.paddingOf(context).bottom,
+              bottom: 8 + 72 + MediaQuery.paddingOf(context).bottom,
             ),
           ),
         ],
@@ -220,11 +227,6 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       toolbarHeight: 48,
       actions: [
-        AppIconButton(
-          onTap: () => context.push('/home/new_task'),
-          label: context.l10n.homeBarAdd,
-          icon: Icons.add,
-        ),
         AppIconButton(
           onTap: () => context.push('/settings'),
           label: context.l10n.homeBarSettings,
