@@ -213,31 +213,32 @@ class FakeTaskRepository implements TaskRepository {
 
   @override
   Future<void> restoreTask(
-    TaskItem taskItem,
-    List<TaskHistory> taskHistory,
+    List<(TaskItem, List<TaskHistory>)> taskItems,
   ) async {
     if (shouldThrow) throw const TaskSaveException('テストエラー');
-    _history[taskItem.id] = List.of(taskHistory);
-    final ascendingHistory = _ascendingHistory(taskItem.id);
-    _tasks.add(
-      _buildTask(
-        id: taskItem.id,
-        taskType: taskItem.taskType,
-        name: taskItem.name,
-        furigana: taskItem.furigana,
-        icon: taskItem.icon,
-        color: taskItem.color,
-        scheduleValue: taskItem.scheduleValueOrDefault,
-        scheduleUnit: taskItem.scheduleUnitOrDefault,
-        lastExecutedAt: computeLastExecutedAt(ascendingHistory),
-        cachedScheduledAt: computeScheduledAt(
+    for (final (taskItem, taskHistory) in taskItems) {
+      _history[taskItem.id] = List.of(taskHistory);
+      final ascendingHistory = _ascendingHistory(taskItem.id);
+      _tasks.add(
+        _buildTask(
+          id: taskItem.id,
           taskType: taskItem.taskType,
-          ascendingHistory: ascendingHistory,
+          name: taskItem.name,
+          furigana: taskItem.furigana,
+          icon: taskItem.icon,
+          color: taskItem.color,
           scheduleValue: taskItem.scheduleValueOrDefault,
           scheduleUnit: taskItem.scheduleUnitOrDefault,
+          lastExecutedAt: computeLastExecutedAt(ascendingHistory),
+          cachedScheduledAt: computeScheduledAt(
+            taskType: taskItem.taskType,
+            ascendingHistory: ascendingHistory,
+            scheduleValue: taskItem.scheduleValueOrDefault,
+            scheduleUnit: taskItem.scheduleUnitOrDefault,
+          ),
         ),
-      ),
-    );
+      );
+    }
     _notify();
   }
 

@@ -112,7 +112,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         (s) => s.copyWith(
           snackBarMessage: TaskDeleteSuccess(
             taskName: task.name,
-            handler: () => _repository.restoreTask(task, deletedHistory),
+            handler: () => _repository.restoreTask([(task, deletedHistory)]),
           ),
         ),
       );

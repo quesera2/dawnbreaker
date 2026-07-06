@@ -134,7 +134,7 @@ void main() {
           cachedScheduledAt: null,
         );
         await expectLater(
-          () => repository.restoreTask(task, []),
+          () => repository.restoreTask([(task, [])]),
           throwsA(isA<TaskSaveException>()),
         );
       });
@@ -805,7 +805,7 @@ void main() {
       final deleted = await repository.findTaskById(id);
       final deletedHistory = await repository.deleteTask(id);
 
-      await repository.restoreTask(deleted, deletedHistory);
+      await repository.restoreTask([(deleted, deletedHistory)]);
 
       final tasks = await repository.allTaskItems().first;
       expect(tasks, hasLength(1));
@@ -831,7 +831,7 @@ void main() {
       final deleted = await repository.findTaskById(id) as ScheduledTaskItem;
       final deletedHistory = await repository.deleteTask(id);
 
-      await repository.restoreTask(deleted, deletedHistory);
+      await repository.restoreTask([(deleted, deletedHistory)]);
 
       final tasks = await repository.allTaskItems().first;
       expect(tasks, hasLength(1));
@@ -850,7 +850,7 @@ void main() {
       final deleted = await repository.findTaskById(id);
       final deletedHistory = await repository.deleteTask(id);
 
-      await repository.restoreTask(deleted, deletedHistory);
+      await repository.restoreTask([(deleted, deletedHistory)]);
 
       final tasks = await repository.allTaskItems().first;
       final restoredId = tasks.first.id;
