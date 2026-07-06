@@ -67,7 +67,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   Future<TaskHistoryPage> fetchTaskHistory(
     String taskId, {
     TaskHistoryCursor? cursor,
-    int limit = 20,
+    int limit = 10,
   }) async {
     try {
       var query = _executionsRef(taskId)

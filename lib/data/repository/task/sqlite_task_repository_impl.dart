@@ -63,7 +63,7 @@ class SQLiteTaskRepositoryImpl implements TaskRepository {
   Future<TaskHistoryPage> fetchTaskHistory(
     String taskId, {
     TaskHistoryCursor? cursor,
-    int limit = 20,
+    int limit = 10,
   }) async {
     if (cursor != null) return const TaskHistoryPage(items: [], hasMore: false);
     final rows =

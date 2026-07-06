@@ -23,7 +23,7 @@ abstract interface class TaskRepository {
   Future<TaskHistoryPage> fetchTaskHistory(
     String taskId, {
     TaskHistoryCursor? cursor,
-    int limit = 20,
+    int limit = 10,
   });
 
   Future<String> addTask({
