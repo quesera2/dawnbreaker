@@ -1,5 +1,8 @@
 import {setGlobalOptions} from "firebase-functions";
-import {onDocumentWritten} from "firebase-functions/v2/firestore";
+import {
+  onDocumentDeleted,
+  onDocumentWritten,
+} from "firebase-functions/v2/firestore";
 import * as logger from "firebase-functions/logger";
 import {initializeApp} from "firebase-admin/app";
 import {getFirestore, Timestamp} from "firebase-admin/firestore";
@@ -35,7 +38,9 @@ export const onExecutionWritten = onDocumentWritten(
     const taskDefSnap = await taskDefRef.get();
     const taskDefData = taskDefSnap.data();
     if (taskDefData == null) {
-      logger.warn("taskDefinition not found", {userId, taskId});
+      // タスク削除時、onTaskDefinitionDeleted が executions を掃除する過程で
+      // 本トリガーが発火した場合に毎回通る正常系のため info に留める
+      logger.info("taskDefinition not found", {userId, taskId});
       return;
     }
 
@@ -73,5 +78,27 @@ export const onExecutionWritten = onDocumentWritten(
         Timestamp.fromDate(scheduledAt) :
         null,
     });
+  }
+);
+
+/**
+ * タスク定義 (taskDefinitions) の削除をトリガーに、
+ * Firestore がカスケード削除しない実行履歴 (executions) サブコレクションをお掃除する。
+ * taskDefinitions が消えた後に executions を削除するため、それぞれの削除で
+ * onExecutionWritten が発火すること自体は止められないのでそのままとしている。
+ */
+export const onTaskDefinitionDeleted = onDocumentDeleted(
+  "users/{userId}/taskDefinitions/{taskId}",
+  async (event) => {
+    const {userId, taskId} = event.params;
+    const db = getFirestore();
+    const executionsRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("taskDefinitions")
+      .doc(taskId)
+      .collection("executions");
+
+    await db.recursiveDelete(executionsRef);
   }
 );

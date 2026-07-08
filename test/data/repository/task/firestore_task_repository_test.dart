@@ -573,7 +573,7 @@ void main() {
       expect(tasks, isEmpty);
     });
 
-    test('タスクを削除すると実行履歴も削除される', () async {
+    test('削除した実行履歴が戻り値として返る', () async {
       final id = await repository.addTask(
         taskType: TaskType.period,
         name: '散髪',
@@ -581,17 +581,17 @@ void main() {
         color: TaskColor.none,
       );
       await repository.recordExecution(id, executedAt: DateTime(2025, 1, 1));
-      await repository.deleteTask(id);
 
-      final executions = await firestore
-          .collection('users')
-          .doc('test-user')
-          .collection('taskDefinitions')
-          .doc(id)
-          .collection('executions')
-          .get();
-      expect(executions.docs, isEmpty);
+      final deletedHistory = await repository.deleteTask(id);
+
+      expect(deletedHistory, hasLength(1));
+      expect(deletedHistory.first.executedAt, DateTime(2025, 1, 1));
     });
+
+    // executions サブコレクション自体の削除は Cloud Functions
+    // (onTaskDefinitionDeleted) の責務であり、fake_cloud_firestore は
+    // 親ドキュメント削除時にサブコレクションも見かけ上消えてしまう（実際の
+    // Firestore と異なりカスケード削除される）ため、ここではテストできない
 
     test('複数タスクのうち指定したものだけ削除される', () async {
       final id1 = await repository.addTask(

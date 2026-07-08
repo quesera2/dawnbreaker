@@ -224,7 +224,12 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   @override
   Future<List<TaskHistory>> deleteTask(String taskId) async {
     try {
-      final deletedHistory = await _deleteAllExecutions(taskId);
+      final executionsSnap = await _executionsRef(taskId).get();
+      final deletedHistory = executionsSnap.docs
+          .map(_taskHistoryFromDoc)
+          .toList();
+      // executions サブコレクションの削除は onTaskDefinitionDeleted
+      // (Cloud Functions) が担当するため、ここではタスク定義を消すだけでよい
       await _taskDefinitionsRef().doc(taskId).delete();
       return deletedHistory;
     } catch (e) {
@@ -236,19 +241,11 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   Future<void> deleteAllTasks() async {
     try {
       final taskDefinitions = await _taskDefinitionsRef().get();
-      final executionSnapshots = await Future.wait(
-        taskDefinitions.docs.map((doc) => _executionsRef(doc.id).get()),
-      );
+      final references = taskDefinitions.docs.map((d) => d.reference).toList();
 
-      final allReferences = [
-        ...taskDefinitions.docs.map((d) => d.reference),
-        for (final snapshot in executionSnapshots)
-          ...snapshot.docs.map((d) => d.reference),
-      ];
-
-      for (var i = 0; i < allReferences.length; i += 500) {
+      for (var i = 0; i < references.length; i += 500) {
         final batch = _firestore.batch();
-        for (final reference in allReferences.skip(i).take(500)) {
+        for (final reference in references.skip(i).take(500)) {
           batch.delete(reference);
         }
         await batch.commit();
@@ -409,11 +406,5 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
       ),
       lastExecutedAt: lastExecutedAt,
     );
-  }
-
-  Future<List<TaskHistory>> _deleteAllExecutions(String taskId) async {
-    final executions = await _executionsRef(taskId).get();
-    await Future.wait(executions.docs.map((doc) => doc.reference.delete()));
-    return executions.docs.map(_taskHistoryFromDoc).toList();
   }
 }
