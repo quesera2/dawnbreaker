@@ -45,7 +45,7 @@ export function computeScheduledAt(params: {
  */
 function computePeriodNextAt(
   ascendingHistory: Date[],
-  lastExecutedAt: Date
+  lastExecutedAt: Date,
 ): Date | null {
   const average = averageIntervalDays(ascendingHistory);
   if (average == null) return null;
@@ -78,7 +78,7 @@ function computeFixedIntervalScheduledAt(params: {
     next.setUTCMonth(next.getUTCMonth() + scheduleValue);
     // 加算先の月に存在しない日（例: 1/31 の1ヶ月後は2月末）は月末に丸める
     const daysInNextMonth = new Date(
-      Date.UTC(next.getUTCFullYear(), next.getUTCMonth() + 1, 0)
+      Date.UTC(next.getUTCFullYear(), next.getUTCMonth() + 1, 0),
     ).getUTCDate();
     next.setUTCDate(Math.min(day, daysInNextMonth));
     return next;
@@ -92,7 +92,7 @@ function computeFixedIntervalScheduledAt(params: {
  * @return {number | null} 平均間隔日数、算出不能なら null
  */
 function averageIntervalDays(
-  ascendingHistory: Date[]
+  ascendingHistory: Date[],
 ): number | null {
   const intervals = intervalDaysForHistory(ascendingHistory);
   if (intervals.length === 0) return null;
@@ -105,12 +105,12 @@ function averageIntervalDays(
  * @return {number[]} 間隔日数の配列
  */
 function intervalDaysForHistory(
-  ascendingHistory: Date[]
+  ascendingHistory: Date[],
 ): number[] {
   return ascendingHistory.slice(1).map((date, i) =>
     Math.round(
-      (truncateTimeUtc(date) - truncateTimeUtc(ascendingHistory[i])) / dayMs
-    )
+      (truncateTimeUtc(date) - truncateTimeUtc(ascendingHistory[i])) / dayMs,
+    ),
   );
 }
 
@@ -121,6 +121,6 @@ function intervalDaysForHistory(
  */
 function truncateTimeUtc(date: Date): number {
   return Date.UTC(
-    date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()
+    date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(),
   );
 }
