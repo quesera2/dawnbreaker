@@ -45,7 +45,16 @@
 ## Phase7
 
 - [x] ログイン画面実装に向けてアプリタイトルを決める
-- [ ] ローカルで行っているロジックを Cloud Functions に移行する
+- [x] ローカルで行っているロジックを Cloud Functions に移行する
+    - Firebase 基盤で複数端末が同一ログインを共有できるようにすると、タスク通知も端末間で共有する必要が生じる。
+      ローカル通知だけでは他端末に通知を飛ばせないため、FCM 経由でのプッシュ通知送信が必要になり、その送信トリガーは
+      クライアント側でなく Cloud Functions 側に持たせざるを得ない
+    - 現状 `recordExecution` / `updateExecution` / `deleteExecution` / `restoreTask` はいずれもクライアント側で
+      `_computeSchedule` を実行し、`lastExecutedAt` / `nextScheduledAt`（`cachedScheduledAt`）をキャッシュフィールドとして
+      タスクドキュメントに直接書き込んでいる（`firestore_task_repository_impl.dart`）
+    - - 移行後はこれらのキャッシュ書き込みをクライアントではなく Cloud Functions 側（executions サブコレクションへの
+  トリガー等）で行い
+- [ ] 同じトリガーに FCM 送信を追加する
 
 ## Phase8
 
