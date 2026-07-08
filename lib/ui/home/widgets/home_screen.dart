@@ -226,6 +226,14 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       toolbarHeight: 48,
+      centerTitle: false,
+      title: Image.asset(
+        'assets/somniloop_wordmark.png',
+        height: 22,
+        color: context.appColorScheme.text,
+        colorBlendMode: BlendMode.srcIn,
+        alignment: Alignment.centerLeft,
+      ),
       actions: [
         AppIconButton(
           onTap: () => context.push('/settings'),

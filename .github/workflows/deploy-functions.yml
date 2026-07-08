@@ -1,0 +1,52 @@
+name: Deploy Functions
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: functions
+
+      - name: Resolve Firebase project ID
+        id: project
+        run: |
+          if [ "${{ inputs.environment }}" = "prod" ]; then
+            echo "id=dawn-breaker" >> "$GITHUB_OUTPUT"
+          else
+            echo "id=dawn-breaker-dev" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.FIREBASE_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Deploy to Firebase
+        run: >
+          npx firebase-tools deploy --only functions
+          --project "${{ steps.project.outputs.id }}"
