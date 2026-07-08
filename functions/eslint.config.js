@@ -1,33 +1,22 @@
-const {FlatCompat} = require("@eslint/eslintrc");
 const js = require("@eslint/js");
 const globals = require("globals");
 const tseslint = require("typescript-eslint");
 const importXPlugin = require("eslint-plugin-import-x");
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-});
+const googleConfig = require("eslint-config-google");
 
 module.exports = tseslint.config(
   {
     ignores: ["lib/**", "generated/**"],
   },
   js.configs.recommended,
-  ...compat.extends("google"),
-  ...tseslint.configs.recommended,
+  googleConfig,
   importXPlugin.flatConfigs.recommended,
-  importXPlugin.flatConfigs.typescript,
   {
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",
       globals: {
         ...globals.node,
-      },
-      parser: tseslint.parser,
-      parserOptions: {
-        project: ["tsconfig.json", "tsconfig.dev.json"],
       },
     },
     rules: {
@@ -41,9 +30,15 @@ module.exports = tseslint.config(
     },
   },
   {
-    files: ["eslint.config.js", "jest.config.js"],
-    rules: {
-      "@typescript-eslint/no-require-imports": "off",
+    files: ["**/*.ts"],
+    extends: [
+      ...tseslint.configs.recommended,
+      importXPlugin.flatConfigs.typescript,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ["tsconfig.json", "tsconfig.dev.json"],
+      },
     },
   },
 );

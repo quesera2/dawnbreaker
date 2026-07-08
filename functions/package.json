@@ -20,9 +20,7 @@
     "firebase-functions": "^7.0.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
-    "@typescript-eslint/parser": "^8.63.0",
     "eslint": "^10.6.0",
     "eslint-config-google": "^0.14.0",
     "eslint-import-resolver-typescript": "^4.4.5",
@@ -32,7 +30,7 @@
     "jest": "^30.4.2",
     "ts-jest": "^29.2.5",
     "@types/jest": "^30.0.0",
-    "typescript": "^6.0.0",
+    "typescript": "~6.0.0",
     "typescript-eslint": "^8.63.0"
   },
   "private": true
