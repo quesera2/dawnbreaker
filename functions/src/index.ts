@@ -58,7 +58,7 @@ export const onExecutionWritten = onDocumentWritten(
       .limitToLast(historyLimit)
       .get();
     const ascendingHistory: Date[] = executionsSnap.docs.map(
-      (doc) => (doc.data().executedAt as Timestamp).toDate()
+      (doc) => (doc.data().executedAt as Timestamp).toDate(),
     );
 
     const lastExecutedAt = ascendingHistory.at(-1) ?? null;
@@ -78,7 +78,7 @@ export const onExecutionWritten = onDocumentWritten(
         Timestamp.fromDate(scheduledAt) :
         null,
     });
-  }
+  },
 );
 
 /**
@@ -100,5 +100,5 @@ export const onTaskDefinitionDeleted = onDocumentDeleted(
       .collection("executions");
 
     await db.recursiveDelete(executionsRef);
-  }
+  },
 );

@@ -1,6 +1,9 @@
 {
+  "compilerOptions": {
+    "allowJs": true
+  },
   "include": [
-    ".eslintrc.js",
+    "eslint.config.js",
     "jest.config.js",
     "src/**/*.test.ts"
   ]
