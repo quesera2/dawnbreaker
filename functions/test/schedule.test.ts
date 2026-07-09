@@ -1,6 +1,5 @@
-/// <reference types="jest" />
 import {Temporal} from "@js-temporal/polyfill";
-import {computeScheduledAt} from "./schedule";
+import {computeScheduledAt} from "../src/schedule";
 
 const zdt = (isoString: string): Temporal.ZonedDateTime =>
   Temporal.Instant.from(isoString).toZonedDateTimeISO("UTC");
