@@ -1,3 +1,4 @@
+import {Temporal} from "@js-temporal/polyfill";
 import {setGlobalOptions} from "firebase-functions";
 import {
   onDocumentDeleted,
@@ -57,25 +58,24 @@ export const onExecutionWritten = onDocumentWritten(
       .orderBy("executedAt")
       .limitToLast(historyLimit)
       .get();
-    const ascendingHistory: Date[] = executionsSnap.docs.map(
-      (doc) => (doc.data().executedAt as Timestamp).toDate(),
+    const ascendingHistory: Temporal.ZonedDateTime[] = executionsSnap.docs.map(
+      (doc) => toZonedDateTime(doc.data().executedAt as Timestamp),
     );
 
     const lastExecutedAt = ascendingHistory.at(-1) ?? null;
-    const scheduledAt = lastExecutedAt == null ? null : computeScheduledAt({
+    const scheduledAt = computeScheduledAt({
       taskType,
       ascendingHistory,
-      lastExecutedAt,
       scheduleValue: config?.scheduleValue ?? null,
       scheduleUnit: config ? (config.scheduleUnit as ScheduleUnit) : null,
     });
 
     await taskDefRef.update({
       lastExecutedAt: lastExecutedAt ?
-        Timestamp.fromDate(lastExecutedAt) :
+        Timestamp.fromMillis(lastExecutedAt.epochMilliseconds) :
         null,
       nextScheduledAt: scheduledAt ?
-        Timestamp.fromDate(scheduledAt) :
+        Timestamp.fromMillis(scheduledAt.epochMilliseconds) :
         null,
     });
   },
@@ -102,3 +102,14 @@ export const onTaskDefinitionDeleted = onDocumentDeleted(
     await db.recursiveDelete(executionsRef);
   },
 );
+
+/**
+ * Firestore の Timestamp（タイムゾーンなしの瞬間）を
+ * UTC 固定の Temporal.ZonedDateTime に変換する
+ * @param {Timestamp} timestamp 変換対象の Timestamp
+ * @return {Temporal.ZonedDateTime} UTC の ZonedDateTime
+ */
+function toZonedDateTime(timestamp: Timestamp): Temporal.ZonedDateTime {
+  return Temporal.Instant.fromEpochMilliseconds(timestamp.toMillis())
+    .toZonedDateTimeISO("UTC");
+}

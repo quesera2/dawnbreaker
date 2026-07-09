@@ -1,3 +1,5 @@
+import {Temporal} from "@js-temporal/polyfill";
+
 export type TaskType = "irregular" | "period" | "scheduled";
 
 export type ScheduleUnit = "day" | "week" | "month";
@@ -5,24 +7,25 @@ export type ScheduleUnit = "day" | "week" | "month";
 // スケジュール再計算のために呼び出し元がクエリで絞り込む直近件数の上限
 export const scheduleHistoryLimit = 10;
 
-const dayMs = 24 * 60 * 60 * 1000;
-
 /**
  * taskType に応じた次回実行日 (nextScheduledAt) を求める
- * lastExecutedAt が null（実行履歴なし）の場合は呼び出し元で判定して呼ばないこと
- * @param {object} params 計算に必要なパラメータ
- * @return {Date | null} 次回実行日、算出不能なら null
+ * 実行履歴が空（lastExecutedAt が求まらない）場合は null を返す
+ * @param {object} params
+ * @param {TaskType} params.taskType 対象タスクの種別
+ * @param {Temporal.ZonedDateTime[]} params.ascendingHistory 昇順の実行履歴
+ * @param {number | null} params.scheduleValue 固定間隔のスケジュール値（"scheduled" のときのみ）
+ * @param {ScheduleUnit | null} params.scheduleUnit 固定間隔の単位（"scheduled" のときのみ）
+ * @return {Temporal.ZonedDateTime | null} 次回実行日、算出不能なら null
  */
 export function computeScheduledAt(params: {
   taskType: TaskType;
-  ascendingHistory: Date[];
-  lastExecutedAt: Date;
+  ascendingHistory: Temporal.ZonedDateTime[];
   scheduleValue: number | null;
   scheduleUnit: ScheduleUnit | null;
-}): Date | null {
-  const {
-    taskType, ascendingHistory, lastExecutedAt, scheduleValue, scheduleUnit,
-  } = params;
+}): Temporal.ZonedDateTime | null {
+  const {taskType, ascendingHistory, scheduleValue, scheduleUnit} = params;
+  const lastExecutedAt = ascendingHistory.at(-1) ?? null;
+  if (lastExecutedAt == null) return null;
   switch (taskType) {
   case "irregular":
     return null;
@@ -39,60 +42,53 @@ export function computeScheduledAt(params: {
 
 /**
  * period タスクの次回実行日（直近履歴の平均間隔から算出）を求める
- * @param {Date[]} ascendingHistory 昇順の実行履歴
- * @param {Date} lastExecutedAt 最終実行日時
- * @return {Date | null} 次回実行日、算出不能なら null
+ * @param {Temporal.ZonedDateTime[]} ascendingHistory 昇順の実行履歴
+ * @param {Temporal.ZonedDateTime} lastExecutedAt 最終実行日時
+ * @return {Temporal.ZonedDateTime | null} 次回実行日、算出不能なら null
  */
 function computePeriodNextAt(
-  ascendingHistory: Date[],
-  lastExecutedAt: Date,
-): Date | null {
+  ascendingHistory: Temporal.ZonedDateTime[],
+  lastExecutedAt: Temporal.ZonedDateTime,
+): Temporal.ZonedDateTime | null {
   const average = averageIntervalDays(ascendingHistory);
   if (average == null) return null;
-  return new Date(lastExecutedAt.getTime() + Math.round(average) * dayMs);
+  return lastExecutedAt.add({days: Math.round(average)});
 }
 
 /**
- * 固定間隔の次回実行日計算（Dart 版と同じ役割）
- * @param {object} params 計算に必要なパラメータ
- * @return {Date | null} 次回実行日、算出不能なら null
+ * 固定間隔の次回実行日計算
+ * @param {object} params
+ * @param {Temporal.ZonedDateTime | null} params.lastExecutedAt 最終実行日時
+ * @param {number | null} params.scheduleValue 固定間隔のスケジュール値
+ * @param {ScheduleUnit | null} params.scheduleUnit 実行間隔の単位
+ * @return {Temporal.ZonedDateTime | null} 次回実行日、算出不能なら null
  */
 function computeFixedIntervalScheduledAt(params: {
-  lastExecutedAt: Date | null;
+  lastExecutedAt: Temporal.ZonedDateTime | null;
   scheduleValue: number | null;
   scheduleUnit: ScheduleUnit | null;
-}): Date | null {
+}): Temporal.ZonedDateTime | null {
   const {lastExecutedAt, scheduleValue, scheduleUnit} = params;
   if (lastExecutedAt == null || scheduleValue == null || scheduleUnit == null) {
     return null;
   }
   switch (scheduleUnit) {
   case "day":
-    return new Date(lastExecutedAt.getTime() + scheduleValue * dayMs);
+    return lastExecutedAt.add({days: scheduleValue});
   case "week":
-    return new Date(lastExecutedAt.getTime() + scheduleValue * 7 * dayMs);
-  case "month": {
-    const day = lastExecutedAt.getUTCDate();
-    const next = new Date(lastExecutedAt.getTime());
-    next.setUTCDate(1);
-    next.setUTCMonth(next.getUTCMonth() + scheduleValue);
-    // 加算先の月に存在しない日（例: 1/31 の1ヶ月後は2月末）は月末に丸める
-    const daysInNextMonth = new Date(
-      Date.UTC(next.getUTCFullYear(), next.getUTCMonth() + 1, 0),
-    ).getUTCDate();
-    next.setUTCDate(Math.min(day, daysInNextMonth));
-    return next;
-  }
+    return lastExecutedAt.add({weeks: scheduleValue});
+  case "month":
+    return lastExecutedAt.add({months: scheduleValue});
   }
 }
 
 /**
  * 実行間隔の平均日数を求める
- * @param {Date[]} ascendingHistory 昇順の実行履歴
+ * @param {Temporal.ZonedDateTime[]} ascendingHistory 昇順の実行履歴
  * @return {number | null} 平均間隔日数、算出不能なら null
  */
 function averageIntervalDays(
-  ascendingHistory: Date[],
+  ascendingHistory: Temporal.ZonedDateTime[],
 ): number | null {
   const intervals = intervalDaysForHistory(ascendingHistory);
   if (intervals.length === 0) return null;
@@ -101,26 +97,15 @@ function averageIntervalDays(
 
 /**
  * 隣接する実行日同士の間隔（日数）の配列を求める
- * @param {Date[]} ascendingHistory 昇順の実行履歴
+ * @param {Temporal.ZonedDateTime[]} ascendingHistory 昇順の実行履歴
  * @return {number[]} 間隔日数の配列
  */
 function intervalDaysForHistory(
-  ascendingHistory: Date[],
+  ascendingHistory: Temporal.ZonedDateTime[],
 ): number[] {
-  return ascendingHistory.slice(1).map((date, i) =>
-    Math.round(
-      (truncateTimeUtc(date) - truncateTimeUtc(ascendingHistory[i])) / dayMs,
-    ),
-  );
-}
-
-/**
- * 日付部分だけを UTC ミリ秒に切り詰める
- * @param {Date} date 対象の日時
- * @return {number} UTC 日付の epoch ミリ秒
- */
-function truncateTimeUtc(date: Date): number {
-  return Date.UTC(
-    date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(),
+  return ascendingHistory.slice(1).map((zonedDateTime, i) =>
+    zonedDateTime.toPlainDate().since(
+      ascendingHistory[i].toPlainDate(), {largestUnit: "days"},
+    ).days,
   );
 }
