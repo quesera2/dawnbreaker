@@ -5,6 +5,7 @@
 ```
 users/
   {userId}/
+    fields...（notificationSetting, fcmTokens）
     taskDefinitions/
       {taskDefinitionId}/
         fields...
@@ -14,6 +15,27 @@ users/
 ```
 
 ## ドキュメント定義
+
+### users
+
+プッシュ通知の送信に使う設定・宛先情報を持つ。フィールドはクライアント（Flutter 側）の変更をトリガーに同期する。
+
+#### notificationSetting
+
+通知設定。クライアントの `NotificationSetting` モデルと同じフィールド構成で、設定変更のたびに同期する。
+未設定（初回同期前）は通知しない。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| enabled | boolean | 通知の有効・無効 |
+| notifyDay | string | `today` / `yesterday`。`nextScheduledAt` から見た通知日のオフセット |
+| hour | number | 通知時刻（時）0-23 |
+| minute | number | 通知時刻（分）0-59 |
+
+#### fcmTokens
+
+この端末群に紐づく FCM デバイストークンの一覧（`string[]`）。複数端末ログインを想定し配列で持つ。
+クライアントがトークン取得・更新時に自身のトークンを配列に追加し、失効を検知した際は取り除く。
 
 ### taskDefinitions
 
