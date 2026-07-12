@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dawnbreaker/app/app.dart';
+import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_permission_observer.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/task_notification_sync_notifier.dart';
@@ -53,6 +54,8 @@ void main() async {
     notificationServiceProvider.future,
   );
   await notificationService.initialize();
+  final fcmTokenService = await container.read(fcmTokenServiceProvider.future);
+  await fcmTokenService.registerToken();
   container.read(taskNotificationSyncProvider);
   container.read(notificationPermissionObserverProvider);
 
