@@ -161,42 +161,62 @@ abstract interface class UserRepository {
       `onExecutionWritten` でも拾えず、次に実行を記録するまで古い値が残っていた
     - `taskDefinitions` の書き込みトリガー（`onTaskDefinitionWritten`）を追加した
       （再帰を止めるガードは `schema.md` を参照）
-- [ ] FCM プッシュ通知を実装し、ローカル通知を廃止する
-    - <s>同じトリガーに FCM 送信を追加する</s>
-      FCM の送信 API に予約配信はなく（`projects.messages.send` は即時送信のみ）、
-      `onExecutionWritten` も実行履歴の書き込み時にしか発火しない。通知を送りたいのは未来の
-      `nextScheduledAt` から算出した時刻なので、 **Cloud Scheduler による定期実行の Function**（5 分間隔）を
-      別に用意し、`notifyAt` を検索キーにして送信対象を引く（詳細は `schema.md`）
-    - Cloud Tasks でタスクごとに個別のジョブを積む方式も検討したが、入力が変わるたびに
-      予約済みジョブの取り消しが必要になり、取り消しと Firestore 書き込みが同一トランザクションに
-      入らないため二重送信・送信漏れを原理的に塞げない。「望ましい状態（`notifyAt`）を書いて
-      定期的に突き合わせる」方式なら再計算が単なる上書きになり、取り消しが不要になるため採用しない
-    - `users` に `notificationSetting` / `fcmTokens` / `timezone` / `lastActiveAt` を追加する
-    - `users/{uid}/notifications/{taskId}` を新設する
-      - `notifyAt` / `lastNotifiedFor` はサーバーだけが読み書きする帳簿なので `taskDefinitions` に置かない。
-        クライアントが `snapshots()` で購読しているドキュメントに送信記録を書くと、表示が変わらないのに
-        全端末へ再配信され、タスク件数ぶんの読み取りが課金されてしまうため
-    - 通知設定を SharedPreferences から Firestore に移す（`SettingsRepository` から切り出す）。
-      配色・表示モードなど端末固有の設定は SharedPreferences に残す
-    - クライアントに `firebase_messaging` を追加し、トークンの取得・`arrayUnion` での保存・
+### FCM プッシュ通知（設計）
+
+- <s>同じトリガーに FCM 送信を追加する</s>
+  FCM の送信 API に予約配信はなく（`projects.messages.send` は即時送信のみ）、
+  `onExecutionWritten` も実行履歴の書き込み時にしか発火しない。通知を送りたいのは未来の
+  `nextScheduledAt` から算出した時刻なので、 **Cloud Scheduler による定期実行の Function**（5 分間隔）を
+  別に用意し、`notifyAt` を検索キーにして送信対象を引く（詳細は `schema.md`）
+- Cloud Tasks でタスクごとに個別のジョブを積む方式も検討したが、入力が変わるたびに
+  予約済みジョブの取り消しが必要になり、取り消しと Firestore 書き込みが同一トランザクションに
+  入らないため二重送信・送信漏れを原理的に塞げない。「望ましい状態（`notifyAt`）を書いて
+  定期的に突き合わせる」方式なら再計算が単なる上書きになり、取り消しが不要になるため採用しない
+- `notifyAt` / `lastNotifiedFor` はサーバーだけが読み書きする帳簿なので `taskDefinitions` に置かず
+  `users/{uid}/notifications/{taskId}` を新設する。クライアントが `snapshots()` で購読している
+  ドキュメントに送信記録を書くと、表示が変わらないのに全端末へ再配信され、
+  タスク件数ぶんの読み取りが課金されてしまうため
+
+### FCM プッシュ通知（PR の区切り）
+
+区切りの原則は3つ。**単独でマージしても壊れない**こと、**ローカル通知を最後まで生かす**こと
+（FCM が実機に届くと確認できるまで通知機能を失わない）、**実機依存の詰まりどころを先に潰す**こと
+（iOS の APNs で止まると後続が全部止まるため）。
+
+- [ ] **PR1: クライアントのトークン登録**
+    - `firebase_messaging` を追加し、トークンの取得・`users/{uid}.fcmTokens` への `arrayUnion` での保存・
       `onTokenRefresh` の購読・iOS の権限リクエストを実装する
-    - 送信結果が `messaging/registration-token-not-registered` のトークンは Function 側で `arrayRemove` する
+    - iOS は APNs キーの登録・Push Notifications の Capability・実機（シミュレータ不可）が要る
+    - `NotificationPermissionObserver` は権限の要求元が変わるだけなので、ここでは役割の整理に留める
+    - 検証: Firebase コンソールから手動でプッシュを投げ、実機に届くこと
+    - ローカル通知はそのまま動かしておく（この PR では何も壊さない）
+- [ ] **PR2: 通知設定を Firestore へ移す**
+    - `users` に `notificationSetting` / `timezone` を追加する（`SettingsRepository` から切り出す）。
+      配色・表示モードなど端末固有の設定は SharedPreferences に残す
+    - `timezone` は `flutter_timezone` で取得し、アカウント作成時と通知時刻の変更時にだけ書く
+    - `lastActiveAt` もここで足す（使うのは Phase10 の放置アカウント回収）
+    - この時点ではローカル通知が新しい設定ソースを読む形にして、動作を保つ
+- [ ] **PR3: サーバーの `notifyAt` 帳簿（送信はまだしない）**
+    - `nextScheduledAt` / `notificationSetting` / `timezone` から `notifyAt` を算出する純粋関数を
+      `schedule.ts` と同じ流儀（Temporal・Firestore を知らない）で書き、テストで固める
+    - 書き込み先は `users/{uid}/notifications/{taskId}`。対象外（通知無効・`irregular`・未実行）は
+      ドキュメントを作らず、`notifyAt` は `FieldValue.delete()` でフィールドごと消す
+      （`null` を入れると範囲クエリにヒットするため。`schema.md` 参照）
+    - 再計算の契機は `recalcScheduleCache` の後（そのタスク 1 件）と、
+      `users` の `notificationSetting` / `timezone` の変更（そのユーザーの全タスク）
+    - 検証: Firestore を直接見て `notifyAt` が期待通りに入る・消えることを確認する
+- [ ] **PR4: 送信 Function（Cloud Scheduler 5 分間隔）**
+    - `collectionGroup('notifications').where('notifyAt', '<=', now)` で送信対象を引く
+    - 重複送信の防止に `lastNotifiedFor` を使う。送信後に `scheduledAt` を書き、`notifyAt` を消す
+    - `messaging/registration-token-not-registered` のトークンは `fcmTokens` から `arrayRemove` する
+    - **COLLECTION_GROUP スコープのインデックスがここで要る。** コレクショングループクエリの
+      インデックスは単一フィールドでも自動作成されないため、`firestore.indexes.json` と
+      `firebase.json` の `firestore` セクションをこの PR で用意する
+    - 検証: 実際にタスクの予定日を近づけて、実機に通知が届くこと
+- [ ] **PR5: ローカル通知の廃止**
     - `flutter_local_notifications` による通知登録を廃止する（`TaskNotificationSync` /
       `TaskNotificationSyncNotifier` / `NotificationPermissionObserver` の役割を見直す）
-- [ ] セキュリティルールとインデックスをリポジトリで管理する（FCM 実装の前提）
-    - `firestore.rules` / `firestore.indexes.json` が存在せず、`firebase.json` にも `firestore` セクションがない。
-      git 履歴にも一度も無いため、現状はコンソール側にしか実体がない
-    - `notifications` の「Cloud Functions だけが読み書きし、クライアントは触れない」（`schema.md`）は
-      ルールがあって初めて成立する。`notifyAt` / `lastNotifiedFor` を新設する前に置き場所を作る
-    - `collectionGroup('notifications').where('notifyAt', '<=', now)` には **COLLECTION_GROUP スコープの
-      単一フィールドインデックス**が要る。コレクショングループクエリのインデックスは自動作成されない
-      （通常のコレクション内クエリと違い、単一フィールドでも明示的な定義が必要）
-    - 配布は既存の `deploy-functions.yml` に相乗りする。`--only functions` を `--only functions,firestore`
-      に広げるだけでよく、Workload Identity 認証も `firebase-tools` もそのまま使える
-      - サービスアカウントに `roles/datastore.indexAdmin` と `roles/firebaserules.admin` を追加する
-        （リポジトリ外の作業。現状は Functions のデプロイ権限しかない）
-      - ルールはファイルの内容で**丸ごと置き換わる**ため、コンソールに手編集の実体があるなら
-        先にコピーして取り込む。インデックスは `firebase firestore:indexes` でエクスポートできる
+    - FCM が実機に届くと確認できた後にだけ行う
 
 ## Phase8
 
