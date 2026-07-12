@@ -15,9 +15,13 @@ Future<FcmTokenService> fcmTokenService(Ref ref) async {
   final repository = await ref.watch(
     notificationTokenRepositoryProvider.future,
   );
-  final service = FcmTokenServiceImpl(repository: repository);
+  final messaging = FirebaseMessaging.instance;
+  final service = FcmTokenServiceImpl(
+    repository: repository,
+    messaging: messaging,
+  );
 
-  final subscription = FirebaseMessaging.instance.onTokenRefresh.listen(
+  final subscription = messaging.onTokenRefresh.listen(
     (token) => unawaited(repository.addToken(token)),
   );
   ref.onDispose(subscription.cancel);
@@ -26,17 +30,17 @@ Future<FcmTokenService> fcmTokenService(Ref ref) async {
 }
 
 class FcmTokenServiceImpl implements FcmTokenService {
-  FcmTokenServiceImpl({required this._repository});
+  FcmTokenServiceImpl({required this._repository, required this._messaging});
 
   final NotificationTokenRepository _repository;
+  final FirebaseMessaging _messaging;
 
   @override
   Future<void> registerToken() async {
-    final messaging = FirebaseMessaging.instance;
-    final settings = await messaging.getNotificationSettings();
+    final settings = await _messaging.getNotificationSettings();
     if (!_isAuthorized(settings.authorizationStatus)) return;
 
-    final token = await messaging.getToken();
+    final token = await _messaging.getToken();
     if (token == null) return;
     await _repository.addToken(token);
   }
