@@ -1,4 +1,5 @@
 import 'package:dawnbreaker/core/logger/app_logger.dart';
+import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
@@ -53,6 +54,10 @@ class OnboardingViewModel extends _$OnboardingViewModel {
       state = state.copyWith(destination: OnboardingDestinationEvent(.next));
       return;
     }
+
+    final fcmTokenService = await ref.read(fcmTokenServiceProvider.future);
+    await fcmTokenService.registerToken();
+    if (!ref.mounted) return;
 
     try {
       await _repository.enableNotificationSettings();
