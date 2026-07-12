@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/user/user_settings_repository.dart';
+import 'package:dawnbreaker/data/repository/user/user_settings_repository_exception.dart';
 
 class FakeUserSettingsRepository implements UserSettingsRepository {
   FakeUserSettingsRepository({
@@ -10,6 +11,9 @@ class FakeUserSettingsRepository implements UserSettingsRepository {
 
   NotificationSetting notificationSetting;
   bool shouldThrow = false;
+
+  /// Firestore がオフラインのとき、書き込みの Future はサーバーの応答待ちで完了しない
+  bool neverCompletes = false;
   int updateLastActiveAtCount = 0;
 
   final _controller = StreamController<NotificationSetting>.broadcast();
@@ -22,7 +26,8 @@ class FakeUserSettingsRepository implements UserSettingsRepository {
 
   @override
   Future<void> setNotificationSetting(NotificationSetting setting) async {
-    if (shouldThrow) throw Exception('failed to save notification setting');
+    if (shouldThrow) throw const UserSettingsSaveException('テストエラー');
+    if (neverCompletes) await Completer<void>().future;
     notificationSetting = setting;
     _controller.add(setting);
   }

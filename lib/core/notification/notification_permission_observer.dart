@@ -33,8 +33,18 @@ class NotificationPermissionObserver extends _$NotificationPermissionObserver
       final service = await ref.read(notificationServiceProvider.future);
       final hasPermission = await service.checkPermission();
       if (!hasPermission) {
+        // 書き込みはオフラインだと完了しないため待たない。unawaited した Future の例外は
+        // 外側の try/catch では捕まらないので、ここで受ける
         unawaited(
-          repository.setNotificationSetting(setting.copyWith(enabled: false)),
+          repository
+              .setNotificationSetting(setting.copyWith(enabled: false))
+              .onError((e, s) {
+                logger.e(
+                  'disable notification failed',
+                  error: e,
+                  stackTrace: s,
+                );
+              }),
         );
       }
 

@@ -164,6 +164,42 @@ void main() {
           });
         });
 
+        group('保存がオフラインで完了しない場合', () {
+          setUp(() async {
+            await setUpLoaded();
+            fakeUserSettingsRepository.neverCompletes = true;
+          });
+
+          test('保存を待たずにisNotificationUpdatingがfalseに戻る', () async {
+            await viewModel.setNotificationEnabled(false);
+            expect(viewState.isNotificationUpdating, false);
+          });
+
+          test('画面上は通知が無効になる', () async {
+            await viewModel.setNotificationEnabled(false);
+            expect(viewState.notificationSetting.enabled, false);
+          });
+        });
+
+        group('保存に失敗した場合', () {
+          setUp(() async {
+            await setUpLoaded();
+            fakeUserSettingsRepository.shouldThrow = true;
+          });
+
+          test('例外は呼び出し元に伝播しない', () async {
+            await expectLater(
+              viewModel.setNotificationEnabled(false),
+              completes,
+            );
+          });
+
+          test('isNotificationUpdatingがfalseに戻る', () async {
+            await viewModel.setNotificationEnabled(false);
+            expect(viewState.isNotificationUpdating, false);
+          });
+        });
+
         group('trueの場合', () {
           group('権限がある場合', () {
             setUp(
