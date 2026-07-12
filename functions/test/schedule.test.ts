@@ -1,5 +1,5 @@
 import {Temporal} from "@js-temporal/polyfill";
-import {computeScheduledAt} from "../src/schedule";
+import {computeScheduledAt, isSameScheduleConfig} from "../src/schedule";
 
 const zdt = (isoString: string): Temporal.ZonedDateTime =>
   Temporal.Instant.from(isoString).toZonedDateTimeISO("UTC");
@@ -133,5 +133,41 @@ describe("computeScheduledAt", () => {
         scheduleUnit: null,
       })).toBeNull();
     });
+  });
+});
+
+describe("isSameScheduleConfig", () => {
+  test("両方 null なら true", () => {
+    expect(isSameScheduleConfig(null, null)).toBe(true);
+  });
+
+  test("片方だけ null なら false", () => {
+    expect(isSameScheduleConfig(
+      {scheduleValue: 1, scheduleUnit: "day"}, null,
+    )).toBe(false);
+    expect(isSameScheduleConfig(
+      null, {scheduleValue: 1, scheduleUnit: "day"},
+    )).toBe(false);
+  });
+
+  test("scheduleValue / scheduleUnit が共に同じなら true", () => {
+    expect(isSameScheduleConfig(
+      {scheduleValue: 1, scheduleUnit: "day"},
+      {scheduleValue: 1, scheduleUnit: "day"},
+    )).toBe(true);
+  });
+
+  test("scheduleValue が異なれば false", () => {
+    expect(isSameScheduleConfig(
+      {scheduleValue: 1, scheduleUnit: "day"},
+      {scheduleValue: 2, scheduleUnit: "day"},
+    )).toBe(false);
+  });
+
+  test("scheduleUnit が異なれば false", () => {
+    expect(isSameScheduleConfig(
+      {scheduleValue: 1, scheduleUnit: "day"},
+      {scheduleValue: 1, scheduleUnit: "week"},
+    )).toBe(false);
   });
 });

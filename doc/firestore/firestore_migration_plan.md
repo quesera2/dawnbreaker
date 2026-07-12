@@ -156,10 +156,11 @@ abstract interface class UserRepository {
       タスクドキュメントに直接書き込んでいた（`firestore_task_repository_impl.dart`）
     - 移行後は、executions サブコレクションへの書き込みをトリガーにした `onExecutionWritten` が、
       親 `taskDefinitions` の `lastExecutedAt` / `nextScheduledAt` を再計算して書き戻す（クライアントは `_computeSchedule` を持たなくなった）
-- [ ] `taskType` / `scheduleConfig` の変更時に `nextScheduledAt` が再計算されない不具合を修正する
+- [x] `taskType` / `scheduleConfig` の変更時に `nextScheduledAt` が再計算されない不具合を修正する
     - `updateTask` はクライアントで再計算しなくなったが、`executions` を書き換えないため
-      `onExecutionWritten` でも拾えず、次に実行を記録するまで古い値が残る
-    - `taskDefinitions` の書き込みトリガーを追加する（再帰を止めるガードは `schema.md` を参照）
+      `onExecutionWritten` でも拾えず、次に実行を記録するまで古い値が残っていた
+    - `taskDefinitions` の書き込みトリガー（`onTaskDefinitionWritten`）を追加した
+      （再帰を止めるガードは `schema.md` を参照）
 - [ ] FCM プッシュ通知を実装し、ローカル通知を廃止する
     - <s>同じトリガーに FCM 送信を追加する</s>
       FCM の送信 API に予約配信はなく（`projects.messages.send` は即時送信のみ）、
@@ -182,6 +183,20 @@ abstract interface class UserRepository {
     - 送信結果が `messaging/registration-token-not-registered` のトークンは Function 側で `arrayRemove` する
     - `flutter_local_notifications` による通知登録を廃止する（`TaskNotificationSync` /
       `TaskNotificationSyncNotifier` / `NotificationPermissionObserver` の役割を見直す）
+- [ ] セキュリティルールとインデックスをリポジトリで管理する（FCM 実装の前提）
+    - `firestore.rules` / `firestore.indexes.json` が存在せず、`firebase.json` にも `firestore` セクションがない。
+      git 履歴にも一度も無いため、現状はコンソール側にしか実体がない
+    - `notifications` の「Cloud Functions だけが読み書きし、クライアントは触れない」（`schema.md`）は
+      ルールがあって初めて成立する。`notifyAt` / `lastNotifiedFor` を新設する前に置き場所を作る
+    - `collectionGroup('notifications').where('notifyAt', '<=', now)` には **COLLECTION_GROUP スコープの
+      単一フィールドインデックス**が要る。コレクショングループクエリのインデックスは自動作成されない
+      （通常のコレクション内クエリと違い、単一フィールドでも明示的な定義が必要）
+    - 配布は既存の `deploy-functions.yml` に相乗りする。`--only functions` を `--only functions,firestore`
+      に広げるだけでよく、Workload Identity 認証も `firebase-tools` もそのまま使える
+      - サービスアカウントに `roles/datastore.indexAdmin` と `roles/firebaserules.admin` を追加する
+        （リポジトリ外の作業。現状は Functions のデプロイ権限しかない）
+      - ルールはファイルの内容で**丸ごと置き換わる**ため、コンソールに手編集の実体があるなら
+        先にコピーして取り込む。インデックスは `firebase firestore:indexes` でエクスポートできる
 
 ## Phase8
 

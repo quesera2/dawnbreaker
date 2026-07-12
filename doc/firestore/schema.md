@@ -103,10 +103,15 @@ IANA タイムゾーン ID（`Asia/Tokyo` など）。`notificationSetting` の 
 `lastExecutedAt` / `nextScheduledAt` は以下のタイミングで Cloud Functions が再計算・書き戻す：
 
 - 実行の追加・更新・削除（`onExecutionWritten`）
-- `taskType` / `scheduleConfig` の変更（`scheduled` のみ）
+- `taskType` / `scheduleConfig` の変更（`onTaskDefinitionWritten`）
 
 `period` の `nextScheduledAt` 再計算時は直近 10 件の `executions` を取得して使用する。
 削除時は削除対象が最新かどうかに関わらず、常に直近 10 件を再取得して再計算する。
+
+`taskType` の変更は `scheduled` が絡まなくても再計算する。`irregular` → `period` は
+`nextScheduledAt` が null のままになり（次に実行を記録するまで予定日が表示されない）、
+`period` → `irregular` は古い `nextScheduledAt` が残る。後者は表示には出ないが、
+`notifications` の `notifyAt` の算出元になるため放置しない。
 
 `taskType` / `scheduleConfig` の変更は `executions` を書き換えないため `onExecutionWritten` では拾えず、
 `taskDefinitions` の書き込みトリガーが別に必要になる。このとき `nextScheduledAt` は表示に使うので

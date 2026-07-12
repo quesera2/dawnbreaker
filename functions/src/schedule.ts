@@ -4,8 +4,30 @@ export type TaskType = "irregular" | "period" | "scheduled";
 
 export type ScheduleUnit = "day" | "week" | "month";
 
+export type ScheduleConfig = {
+  scheduleValue: number;
+  scheduleUnit: ScheduleUnit;
+};
+
 // スケジュール再計算のために呼び出し元がクエリで絞り込む直近件数の上限
 export const scheduleHistoryLimit = 10;
+
+/**
+ * taskDefinitions の書き込みトリガーで、再計算が必要な変更かどうかを判定する
+ * scheduleConfig が同値（あるいは両方 null）なら変更なしとみなす
+ * @param {ScheduleConfig | null} a 比較対象1
+ * @param {ScheduleConfig | null} b 比較対象2
+ * @return {boolean} 両者が同値なら true
+ */
+export function isSameScheduleConfig(
+  a: ScheduleConfig | null,
+  b: ScheduleConfig | null,
+): boolean {
+  if (a == null || b == null) return a == null && b == null;
+  return (
+    a.scheduleValue === b.scheduleValue && a.scheduleUnit === b.scheduleUnit
+  );
+}
 
 /**
  * taskType に応じた次回実行日 (nextScheduledAt) を求める
