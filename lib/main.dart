@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dawnbreaker/app/app.dart';
+import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_permission_observer.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
@@ -8,6 +9,7 @@ import 'package:dawnbreaker/core/notification/task_notification_sync_notifier.da
 import 'package:dawnbreaker/data/preferences/shared_preferences_provider.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
+import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/firebase_options_dev.dart' as dev_options;
 import 'package:dawnbreaker/firebase_options_prod.dart' as prod_options;
 import 'package:firebase_core/firebase_core.dart';
@@ -54,8 +56,22 @@ void main() async {
     notificationServiceProvider.future,
   );
   await notificationService.initialize();
+  // どちらも初回フレームの描画に必要なく、Firestore への書き込み Future はオフラインでは
+  // 完了しないため待たない。待つとスプラッシュが出たままアプリが起動しなくなる
   final fcmTokenService = await container.read(fcmTokenServiceProvider.future);
-  await fcmTokenService.registerToken();
+  unawaited(
+    fcmTokenService.registerToken().onError((e, s) {
+      logger.e('registerToken failed', error: e, stackTrace: s);
+    }),
+  );
+  final userSettings = await container.read(
+    userSettingsRepositoryProvider.future,
+  );
+  unawaited(
+    userSettings.updateLastActiveAt().onError((e, s) {
+      logger.e('updateLastActiveAt failed', error: e, stackTrace: s);
+    }),
+  );
   container.read(taskNotificationSyncProvider);
   container.read(notificationPermissionObserverProvider);
 

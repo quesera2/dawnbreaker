@@ -7,6 +7,7 @@ import 'package:dawnbreaker/data/model/notification_setting.dart'
     show NotificationSetting, NotifyDay;
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
+import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_ui_state.dart';
@@ -19,6 +20,7 @@ import '../../../helpers/fake_fcm_token_service.dart';
 import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
 import '../../../helpers/fake_settings_repository.dart';
+import '../../../helpers/fake_user_settings_repository.dart';
 import '../../../helpers/mock_app_settings_platform.dart';
 import '../../../helpers/riverpod_test_helper.dart';
 
@@ -32,6 +34,7 @@ void main() {
   late FakeSettingsRepository fakeSettingsRepository;
   late FakeNotificationService fakeNotificationService;
   late FakeFcmTokenService fakeFcmTokenService;
+  late FakeUserSettingsRepository fakeUserSettingsRepository;
 
   void setUpContainer({
     bool notificationEnabled = true,
@@ -50,9 +53,11 @@ void main() {
     );
     fakeOnboardingRepository = FakeOnboardingRepository();
     fakeSettingsRepository = FakeSettingsRepository(
-      initialNotificationEnabled: notificationEnabled,
       initialDisplayMode: initialDisplayMode,
       initialProgressBarAnimationEnabled: initialProgressBarAnimationEnabled,
+    );
+    fakeUserSettingsRepository = FakeUserSettingsRepository(
+      notificationSetting: NotificationSetting(enabled: notificationEnabled),
     );
     fakeFcmTokenService = FakeFcmTokenService();
     fakeNotificationService = FakeNotificationService(
@@ -70,6 +75,9 @@ void main() {
           (_) async => fakeNotificationService,
         ),
         fcmTokenServiceProvider.overrideWith((_) async => fakeFcmTokenService),
+        userSettingsRepositoryProvider.overrideWith(
+          (_) async => fakeUserSettingsRepository,
+        ),
       ],
     );
   }
@@ -153,6 +161,42 @@ void main() {
           test('通知が無効になる', () async {
             await viewModel.setNotificationEnabled(false);
             expect(viewState.notificationSetting.enabled, false);
+          });
+        });
+
+        group('保存がオフラインで完了しない場合', () {
+          setUp(() async {
+            await setUpLoaded();
+            fakeUserSettingsRepository.neverCompletes = true;
+          });
+
+          test('保存を待たずにisNotificationUpdatingがfalseに戻る', () async {
+            await viewModel.setNotificationEnabled(false);
+            expect(viewState.isNotificationUpdating, false);
+          });
+
+          test('画面上は通知が無効になる', () async {
+            await viewModel.setNotificationEnabled(false);
+            expect(viewState.notificationSetting.enabled, false);
+          });
+        });
+
+        group('保存に失敗した場合', () {
+          setUp(() async {
+            await setUpLoaded();
+            fakeUserSettingsRepository.shouldThrow = true;
+          });
+
+          test('例外は呼び出し元に伝播しない', () async {
+            await expectLater(
+              viewModel.setNotificationEnabled(false),
+              completes,
+            );
+          });
+
+          test('isNotificationUpdatingがfalseに戻る', () async {
+            await viewModel.setNotificationEnabled(false);
+            expect(viewState.isNotificationUpdating, false);
           });
         });
 
@@ -323,10 +367,10 @@ void main() {
             minute: 0,
           );
           expect(
-            fakeSettingsRepository.notificationSetting.notifyDay,
+            fakeUserSettingsRepository.notificationSetting.notifyDay,
             NotifyDay.yesterday,
           );
-          expect(fakeSettingsRepository.notificationSetting.hour, 22);
+          expect(fakeUserSettingsRepository.notificationSetting.hour, 22);
         });
       });
 
@@ -367,7 +411,7 @@ void main() {
         setUp(() async => setUpLoaded());
 
         test('リポジトリの変更がstateに反映される', () async {
-          await fakeSettingsRepository.setNotificationSetting(
+          await fakeUserSettingsRepository.setNotificationSetting(
             const NotificationSetting(enabled: false),
           );
           await pumpEventQueue();

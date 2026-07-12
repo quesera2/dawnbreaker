@@ -13,34 +13,37 @@ void main() {
     }
   });
 
-  group('NotificationSetting.encode / decode', () {
-    test('encode した値を decode で復元できる', () {
+  group('NotificationSetting.fromMap', () {
+    test('保存した値を復元できる', () {
       const original = NotificationSetting(
         enabled: true,
         notifyDay: NotifyDay.yesterday,
         hour: 22,
         minute: 30,
       );
-      final decoded = NotificationSetting.decode(original.encode());
-      expect(decoded, original);
+      expect(NotificationSetting.fromMap(original.toJson()), original);
     });
 
-    test('不正な JSON を decode するとデフォルト値を返す', () {
-      final decoded = NotificationSetting.decode('invalid json');
-      expect(decoded, const NotificationSetting());
+    test('設定がない場合はデフォルト値を返す', () {
+      expect(NotificationSetting.fromMap(null), const NotificationSetting());
     });
 
-    test('空文字を decode するとデフォルト値を返す', () {
-      final decoded = NotificationSetting.decode('');
-      expect(decoded, const NotificationSetting());
+    test('壊れた値の場合はデフォルト値を返す', () {
+      expect(
+        NotificationSetting.fromMap({'enabled': 'not a bool'}),
+        const NotificationSetting(),
+      );
     });
 
     test('範囲外の hour / minute は clamp される', () {
-      final decoded = NotificationSetting.decode(
-        '{"enabled":false,"notifyDay":"today","hour":25,"minute":61}',
-      );
-      expect(decoded.hour, 23);
-      expect(decoded.minute, 59);
+      final setting = NotificationSetting.fromMap({
+        'enabled': false,
+        'notifyDay': 'today',
+        'hour': 25,
+        'minute': 61,
+      });
+      expect(setting.hour, 23);
+      expect(setting.minute, 59);
     });
   });
 }

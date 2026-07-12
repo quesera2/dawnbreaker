@@ -1,8 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
-import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
+import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'task_notification_sync.dart';

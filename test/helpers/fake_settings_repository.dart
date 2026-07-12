@@ -2,45 +2,24 @@ import 'dart:async';
 
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
-import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
 
 class FakeSettingsRepository implements SettingsRepository {
   FakeSettingsRepository({
-    NotificationSetting? initialNotificationSetting,
-    bool initialNotificationEnabled = true,
     HomeDisplayMode initialDisplayMode = HomeDisplayMode.timeline,
     List<ColorSetting>? initialColorSettings,
     bool initialProgressBarAnimationEnabled = true,
-  }) : notificationSetting =
-           initialNotificationSetting ??
-           NotificationSetting(enabled: initialNotificationEnabled),
-       displayMode = initialDisplayMode,
+  }) : displayMode = initialDisplayMode,
        colorSettings = initialColorSettings ?? ColorSetting.defaults(),
        progressBarAnimationEnabled = initialProgressBarAnimationEnabled;
 
-  NotificationSetting notificationSetting;
   HomeDisplayMode displayMode;
   List<ColorSetting> colorSettings;
   bool progressBarAnimationEnabled;
-  final _notificationController =
-      StreamController<NotificationSetting>.broadcast();
   final _displayModeController = StreamController<HomeDisplayMode>.broadcast();
   final _colorSettingsController =
       StreamController<List<ColorSetting>>.broadcast();
   final _progressBarAnimationController = StreamController<bool>.broadcast();
-
-  @override
-  Stream<NotificationSetting> watchNotificationSetting() async* {
-    yield notificationSetting;
-    yield* _notificationController.stream;
-  }
-
-  @override
-  Future<void> setNotificationSetting(NotificationSetting setting) async {
-    notificationSetting = setting;
-    _notificationController.add(setting);
-  }
 
   @override
   Stream<HomeDisplayMode> watchHomeDisplayMode() async* {
