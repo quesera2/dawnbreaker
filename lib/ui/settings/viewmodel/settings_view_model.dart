@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:app_settings/app_settings.dart';
+import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest3;
 import 'package:dawnbreaker/data/model/color_setting.dart';
@@ -105,6 +106,10 @@ class SettingsViewModel extends _$SettingsViewModel {
       );
       return;
     }
+
+    final fcmTokenService = await ref.read(fcmTokenServiceProvider.future);
+    await fcmTokenService.registerToken();
+    if (!ref.mounted) return;
 
     await ref
         .read(settingsRepositoryProvider)

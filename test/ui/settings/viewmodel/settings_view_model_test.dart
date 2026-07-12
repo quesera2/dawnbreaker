@@ -1,5 +1,6 @@
 import 'package:app_settings/app_settings.dart';
 import 'package:app_settings/app_settings_platform_interface.dart';
+import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart'
@@ -14,6 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../../helpers/fake_fcm_token_service.dart';
 import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
 import '../../../helpers/fake_settings_repository.dart';
@@ -29,6 +31,7 @@ void main() {
   late FakeOnboardingRepository fakeOnboardingRepository;
   late FakeSettingsRepository fakeSettingsRepository;
   late FakeNotificationService fakeNotificationService;
+  late FakeFcmTokenService fakeFcmTokenService;
 
   void setUpContainer({
     bool notificationEnabled = true,
@@ -51,6 +54,7 @@ void main() {
       initialDisplayMode: initialDisplayMode,
       initialProgressBarAnimationEnabled: initialProgressBarAnimationEnabled,
     );
+    fakeFcmTokenService = FakeFcmTokenService();
     fakeNotificationService = FakeNotificationService(
       checkPermissionResult: checkPermissionResult,
       permissionResult: permissionResult,
@@ -65,6 +69,7 @@ void main() {
         notificationServiceProvider.overrideWith(
           (_) async => fakeNotificationService,
         ),
+        fcmTokenServiceProvider.overrideWith((_) async => fakeFcmTokenService),
       ],
     );
   }
@@ -184,6 +189,11 @@ void main() {
               await viewModel.setNotificationEnabled(true);
               expect(viewState.notificationSetting.enabled, true);
             });
+
+            test('通知先が登録される', () async {
+              await viewModel.setNotificationEnabled(true);
+              expect(fakeFcmTokenService.registerTokenCount, 1);
+            });
           });
 
           group('権限がなく取得に失敗した場合', () {
@@ -211,6 +221,11 @@ void main() {
                 viewState.dialogMessage,
                 isA<NotificationPermissionDeniedMessage>(),
               );
+            });
+
+            test('通知先が登録されない', () async {
+              await viewModel.setNotificationEnabled(true);
+              expect(fakeFcmTokenService.registerTokenCount, 0);
             });
 
             test('ハンドラを呼び出すとアプリの通知設定が開かれる', () async {
