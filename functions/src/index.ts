@@ -9,7 +9,8 @@ import {initializeApp} from "firebase-admin/app";
 import {getFirestore, Timestamp} from "firebase-admin/firestore";
 import {
   computeScheduledAt,
-  ScheduleUnit,
+  isSameScheduleConfig,
+  ScheduleConfig,
   TaskType,
   scheduleHistoryLimit,
 } from "./schedule";
@@ -45,41 +46,92 @@ export const onExecutionWritten = onDocumentWritten(
       return;
     }
 
-    const taskType = taskDefData.taskType as TaskType;
-    const config = taskDefData.scheduleConfig as
-      | {scheduleValue: number; scheduleUnit: string}
-      | null;
-
-    // irregular は nextScheduledAt を持たず lastExecutedAt しか使わないため、
-    // 平均間隔計算用の直近 scheduleHistoryLimit 件をまとめて読む必要がない
-    const historyLimit = taskType === "irregular" ? 1 : scheduleHistoryLimit;
-    const executionsSnap = await taskDefRef
-      .collection("executions")
-      .orderBy("executedAt")
-      .limitToLast(historyLimit)
-      .get();
-    const ascendingHistory: Temporal.ZonedDateTime[] = executionsSnap.docs.map(
-      (doc) => toZonedDateTime(doc.data().executedAt as Timestamp),
+    await recalcScheduleCache(
+      taskDefRef,
+      taskDefData.taskType as TaskType,
+      (taskDefData.scheduleConfig ?? null) as ScheduleConfig | null,
     );
-
-    const lastExecutedAt = ascendingHistory.at(-1) ?? null;
-    const scheduledAt = computeScheduledAt({
-      taskType,
-      ascendingHistory,
-      scheduleValue: config?.scheduleValue ?? null,
-      scheduleUnit: config ? (config.scheduleUnit as ScheduleUnit) : null,
-    });
-
-    await taskDefRef.update({
-      lastExecutedAt: lastExecutedAt ?
-        Timestamp.fromMillis(lastExecutedAt.epochMilliseconds) :
-        null,
-      nextScheduledAt: scheduledAt ?
-        Timestamp.fromMillis(scheduledAt.epochMilliseconds) :
-        null,
-    });
   },
 );
+
+/**
+ * タスク定義 (taskDefinitions) の taskType / scheduleConfig の変更をトリガーに、
+ * nextScheduledAt を再計算する。executions を書き換えない変更のため
+ * onExecutionWritten では拾えない（詳細は schema.md）。
+ * 変更前後で taskType / scheduleConfig が同一なら、再計算結果の書き戻しによる
+ * 再発火とみなして何もせず抜ける。
+ */
+export const onTaskDefinitionWritten = onDocumentWritten(
+  "users/{userId}/taskDefinitions/{taskId}",
+  async (event) => {
+    const beforeData = event.data?.before.data();
+    const afterData = event.data?.after.data();
+    if (afterData == null) return; // 削除は onTaskDefinitionDeleted が担当
+    if (beforeData == null) return; // 初回書き込み時はまだタスクがないので再計算不要
+
+    const afterTask = afterData.taskType as TaskType;
+    const afterConfig =
+      (afterData.scheduleConfig ?? null) as ScheduleConfig | null;
+    const beforeConfig =
+      (beforeData.scheduleConfig ?? null) as ScheduleConfig | null;
+    if (
+      beforeData.taskType === afterTask &&
+      isSameScheduleConfig(beforeConfig, afterConfig)
+    ) {
+      return;
+    }
+
+    const {userId, taskId} = event.params;
+    const taskDefRef = getFirestore()
+      .collection("users")
+      .doc(userId)
+      .collection("taskDefinitions")
+      .doc(taskId);
+    await recalcScheduleCache(taskDefRef, afterTask, afterConfig);
+  },
+);
+
+/**
+ * taskDefinitions の lastExecutedAt / nextScheduledAt を実行履歴から再計算し書き戻す
+ * @param {FirebaseFirestore.DocumentReference} taskDefRef 対象タスク定義への参照
+ * @param {TaskType} taskType 対象タスクの種別
+ * @param {ScheduleConfig | null} config scheduleConfig（scheduled のみ）
+ * @return {Promise<void>} 完了を示す Promise
+ */
+async function recalcScheduleCache(
+  taskDefRef: FirebaseFirestore.DocumentReference,
+  taskType: TaskType,
+  config: ScheduleConfig | null,
+): Promise<void> {
+  // irregular は nextScheduledAt を持たず lastExecutedAt しか使わないため、
+  // 平均間隔計算用の直近 scheduleHistoryLimit 件をまとめて読む必要がない
+  const historyLimit = taskType === "irregular" ? 1 : scheduleHistoryLimit;
+  const executionsSnap = await taskDefRef
+    .collection("executions")
+    .orderBy("executedAt")
+    .limitToLast(historyLimit)
+    .get();
+  const ascendingHistory: Temporal.ZonedDateTime[] = executionsSnap.docs.map(
+    (doc) => toZonedDateTime(doc.data().executedAt as Timestamp),
+  );
+
+  const lastExecutedAt = ascendingHistory.at(-1) ?? null;
+  const scheduledAt = computeScheduledAt({
+    taskType,
+    ascendingHistory,
+    scheduleValue: config?.scheduleValue ?? null,
+    scheduleUnit: config?.scheduleUnit ?? null,
+  });
+
+  await taskDefRef.update({
+    lastExecutedAt: lastExecutedAt ?
+      Timestamp.fromMillis(lastExecutedAt.epochMilliseconds) :
+      null,
+    nextScheduledAt: scheduledAt ?
+      Timestamp.fromMillis(scheduledAt.epochMilliseconds) :
+      null,
+  });
+}
 
 /**
  * タスク定義 (taskDefinitions) の削除をトリガーに、
