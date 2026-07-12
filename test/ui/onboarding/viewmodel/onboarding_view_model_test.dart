@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
+import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_ui_state.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_view_model.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../helpers/fake_fcm_token_service.dart';
 import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
+import '../../../helpers/fake_user_settings_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +22,7 @@ void main() {
     late FakeOnboardingRepository fakeRepository;
     late FakeNotificationService fakeNotificationService;
     late FakeFcmTokenService fakeFcmTokenService;
+    late FakeUserSettingsRepository fakeUserSettingsRepository;
     late OnboardingViewModel viewModel;
     late OnboardingUiState viewState;
 
@@ -38,13 +41,19 @@ void main() {
       fakeRepository = FakeOnboardingRepository();
       fakeNotificationService = FakeNotificationService();
       fakeFcmTokenService = FakeFcmTokenService();
+      fakeUserSettingsRepository = FakeUserSettingsRepository();
       container = ProviderContainer(
         overrides: [
           onboardingRepositoryProvider.overrideWith((_) => fakeRepository),
           notificationServiceProvider.overrideWith(
             (_) async => fakeNotificationService,
           ),
-          fcmTokenServiceProvider.overrideWith((_) async => fakeFcmTokenService),
+          fcmTokenServiceProvider.overrideWith(
+            (_) async => fakeFcmTokenService,
+          ),
+          userSettingsRepositoryProvider.overrideWith(
+            (_) async => fakeUserSettingsRepository,
+          ),
         ],
       );
     });
@@ -131,7 +140,7 @@ void main() {
             await viewModel.onRequestNotification();
             expect(viewState.destination?.type, OnboardingDestination.next);
             expect(
-              fakeRepository.enableNotificationCalled,
+              fakeUserSettingsRepository.notificationSetting.enabled,
               notificationEnabled,
             );
             expect(
@@ -182,7 +191,7 @@ void main() {
 
       group('異常系', () {
         setUp(() {
-          fakeRepository.shouldThrow = true;
+          fakeUserSettingsRepository.shouldThrow = true;
           fakeNotificationService.permissionResult = true;
           setUpState();
         });

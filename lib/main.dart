@@ -8,6 +8,7 @@ import 'package:dawnbreaker/core/notification/task_notification_sync_notifier.da
 import 'package:dawnbreaker/data/preferences/shared_preferences_provider.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
+import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/firebase_options_dev.dart' as dev_options;
 import 'package:dawnbreaker/firebase_options_prod.dart' as prod_options;
 import 'package:firebase_core/firebase_core.dart';
@@ -56,6 +57,10 @@ void main() async {
   await notificationService.initialize();
   final fcmTokenService = await container.read(fcmTokenServiceProvider.future);
   await fcmTokenService.registerToken();
+  final userSettings = await container.read(
+    userSettingsRepositoryProvider.future,
+  );
+  await userSettings.updateLastActiveAt();
   container.read(taskNotificationSyncProvider);
   container.read(notificationPermissionObserverProvider);
 

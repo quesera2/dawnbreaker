@@ -1,9 +1,11 @@
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
+import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
+import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_ui_state.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
@@ -43,6 +45,8 @@ class OnboardingViewModel extends _$OnboardingViewModel {
     );
   }
 
+  // TODO: 通知設定はオンボーディングから消す
+  // Firestoreに保存するようにしたため、通知への誘導タイミングはログイン（ゲストアカウント作成後）に移動させる
   Future<void> onRequestNotification() async {
     final notificationService = await ref.read(
       notificationServiceProvider.future,
@@ -60,8 +64,13 @@ class OnboardingViewModel extends _$OnboardingViewModel {
     if (!ref.mounted) return;
 
     try {
-      await _repository.enableNotificationSettings();
-    } on OnboardingRepositoryException catch (e, s) {
+      final userSettings = await ref.read(
+        userSettingsRepositoryProvider.future,
+      );
+      await userSettings.setNotificationSetting(
+        const NotificationSetting(enabled: true),
+      );
+    } catch (e, s) {
       logger.e('onRequestNotification failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
       state = state.copyWith(dialogMessage: OnboardingSaveErrorMessage());

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -31,25 +29,21 @@ abstract class NotificationSetting with _$NotificationSetting {
   factory NotificationSetting.fromJson(Map<String, dynamic> json) =>
       _$NotificationSettingFromJson(json);
 
-  String encode() => jsonEncode(toJson());
-
-  /// [encoded] が空文字・不正な JSON・範囲外の値を含む場合はデフォルト値を返す。
-  static NotificationSetting decode(String encoded) {
-    // 何も保存されていない場合、初期設定を返す
-    if (encoded.isEmpty) {
-      return const NotificationSetting();
-    }
+  /// Firestore の `users/{userId}.notificationSetting` から読む。
+  ///
+  /// 未設定・欠けたフィールド・範囲外の値を含む場合はデフォルト値（通知しない）を返す。
+  /// サーバー側のデータが壊れていても画面が落ちないようにするため。
+  static NotificationSetting fromMap(Map<String, dynamic>? data) {
+    if (data == null) return const NotificationSetting();
 
     try {
-      final setting = NotificationSetting.fromJson(
-        jsonDecode(encoded) as Map<String, dynamic>,
-      );
+      final setting = NotificationSetting.fromJson(data);
       return setting.copyWith(
         hour: setting.hour.clamp(0, 23),
         minute: setting.minute.clamp(0, 59),
       );
     } catch (e, s) {
-      logger.w('NotificationSetting.decode failed', error: e, stackTrace: s);
+      logger.w('NotificationSetting.fromMap failed', error: e, stackTrace: s);
       return const NotificationSetting();
     }
   }

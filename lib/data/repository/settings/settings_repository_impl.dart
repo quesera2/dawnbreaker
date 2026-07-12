@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
-import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:dawnbreaker/data/preferences/preferences_manager.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
@@ -18,37 +17,14 @@ SettingsRepository settingsRepository(Ref ref) {
   return repo;
 }
 
-@Riverpod(keepAlive: true)
-Stream<NotificationSetting> notificationSetting(Ref ref) =>
-    ref.watch(settingsRepositoryProvider).watchNotificationSetting();
-
 class SettingsRepositoryImpl implements SettingsRepository {
   SettingsRepositoryImpl(this._manager);
 
   final PreferencesManager _manager;
-  final _notificationSettingController =
-      StreamController<NotificationSetting>.broadcast();
   final _homeSortModeController = StreamController<HomeDisplayMode>.broadcast();
   final _colorSettingsController =
       StreamController<List<ColorSetting>>.broadcast();
   final _progressBarAnimationController = StreamController<bool>.broadcast();
-
-  @override
-  Stream<NotificationSetting> watchNotificationSetting() async* {
-    yield _loadNotificationSetting();
-    yield* _notificationSettingController.stream;
-  }
-
-  @override
-  Future<void> setNotificationSetting(NotificationSetting setting) async {
-    await _manager.set(notificationSettingKey, setting.encode());
-    _notificationSettingController.add(setting);
-  }
-
-  NotificationSetting _loadNotificationSetting() {
-    final stored = _manager.get(notificationSettingKey, defaultValue: '');
-    return NotificationSetting.decode(stored);
-  }
 
   @override
   Stream<HomeDisplayMode> watchHomeDisplayMode() async* {
@@ -93,7 +69,6 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   Future<void> dispose() async {
-    await _notificationSettingController.close();
     await _homeSortModeController.close();
     await _colorSettingsController.close();
     await _progressBarAnimationController.close();

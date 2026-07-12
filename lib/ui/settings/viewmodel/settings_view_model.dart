@@ -12,6 +12,7 @@ import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_imp
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
+import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/dummy_tasks.dart';
@@ -33,8 +34,13 @@ class SettingsViewModel extends _$SettingsViewModel {
   }
 
   Future<void> _initialize() async {
+    final userSettingsRepository = await ref.read(
+      userSettingsRepositoryProvider.future,
+    );
+    if (!ref.mounted) return;
+
     final disposable = combineLatest3(
-      _repository.watchNotificationSetting(),
+      userSettingsRepository.watchNotificationSetting(),
       _repository.watchHomeDisplayMode(),
       _repository.watchProgressBarAnimationEnabled(),
       (NotificationSetting notification, HomeDisplayMode mode, bool animation) {
@@ -70,7 +76,7 @@ class SettingsViewModel extends _$SettingsViewModel {
       hour: hour,
       minute: minute,
     );
-    await _repository.setNotificationSetting(updated);
+    await _setNotificationSetting(updated);
   }
 
   Future<void> _enableNotification() async {
@@ -84,9 +90,7 @@ class SettingsViewModel extends _$SettingsViewModel {
 
     final hasPermission = await notificationService.checkPermission();
     if (hasPermission) {
-      await ref
-          .read(settingsRepositoryProvider)
-          .setNotificationSetting(state.notificationSetting);
+      await _setNotificationSetting(state.notificationSetting);
       if (!ref.mounted) return;
       state = state.copyWith(isNotificationUpdating: false);
       return;
@@ -111,9 +115,7 @@ class SettingsViewModel extends _$SettingsViewModel {
     await fcmTokenService.registerToken();
     if (!ref.mounted) return;
 
-    await ref
-        .read(settingsRepositoryProvider)
-        .setNotificationSetting(state.notificationSetting);
+    await _setNotificationSetting(state.notificationSetting);
     if (!ref.mounted) return;
 
     final canExact = await notificationService.canScheduleExactAlarms();
@@ -138,9 +140,14 @@ class SettingsViewModel extends _$SettingsViewModel {
       isNotificationUpdating: true,
       notificationSetting: updated,
     );
-    await ref.read(settingsRepositoryProvider).setNotificationSetting(updated);
+    await _setNotificationSetting(updated);
     if (!ref.mounted) return;
     state = state.copyWith(isNotificationUpdating: false);
+  }
+
+  Future<void> _setNotificationSetting(NotificationSetting setting) async {
+    final userSettings = await ref.read(userSettingsRepositoryProvider.future);
+    await userSettings.setNotificationSetting(setting);
   }
 
   Future<void> setProgressBarAnimationEnabled(bool value) async {

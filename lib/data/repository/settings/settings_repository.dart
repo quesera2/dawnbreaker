@@ -1,12 +1,8 @@
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
-import 'package:dawnbreaker/data/model/notification_setting.dart';
 
+/// 端末固有の設定。アカウントに紐づく通知設定は [UserSettingsRepository] が持つ
 abstract interface class SettingsRepository {
-  Stream<NotificationSetting> watchNotificationSetting();
-
-  Future<void> setNotificationSetting(NotificationSetting setting);
-
   Stream<HomeDisplayMode> watchHomeDisplayMode();
 
   Future<void> setHomeDisplayMode(HomeDisplayMode value);

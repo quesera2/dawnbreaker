@@ -1,4 +1,3 @@
-import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
@@ -12,35 +11,6 @@ void main() {
 
   late OnboardingRepository repository;
   late FakePreferencesManager manager;
-
-  group('enableNotificationSettings', () {
-    group('ストレージが正常な場合', () {
-      setUp(() async {
-        manager = await FakePreferencesManager.create();
-        repository = OnboardingRepositoryImpl(manager);
-      });
-
-      test('通知設定が有効になる', () async {
-        await repository.enableNotificationSettings();
-        final stored = manager.get(notificationSettingKey, defaultValue: '');
-        expect(NotificationSetting.decode(stored).enabled, true);
-      });
-    });
-
-    group('ストレージが異常な場合', () {
-      setUp(() async {
-        manager = await FakePreferencesManager.create(shouldThrow: true);
-        repository = OnboardingRepositoryImpl(manager);
-      });
-
-      test('通知設定が保存されない', () async {
-        await expectLater(
-          () => repository.enableNotificationSettings(),
-          throwsA(isA<OnboardingSaveException>()),
-        );
-      });
-    });
-  });
 
   group('saveCompletion', () {
     group('完了状態が保持されていない場合', () {
