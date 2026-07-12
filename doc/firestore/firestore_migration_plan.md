@@ -184,7 +184,7 @@ abstract interface class UserRepository {
 （FCM が実機に届くと確認できるまで通知機能を失わない）、**実機依存の詰まりどころを先に潰す**こと
 （iOS の APNs で止まると後続が全部止まるため）。
 
-- [ ] **PR1: クライアントのトークン登録**
+- [x] **PR1: クライアントのトークン登録**
     - `firebase_messaging` を追加し、トークンの取得・`users/{uid}.fcmTokens` への `arrayUnion` での保存・
       `onTokenRefresh` の購読・iOS の権限リクエストを実装する
     - iOS は APNs キーの登録・Push Notifications の Capability・実機（シミュレータ不可）が要る
