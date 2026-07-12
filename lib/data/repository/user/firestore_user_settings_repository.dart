@@ -3,6 +3,7 @@ import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/data/repository/user/user_settings_repository.dart';
+import 'package:dawnbreaker/data/repository/user/user_settings_repository_exception.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -15,7 +16,7 @@ Future<UserSettingsRepository> userSettingsRepository(Ref ref) async {
   return switch (user) {
     // LocalUser を作る経路は残っておらず、Phase8 で型ごと削除する。
     // 通知設定は Firestore にしか置き場がないため、握り潰さず落とす
-    LocalUser() => throw UnsupportedError('LocalUser は通知設定を持たない'),
+    LocalUser() => throw const UnsupportedUserException('LocalUser は通知設定を持たない'),
     FirebaseAppUser(:final id) => FirestoreUserSettingsRepository(
       userId: id,
       firestore: FirebaseFirestore.instance,
@@ -45,27 +46,40 @@ class FirestoreUserSettingsRepository implements UserSettingsRepository {
 
   final FirebaseFirestore _firestore;
 
-  DocumentReference<Map<String, dynamic>> _userRef() =>
-      _firestore.collection('users').doc(userId);
-
   @override
-  Stream<NotificationSetting> watchNotificationSetting() =>
-      _userRef().snapshots().map((snapshot) {
+  Stream<NotificationSetting> watchNotificationSetting() => _userRef()
+      .snapshots()
+      .map((snapshot) {
         final setting = snapshot.data()?['notificationSetting'] as Map?;
         return NotificationSetting.fromMap(
           setting == null ? null : Map<String, dynamic>.from(setting),
         );
-      });
+      })
+      .handleError((Object e) => throw UserSettingsLoadException(e.toString()));
 
   @override
-  Future<void> setNotificationSetting(NotificationSetting setting) =>
-      _userRef().set({
+  Future<void> setNotificationSetting(NotificationSetting setting) async {
+    try {
+      await _userRef().set({
         'notificationSetting': setting.toJson(),
         'timezone': timezone,
       }, SetOptions(merge: true));
+    } catch (e) {
+      throw UserSettingsSaveException(e.toString());
+    }
+  }
 
   @override
-  Future<void> updateLastActiveAt() => _userRef().set({
-    'lastActiveAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
+  Future<void> updateLastActiveAt() async {
+    try {
+      await _userRef().set({
+        'lastActiveAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      throw UserSettingsSaveException(e.toString());
+    }
+  }
+
+  DocumentReference<Map<String, dynamic>> _userRef() =>
+      _firestore.collection('users').doc(userId);
 }

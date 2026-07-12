@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:app_settings/app_settings.dart';
+import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest3;
@@ -147,7 +148,12 @@ class SettingsViewModel extends _$SettingsViewModel {
 
   Future<void> _setNotificationSetting(NotificationSetting setting) async {
     final userSettings = await ref.read(userSettingsRepositoryProvider.future);
-    await userSettings.setNotificationSetting(setting);
+    // Firestorage はオフラインキャッシュに書き込むため await しない（エラーは権限設定不備などで発生）
+    unawaited(
+      userSettings.setNotificationSetting(setting).onError((e, s) {
+        logger.e('setNotificationSetting failed', error: e, stackTrace: s);
+      }),
+    );
   }
 
   Future<void> setProgressBarAnimationEnabled(bool value) async {
