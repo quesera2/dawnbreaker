@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -7,6 +8,7 @@ import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../helpers/fake_fcm_token_service.dart';
 import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
 
@@ -17,6 +19,7 @@ void main() {
     late ProviderContainer container;
     late FakeOnboardingRepository fakeRepository;
     late FakeNotificationService fakeNotificationService;
+    late FakeFcmTokenService fakeFcmTokenService;
     late OnboardingViewModel viewModel;
     late OnboardingUiState viewState;
 
@@ -34,12 +37,14 @@ void main() {
     setUp(() {
       fakeRepository = FakeOnboardingRepository();
       fakeNotificationService = FakeNotificationService();
+      fakeFcmTokenService = FakeFcmTokenService();
       container = ProviderContainer(
         overrides: [
           onboardingRepositoryProvider.overrideWith((_) => fakeRepository),
           notificationServiceProvider.overrideWith(
             (_) async => fakeNotificationService,
           ),
+          fcmTokenServiceProvider.overrideWith((_) async => fakeFcmTokenService),
         ],
       );
     });
@@ -118,8 +123,8 @@ void main() {
         setUp(setUpState);
 
         for (final (permissionGranted, notificationEnabled, description) in [
-          (true, true, '通知を許可すると通知設定が有効になり次のページへ進む'),
-          (false, false, '通知を拒否しても次のページへ進み通知設定は変わらない'),
+          (true, true, '通知を許可すると通知設定が有効になり通知先が登録されて次のページへ進む'),
+          (false, false, '通知を拒否しても次のページへ進み通知設定も通知先も変わらない'),
         ]) {
           test(description, () async {
             fakeNotificationService.permissionResult = permissionGranted;
@@ -128,6 +133,10 @@ void main() {
             expect(
               fakeRepository.enableNotificationCalled,
               notificationEnabled,
+            );
+            expect(
+              fakeFcmTokenService.registerTokenCount,
+              permissionGranted ? 1 : 0,
             );
           });
         }
