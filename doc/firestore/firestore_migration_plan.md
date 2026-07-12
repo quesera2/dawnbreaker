@@ -161,6 +161,7 @@ abstract interface class UserRepository {
       `onExecutionWritten` でも拾えず、次に実行を記録するまで古い値が残っていた
     - `taskDefinitions` の書き込みトリガー（`onTaskDefinitionWritten`）を追加した
       （再帰を止めるガードは `schema.md` を参照）
+
 ### FCM プッシュ通知（設計）
 
 - <s>同じトリガーに FCM 送信を追加する</s>
