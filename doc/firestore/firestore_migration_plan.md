@@ -222,7 +222,7 @@ abstract interface class UserRepository {
     - `timezone` は `flutter_timezone` で取得し、アカウント作成時と通知時刻の変更時にだけ書く
     - `lastActiveAt` もここで足す（使うのは Phase10 の放置アカウント回収）
     - この時点ではローカル通知が新しい設定ソースを読む形にして、動作を保つ
-- [ ] **PR3: サーバーの `notifyAt` 帳簿（送信はまだしない）**
+- [x] **PR3: サーバーの `notifyAt` 帳簿（送信はまだしない）**
     - `nextScheduledAt` / `notificationSetting` / `timezone` から `notifyAt` を算出する純粋関数を
       `schedule.ts` と同じ流儀（Temporal・Firestore を知らない）で書き、テストで固める
     - 書き込み先は `users/{uid}/notifications/{taskId}`。対象外（通知無効・`irregular`・未実行）は
