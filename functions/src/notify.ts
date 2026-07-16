@@ -63,6 +63,8 @@ export function parseNotificationSetting(
   return {
     enabled,
     notifyDay,
+    hour: clamp(hour, 0, 23),
+    minute: clamp(minute, 0, 59),
   };
 }
 
