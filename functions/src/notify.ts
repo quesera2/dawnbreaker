@@ -58,13 +58,11 @@ export function parseNotificationSetting(
   const {enabled, notifyDay, hour, minute} = value as Record<string, unknown>;
   if (typeof enabled !== "boolean") return null;
   if (notifyDay !== "today" && notifyDay !== "yesterday") return null;
-  if (!Number.isInteger(hour) || !Number.isInteger(minute)) return null;
+  if (!isInteger(hour) || !isInteger(minute)) return null;
 
   return {
     enabled,
     notifyDay,
-    hour: clamp(hour as number, 0, 23),
-    minute: clamp(minute as number, 0, 59),
   };
 }
 
@@ -116,6 +114,17 @@ function isValidTimeZone(timeZone: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * 整数かどうかを判定する。
+ * Number.isInteger は述語を返さないため対象が unknown のまま残り、
+ * 呼び出し側でキャストが要る。型ガードとして包むことでキャストを不要にする。
+ * @param {unknown} value 判定対象
+ * @return {boolean} 整数なら true
+ */
+function isInteger(value: unknown): value is number {
+  return Number.isInteger(value);
 }
 
 /**
