@@ -6,7 +6,7 @@ import {
 } from "firebase-functions/v2/firestore";
 import * as logger from "firebase-functions/logger";
 import {initializeApp} from "firebase-admin/app";
-import {getFirestore, Timestamp} from "firebase-admin/firestore";
+import {FieldValue, getFirestore, Timestamp} from "firebase-admin/firestore";
 import {
   computeScheduledAt,
   isSameScheduleConfig,
@@ -14,6 +14,12 @@ import {
   TaskType,
   scheduleHistoryLimit,
 } from "./schedule";
+import {
+  computeNotifyAt,
+  isSameNotificationSetting,
+  NotificationSetting,
+  parseNotificationSetting,
+} from "./notify";
 
 setGlobalOptions({maxInstances: 1});
 
@@ -30,14 +36,9 @@ export const onExecutionWritten = onDocumentWritten(
   "users/{userId}/taskDefinitions/{taskId}/executions/{executionId}",
   async (event) => {
     const {userId, taskId} = event.params;
-    const db = getFirestore();
-    const taskDefRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("taskDefinitions")
-      .doc(taskId);
+    const userRef = getFirestore().collection("users").doc(userId);
 
-    const taskDefSnap = await taskDefRef.get();
+    const taskDefSnap = await taskDefinitionRef(userRef, taskId).get();
     const taskDefData = taskDefSnap.data();
     if (taskDefData == null) {
       // タスク削除時、onTaskDefinitionDeleted が executions を掃除する過程で
@@ -47,7 +48,8 @@ export const onExecutionWritten = onDocumentWritten(
     }
 
     await recalcScheduleCache(
-      taskDefRef,
+      userRef,
+      taskId,
       taskDefData.taskType as TaskType,
       (taskDefData.scheduleConfig ?? null) as ScheduleConfig | null,
     );
@@ -82,27 +84,27 @@ export const onTaskDefinitionWritten = onDocumentWritten(
     }
 
     const {userId, taskId} = event.params;
-    const taskDefRef = getFirestore()
-      .collection("users")
-      .doc(userId)
-      .collection("taskDefinitions")
-      .doc(taskId);
-    await recalcScheduleCache(taskDefRef, afterTask, afterConfig);
+    const userRef = getFirestore().collection("users").doc(userId);
+    await recalcScheduleCache(userRef, taskId, afterTask, afterConfig);
   },
 );
 
 /**
- * taskDefinitions の lastExecutedAt / nextScheduledAt を実行履歴から再計算し書き戻す
- * @param {FirebaseFirestore.DocumentReference} taskDefRef 対象タスク定義への参照
+ * taskDefinitions の lastExecutedAt / nextScheduledAt を実行履歴から再計算し書き戻し、
+ * 再計算後の nextScheduledAt をもとに notifications の帳簿も更新する
+ * @param {FirebaseFirestore.DocumentReference} userRef 対象ユーザーへの参照
+ * @param {string} taskId 対象タスク定義の ID
  * @param {TaskType} taskType 対象タスクの種別
  * @param {ScheduleConfig | null} config scheduleConfig（scheduled のみ）
  * @return {Promise<void>} 完了を示す Promise
  */
 async function recalcScheduleCache(
-  taskDefRef: FirebaseFirestore.DocumentReference,
+  userRef: FirebaseFirestore.DocumentReference,
+  taskId: string,
   taskType: TaskType,
   config: ScheduleConfig | null,
 ): Promise<void> {
+  const taskDefRef = taskDefinitionRef(userRef, taskId);
   // irregular は nextScheduledAt を持たず lastExecutedAt しか使わないため、
   // 平均間隔計算用の直近 scheduleHistoryLimit 件をまとめて読む必要がない
   const historyLimit = taskType === "irregular" ? 1 : scheduleHistoryLimit;
@@ -131,11 +133,115 @@ async function recalcScheduleCache(
       Timestamp.fromMillis(scheduledAt.epochMilliseconds) :
       null,
   });
+
+  // scheduledAt が null なら通知設定によらず対象外なので、users の読み取りを省く
+  const userData = scheduledAt != null ? (await userRef.get()).data() : null;
+  await syncNotifyAt({
+    userRef,
+    taskId,
+    scheduledAt,
+    setting: parseNotificationSetting(userData?.notificationSetting),
+    timeZone: (userData?.timezone ?? null) as string | null,
+  });
+}
+
+/**
+ * users の notificationSetting / timezone の変更をトリガーに、
+ * そのユーザーの全タスクの notifyAt を再計算する。
+ * nextScheduledAt は変わらないが通知時刻の算出結果が変わるため、
+ * recalcScheduleCache の経路では拾えない。
+ * fcmTokens / lastActiveAt など notifyAt に影響しないフィールドの更新でも
+ * 発火するため、通知に関わる変更がなければ何もせず抜ける。
+ */
+export const onUserWritten = onDocumentWritten(
+  "users/{userId}",
+  async (event) => {
+    const afterSnap = event.data?.after;
+    const afterData = afterSnap?.data();
+    if (afterSnap == null || afterData == null) return; // 削除時は再計算不要
+
+    const beforeData = event.data?.before.data();
+    const beforeSetting = parseNotificationSetting(
+      beforeData?.notificationSetting,
+    );
+    const afterSetting = parseNotificationSetting(
+      afterData.notificationSetting,
+    );
+    const beforeTimeZone = (beforeData?.timezone ?? null) as string | null;
+    const afterTimeZone = (afterData.timezone ?? null) as string | null;
+    if (
+      isSameNotificationSetting(beforeSetting, afterSetting) &&
+      beforeTimeZone === afterTimeZone
+    ) {
+      return;
+    }
+
+    const userRef = afterSnap.ref;
+    const taskDefsSnap = await userRef.collection("taskDefinitions").get();
+    await Promise.all(taskDefsSnap.docs.map((doc) => {
+      const nextScheduledAt = doc.data().nextScheduledAt as Timestamp | null;
+      return syncNotifyAt({
+        userRef,
+        taskId: doc.id,
+        scheduledAt: nextScheduledAt ?
+          toZonedDateTime(nextScheduledAt) :
+          null,
+        setting: afterSetting,
+        timeZone: afterTimeZone,
+      });
+    }));
+  },
+);
+
+/**
+ * notifications/{taskId} の notifyAt を算出して書き戻す。
+ * 通知対象外なら notifyAt を null にせずフィールドごと削除する
+ * （null は範囲クエリにヒットしてしまうため。schema.md 参照）。
+ * 対象外のタスクはドキュメント自体を作らないので、既存ドキュメントがなければ何もしない。
+ * @param {object} params
+ * @param {FirebaseFirestore.DocumentReference} params.userRef 対象ユーザーへの参照
+ * @param {string} params.taskId 対象タスク定義の ID
+ * @param {Temporal.ZonedDateTime | null} params.scheduledAt 次回実行予定日時
+ * @param {NotificationSetting | null} params.setting ユーザーの通知設定
+ * @param {string | null} params.timeZone ユーザーのタイムゾーン
+ * @return {Promise<void>} 完了を示す Promise
+ */
+async function syncNotifyAt(params: {
+  userRef: FirebaseFirestore.DocumentReference;
+  taskId: string;
+  scheduledAt: Temporal.ZonedDateTime | null;
+  setting: NotificationSetting | null;
+  timeZone: string | null;
+}): Promise<void> {
+  const {userRef, taskId, scheduledAt, setting, timeZone} = params;
+  const notificationRef = userRef.collection("notifications").doc(taskId);
+  const notifyAt = computeNotifyAt({
+    nextScheduledAt: scheduledAt,
+    setting,
+    timeZone,
+  });
+
+  if (scheduledAt == null || notifyAt == null) {
+    const notificationSnap = await notificationRef.get();
+    if (!notificationSnap.exists) return;
+    // lastNotifiedFor は重複送信の防止に使うため残す
+    await notificationRef.update({
+      notifyAt: FieldValue.delete(),
+      scheduledAt: FieldValue.delete(),
+    });
+    return;
+  }
+
+  await notificationRef.set({
+    notifyAt: Timestamp.fromMillis(notifyAt.epochMilliseconds),
+    scheduledAt: Timestamp.fromMillis(scheduledAt.epochMilliseconds),
+  }, {merge: true});
 }
 
 /**
  * タスク定義 (taskDefinitions) の削除をトリガーに、
- * Firestore がカスケード削除しない実行履歴 (executions) サブコレクションをお掃除する。
+ * Firestore がカスケード削除しない実行履歴 (executions) サブコレクションと、
+ * そのタスクの通知帳簿 (notifications) をお掃除する。
  * taskDefinitions が消えた後に executions を削除するため、それぞれの削除で
  * onExecutionWritten が発火すること自体は止められないのでそのままとしている。
  */
@@ -144,16 +250,27 @@ export const onTaskDefinitionDeleted = onDocumentDeleted(
   async (event) => {
     const {userId, taskId} = event.params;
     const db = getFirestore();
-    const executionsRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("taskDefinitions")
-      .doc(taskId)
-      .collection("executions");
+    const userRef = db.collection("users").doc(userId);
 
-    await db.recursiveDelete(executionsRef);
+    await db.recursiveDelete(
+      taskDefinitionRef(userRef, taskId).collection("executions"),
+    );
+    await userRef.collection("notifications").doc(taskId).delete();
   },
 );
+
+/**
+ * ユーザー配下のタスク定義への参照を組み立てる
+ * @param {FirebaseFirestore.DocumentReference} userRef 対象ユーザーへの参照
+ * @param {string} taskId 対象タスク定義の ID
+ * @return {FirebaseFirestore.DocumentReference} タスク定義への参照
+ */
+function taskDefinitionRef(
+  userRef: FirebaseFirestore.DocumentReference,
+  taskId: string,
+): FirebaseFirestore.DocumentReference {
+  return userRef.collection("taskDefinitions").doc(taskId);
+}
 
 /**
  * Firestore の Timestamp（タイムゾーンなしの瞬間）を

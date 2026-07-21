@@ -1,8 +1,5 @@
-import {Temporal} from "@js-temporal/polyfill";
 import {computeScheduledAt, isSameScheduleConfig} from "../src/schedule";
-
-const zdt = (isoString: string): Temporal.ZonedDateTime =>
-  Temporal.Instant.from(isoString).toZonedDateTimeISO("UTC");
+import {zdt} from "./helper/temporal";
 
 describe("computeScheduledAt", () => {
   test("履歴が空のとき null を返す", () => {
@@ -48,7 +45,7 @@ describe("computeScheduledAt", () => {
         ascendingHistory: history,
         scheduleValue: null,
         scheduleUnit: null,
-      })).toEqual(zdt("2025-03-04T00:00:00Z"));
+      })).toEqual(zdt("2025-03-04T00:00:00+00:00[UTC]"));
     });
 
     test("履歴が3件のとき 全間隔の平均を使う", () => {
@@ -63,7 +60,7 @@ describe("computeScheduledAt", () => {
         ascendingHistory: history,
         scheduleValue: null,
         scheduleUnit: null,
-      })).toEqual(zdt("2025-02-15T00:00:00Z"));
+      })).toEqual(zdt("2025-02-15T00:00:00+00:00[UTC]"));
     });
 
     test("時刻成分を含む executedAt でも日付単位で間隔が計算される", () => {
@@ -78,7 +75,7 @@ describe("computeScheduledAt", () => {
         ascendingHistory: history,
         scheduleValue: null,
         scheduleUnit: null,
-      })).toEqual(zdt("2025-01-03T09:00:00Z"));
+      })).toEqual(zdt("2025-01-03T09:00:00+00:00[UTC]"));
     });
   });
 
@@ -90,7 +87,7 @@ describe("computeScheduledAt", () => {
         ascendingHistory: [lastExecutedAt],
         scheduleValue: 14,
         scheduleUnit: "day",
-      })).toEqual(zdt("2025-01-15T00:00:00Z"));
+      })).toEqual(zdt("2025-01-15T00:00:00+00:00[UTC]"));
     });
 
     test("ScheduleUnit.week: 最後の実行日 + n週", () => {
@@ -100,7 +97,7 @@ describe("computeScheduledAt", () => {
         ascendingHistory: [lastExecutedAt],
         scheduleValue: 2,
         scheduleUnit: "week",
-      })).toEqual(zdt("2025-01-15T00:00:00Z"));
+      })).toEqual(zdt("2025-01-15T00:00:00+00:00[UTC]"));
     });
 
     test("ScheduleUnit.month: 最後の実行日 + nヶ月", () => {
@@ -110,7 +107,7 @@ describe("computeScheduledAt", () => {
         ascendingHistory: [lastExecutedAt],
         scheduleValue: 3,
         scheduleUnit: "month",
-      })).toEqual(zdt("2025-04-10T00:00:00Z"));
+      })).toEqual(zdt("2025-04-10T00:00:00+00:00[UTC]"));
     });
 
     test("ScheduleUnit.month: 加算先の月に存在しない日は月末に丸められる", () => {
@@ -121,7 +118,7 @@ describe("computeScheduledAt", () => {
         ascendingHistory: [lastExecutedAt],
         scheduleValue: 1,
         scheduleUnit: "month",
-      })).toEqual(zdt("2025-02-28T00:00:00Z"));
+      })).toEqual(zdt("2025-02-28T00:00:00+00:00[UTC]"));
     });
 
     test("scheduleValue/scheduleUnit が欠損しているとき null を返す", () => {
