@@ -131,8 +131,9 @@ class FcmNotificationServiceImpl implements NotificationService {
 
   @override
   Future<void> registerToken() async {
-    final settings = await _messaging.getNotificationSettings();
-    if (!_isAuthorized(settings.authorizationStatus)) return;
+    if (!await checkPermission()) {
+      return;
+    }
 
     final token = await _messaging.getToken();
     if (token == null) return;
