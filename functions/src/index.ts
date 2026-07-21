@@ -292,7 +292,8 @@ export const sendScheduledNotifications = onSchedule(
     try {
       for (const doc of snapshot.docs) {
         const data = doc.data();
-        const scheduledAt = toZonedDateTime(data.scheduledAt as Timestamp);
+        const scheduledAtTimestamp = data.scheduledAt as Timestamp;
+        const scheduledAt = toZonedDateTime(scheduledAtTimestamp);
         const lastNotifiedFor = data.lastNotifiedFor == null ?
           null :
           toZonedDateTime(data.lastNotifiedFor as Timestamp);
@@ -308,20 +309,24 @@ export const sendScheduledNotifications = onSchedule(
           userId: userRef.id,
           taskId: doc.id,
           ref: doc.ref,
-          scheduledAt,
+          scheduledAt: scheduledAtTimestamp,
         });
       }
 
-      const {invalidTokensByUser, sentTargetPaths} =
+      const {invalidTokensByUser, sentTargetPaths, unreachableTargetPaths} =
         await sendNotifications(targets);
       for (const target of targets) {
-        if (!sentTargetPaths.has(target.ref.path)) continue;
-        bulkWriter.update(target.ref, {
-          lastNotifiedFor: Timestamp.fromMillis(
-            target.scheduledAt.epochMilliseconds,
-          ),
-          notifyAt: FieldValue.delete(),
-        });
+        if (sentTargetPaths.has(target.ref.path)) {
+          bulkWriter.update(target.ref, {
+            lastNotifiedFor: target.scheduledAt,
+            notifyAt: FieldValue.delete(),
+          });
+        } else if (unreachableTargetPaths.has(target.ref.path)) {
+          // 配信先がなく試行すらしていないため、lastNotifiedFor は更新しない。
+          // スケジュール再計算で notifyAt が復活すれば改めて送信対象になる。
+          bulkWriter.update(target.ref, {notifyAt: FieldValue.delete()});
+        }
+        // どちらでもなければ一時的な送信失敗のため、notifyAt を残し次回に委ねる
       }
       for (const [userId, tokens] of invalidTokensByUser) {
         bulkWriter.update(db.collection("users").doc(userId), {
@@ -341,7 +346,7 @@ type NotificationTarget = {
   userId: string;
   taskId: string;
   ref: FirebaseFirestore.DocumentReference;
-  scheduledAt: Temporal.ZonedDateTime;
+  scheduledAt: Timestamp;
 };
 
 /**
@@ -363,6 +368,8 @@ type SendNotificationsResult = {
   invalidTokensByUser: Map<string, Set<string>>;
   // デバイストークンが１通でも送信に成功した target の ref.path の集合
   sentTargetPaths: Set<string>;
+  // タスクが読めない、または送信先の端末がない場合（再送不要として扱う）
+  unreachableTargetPaths: Set<string>;
 };
 
 /**
@@ -376,8 +383,9 @@ async function sendNotifications(
 ): Promise<SendNotificationsResult> {
   const invalidTokensByUser = new Map<string, Set<string>>();
   const sentTargetPaths = new Set<string>();
+  const unreachableTargetPaths = new Set<string>();
   if (targets.length === 0) {
-    return {invalidTokensByUser, sentTargetPaths};
+    return {invalidTokensByUser, sentTargetPaths, unreachableTargetPaths};
   }
 
   const getTaskName = (
@@ -403,7 +411,10 @@ async function sendNotifications(
       getTaskName(target.userId, target.taskId),
       getCachedFcmTokens(target.userId),
     ]);
-    if (taskName == null || fcmTokens.length === 0) return;
+    if (taskName == null || fcmTokens.length === 0) {
+      unreachableTargetPaths.add(target.ref.path);
+      return;
+    }
 
     for (const token of fcmTokens) {
       entries.push({
@@ -452,7 +463,7 @@ async function sendNotifications(
     }
   }
 
-  return {invalidTokensByUser, sentTargetPaths};
+  return {invalidTokensByUser, sentTargetPaths, unreachableTargetPaths};
 }
 
 /**
