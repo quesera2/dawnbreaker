@@ -145,8 +145,10 @@ class FcmNotificationServiceImpl implements NotificationService {
     final notification = message.notification;
     if (notification == null) return;
 
+    // Dart の Int は 64bit でそのまま渡すと Android の Int の範囲をオーバーするため上位ビットを刈る
+    final messageId = message.hashCode & 0x7FFFFFFF;
     await _plugin.show(
-      id: message.hashCode,
+      id: messageId,
       title: notification.title,
       body: notification.body,
       notificationDetails: NotificationDetails(
