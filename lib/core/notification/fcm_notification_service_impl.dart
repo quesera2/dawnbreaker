@@ -43,9 +43,6 @@ Future<NotificationService> fcmNotificationService(Ref ref) async {
   return service;
 }
 
-const _taskGroupId = 'task_notifications';
-const _taskChannelId = 'individual_task_notification';
-
 class FcmNotificationServiceImpl implements NotificationService {
   FcmNotificationServiceImpl({
     required this._repository,
@@ -60,6 +57,8 @@ class FcmNotificationServiceImpl implements NotificationService {
   static const _androidSettings = AndroidInitializationSettings(
     '@mipmap/ic_launcher',
   );
+  static const _taskGroupId = 'task_notifications';
+  static const _taskChannelId = 'individual_task_notification';
 
   static const _iosSettings = DarwinInitializationSettings(
     requestAlertPermission: false,
