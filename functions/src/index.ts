@@ -380,25 +380,29 @@ async function sendNotifications(
     return {invalidTokensByUser, sentTargetPaths};
   }
 
-  const userSnapshots = new Map<
-    string, Promise<FirebaseFirestore.DocumentSnapshot>
-  >();
-  const getUserSnapshot = (userId: string) => {
-    const cached = userSnapshots.get(userId);
+  const getTaskName = (
+    userId: string,
+    taskId: string,
+  ): Promise<string | null> => taskDefinitionRef(userId, taskId).get()
+    .then((snapshot) => (snapshot.data()?.name ?? null) as string | null);
+
+  // ユーザーごとに１回だけ FCM トークンを取得する
+  const fcmTokensByUser = new Map<string, Promise<string[]>>();
+  const getCachedFcmTokens = (userId: string): Promise<string[]> => {
+    const cached = fcmTokensByUser.get(userId);
     if (cached != null) return cached;
-    const promise = getFirestore().collection("users").doc(userId).get();
-    userSnapshots.set(userId, promise);
+    const promise = getFirestore().collection("users").doc(userId).get()
+      .then((snapshot) => (snapshot.data()?.fcmTokens ?? []) as string[]);
+    fcmTokensByUser.set(userId, promise);
     return promise;
   };
 
   const entries: MessageEntry[] = [];
   await Promise.all(targets.map(async (target) => {
-    const [taskSnapshot, userSnapshot] = await Promise.all([
-      taskDefinitionRef(target.userId, target.taskId).get(),
-      getUserSnapshot(target.userId),
+    const [taskName, fcmTokens] = await Promise.all([
+      getTaskName(target.userId, target.taskId),
+      getCachedFcmTokens(target.userId),
     ]);
-    const taskName = taskSnapshot.data()?.name as string | undefined;
-    const fcmTokens = (userSnapshot.data()?.fcmTokens ?? []) as string[];
     if (taskName == null || fcmTokens.length === 0) return;
 
     for (const token of fcmTokens) {
