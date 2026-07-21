@@ -18,7 +18,7 @@
     }
   ],
   "firestore": {
-    "indexes": "firestore.indexes.json"
+    "indexes": "firestore/firestore.indexes.json"
   },
   "flutter": {
     "platforms": {
