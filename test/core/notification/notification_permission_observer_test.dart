@@ -1,5 +1,5 @@
+import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_permission_observer.dart';
-import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_settings_repository_exception.dart';
@@ -30,7 +30,7 @@ void main() {
     );
     container = ProviderContainer(
       overrides: [
-        notificationServiceProvider.overrideWith(
+        fcmNotificationServiceProvider.overrideWith(
           (_) async => fakeNotificationService,
         ),
         userSettingsRepositoryProvider.overrideWith((_) async {
@@ -62,11 +62,6 @@ void main() {
           await resume();
           expect(fakeUserSettingsRepository.notificationSetting.enabled, true);
         });
-
-        test('exactAlarmの権限が同期される', () async {
-          await resume();
-          expect(fakeNotificationService.syncExactAlarmPermissionCalled, true);
-        });
       });
 
       group('通知権限が剥奪された場合', () {
@@ -77,21 +72,14 @@ void main() {
           expect(fakeUserSettingsRepository.notificationSetting.enabled, false);
         });
 
-        test('exactAlarmの権限が同期される', () async {
-          await resume();
-          expect(fakeNotificationService.syncExactAlarmPermissionCalled, true);
-        });
-
         test('保存が失敗しても未捕捉の例外にならない', () async {
           fakeUserSettingsRepository.shouldThrow = true;
           await resume();
-          expect(fakeNotificationService.syncExactAlarmPermissionCalled, true);
         });
 
-        test('保存がオフラインで完了しなくてもexactAlarmの同期に進む', () async {
+        test('保存がオフラインで完了しなくても処理が完了する', () async {
           fakeUserSettingsRepository.neverCompletes = true;
           await resume();
-          expect(fakeNotificationService.syncExactAlarmPermissionCalled, true);
         });
       });
     });

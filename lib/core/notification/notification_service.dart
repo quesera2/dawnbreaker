@@ -1,31 +1,15 @@
-import 'package:dawnbreaker/data/model/notification_setting.dart';
-import 'package:dawnbreaker/data/model/task_item.dart';
-
+/// FCM 通知に関するこの端末側の窓口。権限の確認・要求、送信先としてのトークン登録を担う。
 abstract interface class NotificationService {
-  Future<void> initialize();
-
+  /// 通知権限の有無をチェックする
   Future<bool> checkPermission();
 
+  /// 通知権限が必要な場合に取得処理を行う
   Future<bool> requestPermission();
 
-  Future<void> registerNotification(
-    TaskItem task, {
-    required NotifyDay notifyDay,
-    required int hour,
-    required int minute,
-  });
-
-  Future<void> removeNotification(TaskItem task);
-
-  Future<void> removeAllNotification();
-
-  Future<bool> canScheduleExactAlarms();
-
-  Stream<bool> watchCanScheduleExactAlarms();
-
-  Future<void> syncExactAlarmPermission();
-
-  Future<void> requestExactAlarmPermission();
-
-  Future<void> logPendingNotifications();
+  /// 通知の許可を得た直後に呼ぶ。
+  ///
+  /// iOS は許可を得るまで APNs トークンが発行されず `getToken()` が返らない。
+  /// Android は許可がなくてもトークンを取得できるが、表示されない通知の送信先を
+  /// 抱えても仕方がないので、同じく許可済みのときだけ登録する。
+  Future<void> registerToken();
 }

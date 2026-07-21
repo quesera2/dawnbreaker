@@ -2,10 +2,8 @@ import 'dart:async';
 
 import 'package:dawnbreaker/app/app.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
-import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
+import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_permission_observer.dart';
-import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
-import 'package:dawnbreaker/core/notification/task_notification_sync_notifier.dart';
 import 'package:dawnbreaker/data/preferences/shared_preferences_provider.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
@@ -18,11 +16,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 
 void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -42,9 +37,6 @@ void main() async {
   };
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await initializeDateFormatting();
-  tz.initializeTimeZones();
-  final localTimezone = await FlutterTimezone.getLocalTimezone();
-  tz.setLocalLocation(tz.getLocation(localTimezone.identifier));
 
   final preferences = await SharedPreferences.getInstance();
   final container = ProviderContainer(
@@ -52,15 +44,13 @@ void main() async {
   );
   await container.read(currentUserProvider.future);
   await container.read(taskRepositoryProvider.future);
-  final notificationService = await container.read(
-    notificationServiceProvider.future,
-  );
-  await notificationService.initialize();
   // どちらも初回フレームの描画に必要なく、Firestore への書き込み Future はオフラインでは
   // 完了しないため待たない。待つとスプラッシュが出たままアプリが起動しなくなる
-  final fcmTokenService = await container.read(fcmTokenServiceProvider.future);
+  final notificationService = await container.read(
+    fcmNotificationServiceProvider.future,
+  );
   unawaited(
-    fcmTokenService.registerToken().onError((e, s) {
+    notificationService.registerToken().onError((e, s) {
       logger.e('registerToken failed', error: e, stackTrace: s);
     }),
   );
@@ -72,7 +62,6 @@ void main() async {
       logger.e('updateLastActiveAt failed', error: e, stackTrace: s);
     }),
   );
-  container.read(taskNotificationSyncProvider);
   container.read(notificationPermissionObserverProvider);
 
   runApp(UncontrolledProviderScope(container: container, child: const App()));

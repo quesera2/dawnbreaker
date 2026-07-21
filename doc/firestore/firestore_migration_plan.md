@@ -239,7 +239,7 @@ abstract interface class UserRepository {
       インデックスは単一フィールドでも自動作成されないため、`firestore.indexes.json` と
       `firebase.json` の `firestore` セクションをこの PR で用意する
     - 検証: 実際にタスクの予定日を近づけて、実機に通知が届くこと
-- [ ] **PR5: ローカル通知の廃止**
+- [x] **PR5: ローカル通知の廃止**
     - `flutter_local_notifications` による通知登録を廃止する（`TaskNotificationSync` /
       `TaskNotificationSyncNotifier` / `NotificationPermissionObserver` の役割を見直す）
     - FCM が実機に届くと確認できた後にだけ行う

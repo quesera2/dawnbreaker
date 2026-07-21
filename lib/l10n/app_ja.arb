@@ -187,6 +187,7 @@
   "onboardingDemoTask1": "ベランダの虫除け",
   "onboardingDemoTask2": "オイル交換",
   "onboardingDemoTask3": "歯ブラシ交換",
+  "onboardingNotificationPreviewBody": "予定日になりました",
   "onboardingDemoTask4": "お風呂の防カビ剤",
   "onboardingDemoTask5": "スニーカーの洗濯",
   "onboardingDemoTask6": "美容院",
@@ -204,8 +205,8 @@
   "settingsNotificationTimePickerTitle": "通知時間",
   "settingsNotificationPermissionTitle": "通知の許可が必要です",
   "settingsNotificationPermissionMessage": "通知が許可されていません。設定アプリから通知を有効にしてください。",
-  "settingsExactAlarmPermissionTitle": "アラームの許可が必要です",
-  "settingsExactAlarmPermissionMessage": "正確な時間に通知を受け取るには、アラームとリマインダーを許可してください。",
+  "notificationGroupTask": "タスク通知",
+  "notificationChannelTask": "個別タスク通知",
   "settingsSectionDisplay": "表示設定",
   "settingsDisplayType": "表示タイプ",
   "settingsDisplayHomeTimeline": "タイムライン",
@@ -233,11 +234,7 @@
   "settingsDebugAllTasksDeleted": "すべてのタスクを削除しました",
   "settingsDebugResetTutorialFlag": "チュートリアルフラグをリセット",
   "settingsDebugTutorialFlagReset": "チュートリアルフラグをリセットしました",
-  "settingsDebugLogPendingNotifications": "登録されている通知一覧をログ出力",
   "settingsDebugResetColorSettings": "カラー設定をリセット",
   "settingsDebugColorSettingsReset": "カラー設定をリセットしました",
-  "settingsDebugForceCrash": "クラッシュさせる",
-  "notificationGroupTask": "タスク通知",
-  "notificationChannelTask": "個別タスク通知",
-  "notificationTaskBody": "予定日になりました"
+  "settingsDebugForceCrash": "クラッシュさせる"
 }
