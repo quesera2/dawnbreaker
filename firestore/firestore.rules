@@ -1,0 +1,30 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // データの置き場は users/{uid} だけで、他人のドキュメントは一切見えない。
+    // Cloud Functions は Admin SDK 経由のためルールを迂回する。
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /taskDefinitions/{taskDefinitionId} {
+        allow read, write: if isOwner(userId);
+
+        match /executions/{executionId} {
+          allow read, write: if isOwner(userId);
+        }
+      }
+
+      // 送信の帳簿。Cloud Functions だけが読み書きするため
+      // クライアントからは触れない（schema.md 参照）
+      match /notifications/{taskDefinitionId} {
+        allow read, write: if false;
+      }
+    }
+  }
+}
