@@ -69,32 +69,30 @@ class FcmNotificationServiceImpl implements NotificationService {
   static const _taskGroupId = 'task_notifications';
   static const _taskChannelId = 'individual_task_notification';
 
-  static const _iosSettings = DarwinInitializationSettings(
-    requestAlertPermission: false,
-    requestBadgePermission: false,
-    requestSoundPermission: false,
-  );
-
   final _plugin = FlutterLocalNotificationsPlugin();
 
   Future<void> initialize() async {
     if (Platform.isIOS) {
-      // iOS は OS 自身にフォアグラウンド表示を許可させる。
-      // flutter_local_notifications 側でも表示すると二重表示になるため注意。
-      await FirebaseMessaging.instance
-          .setForegroundNotificationPresentationOptions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
-      return;
+      await _initializeIOS();
+    } else if (Platform.isAndroid) {
+      await _initializeAndroid();
     }
+  }
 
+  Future<void> _initializeIOS() async {
+    // iOS は OS 自身にフォアグラウンド表示を許可させる。
+    // flutter_local_notifications 側でも表示すると二重表示になるため注意。
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+  }
+
+  Future<void> _initializeAndroid() async {
     await _plugin.initialize(
-      settings: const InitializationSettings(
-        android: _androidSettings,
-        iOS: _iosSettings,
-      ),
+      settings: const InitializationSettings(android: _androidSettings),
     );
 
     final androidImplementation = _plugin
