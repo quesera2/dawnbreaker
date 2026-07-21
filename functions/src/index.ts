@@ -51,7 +51,7 @@ export const onExecutionWritten = onDocumentWritten(
     const {userId, taskId} = event.params;
     const userRef = getFirestore().collection("users").doc(userId);
 
-    const taskDefSnap = await taskDefinitionRef(userRef, taskId).get();
+    const taskDefSnap = await taskDefinitionRef(userId, taskId).get();
     const taskDefData = taskDefSnap.data();
     if (taskDefData == null) {
       // タスク削除時、onTaskDefinitionDeleted が executions を掃除する過程で
@@ -117,7 +117,7 @@ async function recalcScheduleCache(
   taskType: TaskType,
   config: ScheduleConfig | null,
 ): Promise<void> {
-  const taskDefRef = taskDefinitionRef(userRef, taskId);
+  const taskDefRef = taskDefinitionRef(userRef.id, taskId);
   // irregular は nextScheduledAt を持たず lastExecutedAt しか使わないため、
   // 平均間隔計算用の直近 scheduleHistoryLimit 件をまとめて読む必要がない
   const historyLimit = taskType === "irregular" ? 1 : scheduleHistoryLimit;
@@ -266,7 +266,7 @@ export const onTaskDefinitionDeleted = onDocumentDeleted(
     const userRef = db.collection("users").doc(userId);
 
     await db.recursiveDelete(
-      taskDefinitionRef(userRef, taskId).collection("executions"),
+      taskDefinitionRef(userId, taskId).collection("executions"),
     );
     await userRef.collection("notifications").doc(taskId).delete();
   },
@@ -304,7 +304,12 @@ export const sendScheduledNotifications = onSchedule(
         }
         const userRef = doc.ref.parent.parent;
         if (userRef == null) continue; // notifications はユーザーの子なので実際には起きない
-        targets.push({userRef, taskId: doc.id, ref: doc.ref, scheduledAt});
+        targets.push({
+          userId: userRef.id,
+          taskId: doc.id,
+          ref: doc.ref,
+          scheduledAt,
+        });
       }
 
       const {invalidTokensByUser, sentTargetPaths} =
@@ -333,7 +338,7 @@ export const sendScheduledNotifications = onSchedule(
  * 送信対象となった notifications 帳簿 1 件分
  */
 type NotificationTarget = {
-  userRef: FirebaseFirestore.DocumentReference;
+  userId: string;
   taskId: string;
   ref: FirebaseFirestore.DocumentReference;
   scheduledAt: Temporal.ZonedDateTime;
@@ -378,19 +383,19 @@ async function sendNotifications(
   const userSnapshots = new Map<
     string, Promise<FirebaseFirestore.DocumentSnapshot>
   >();
-  const getUserSnapshot = (userRef: FirebaseFirestore.DocumentReference) => {
-    const cached = userSnapshots.get(userRef.id);
+  const getUserSnapshot = (userId: string) => {
+    const cached = userSnapshots.get(userId);
     if (cached != null) return cached;
-    const promise = userRef.get();
-    userSnapshots.set(userRef.id, promise);
+    const promise = getFirestore().collection("users").doc(userId).get();
+    userSnapshots.set(userId, promise);
     return promise;
   };
 
   const entries: MessageEntry[] = [];
   await Promise.all(targets.map(async (target) => {
     const [taskSnapshot, userSnapshot] = await Promise.all([
-      taskDefinitionRef(target.userRef, target.taskId).get(),
-      getUserSnapshot(target.userRef),
+      taskDefinitionRef(target.userId, target.taskId).get(),
+      getUserSnapshot(target.userId),
     ]);
     const taskName = taskSnapshot.data()?.name as string | undefined;
     const fcmTokens = (userSnapshot.data()?.fcmTokens ?? []) as string[];
@@ -403,7 +408,7 @@ async function sendNotifications(
           notification: {title: taskName, body: notificationBody},
           android: {notification: {channelId: androidChannelId}},
         },
-        userId: target.userRef.id,
+        userId: target.userId,
         token,
         targetPath: target.ref.path,
       });
@@ -448,15 +453,17 @@ async function sendNotifications(
 
 /**
  * ユーザー配下のタスク定義への参照を組み立てる
- * @param {FirebaseFirestore.DocumentReference} userRef 対象ユーザーへの参照
+ * @param {string} userId 対象ユーザーの ID
  * @param {string} taskId 対象タスク定義の ID
  * @return {FirebaseFirestore.DocumentReference} タスク定義への参照
  */
 function taskDefinitionRef(
-  userRef: FirebaseFirestore.DocumentReference,
+  userId: string,
   taskId: string,
 ): FirebaseFirestore.DocumentReference {
-  return userRef.collection("taskDefinitions").doc(taskId);
+  return getFirestore()
+    .collection("users").doc(userId)
+    .collection("taskDefinitions").doc(taskId);
 }
 
 /**
