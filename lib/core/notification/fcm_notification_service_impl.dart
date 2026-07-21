@@ -26,7 +26,7 @@ Future<NotificationService> fcmNotificationService(Ref ref) async {
   );
 
   // 初期化処理を行う
-  unawaited(service.initialize());
+  await service.initialize();
 
   // トークンは FCM の都合で作り直されることがあるため、`onTokenRefresh` を購読して追随する。
   final onTokenRefreshSubscription = messaging.onTokenRefresh.listen(
