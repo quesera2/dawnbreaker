@@ -1,7 +1,6 @@
 import 'package:app_settings/app_settings.dart';
 import 'package:app_settings/app_settings_platform_interface.dart';
 import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
-import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart'
     show NotificationSetting, NotifyDay;
@@ -17,7 +16,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../helpers/fake_fcm_token_service.dart';
-import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
 import '../../../helpers/fake_settings_repository.dart';
 import '../../../helpers/fake_user_settings_repository.dart';
@@ -32,7 +30,6 @@ void main() {
   late SettingsUiState viewState;
   late FakeOnboardingRepository fakeOnboardingRepository;
   late FakeSettingsRepository fakeSettingsRepository;
-  late FakeNotificationService fakeNotificationService;
   late FakeFcmTokenService fakeFcmTokenService;
   late FakeUserSettingsRepository fakeUserSettingsRepository;
 
@@ -40,7 +37,6 @@ void main() {
     bool notificationEnabled = true,
     bool checkPermissionResult = true,
     bool permissionResult = true,
-    bool canScheduleExactAlarmsResult = true,
     HomeDisplayMode initialDisplayMode = HomeDisplayMode.timeline,
     bool initialProgressBarAnimationEnabled = true,
   }) {
@@ -59,20 +55,15 @@ void main() {
     fakeUserSettingsRepository = FakeUserSettingsRepository(
       notificationSetting: NotificationSetting(enabled: notificationEnabled),
     );
-    fakeFcmTokenService = FakeFcmTokenService();
-    fakeNotificationService = FakeNotificationService(
+    fakeFcmTokenService = FakeFcmTokenService(
       checkPermissionResult: checkPermissionResult,
       permissionResult: permissionResult,
-      canScheduleExactAlarmsResult: canScheduleExactAlarmsResult,
     );
     container = ProviderContainer(
       overrides: [
         settingsRepositoryProvider.overrideWithValue(fakeSettingsRepository),
         onboardingRepositoryProvider.overrideWith(
           (_) => fakeOnboardingRepository,
-        ),
-        notificationServiceProvider.overrideWith(
-          (_) async => fakeNotificationService,
         ),
         fcmTokenServiceProvider.overrideWith((_) async => fakeFcmTokenService),
         userSettingsRepositoryProvider.overrideWith(
@@ -86,7 +77,6 @@ void main() {
     bool notificationEnabled = true,
     bool checkPermissionResult = true,
     bool permissionResult = true,
-    bool canScheduleExactAlarmsResult = true,
     HomeDisplayMode initialDisplayMode = HomeDisplayMode.timeline,
     bool initialProgressBarAnimationEnabled = true,
   }) async {
@@ -94,7 +84,6 @@ void main() {
       notificationEnabled: notificationEnabled,
       checkPermissionResult: checkPermissionResult,
       permissionResult: permissionResult,
-      canScheduleExactAlarmsResult: canScheduleExactAlarmsResult,
       initialDisplayMode: initialDisplayMode,
       initialProgressBarAnimationEnabled: initialProgressBarAnimationEnabled,
     );
@@ -277,59 +266,6 @@ void main() {
               viewState.dialogMessage!.primaryHandler!();
               await pumpEventQueue();
               expect(mockAppSettings.openedType, AppSettingsType.notification);
-            });
-          });
-
-          group('exactAlarmの許可が必要な場合', () {
-            group('通知権限を新規取得した場合', () {
-              setUp(
-                () async => setUpLoaded(
-                  notificationEnabled: false,
-                  checkPermissionResult: false,
-                  permissionResult: true,
-                  canScheduleExactAlarmsResult: false,
-                ),
-              );
-
-              test('exactAlarm許可ダイアログが表示される', () async {
-                await viewModel.setNotificationEnabled(true);
-                expect(
-                  viewState.dialogMessage,
-                  isA<ExactAlarmPermissionRequestMessage>(),
-                );
-              });
-
-              test('ハンドラを呼び出すとアラームとリマインダー設定が開かれる', () async {
-                await viewModel.setNotificationEnabled(true);
-                viewState.dialogMessage!.primaryHandler!.call();
-                await pumpEventQueue();
-                expect(
-                  fakeNotificationService.requestExactAlarmPermissionCalled,
-                  true,
-                );
-              });
-            });
-
-            // exactAlarmはオプションのため、通知権限が既にある場合は再要求しない
-            // exactAlarm未許可のままでも通知は有効化し、不正確なタイマーで動作させる
-            group('通知権限が既にある場合', () {
-              setUp(
-                () async => setUpLoaded(
-                  notificationEnabled: false,
-                  checkPermissionResult: true,
-                  canScheduleExactAlarmsResult: false,
-                ),
-              );
-
-              test('通知が有効になる', () async {
-                await viewModel.setNotificationEnabled(true);
-                expect(viewState.notificationSetting.enabled, true);
-              });
-
-              test('exactAlarm許可ダイアログは表示されない', () async {
-                await viewModel.setNotificationEnabled(true);
-                expect(viewState.dialogMessage, isNull);
-              });
             });
           });
         });

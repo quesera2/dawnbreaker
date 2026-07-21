@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:app_settings/app_settings.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
-import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest3;
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
@@ -85,11 +84,9 @@ class SettingsViewModel extends _$SettingsViewModel {
       isNotificationUpdating: true,
       notificationSetting: state.notificationSetting.copyWith(enabled: true),
     );
-    final notificationService = await ref.read(
-      notificationServiceProvider.future,
-    );
+    final fcmTokenService = await ref.read(fcmTokenServiceProvider.future);
 
-    final hasPermission = await notificationService.checkPermission();
+    final hasPermission = await fcmTokenService.checkPermission();
     if (hasPermission) {
       await _setNotificationSetting(state.notificationSetting);
       if (!ref.mounted) return;
@@ -97,7 +94,7 @@ class SettingsViewModel extends _$SettingsViewModel {
       return;
     }
 
-    final isGranted = await notificationService.requestPermission();
+    final isGranted = await fcmTokenService.requestPermission();
     if (!ref.mounted) return;
 
     if (!isGranted) {
@@ -112,25 +109,11 @@ class SettingsViewModel extends _$SettingsViewModel {
       return;
     }
 
-    final fcmTokenService = await ref.read(fcmTokenServiceProvider.future);
     await fcmTokenService.registerToken();
     if (!ref.mounted) return;
 
     await _setNotificationSetting(state.notificationSetting);
     if (!ref.mounted) return;
-
-    final canExact = await notificationService.canScheduleExactAlarms();
-    if (!ref.mounted) return;
-    if (!canExact) {
-      state = state.copyWith(
-        isNotificationUpdating: false,
-        dialogMessage: ExactAlarmPermissionRequestMessage(
-          primaryHandler: () =>
-              notificationService.requestExactAlarmPermission(),
-        ),
-      );
-      return;
-    }
 
     state = state.copyWith(isNotificationUpdating: false);
   }
@@ -182,11 +165,6 @@ class SettingsViewModel extends _$SettingsViewModel {
     await repository.removeCompletion();
     if (!ref.mounted) return;
     state = state.copyWith(snackBarMessage: TutorialFlagResetMessage());
-  }
-
-  Future<void> logPendingNotifications() async {
-    final service = await ref.read(notificationServiceProvider.future);
-    await service.logPendingNotifications();
   }
 
   Future<void> resetColorSettings() async {

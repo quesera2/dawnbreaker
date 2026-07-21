@@ -110,12 +110,6 @@ LabelConfig _labels(BuildContext context, DialogMessage msg) => switch (msg) {
     primaryActionLabel: context.l10n.commonOpenSettings,
     secondaryActionLabel: context.l10n.commonCancel,
   ),
-  ExactAlarmPermissionRequestMessage() => (
-    title: context.l10n.settingsExactAlarmPermissionTitle,
-    messageText: context.l10n.settingsExactAlarmPermissionMessage,
-    primaryActionLabel: context.l10n.commonOpenSettings,
-    secondaryActionLabel: context.l10n.commonSkip,
-  ),
   UnknownErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.commonErrorUnknown,

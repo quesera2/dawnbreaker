@@ -510,7 +510,7 @@ class _NotificationCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      context.l10n.notificationTaskBody,
+                      context.l10n.onboardingNotificationPreviewBody,
                       style: AppTextStyle.caption.copyWith(color: c.textMuted),
                     ),
                   ],

@@ -704,6 +704,12 @@ abstract class AppLocalizations {
   /// **'歯ブラシ交換'**
   String get onboardingDemoTask3;
 
+  /// No description provided for @onboardingNotificationPreviewBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'予定日になりました'**
+  String get onboardingNotificationPreviewBody;
+
   /// No description provided for @onboardingDemoTask4.
   ///
   /// In ja, this message translates to:
@@ -805,18 +811,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'通知が許可されていません。設定アプリから通知を有効にしてください。'**
   String get settingsNotificationPermissionMessage;
-
-  /// No description provided for @settingsExactAlarmPermissionTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'アラームの許可が必要です'**
-  String get settingsExactAlarmPermissionTitle;
-
-  /// No description provided for @settingsExactAlarmPermissionMessage.
-  ///
-  /// In ja, this message translates to:
-  /// **'正確な時間に通知を受け取るには、アラームとリマインダーを許可してください。'**
-  String get settingsExactAlarmPermissionMessage;
 
   /// No description provided for @settingsSectionDisplay.
   ///
@@ -980,12 +974,6 @@ abstract class AppLocalizations {
   /// **'チュートリアルフラグをリセットしました'**
   String get settingsDebugTutorialFlagReset;
 
-  /// No description provided for @settingsDebugLogPendingNotifications.
-  ///
-  /// In ja, this message translates to:
-  /// **'登録されている通知一覧をログ出力'**
-  String get settingsDebugLogPendingNotifications;
-
   /// No description provided for @settingsDebugResetColorSettings.
   ///
   /// In ja, this message translates to:
@@ -1003,24 +991,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'クラッシュさせる'**
   String get settingsDebugForceCrash;
-
-  /// No description provided for @notificationGroupTask.
-  ///
-  /// In ja, this message translates to:
-  /// **'タスク通知'**
-  String get notificationGroupTask;
-
-  /// No description provided for @notificationChannelTask.
-  ///
-  /// In ja, this message translates to:
-  /// **'個別タスク通知'**
-  String get notificationChannelTask;
-
-  /// No description provided for @notificationTaskBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'予定日になりました'**
-  String get notificationTaskBody;
 }
 
 class _AppLocalizationsDelegate

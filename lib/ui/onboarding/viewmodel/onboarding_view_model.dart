@@ -1,6 +1,5 @@
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
-import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
@@ -48,10 +47,8 @@ class OnboardingViewModel extends _$OnboardingViewModel {
   // TODO: 通知設定はオンボーディングから消す
   // Firestoreに保存するようにしたため、通知への誘導タイミングはログイン（ゲストアカウント作成後）に移動させる
   Future<void> onRequestNotification() async {
-    final notificationService = await ref.read(
-      notificationServiceProvider.future,
-    );
-    final isGranted = await notificationService.requestPermission();
+    final fcmTokenService = await ref.read(fcmTokenServiceProvider.future);
+    final isGranted = await fcmTokenService.requestPermission();
     if (!ref.mounted) return;
 
     if (!isGranted) {
@@ -59,7 +56,6 @@ class OnboardingViewModel extends _$OnboardingViewModel {
       return;
     }
 
-    final fcmTokenService = await ref.read(fcmTokenServiceProvider.future);
     await fcmTokenService.registerToken();
     if (!ref.mounted) return;
 
@@ -77,28 +73,6 @@ class OnboardingViewModel extends _$OnboardingViewModel {
       return;
     }
 
-    final canExact = await notificationService.canScheduleExactAlarms();
-    if (!ref.mounted) return;
-
-    if (!canExact) {
-      state = state.copyWith(
-        dialogMessage: ExactAlarmPermissionRequestMessage(
-          primaryHandler: () => requestExactAlarmPermission(),
-          secondaryHandler: () => state = state.copyWith(
-            destination: OnboardingDestinationEvent(.next),
-          ),
-        ),
-      );
-      return;
-    }
-
-    state = state.copyWith(destination: OnboardingDestinationEvent(.next));
-  }
-
-  Future<void> requestExactAlarmPermission() async {
-    final service = await ref.read(notificationServiceProvider.future);
-    await service.requestExactAlarmPermission();
-    if (!ref.mounted) return;
     state = state.copyWith(destination: OnboardingDestinationEvent(.next));
   }
 

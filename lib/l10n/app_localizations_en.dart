@@ -340,6 +340,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingDemoTask3 => 'Toothbrush replacement';
 
   @override
+  String get onboardingNotificationPreviewBody => 'It\'s due today';
+
+  @override
   String get onboardingDemoTask4 => 'Bath mold spray';
 
   @override
@@ -392,13 +395,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsNotificationPermissionMessage =>
       'Notifications are not allowed. Please enable them in the Settings app.';
-
-  @override
-  String get settingsExactAlarmPermissionTitle => 'Alarm Permission Required';
-
-  @override
-  String get settingsExactAlarmPermissionMessage =>
-      'To receive notifications at the exact time, please allow Alarms & Reminders.';
 
   @override
   String get settingsSectionDisplay => 'Display Settings';
@@ -486,10 +482,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsDebugTutorialFlagReset => 'Tutorial flag reset';
 
   @override
-  String get settingsDebugLogPendingNotifications =>
-      'Log pending notifications';
-
-  @override
   String get settingsDebugResetColorSettings => 'Reset color settings';
 
   @override
@@ -497,13 +489,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDebugForceCrash => 'Force crash';
-
-  @override
-  String get notificationGroupTask => 'Task Notifications';
-
-  @override
-  String get notificationChannelTask => 'Individual Task Notification';
-
-  @override
-  String get notificationTaskBody => 'It\'s due today';
 }

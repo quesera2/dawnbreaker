@@ -187,6 +187,7 @@
   "onboardingDemoTask1": "Balcony bug repellent",
   "onboardingDemoTask2": "Oil change",
   "onboardingDemoTask3": "Toothbrush replacement",
+  "onboardingNotificationPreviewBody": "It's due today",
   "onboardingDemoTask4": "Bath mold spray",
   "onboardingDemoTask5": "Sneaker wash",
   "onboardingDemoTask6": "Hair salon",
@@ -204,8 +205,6 @@
   "settingsNotificationTimePickerTitle": "Notification Time",
   "settingsNotificationPermissionTitle": "Notification Permission Required",
   "settingsNotificationPermissionMessage": "Notifications are not allowed. Please enable them in the Settings app.",
-  "settingsExactAlarmPermissionTitle": "Alarm Permission Required",
-  "settingsExactAlarmPermissionMessage": "To receive notifications at the exact time, please allow Alarms & Reminders.",
   "settingsSectionDisplay": "Display Settings",
   "settingsDisplayType": "Display Type",
   "settingsDisplayHomeTimeline": "Timeline",
@@ -233,11 +232,7 @@
   "settingsDebugAllTasksDeleted": "All tasks deleted",
   "settingsDebugResetTutorialFlag": "Reset tutorial flag",
   "settingsDebugTutorialFlagReset": "Tutorial flag reset",
-  "settingsDebugLogPendingNotifications": "Log pending notifications",
   "settingsDebugResetColorSettings": "Reset color settings",
   "settingsDebugColorSettingsReset": "Color settings reset",
-  "settingsDebugForceCrash": "Force crash",
-  "notificationGroupTask": "Task Notifications",
-  "notificationChannelTask": "Individual Task Notification",
-  "notificationTaskBody": "It's due today"
+  "settingsDebugForceCrash": "Force crash"
 }

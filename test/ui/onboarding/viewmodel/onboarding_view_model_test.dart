@@ -1,5 +1,4 @@
 import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
-import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -10,7 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_fcm_token_service.dart';
-import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
 import '../../../helpers/fake_user_settings_repository.dart';
 
@@ -20,7 +18,6 @@ void main() {
   group('OnboardingViewModel', () {
     late ProviderContainer container;
     late FakeOnboardingRepository fakeRepository;
-    late FakeNotificationService fakeNotificationService;
     late FakeFcmTokenService fakeFcmTokenService;
     late FakeUserSettingsRepository fakeUserSettingsRepository;
     late OnboardingViewModel viewModel;
@@ -39,15 +36,11 @@ void main() {
 
     setUp(() {
       fakeRepository = FakeOnboardingRepository();
-      fakeNotificationService = FakeNotificationService();
       fakeFcmTokenService = FakeFcmTokenService();
       fakeUserSettingsRepository = FakeUserSettingsRepository();
       container = ProviderContainer(
         overrides: [
           onboardingRepositoryProvider.overrideWith((_) => fakeRepository),
-          notificationServiceProvider.overrideWith(
-            (_) async => fakeNotificationService,
-          ),
           fcmTokenServiceProvider.overrideWith(
             (_) async => fakeFcmTokenService,
           ),
@@ -136,7 +129,7 @@ void main() {
           (false, false, '通知を拒否しても次のページへ進み通知設定も通知先も変わらない'),
         ]) {
           test(description, () async {
-            fakeNotificationService.permissionResult = permissionGranted;
+            fakeFcmTokenService.permissionResult = permissionGranted;
             await viewModel.onRequestNotification();
             expect(viewState.destination?.type, OnboardingDestination.next);
             expect(
@@ -151,48 +144,10 @@ void main() {
         }
       });
 
-      group('exactAlarmの許可が必要な場合', () {
-        setUp(() {
-          fakeNotificationService.permissionResult = true;
-          fakeNotificationService.canScheduleExactAlarmsResult = false;
-          setUpState();
-        });
-
-        test('exactAlarm許可ダイアログが表示される', () async {
-          await viewModel.onRequestNotification();
-          expect(
-            viewState.dialogMessage,
-            isA<ExactAlarmPermissionRequestMessage>(),
-          );
-          expect(viewState.destination, isNull);
-        });
-
-        test('スキップすると次のページへ進む', () async {
-          await viewModel.onRequestNotification();
-          final msg =
-              viewState.dialogMessage as ExactAlarmPermissionRequestMessage;
-          msg.secondaryHandler!.call();
-          expect(viewState.destination?.type, OnboardingDestination.next);
-        });
-
-        test('設定を開くと許可を求めて次のページへ進む', () async {
-          await viewModel.onRequestNotification();
-          final msg =
-              viewState.dialogMessage as ExactAlarmPermissionRequestMessage;
-          msg.primaryHandler!.call();
-          await pumpEventQueue();
-          expect(
-            fakeNotificationService.requestExactAlarmPermissionCalled,
-            true,
-          );
-          expect(viewState.destination?.type, OnboardingDestination.next);
-        });
-      });
-
       group('異常系', () {
         setUp(() {
           fakeUserSettingsRepository.shouldThrow = true;
-          fakeNotificationService.permissionResult = true;
+          fakeFcmTokenService.permissionResult = true;
           setUpState();
         });
 

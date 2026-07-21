@@ -335,6 +335,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingDemoTask3 => '歯ブラシ交換';
 
   @override
+  String get onboardingNotificationPreviewBody => '予定日になりました';
+
+  @override
   String get onboardingDemoTask4 => 'お風呂の防カビ剤';
 
   @override
@@ -386,13 +389,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get settingsNotificationPermissionMessage =>
       '通知が許可されていません。設定アプリから通知を有効にしてください。';
-
-  @override
-  String get settingsExactAlarmPermissionTitle => 'アラームの許可が必要です';
-
-  @override
-  String get settingsExactAlarmPermissionMessage =>
-      '正確な時間に通知を受け取るには、アラームとリマインダーを許可してください。';
 
   @override
   String get settingsSectionDisplay => '表示設定';
@@ -476,9 +472,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsDebugTutorialFlagReset => 'チュートリアルフラグをリセットしました';
 
   @override
-  String get settingsDebugLogPendingNotifications => '登録されている通知一覧をログ出力';
-
-  @override
   String get settingsDebugResetColorSettings => 'カラー設定をリセット';
 
   @override
@@ -486,13 +479,4 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsDebugForceCrash => 'クラッシュさせる';
-
-  @override
-  String get notificationGroupTask => 'タスク通知';
-
-  @override
-  String get notificationChannelTask => '個別タスク通知';
-
-  @override
-  String get notificationTaskBody => '予定日になりました';
 }

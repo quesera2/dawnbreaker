@@ -36,6 +36,18 @@ class FcmTokenServiceImpl implements FcmTokenService {
   final FirebaseMessaging _messaging;
 
   @override
+  Future<bool> checkPermission() async {
+    final settings = await _messaging.getNotificationSettings();
+    return _isAuthorized(settings.authorizationStatus);
+  }
+
+  @override
+  Future<bool> requestPermission() async {
+    final settings = await _messaging.requestPermission();
+    return _isAuthorized(settings.authorizationStatus);
+  }
+
+  @override
   Future<void> registerToken() async {
     final settings = await _messaging.getNotificationSettings();
     if (!_isAuthorized(settings.authorizationStatus)) return;

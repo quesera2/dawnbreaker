@@ -1,5 +1,5 @@
 import 'package:dawnbreaker/core/notification/notification_permission_observer.dart';
-import 'package:dawnbreaker/core/notification/notification_service_impl.dart';
+import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_settings_repository_exception.dart';
@@ -7,14 +7,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../helpers/fake_notification_service.dart';
+import '../../helpers/fake_fcm_token_service.dart';
 import '../../helpers/fake_user_settings_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late ProviderContainer container;
-  late FakeNotificationService fakeNotificationService;
+  late FakeFcmTokenService fakeFcmTokenService;
   late FakeUserSettingsRepository fakeUserSettingsRepository;
 
   void setUpContainer({
@@ -22,7 +22,7 @@ void main() {
     bool checkPermissionResult = true,
     bool repositoryUnavailable = false,
   }) {
-    fakeNotificationService = FakeNotificationService(
+    fakeFcmTokenService = FakeFcmTokenService(
       checkPermissionResult: checkPermissionResult,
     );
     fakeUserSettingsRepository = FakeUserSettingsRepository(
@@ -30,9 +30,7 @@ void main() {
     );
     container = ProviderContainer(
       overrides: [
-        notificationServiceProvider.overrideWith(
-          (_) async => fakeNotificationService,
-        ),
+        fcmTokenServiceProvider.overrideWith((_) async => fakeFcmTokenService),
         userSettingsRepositoryProvider.overrideWith((_) async {
           if (repositoryUnavailable) {
             throw const UnsupportedUserException('テストエラー');
@@ -62,11 +60,6 @@ void main() {
           await resume();
           expect(fakeUserSettingsRepository.notificationSetting.enabled, true);
         });
-
-        test('exactAlarmの権限が同期される', () async {
-          await resume();
-          expect(fakeNotificationService.syncExactAlarmPermissionCalled, true);
-        });
       });
 
       group('通知権限が剥奪された場合', () {
@@ -77,21 +70,14 @@ void main() {
           expect(fakeUserSettingsRepository.notificationSetting.enabled, false);
         });
 
-        test('exactAlarmの権限が同期される', () async {
-          await resume();
-          expect(fakeNotificationService.syncExactAlarmPermissionCalled, true);
-        });
-
         test('保存が失敗しても未捕捉の例外にならない', () async {
           fakeUserSettingsRepository.shouldThrow = true;
           await resume();
-          expect(fakeNotificationService.syncExactAlarmPermissionCalled, true);
         });
 
-        test('保存がオフラインで完了しなくてもexactAlarmの同期に進む', () async {
+        test('保存がオフラインで完了しなくても処理が完了する', () async {
           fakeUserSettingsRepository.neverCompletes = true;
           await resume();
-          expect(fakeNotificationService.syncExactAlarmPermissionCalled, true);
         });
       });
     });
@@ -101,7 +87,7 @@ void main() {
 
       test('権限を確認しない', () async {
         await resume();
-        expect(fakeNotificationService.checkPermissionCalled, false);
+        expect(fakeFcmTokenService.checkPermissionCalled, false);
       });
     });
 
@@ -110,7 +96,7 @@ void main() {
 
       test('未捕捉の例外にならず権限確認も行われない', () async {
         await resume();
-        expect(fakeNotificationService.checkPermissionCalled, false);
+        expect(fakeFcmTokenService.checkPermissionCalled, false);
       });
     });
   });

@@ -288,20 +288,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         type: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          title: Text(context.l10n.settingsDebugLogPendingNotifications),
-          trailing: Icon(
-            Icons.arrow_forward_ios,
-            size: 16,
-            color: colorScheme.textMuted,
-          ),
-        ),
-        onTap: () => viewModel.logPendingNotifications(),
-      ),
-      divider,
-      AppListCell(
-        type: .middle,
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugResetColorSettings),
           trailing: Icon(
             Icons.arrow_forward_ios,

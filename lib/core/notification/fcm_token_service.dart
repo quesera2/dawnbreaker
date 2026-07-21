@@ -1,5 +1,9 @@
 /// この端末を通知の送信先として登録する。
 abstract interface class FcmTokenService {
+  Future<bool> checkPermission();
+
+  Future<bool> requestPermission();
+
   /// 通知の許可を得た直後に呼ぶ。
   ///
   /// iOS は許可を得るまで APNs トークンが発行されず `getToken()` が返らない。
