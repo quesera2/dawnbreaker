@@ -340,9 +340,11 @@ type NotificationTarget = {
 };
 
 /**
- * 通知先の 1 端末分（ユーザー ID とトークンの組）
+ * 送信対象の 1 端末分。送信する Message とその宛先情報を 1 つにまとめたもの。
+ * 別々の配列に分けると、チャンク分割時のインデックス対応が壊れやすいため。
  */
-type Recipient = {
+type MessageEntry = {
+  message: Message;
   userId: string;
   token: string;
   targetPath: string;
@@ -384,8 +386,7 @@ async function sendNotifications(
     return promise;
   };
 
-  const messages: Message[] = [];
-  const recipients: Recipient[] = [];
+  const entries: MessageEntry[] = [];
   await Promise.all(targets.map(async (target) => {
     const [taskSnapshot, userSnapshot] = await Promise.all([
       taskDefinitionRef(target.userRef, target.taskId).get(),
@@ -396,12 +397,12 @@ async function sendNotifications(
     if (taskName == null || fcmTokens.length === 0) return;
 
     for (const token of fcmTokens) {
-      messages.push({
-        token,
-        notification: {title: taskName, body: notificationBody},
-        android: {notification: {channelId: androidChannelId}},
-      });
-      recipients.push({
+      entries.push({
+        message: {
+          token,
+          notification: {title: taskName, body: notificationBody},
+          android: {notification: {channelId: androidChannelId}},
+        },
         userId: target.userRef.id,
         token,
         targetPath: target.ref.path,
@@ -410,29 +411,30 @@ async function sendNotifications(
   }));
 
   const messaging = getMessaging();
-  for (let i = 0; i < messages.length; i += sendEachChunkSize) {
-    const chunk = messages.slice(i, i + sendEachChunkSize);
-    const chunkRecipients = recipients.slice(i, i + sendEachChunkSize);
+  for (let i = 0; i < entries.length; i += sendEachChunkSize) {
+    const chunk = entries.slice(i, i + sendEachChunkSize);
     try {
-      const response = await messaging.sendEach(chunk);
+      const response = await messaging.sendEach(
+        chunk.map((entry) => entry.message),
+      );
       response.responses.forEach((result, index) => {
-        const recipient = chunkRecipients[index];
+        const entry = chunk[index];
         if (result.success) {
-          sentTargetPaths.add(recipient.targetPath);
+          sentTargetPaths.add(entry.targetPath);
           return;
         }
         if (result.error?.code !==
           "messaging/registration-token-not-registered") {
           logger.error("failed to send notification", {
             error: result.error,
-            userId: recipient.userId,
+            userId: entry.userId,
           });
           return;
         }
-        const tokens = invalidTokensByUser.get(recipient.userId) ??
+        const tokens = invalidTokensByUser.get(entry.userId) ??
           new Set<string>();
-        tokens.add(recipient.token);
-        invalidTokensByUser.set(recipient.userId, tokens);
+        tokens.add(entry.token);
+        invalidTokensByUser.set(entry.userId, tokens);
       });
     } catch (error) {
       // このチャンクの target は送信済みリストに入らないため、
