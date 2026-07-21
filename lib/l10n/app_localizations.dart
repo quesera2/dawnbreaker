@@ -812,6 +812,18 @@ abstract class AppLocalizations {
   /// **'通知が許可されていません。設定アプリから通知を有効にしてください。'**
   String get settingsNotificationPermissionMessage;
 
+  /// No description provided for @notificationGroupTask.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスク通知'**
+  String get notificationGroupTask;
+
+  /// No description provided for @notificationChannelTask.
+  ///
+  /// In ja, this message translates to:
+  /// **'個別タスク通知'**
+  String get notificationChannelTask;
+
   /// No description provided for @settingsSectionDisplay.
   ///
   /// In ja, this message translates to:

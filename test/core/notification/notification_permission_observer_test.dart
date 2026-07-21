@@ -1,5 +1,5 @@
+import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_permission_observer.dart';
-import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_settings_repository_exception.dart';
@@ -7,14 +7,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../helpers/fake_fcm_token_service.dart';
+import '../../helpers/fake_notification_service.dart';
 import '../../helpers/fake_user_settings_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late ProviderContainer container;
-  late FakeFcmTokenService fakeFcmTokenService;
+  late FakeNotificationService fakeNotificationService;
   late FakeUserSettingsRepository fakeUserSettingsRepository;
 
   void setUpContainer({
@@ -22,7 +22,7 @@ void main() {
     bool checkPermissionResult = true,
     bool repositoryUnavailable = false,
   }) {
-    fakeFcmTokenService = FakeFcmTokenService(
+    fakeNotificationService = FakeNotificationService(
       checkPermissionResult: checkPermissionResult,
     );
     fakeUserSettingsRepository = FakeUserSettingsRepository(
@@ -30,7 +30,9 @@ void main() {
     );
     container = ProviderContainer(
       overrides: [
-        fcmTokenServiceProvider.overrideWith((_) async => fakeFcmTokenService),
+        fcmNotificationServiceProvider.overrideWith(
+          (_) async => fakeNotificationService,
+        ),
         userSettingsRepositoryProvider.overrideWith((_) async {
           if (repositoryUnavailable) {
             throw const UnsupportedUserException('テストエラー');
@@ -87,7 +89,7 @@ void main() {
 
       test('権限を確認しない', () async {
         await resume();
-        expect(fakeFcmTokenService.checkPermissionCalled, false);
+        expect(fakeNotificationService.checkPermissionCalled, false);
       });
     });
 
@@ -96,7 +98,7 @@ void main() {
 
       test('未捕捉の例外にならず権限確認も行われない', () async {
         await resume();
-        expect(fakeFcmTokenService.checkPermissionCalled, false);
+        expect(fakeNotificationService.checkPermissionCalled, false);
       });
     });
   });

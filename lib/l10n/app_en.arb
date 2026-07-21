@@ -205,6 +205,8 @@
   "settingsNotificationTimePickerTitle": "Notification Time",
   "settingsNotificationPermissionTitle": "Notification Permission Required",
   "settingsNotificationPermissionMessage": "Notifications are not allowed. Please enable them in the Settings app.",
+  "notificationGroupTask": "Task Notifications",
+  "notificationChannelTask": "Individual Task Notification",
   "settingsSectionDisplay": "Display Settings",
   "settingsDisplayType": "Display Type",
   "settingsDisplayHomeTimeline": "Timeline",

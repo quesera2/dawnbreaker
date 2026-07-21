@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:dawnbreaker/core/logger/app_logger.dart';
-import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
+import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:flutter/widgets.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -30,7 +30,7 @@ class NotificationPermissionObserver extends _$NotificationPermissionObserver
       final setting = await repository.watchNotificationSetting().first;
       if (!setting.enabled) return;
 
-      final service = await ref.read(fcmTokenServiceProvider.future);
+      final service = await ref.read(fcmNotificationServiceProvider.future);
       final hasPermission = await service.checkPermission();
       if (!hasPermission) {
         // 書き込みはオフラインだと完了しないため待たない。unawaited した Future の例外は

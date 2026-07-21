@@ -397,6 +397,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Notifications are not allowed. Please enable them in the Settings app.';
 
   @override
+  String get notificationGroupTask => 'Task Notifications';
+
+  @override
+  String get notificationChannelTask => 'Individual Task Notification';
+
+  @override
   String get settingsSectionDisplay => 'Display Settings';
 
   @override

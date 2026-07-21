@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:app_settings/app_settings.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
-import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
+import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest3;
 import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
@@ -84,9 +84,11 @@ class SettingsViewModel extends _$SettingsViewModel {
       isNotificationUpdating: true,
       notificationSetting: state.notificationSetting.copyWith(enabled: true),
     );
-    final fcmTokenService = await ref.read(fcmTokenServiceProvider.future);
+    final notificationService = await ref.read(
+      fcmNotificationServiceProvider.future,
+    );
 
-    final hasPermission = await fcmTokenService.checkPermission();
+    final hasPermission = await notificationService.checkPermission();
     if (hasPermission) {
       await _setNotificationSetting(state.notificationSetting);
       if (!ref.mounted) return;
@@ -94,7 +96,7 @@ class SettingsViewModel extends _$SettingsViewModel {
       return;
     }
 
-    final isGranted = await fcmTokenService.requestPermission();
+    final isGranted = await notificationService.requestPermission();
     if (!ref.mounted) return;
 
     if (!isGranted) {
@@ -109,7 +111,7 @@ class SettingsViewModel extends _$SettingsViewModel {
       return;
     }
 
-    await fcmTokenService.registerToken();
+    await notificationService.registerToken();
     if (!ref.mounted) return;
 
     await _setNotificationSetting(state.notificationSetting);

@@ -1,6 +1,6 @@
 import 'package:app_settings/app_settings.dart';
 import 'package:app_settings/app_settings_platform_interface.dart';
-import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
+import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart'
     show NotificationSetting, NotifyDay;
@@ -15,7 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../../helpers/fake_fcm_token_service.dart';
+import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
 import '../../../helpers/fake_settings_repository.dart';
 import '../../../helpers/fake_user_settings_repository.dart';
@@ -30,7 +30,7 @@ void main() {
   late SettingsUiState viewState;
   late FakeOnboardingRepository fakeOnboardingRepository;
   late FakeSettingsRepository fakeSettingsRepository;
-  late FakeFcmTokenService fakeFcmTokenService;
+  late FakeNotificationService fakeNotificationService;
   late FakeUserSettingsRepository fakeUserSettingsRepository;
 
   void setUpContainer({
@@ -55,7 +55,7 @@ void main() {
     fakeUserSettingsRepository = FakeUserSettingsRepository(
       notificationSetting: NotificationSetting(enabled: notificationEnabled),
     );
-    fakeFcmTokenService = FakeFcmTokenService(
+    fakeNotificationService = FakeNotificationService(
       checkPermissionResult: checkPermissionResult,
       permissionResult: permissionResult,
     );
@@ -65,7 +65,9 @@ void main() {
         onboardingRepositoryProvider.overrideWith(
           (_) => fakeOnboardingRepository,
         ),
-        fcmTokenServiceProvider.overrideWith((_) async => fakeFcmTokenService),
+        fcmNotificationServiceProvider.overrideWith(
+          (_) async => fakeNotificationService,
+        ),
         userSettingsRepositoryProvider.overrideWith(
           (_) async => fakeUserSettingsRepository,
         ),
@@ -225,7 +227,7 @@ void main() {
 
             test('通知先が登録される', () async {
               await viewModel.setNotificationEnabled(true);
-              expect(fakeFcmTokenService.registerTokenCount, 1);
+              expect(fakeNotificationService.registerTokenCount, 1);
             });
           });
 
@@ -258,7 +260,7 @@ void main() {
 
             test('通知先が登録されない', () async {
               await viewModel.setNotificationEnabled(true);
-              expect(fakeFcmTokenService.registerTokenCount, 0);
+              expect(fakeNotificationService.registerTokenCount, 0);
             });
 
             test('ハンドラを呼び出すとアプリの通知設定が開かれる', () async {

@@ -391,6 +391,12 @@ class AppLocalizationsJa extends AppLocalizations {
       '通知が許可されていません。設定アプリから通知を有効にしてください。';
 
   @override
+  String get notificationGroupTask => 'タスク通知';
+
+  @override
+  String get notificationChannelTask => '個別タスク通知';
+
+  @override
   String get settingsSectionDisplay => '表示設定';
 
   @override

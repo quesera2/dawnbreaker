@@ -28,8 +28,7 @@ setGlobalOptions({maxInstances: 1});
 
 initializeApp();
 
-// クライアント（flutter_local_notifications）が作成済みの Android チャンネル ID。
-// 指定しないと FCM 側のデフォルトチャンネルに流れ、重要度などの設定が効かない。
+// 個別通知の Android チャンネル ID。
 const androidChannelId = "individual_task_notification";
 
 // 通知本文。サーバー側はロケールを持たないため日本語固定とする（多言語対応は別途）。

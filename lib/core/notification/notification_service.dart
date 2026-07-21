@@ -1,7 +1,9 @@
-/// この端末を通知の送信先として登録する。
-abstract interface class FcmTokenService {
+/// FCM 通知に関するこの端末側の窓口。権限の確認・要求、送信先としてのトークン登録を担う。
+abstract interface class NotificationService {
+  /// 通知権限の有無をチェックする
   Future<bool> checkPermission();
 
+  /// 通知権限が必要な場合に取得処理を行う
   Future<bool> requestPermission();
 
   /// 通知の許可を得た直後に呼ぶ。

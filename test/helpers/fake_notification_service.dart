@@ -1,7 +1,7 @@
-import 'package:dawnbreaker/core/notification/fcm_token_service.dart';
+import 'package:dawnbreaker/core/notification/notification_service.dart';
 
-class FakeFcmTokenService implements FcmTokenService {
-  FakeFcmTokenService({
+class FakeNotificationService implements NotificationService {
+  FakeNotificationService({
     this.checkPermissionResult = true,
     this.permissionResult = true,
   });

@@ -1,5 +1,5 @@
 import 'package:dawnbreaker/core/logger/app_logger.dart';
-import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
+import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
@@ -47,8 +47,10 @@ class OnboardingViewModel extends _$OnboardingViewModel {
   // TODO: 通知設定はオンボーディングから消す
   // Firestoreに保存するようにしたため、通知への誘導タイミングはログイン（ゲストアカウント作成後）に移動させる
   Future<void> onRequestNotification() async {
-    final fcmTokenService = await ref.read(fcmTokenServiceProvider.future);
-    final isGranted = await fcmTokenService.requestPermission();
+    final notificationService = await ref.read(
+      fcmNotificationServiceProvider.future,
+    );
+    final isGranted = await notificationService.requestPermission();
     if (!ref.mounted) return;
 
     if (!isGranted) {
@@ -56,7 +58,7 @@ class OnboardingViewModel extends _$OnboardingViewModel {
       return;
     }
 
-    await fcmTokenService.registerToken();
+    await notificationService.registerToken();
     if (!ref.mounted) return;
 
     try {

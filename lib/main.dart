@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:dawnbreaker/app/app.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
-import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
+import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_permission_observer.dart';
 import 'package:dawnbreaker/data/preferences/shared_preferences_provider.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
@@ -46,9 +46,11 @@ void main() async {
   await container.read(taskRepositoryProvider.future);
   // どちらも初回フレームの描画に必要なく、Firestore への書き込み Future はオフラインでは
   // 完了しないため待たない。待つとスプラッシュが出たままアプリが起動しなくなる
-  final fcmTokenService = await container.read(fcmTokenServiceProvider.future);
+  final notificationService = await container.read(
+    fcmNotificationServiceProvider.future,
+  );
   unawaited(
-    fcmTokenService.registerToken().onError((e, s) {
+    notificationService.registerToken().onError((e, s) {
       logger.e('registerToken failed', error: e, stackTrace: s);
     }),
   );

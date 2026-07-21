@@ -1,4 +1,4 @@
-import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
+import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -8,7 +8,7 @@ import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../helpers/fake_fcm_token_service.dart';
+import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
 import '../../../helpers/fake_user_settings_repository.dart';
 
@@ -18,7 +18,7 @@ void main() {
   group('OnboardingViewModel', () {
     late ProviderContainer container;
     late FakeOnboardingRepository fakeRepository;
-    late FakeFcmTokenService fakeFcmTokenService;
+    late FakeNotificationService fakeNotificationService;
     late FakeUserSettingsRepository fakeUserSettingsRepository;
     late OnboardingViewModel viewModel;
     late OnboardingUiState viewState;
@@ -36,13 +36,13 @@ void main() {
 
     setUp(() {
       fakeRepository = FakeOnboardingRepository();
-      fakeFcmTokenService = FakeFcmTokenService();
+      fakeNotificationService = FakeNotificationService();
       fakeUserSettingsRepository = FakeUserSettingsRepository();
       container = ProviderContainer(
         overrides: [
           onboardingRepositoryProvider.overrideWith((_) => fakeRepository),
-          fcmTokenServiceProvider.overrideWith(
-            (_) async => fakeFcmTokenService,
+          fcmNotificationServiceProvider.overrideWith(
+            (_) async => fakeNotificationService,
           ),
           userSettingsRepositoryProvider.overrideWith(
             (_) async => fakeUserSettingsRepository,
@@ -129,7 +129,7 @@ void main() {
           (false, false, '通知を拒否しても次のページへ進み通知設定も通知先も変わらない'),
         ]) {
           test(description, () async {
-            fakeFcmTokenService.permissionResult = permissionGranted;
+            fakeNotificationService.permissionResult = permissionGranted;
             await viewModel.onRequestNotification();
             expect(viewState.destination?.type, OnboardingDestination.next);
             expect(
@@ -137,7 +137,7 @@ void main() {
               notificationEnabled,
             );
             expect(
-              fakeFcmTokenService.registerTokenCount,
+              fakeNotificationService.registerTokenCount,
               permissionGranted ? 1 : 0,
             );
           });
@@ -147,7 +147,7 @@ void main() {
       group('異常系', () {
         setUp(() {
           fakeUserSettingsRepository.shouldThrow = true;
-          fakeFcmTokenService.permissionResult = true;
+          fakeNotificationService.permissionResult = true;
           setUpState();
         });
 

@@ -1,4 +1,5 @@
-import 'package:dawnbreaker/core/notification/fcm_token_service_impl.dart';
+import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
+import 'package:dawnbreaker/l10n/app_localizations_ja.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -8,7 +9,7 @@ import '../../helpers/fake_notification_token_repository.dart';
 void main() {
   late FakeFirebaseMessaging messaging;
   late FakeNotificationTokenRepository repository;
-  late FcmTokenServiceImpl service;
+  late FcmNotificationServiceImpl service;
 
   void setUpService({
     AuthorizationStatus authorizationStatus = AuthorizationStatus.authorized,
@@ -19,7 +20,11 @@ void main() {
       token: token,
     );
     repository = FakeNotificationTokenRepository();
-    service = FcmTokenServiceImpl(repository: repository, messaging: messaging);
+    service = FcmNotificationServiceImpl(
+      repository: repository,
+      messaging: messaging,
+      l10n: AppLocalizationsJa(),
+    );
   }
 
   group('registerToken', () {
