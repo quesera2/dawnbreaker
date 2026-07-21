@@ -324,9 +324,6 @@ export const sendScheduledNotifications = onSchedule(
         });
       }
     } finally {
-      // ここまでにキューされた書き込みは、この後の処理が失敗しても確実に反映する。
-      // Cloud Functions は応答確定後 CPU 割り当てが絞られるため、close() を待たずに
-      // 関数を終えるとバックグラウンドの書き込みが完了する保証が弱くなる。
       await bulkWriter.close();
     }
   },
@@ -357,9 +354,7 @@ type Recipient = {
 type SendNotificationsResult = {
   // 無効だったトークンのユーザーごとの集合
   invalidTokensByUser: Map<string, Set<string>>;
-  // 1 通でも送信に成功した target の ref.path の集合。
-  // ここに含まれない target は「送信できていない」ので notifyAt を消さず、
-  // 次回（5分後）の実行に再送を委ねる。
+  // デバイストークンが１通でも送信に成功した target の ref.path の集合
   sentTargetPaths: Set<string>;
 };
 
@@ -440,8 +435,8 @@ async function sendNotifications(
         invalidTokensByUser.set(recipient.userId, tokens);
       });
     } catch (error) {
-      // このチャンクの target は sentTargetPaths に入らないため、
-      // 呼び出し元は notifyAt を消さず次回（5分後）の実行に再送を委ねる。
+      // このチャンクの target は送信済みリストに入らないため、
+      // 呼び出し元は notifyAt を消さず次回（5分後）に再度通知する
       logger.error("failed to send notification chunk", {error});
     }
   }
