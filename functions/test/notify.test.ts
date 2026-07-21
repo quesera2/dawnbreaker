@@ -4,7 +4,7 @@ import {
   NotificationSetting,
   parseNotificationSetting,
 } from "../src/notify";
-import {zdt, zonedDateTimeText} from "./helper/temporal";
+import {zdt} from "./helper/temporal";
 
 const setting = (
   override: Partial<NotificationSetting> = {},
@@ -62,68 +62,68 @@ describe("computeNotifyAt", () => {
   describe("notifyDay", () => {
     test("today のとき nextScheduledAt 当日の指定時刻を返す", () => {
       // nextScheduledAt = 1/10 12:00 JST → 当日 9:00 JST
-      expect(zonedDateTimeText(computeNotifyAt({
+      expect(computeNotifyAt({
         nextScheduledAt: zdt("2025-01-10T03:00:00Z"),
         setting: setting({notifyDay: "today", hour: 9, minute: 0}),
         timeZone: "Asia/Tokyo",
-      }))).toBe("2025-01-10T09:00:00+09:00[Asia/Tokyo]");
+      })).toEqual(zdt("2025-01-10T09:00:00+09:00[Asia/Tokyo]"));
     });
 
     test("yesterday のとき nextScheduledAt 前日の指定時刻を返す", () => {
       // nextScheduledAt = 1/10 12:00 JST → 前日 1/9 9:00 JST
-      expect(zonedDateTimeText(computeNotifyAt({
+      expect(computeNotifyAt({
         nextScheduledAt: zdt("2025-01-10T03:00:00Z"),
         setting: setting({notifyDay: "yesterday", hour: 9, minute: 0}),
         timeZone: "Asia/Tokyo",
-      }))).toBe("2025-01-09T09:00:00+09:00[Asia/Tokyo]");
+      })).toEqual(zdt("2025-01-09T09:00:00+09:00[Asia/Tokyo]"));
     });
 
     test("月初の yesterday は前月末日になる", () => {
       // nextScheduledAt = 3/1 12:00 JST → 前日は 2/28（2025年は平年）
-      expect(zonedDateTimeText(computeNotifyAt({
+      expect(computeNotifyAt({
         nextScheduledAt: zdt("2025-03-01T03:00:00Z"),
         setting: setting({notifyDay: "yesterday", hour: 9, minute: 0}),
         timeZone: "Asia/Tokyo",
-      }))).toBe("2025-02-28T09:00:00+09:00[Asia/Tokyo]");
+      })).toEqual(zdt("2025-02-28T09:00:00+09:00[Asia/Tokyo]"));
     });
   });
 
   describe("タイムゾーン", () => {
     test("日付はユーザーのタイムゾーンの壁時計で判定する", () => {
       // 1/10 23:00Z は JST では 1/11 08:00 なので、通知日は 1/11
-      expect(zonedDateTimeText(computeNotifyAt({
+      expect(computeNotifyAt({
         nextScheduledAt: zdt("2025-01-10T23:00:00Z"),
         setting: setting({notifyDay: "today", hour: 9, minute: 0}),
         timeZone: "Asia/Tokyo",
-      }))).toBe("2025-01-11T09:00:00+09:00[Asia/Tokyo]");
+      })).toEqual(zdt("2025-01-11T09:00:00+09:00[Asia/Tokyo]"));
     });
 
     test("時刻はユーザーのタイムゾーンの壁時計として解決する", () => {
       // nextScheduledAt = 1/10 07:00 EST → 当日 9:00 EST (UTC-5)
-      expect(zonedDateTimeText(computeNotifyAt({
+      expect(computeNotifyAt({
         nextScheduledAt: zdt("2025-01-10T12:00:00Z"),
         setting: setting({notifyDay: "today", hour: 9, minute: 0}),
         timeZone: "America/New_York",
-      }))).toBe("2025-01-10T09:00:00-05:00[America/New_York]");
+      })).toEqual(zdt("2025-01-10T09:00:00-05:00[America/New_York]"));
     });
 
     test("夏時間の切り替え日でもその日の壁時計時刻を返す", () => {
       // 2025-03-09 は New York の DST 開始日。9:00 は EDT (UTC-4) 側になる
-      expect(zonedDateTimeText(computeNotifyAt({
+      expect(computeNotifyAt({
         nextScheduledAt: zdt("2025-03-09T18:00:00Z"),
         setting: setting({notifyDay: "today", hour: 9, minute: 0}),
         timeZone: "America/New_York",
-      }))).toBe("2025-03-09T09:00:00-04:00[America/New_York]");
+      })).toEqual(zdt("2025-03-09T09:00:00-04:00[America/New_York]"));
     });
   });
 
   test("hour / minute をそのまま壁時計時刻に使う", () => {
     // nextScheduledAt = 1/10 12:00 JST → 当日 22:30 JST
-    expect(zonedDateTimeText(computeNotifyAt({
+    expect(computeNotifyAt({
       nextScheduledAt: zdt("2025-01-10T03:00:00Z"),
       setting: setting({hour: 22, minute: 30}),
       timeZone: "Asia/Tokyo",
-    }))).toBe("2025-01-10T22:30:00+09:00[Asia/Tokyo]");
+    })).toEqual(zdt("2025-01-10T22:30:00+09:00[Asia/Tokyo]"));
   });
 });
 
