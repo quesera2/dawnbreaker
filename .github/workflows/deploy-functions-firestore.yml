@@ -1,4 +1,4 @@
-name: Deploy Functions
+name: Deploy Functions & Firestore
 
 on:
   workflow_dispatch:
