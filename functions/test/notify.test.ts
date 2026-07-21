@@ -3,6 +3,7 @@ import {
   isSameNotificationSetting,
   NotificationSetting,
   parseNotificationSetting,
+  shouldSendNotification,
 } from "../src/notify";
 import {zdt} from "./helper/temporal";
 
@@ -191,5 +192,28 @@ describe("isSameNotificationSetting", () => {
     ["minute", {minute: 30}],
   ])("%s が異なれば false", (_, override) => {
     expect(isSameNotificationSetting(setting(), setting(override))).toBe(false);
+  });
+});
+
+describe("shouldSendNotification", () => {
+  test("lastNotifiedFor が null なら true（未送信）", () => {
+    expect(shouldSendNotification(
+      zdt("2025-01-10T09:00:00Z"),
+      null,
+    )).toBe(true);
+  });
+
+  test("lastNotifiedFor が scheduledAt と一致すれば false（送信済み）", () => {
+    expect(shouldSendNotification(
+      zdt("2025-01-10T09:00:00Z"),
+      zdt("2025-01-10T09:00:00Z"),
+    )).toBe(false);
+  });
+
+  test("lastNotifiedFor が scheduledAt と異なれば true（予定が変わったので再送）", () => {
+    expect(shouldSendNotification(
+      zdt("2025-01-11T09:00:00Z"),
+      zdt("2025-01-10T09:00:00Z"),
+    )).toBe(true);
   });
 });

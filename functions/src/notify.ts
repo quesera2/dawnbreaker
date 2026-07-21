@@ -105,6 +105,21 @@ export function computeNotifyAt(params: {
 }
 
 /**
+ * notifications ドキュメントを送信対象とすべきか判定する。
+ * 対象は「lastNotifiedFor が scheduledAt と一致しないもの」（重複送信の防止）。
+ * notifyAt <= now である前提はクエリ側で絞り込まれているため、ここでは見ない。
+ * @param {Temporal.ZonedDateTime} scheduledAt 送信元となった nextScheduledAt の値
+ * @param {Temporal.ZonedDateTime | null} lastNotifiedFor 通知済みの scheduledAt の値
+ * @return {boolean} 送信すべきなら true
+ */
+export function shouldSendNotification(
+  scheduledAt: Temporal.ZonedDateTime,
+  lastNotifiedFor: Temporal.ZonedDateTime | null,
+): boolean {
+  return lastNotifiedFor == null || !lastNotifiedFor.equals(scheduledAt);
+}
+
+/**
  * IANA タイムゾーン名として解決できるかを判定する
  * @param {string} timeZone 判定対象
  * @return {boolean} 解決できれば true
