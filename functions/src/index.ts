@@ -306,8 +306,10 @@ export const sendScheduledNotifications = onSchedule(
       targets.push({userRef, taskId: doc.id, ref: doc.ref, scheduledAt});
     }
 
-    const invalidTokensByUser = await sendNotifications(targets);
+    const {invalidTokensByUser, sentTargetPaths} =
+      await sendNotifications(targets);
     for (const target of targets) {
+      if (!sentTargetPaths.has(target.ref.path)) continue;
       bulkWriter.update(target.ref, {
         lastNotifiedFor: Timestamp.fromMillis(
           target.scheduledAt.epochMilliseconds,
@@ -341,19 +343,35 @@ type NotificationTarget = {
 type Recipient = {
   userId: string;
   token: string;
+  targetPath: string;
+};
+
+/**
+ * sendNotifications() の結果
+ */
+type SendNotificationsResult = {
+  // 無効だったトークンのユーザーごとの集合
+  invalidTokensByUser: Map<string, Set<string>>;
+  // 1 通でも送信に成功した target の ref.path の集合。
+  // ここに含まれない target は「送信できていない」ので notifyAt を消さず、
+  // 次回（5分後）の実行に再送を委ねる。
+  sentTargetPaths: Set<string>;
 };
 
 /**
  * 対象の通知をタスク名・fcmTokens で解決して FCM に送信する。
  * 同じユーザーの users ドキュメントはタスクが複数あっても 1 回だけ読む。
  * @param {NotificationTarget[]} targets 送信対象の一覧
- * @return {Promise<Map<string, Set<string>>>} 無効だったトークンのユーザーごとの集合
+ * @return {Promise<SendNotificationsResult>} 送信結果
  */
 async function sendNotifications(
   targets: NotificationTarget[],
-): Promise<Map<string, Set<string>>> {
+): Promise<SendNotificationsResult> {
   const invalidTokensByUser = new Map<string, Set<string>>();
-  if (targets.length === 0) return invalidTokensByUser;
+  const sentTargetPaths = new Set<string>();
+  if (targets.length === 0) {
+    return {invalidTokensByUser, sentTargetPaths};
+  }
 
   const userSnapshots = new Map<
     string, Promise<FirebaseFirestore.DocumentSnapshot>
@@ -383,7 +401,11 @@ async function sendNotifications(
         notification: {title: taskName, body: notificationBody},
         android: {notification: {channelId: androidChannelId}},
       });
-      recipients.push({userId: target.userRef.id, token});
+      recipients.push({
+        userId: target.userRef.id,
+        token,
+        targetPath: target.ref.path,
+      });
     }
   }));
 
@@ -393,8 +415,11 @@ async function sendNotifications(
     const chunkRecipients = recipients.slice(i, i + sendEachChunkSize);
     const response = await messaging.sendEach(chunk);
     response.responses.forEach((result, index) => {
-      if (result.success) return;
       const recipient = chunkRecipients[index];
+      if (result.success) {
+        sentTargetPaths.add(recipient.targetPath);
+        return;
+      }
       if (result.error?.code !==
         "messaging/registration-token-not-registered") {
         logger.error("failed to send notification", {
@@ -410,7 +435,7 @@ async function sendNotifications(
     });
   }
 
-  return invalidTokensByUser;
+  return {invalidTokensByUser, sentTargetPaths};
 }
 
 /**
