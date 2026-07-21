@@ -289,41 +289,46 @@ export const sendScheduledNotifications = onSchedule(
 
     const targets: NotificationTarget[] = [];
     const bulkWriter = db.bulkWriter();
-    for (const doc of snapshot.docs) {
-      const data = doc.data();
-      const scheduledAt = toZonedDateTime(data.scheduledAt as Timestamp);
-      const lastNotifiedFor = data.lastNotifiedFor == null ?
-        null :
-        toZonedDateTime(data.lastNotifiedFor as Timestamp);
-      if (!shouldSendNotification(scheduledAt, lastNotifiedFor)) {
-        // 他トリガーによる notifyAt の再計算で復活した、送信済み分の帳簿。
-        // notifyAt だけ削除する（詳細は schema.md）
-        bulkWriter.update(doc.ref, {notifyAt: FieldValue.delete()});
-        continue;
+    try {
+      for (const doc of snapshot.docs) {
+        const data = doc.data();
+        const scheduledAt = toZonedDateTime(data.scheduledAt as Timestamp);
+        const lastNotifiedFor = data.lastNotifiedFor == null ?
+          null :
+          toZonedDateTime(data.lastNotifiedFor as Timestamp);
+        if (!shouldSendNotification(scheduledAt, lastNotifiedFor)) {
+          // 他トリガーによる notifyAt の再計算で復活した、送信済み分の帳簿。
+          // notifyAt だけ削除する（詳細は schema.md）
+          bulkWriter.update(doc.ref, {notifyAt: FieldValue.delete()});
+          continue;
+        }
+        const userRef = doc.ref.parent.parent;
+        if (userRef == null) continue; // notifications はユーザーの子なので実際には起きない
+        targets.push({userRef, taskId: doc.id, ref: doc.ref, scheduledAt});
       }
-      const userRef = doc.ref.parent.parent;
-      if (userRef == null) continue; // notifications はユーザーの子なので実際には起きない
-      targets.push({userRef, taskId: doc.id, ref: doc.ref, scheduledAt});
-    }
 
-    const {invalidTokensByUser, sentTargetPaths} =
-      await sendNotifications(targets);
-    for (const target of targets) {
-      if (!sentTargetPaths.has(target.ref.path)) continue;
-      bulkWriter.update(target.ref, {
-        lastNotifiedFor: Timestamp.fromMillis(
-          target.scheduledAt.epochMilliseconds,
-        ),
-        notifyAt: FieldValue.delete(),
-      });
+      const {invalidTokensByUser, sentTargetPaths} =
+        await sendNotifications(targets);
+      for (const target of targets) {
+        if (!sentTargetPaths.has(target.ref.path)) continue;
+        bulkWriter.update(target.ref, {
+          lastNotifiedFor: Timestamp.fromMillis(
+            target.scheduledAt.epochMilliseconds,
+          ),
+          notifyAt: FieldValue.delete(),
+        });
+      }
+      for (const [userId, tokens] of invalidTokensByUser) {
+        bulkWriter.update(db.collection("users").doc(userId), {
+          fcmTokens: FieldValue.arrayRemove(...tokens),
+        });
+      }
+    } finally {
+      // ここまでにキューされた書き込みは、この後の処理が失敗しても確実に反映する。
+      // Cloud Functions は応答確定後 CPU 割り当てが絞られるため、close() を待たずに
+      // 関数を終えるとバックグラウンドの書き込みが完了する保証が弱くなる。
+      await bulkWriter.close();
     }
-    for (const [userId, tokens] of invalidTokensByUser) {
-      bulkWriter.update(db.collection("users").doc(userId), {
-        fcmTokens: FieldValue.arrayRemove(...tokens),
-      });
-    }
-
-    await bulkWriter.close();
   },
 );
 
@@ -413,26 +418,32 @@ async function sendNotifications(
   for (let i = 0; i < messages.length; i += sendEachChunkSize) {
     const chunk = messages.slice(i, i + sendEachChunkSize);
     const chunkRecipients = recipients.slice(i, i + sendEachChunkSize);
-    const response = await messaging.sendEach(chunk);
-    response.responses.forEach((result, index) => {
-      const recipient = chunkRecipients[index];
-      if (result.success) {
-        sentTargetPaths.add(recipient.targetPath);
-        return;
-      }
-      if (result.error?.code !==
-        "messaging/registration-token-not-registered") {
-        logger.error("failed to send notification", {
-          error: result.error,
-          userId: recipient.userId,
-        });
-        return;
-      }
-      const tokens = invalidTokensByUser.get(recipient.userId) ??
-        new Set<string>();
-      tokens.add(recipient.token);
-      invalidTokensByUser.set(recipient.userId, tokens);
-    });
+    try {
+      const response = await messaging.sendEach(chunk);
+      response.responses.forEach((result, index) => {
+        const recipient = chunkRecipients[index];
+        if (result.success) {
+          sentTargetPaths.add(recipient.targetPath);
+          return;
+        }
+        if (result.error?.code !==
+          "messaging/registration-token-not-registered") {
+          logger.error("failed to send notification", {
+            error: result.error,
+            userId: recipient.userId,
+          });
+          return;
+        }
+        const tokens = invalidTokensByUser.get(recipient.userId) ??
+          new Set<string>();
+        tokens.add(recipient.token);
+        invalidTokensByUser.set(recipient.userId, tokens);
+      });
+    } catch (error) {
+      // このチャンクの target は sentTargetPaths に入らないため、
+      // 呼び出し元は notifyAt を消さず次回（5分後）の実行に再送を委ねる。
+      logger.error("failed to send notification chunk", {error});
+    }
   }
 
   return {invalidTokensByUser, sentTargetPaths};
