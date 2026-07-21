@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/notification_service.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_notification_token_repository.dart';
 import 'package:dawnbreaker/data/repository/user/notification_token_repository.dart';
@@ -30,13 +31,21 @@ Future<NotificationService> fcmNotificationService(Ref ref) async {
 
   // トークンは FCM の都合で作り直されることがあるため、`onTokenRefresh` を購読して追随する。
   final onTokenRefreshSubscription = messaging.onTokenRefresh.listen(
-    (token) => unawaited(repository.addToken(token)),
+    (token) => unawaited(
+      repository.addToken(token).onError((e, s) {
+        logger.e('write token failed.', error: e, stackTrace: s);
+      }),
+    ),
   );
   ref.onDispose(onTokenRefreshSubscription.cancel);
 
   // フォアグラウンド通知を受け取ったときに表示を行う
   final onMessageSubscription = FirebaseMessaging.onMessage.listen(
-    (message) => unawaited(service.show(message)),
+    (message) => unawaited(
+      service.show(message).onError((e, s) {
+        logger.e('show foreground message failed.', error: e, stackTrace: s);
+      }),
+    ),
   );
   ref.onDispose(onMessageSubscription.cancel);
 
