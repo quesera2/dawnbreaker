@@ -1,12 +1,13 @@
 {
-  "indexes": [
+  "indexes": [],
+  "fieldOverrides": [
     {
       "collectionGroup": "notifications",
-      "queryScope": "COLLECTION_GROUP",
-      "fields": [
-        {"fieldPath": "notifyAt", "order": "ASCENDING"}
+      "fieldPath": "notifyAt",
+      "indexes": [
+        {"order": "ASCENDING", "queryScope": "COLLECTION_GROUP"},
+        {"order": "DESCENDING", "queryScope": "COLLECTION_GROUP"}
       ]
     }
-  ],
-  "fieldOverrides": []
+  ]
 }
