@@ -231,7 +231,7 @@ abstract interface class UserRepository {
     - 再計算の契機は `recalcScheduleCache` の後（そのタスク 1 件）と、
       `users` の `notificationSetting` / `timezone` の変更（そのユーザーの全タスク）
     - 検証: Firestore を直接見て `notifyAt` が期待通りに入る・消えることを確認する
-- [ ] **PR4: 送信 Function（Cloud Scheduler 5 分間隔）**
+- [x] **PR4: 送信 Function（Cloud Scheduler 5 分間隔）**
     - `collectionGroup('notifications').where('notifyAt', '<=', now)` で送信対象を引く
     - 重複送信の防止に `lastNotifiedFor` を使う。送信後に `scheduledAt` を書き、`notifyAt` を消す
     - `messaging/registration-token-not-registered` のトークンは `fcmTokens` から `arrayRemove` する
@@ -246,7 +246,7 @@ abstract interface class UserRepository {
 
 ## Phase8
 
-ろぐいn主題は認証基盤の作り替え。SQLite / LocalUser を捨てて匿名認証に一本化し、Phase9 のログイン画面が
+主題は認証基盤の作り替え。SQLite / LocalUser を捨てて匿名認証に一本化し、Phase9 のログイン画面が
 乗る土台を用意する。ソーシャルログインはまだ入れず、全員が匿名（`Guest`）のまま新構造に載せ替える。
 旧 Phase10 の「起動時ブラックアウト」もここで閉じる。
 

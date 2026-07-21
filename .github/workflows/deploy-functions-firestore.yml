@@ -1,4 +1,4 @@
-name: Deploy Functions
+name: Deploy Functions & Firestore
 
 on:
   workflow_dispatch:
@@ -48,5 +48,6 @@ jobs:
 
       - name: Deploy to Firebase
         run: >
-          npx firebase-tools deploy --only functions
+          npx firebase-tools deploy
+          --only functions,firestore:rules,firestore:indexes
           --project "${{ steps.project.outputs.id }}"

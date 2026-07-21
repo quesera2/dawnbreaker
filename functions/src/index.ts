@@ -4,9 +4,11 @@ import {
   onDocumentDeleted,
   onDocumentWritten,
 } from "firebase-functions/v2/firestore";
+import {onSchedule} from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
 import {initializeApp} from "firebase-admin/app";
 import {FieldValue, getFirestore, Timestamp} from "firebase-admin/firestore";
+import {getMessaging, Message} from "firebase-admin/messaging";
 import {
   computeScheduledAt,
   isSameScheduleConfig,
@@ -19,11 +21,22 @@ import {
   isSameNotificationSetting,
   NotificationSetting,
   parseNotificationSetting,
+  shouldSendNotification,
 } from "./notify";
 
 setGlobalOptions({maxInstances: 1});
 
 initializeApp();
+
+// クライアント（flutter_local_notifications）が作成済みの Android チャンネル ID。
+// 指定しないと FCM 側のデフォルトチャンネルに流れ、重要度などの設定が効かない。
+const androidChannelId = "individual_task_notification";
+
+// 通知本文。サーバー側はロケールを持たないため日本語固定とする（多言語対応は別途）。
+const notificationBody = "予定日になりました";
+
+// sendEach() の1回の呼び出しで送信できるメッセージ数の上限
+const sendEachChunkSize = 500;
 
 /**
  * 実行履歴 (executions) の作成・更新・削除をトリガーに、
@@ -38,7 +51,7 @@ export const onExecutionWritten = onDocumentWritten(
     const {userId, taskId} = event.params;
     const userRef = getFirestore().collection("users").doc(userId);
 
-    const taskDefSnap = await taskDefinitionRef(userRef, taskId).get();
+    const taskDefSnap = await taskDefinitionRef(userId, taskId).get();
     const taskDefData = taskDefSnap.data();
     if (taskDefData == null) {
       // タスク削除時、onTaskDefinitionDeleted が executions を掃除する過程で
@@ -104,7 +117,7 @@ async function recalcScheduleCache(
   taskType: TaskType,
   config: ScheduleConfig | null,
 ): Promise<void> {
-  const taskDefRef = taskDefinitionRef(userRef, taskId);
+  const taskDefRef = taskDefinitionRef(userRef.id, taskId);
   // irregular は nextScheduledAt を持たず lastExecutedAt しか使わないため、
   // 平均間隔計算用の直近 scheduleHistoryLimit 件をまとめて読む必要がない
   const historyLimit = taskType === "irregular" ? 1 : scheduleHistoryLimit;
@@ -253,23 +266,219 @@ export const onTaskDefinitionDeleted = onDocumentDeleted(
     const userRef = db.collection("users").doc(userId);
 
     await db.recursiveDelete(
-      taskDefinitionRef(userRef, taskId).collection("executions"),
+      taskDefinitionRef(userId, taskId).collection("executions"),
     );
     await userRef.collection("notifications").doc(taskId).delete();
   },
 );
 
 /**
+ * 5分間隔で notifications の帳簿を検索し、送信対象になった通知を FCM で送る。
+ * タスクごとに送信 API を呼ぶと対象件数分だけ HTTP 呼び出しが発生してしまうため、
+ * その回の対象を Message[] にまとめて sendEach() でバッチ送信する。
+ */
+export const sendScheduledNotifications = onSchedule(
+  "every 5 minutes",
+  async () => {
+    const db = getFirestore();
+    const snapshot = await db
+      .collectionGroup("notifications")
+      .where("notifyAt", "<=", Timestamp.now())
+      .get();
+    if (snapshot.empty) return;
+
+    const targets: NotificationTarget[] = [];
+    const bulkWriter = db.bulkWriter();
+    try {
+      for (const doc of snapshot.docs) {
+        const data = doc.data();
+        const scheduledAtTimestamp = data.scheduledAt as Timestamp;
+        const scheduledAt = toZonedDateTime(scheduledAtTimestamp);
+        const lastNotifiedFor = data.lastNotifiedFor == null ?
+          null :
+          toZonedDateTime(data.lastNotifiedFor as Timestamp);
+        if (!shouldSendNotification(scheduledAt, lastNotifiedFor)) {
+          // 他トリガーによる notifyAt の再計算で復活した、送信済み分の帳簿。
+          // notifyAt だけ削除する（詳細は schema.md）
+          bulkWriter.update(doc.ref, {notifyAt: FieldValue.delete()});
+          continue;
+        }
+        const userRef = doc.ref.parent.parent;
+        if (userRef == null) continue; // notifications はユーザーの子なので実際には起きない
+        targets.push({
+          userId: userRef.id,
+          taskId: doc.id,
+          ref: doc.ref,
+          scheduledAt: scheduledAtTimestamp,
+        });
+      }
+
+      const {invalidTokensByUser, sentTargetPaths, unreachableTargetPaths} =
+        await sendNotifications(targets);
+      for (const target of targets) {
+        if (sentTargetPaths.has(target.ref.path)) {
+          bulkWriter.update(target.ref, {
+            lastNotifiedFor: target.scheduledAt,
+            notifyAt: FieldValue.delete(),
+          });
+        } else if (unreachableTargetPaths.has(target.ref.path)) {
+          // 配信先がなく試行すらしていないため、lastNotifiedFor は更新しない。
+          // スケジュール再計算で notifyAt が復活すれば改めて送信対象になる。
+          bulkWriter.update(target.ref, {notifyAt: FieldValue.delete()});
+        }
+        // どちらでもなければ一時的な送信失敗のため、notifyAt を残し次回に委ねる
+      }
+      for (const [userId, tokens] of invalidTokensByUser) {
+        bulkWriter.update(db.collection("users").doc(userId), {
+          fcmTokens: FieldValue.arrayRemove(...tokens),
+        });
+      }
+    } finally {
+      await bulkWriter.close();
+    }
+  },
+);
+
+/**
+ * 送信対象となった notifications 帳簿 1 件分
+ */
+type NotificationTarget = {
+  userId: string;
+  taskId: string;
+  ref: FirebaseFirestore.DocumentReference;
+  scheduledAt: Timestamp;
+};
+
+/**
+ * 送信対象の 1 端末分。送信する Message とその宛先情報を 1 つにまとめたもの。
+ * 別々の配列に分けると、チャンク分割時のインデックス対応が壊れやすいため。
+ */
+type MessageEntry = {
+  message: Message;
+  userId: string;
+  token: string;
+  targetPath: string;
+};
+
+/**
+ * sendNotifications() の結果
+ */
+type SendNotificationsResult = {
+  // 無効だったトークンのユーザーごとの集合
+  invalidTokensByUser: Map<string, Set<string>>;
+  // デバイストークンが１通でも送信に成功した target の ref.path の集合
+  sentTargetPaths: Set<string>;
+  // タスクが読めない、または送信先の端末がない場合（再送不要として扱う）
+  unreachableTargetPaths: Set<string>;
+};
+
+/**
+ * 対象の通知をタスク名・fcmTokens で解決して FCM に送信する。
+ * 同じユーザーの users ドキュメントはタスクが複数あっても 1 回だけ読む。
+ * @param {NotificationTarget[]} targets 送信対象の一覧
+ * @return {Promise<SendNotificationsResult>} 送信結果
+ */
+async function sendNotifications(
+  targets: NotificationTarget[],
+): Promise<SendNotificationsResult> {
+  const invalidTokensByUser = new Map<string, Set<string>>();
+  const sentTargetPaths = new Set<string>();
+  const unreachableTargetPaths = new Set<string>();
+  if (targets.length === 0) {
+    return {invalidTokensByUser, sentTargetPaths, unreachableTargetPaths};
+  }
+
+  const getTaskName = (
+    userId: string,
+    taskId: string,
+  ): Promise<string | null> => taskDefinitionRef(userId, taskId).get()
+    .then((snapshot) => (snapshot.data()?.name ?? null) as string | null);
+
+  // ユーザーごとに１回だけ FCM トークンを取得する
+  const fcmTokensByUser = new Map<string, Promise<string[]>>();
+  const getCachedFcmTokens = (userId: string): Promise<string[]> => {
+    const cached = fcmTokensByUser.get(userId);
+    if (cached != null) return cached;
+    const promise = getFirestore().collection("users").doc(userId).get()
+      .then((snapshot) => (snapshot.data()?.fcmTokens ?? []) as string[]);
+    fcmTokensByUser.set(userId, promise);
+    return promise;
+  };
+
+  const entries: MessageEntry[] = [];
+  await Promise.all(targets.map(async (target) => {
+    const [taskName, fcmTokens] = await Promise.all([
+      getTaskName(target.userId, target.taskId),
+      getCachedFcmTokens(target.userId),
+    ]);
+    if (taskName == null || fcmTokens.length === 0) {
+      unreachableTargetPaths.add(target.ref.path);
+      return;
+    }
+
+    for (const token of fcmTokens) {
+      entries.push({
+        message: {
+          token,
+          notification: {title: taskName, body: notificationBody},
+          android: {notification: {channelId: androidChannelId}},
+        },
+        userId: target.userId,
+        token,
+        targetPath: target.ref.path,
+      });
+    }
+  }));
+
+  const messaging = getMessaging();
+  for (let i = 0; i < entries.length; i += sendEachChunkSize) {
+    const chunk = entries.slice(i, i + sendEachChunkSize);
+    try {
+      const response = await messaging.sendEach(
+        chunk.map((entry) => entry.message),
+      );
+      response.responses.forEach((result, index) => {
+        const entry = chunk[index];
+        if (result.success) {
+          sentTargetPaths.add(entry.targetPath);
+          return;
+        }
+        if (result.error?.code !==
+          "messaging/registration-token-not-registered") {
+          logger.error("failed to send notification", {
+            error: result.error,
+            userId: entry.userId,
+          });
+          return;
+        }
+        const tokens = invalidTokensByUser.get(entry.userId) ??
+          new Set<string>();
+        tokens.add(entry.token);
+        invalidTokensByUser.set(entry.userId, tokens);
+      });
+    } catch (error) {
+      // このチャンクの target は送信済みリストに入らないため、
+      // 呼び出し元は notifyAt を消さず次回（5分後）に再度通知する
+      logger.error("failed to send notification chunk", {error});
+    }
+  }
+
+  return {invalidTokensByUser, sentTargetPaths, unreachableTargetPaths};
+}
+
+/**
  * ユーザー配下のタスク定義への参照を組み立てる
- * @param {FirebaseFirestore.DocumentReference} userRef 対象ユーザーへの参照
+ * @param {string} userId 対象ユーザーの ID
  * @param {string} taskId 対象タスク定義の ID
  * @return {FirebaseFirestore.DocumentReference} タスク定義への参照
  */
 function taskDefinitionRef(
-  userRef: FirebaseFirestore.DocumentReference,
+  userId: string,
   taskId: string,
 ): FirebaseFirestore.DocumentReference {
-  return userRef.collection("taskDefinitions").doc(taskId);
+  return getFirestore()
+    .collection("users").doc(userId)
+    .collection("taskDefinitions").doc(taskId);
 }
 
 /**
