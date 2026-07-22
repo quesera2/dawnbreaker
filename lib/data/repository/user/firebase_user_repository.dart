@@ -1,5 +1,6 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository.dart';
+import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -23,7 +24,7 @@ class FirebaseUserRepository implements UserRepository {
     final credential = await FirebaseAuth.instance.signInAnonymously();
     final user = credential.user;
     if (user == null) {
-      throw StateError('サインインが成功したのにユーザーが返ってこなかった');
+      throw const SignInException('sign-in succeeded but returned no user');
     }
     return Guest(user.uid);
   }

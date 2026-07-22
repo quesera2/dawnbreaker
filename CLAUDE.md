@@ -50,6 +50,15 @@ Dart 3.7 以降の構文を積極的に使う：
   ```
 - **ワイルドカード**: 使わない引数は `(_, _)` と書く（`__` は古い書き方）
 
+## エラー処理
+
+- **例外はリポジトリごとに定義する。** `StateError` などの汎用型を投げず、
+  `xxx_repository_exception.dart` に `sealed class XxxRepositoryException` を作り、その下に具体的な型を並べる
+- **例外のメッセージは英語で書く。** ログ・Crashlytics に出るものであり、ユーザーには見せない
+  （ユーザーに見せる文言は l10n を通す）
+- `!`（null assertion）で潰さない。`Null check operator used on a null value` としか残らず原因が読めないため、
+  何が起きたかを書いた例外を投げる
+
 ## クラスのメンバー順序
 
 **呼び出し元のメソッドを先に書き、そこから呼び出されるメソッドを後に書く。** これは public → private だけでなく、private メソッド同士（private が別の private を呼ぶ場合）にも適用する。1つの private メソッドが複数箇所から呼ばれる場合は、最後の呼び出し元より後ろに置く。

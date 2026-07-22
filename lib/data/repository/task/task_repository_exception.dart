@@ -31,3 +31,7 @@ class TaskDeleteException extends TaskRepositoryException {
 class TaskInvalidArgumentException extends TaskRepositoryException {
   const TaskInvalidArgumentException([super.message]);
 }
+
+class TaskNotSignedInException extends TaskRepositoryException {
+  const TaskNotSignedInException([super.message]);
+}

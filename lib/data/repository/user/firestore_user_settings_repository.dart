@@ -14,7 +14,9 @@ Future<UserSettingsRepository> userSettingsRepository(Ref ref) async {
   final user = ref.watch(currentUserProvider);
   final timeZone = await FlutterTimezone.getLocalTimezone();
   return switch (user) {
-    NoLogin() => throw StateError('サインインしていないユーザーは通知設定を持たない'),
+    NoLogin() => throw const UserSettingsNotSignedInException(
+      'a signed-out user has no notification setting',
+    ),
     SignedInUser(:final id) => FirestoreUserSettingsRepository(
       userId: id,
       firestore: FirebaseFirestore.instance,

@@ -21,7 +21,7 @@ class FakeUserRepository implements UserRepository {
 
   @override
   Future<Guest> signInAsGuest() async =>
-      throw UnimplementedError('このテストでは呼ばない');
+      throw UnimplementedError('not called in this test');
 
   void emit(AppUser user) => _controller.add(user);
 
