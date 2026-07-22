@@ -46,9 +46,9 @@ void main() async {
   );
   // PR2 時点では挙動を変えないため、これまで getUser() が内部でやっていた匿名サインインを
   // ここで明示的に呼ぶ。無条件に呼ぶと「匿名でない既存ユーザーはサインアウトされる」という
-  // signInAnonymously() の仕様を踏むため、NoLogin のときだけに絞る。外すのは PR4
+  // FirebaseAuth.signInAnonymously() の仕様を踏むため、NoLogin のときだけに絞る。外すのは PR4
   if (container.read(currentUserProvider) is NoLogin) {
-    await container.read(userRepositoryProvider).signInAnonymously();
+    await container.read(userRepositoryProvider).signInAsGuest();
   }
   await container.read(taskRepositoryProvider.future);
   // どちらも初回フレームの描画に必要なく、Firestore への書き込み Future はオフラインでは

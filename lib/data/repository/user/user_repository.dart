@@ -8,5 +8,5 @@ abstract interface class UserRepository {
   Stream<AppUser> watchUser();
 
   /// 「ゲストではじめる」を押したときにだけ呼ぶ
-  Future<SignedInUser> signInAnonymously();
+  Future<Guest> signInAsGuest();
 }

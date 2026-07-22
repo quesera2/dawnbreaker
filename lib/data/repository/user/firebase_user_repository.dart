@@ -19,9 +19,13 @@ class FirebaseUserRepository implements UserRepository {
       FirebaseAuth.instance.authStateChanges().map(_toAppUser);
 
   @override
-  Future<SignedInUser> signInAnonymously() async {
+  Future<Guest> signInAsGuest() async {
     final credential = await FirebaseAuth.instance.signInAnonymously();
-    return _toSignedInUser(credential.user!);
+    final user = credential.user;
+    if (user == null) {
+      throw StateError('サインインが成功したのにユーザーが返ってこなかった');
+    }
+    return Guest(user.uid);
   }
 
   AppUser _toAppUser(User? user) =>

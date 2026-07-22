@@ -20,7 +20,7 @@ class FakeUserRepository implements UserRepository {
   Stream<AppUser> watchUser() => _controller.stream;
 
   @override
-  Future<SignedInUser> signInAnonymously() async =>
+  Future<Guest> signInAsGuest() async =>
       throw UnimplementedError('このテストでは呼ばない');
 
   void emit(AppUser user) => _controller.add(user);
