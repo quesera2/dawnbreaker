@@ -201,6 +201,19 @@
   "loginWithApple": "Appleでサインイン",
   "loginOr": "または",
   "loginStartAsGuest": "ゲストではじめる",
+  "loginTermsAgreement": "サインインすることで、{terms} および {privacy} に同意したものとみなされます。",
+  "@loginTermsAgreement": {
+    "placeholders": {
+      "terms": {
+        "type": "String"
+      },
+      "privacy": {
+        "type": "String"
+      }
+    }
+  },
+  "loginTermsOfService": "利用規約",
+  "loginPrivacyPolicy": "プライバシーポリシー",
   "notificationIntroTitle": "スケジュールになったら通知でお知らせ",
   "notificationIntroBody": "通知を有効にすると、予定日になったタイミングでお知らせします。通知は後から設定することもできます。",
   "notificationIntroEnable": "通知を有効にする",

@@ -377,6 +377,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get loginStartAsGuest => 'ゲストではじめる';
 
   @override
+  String loginTermsAgreement(String terms, String privacy) {
+    return 'サインインすることで、$terms および $privacy に同意したものとみなされます。';
+  }
+
+  @override
+  String get loginTermsOfService => '利用規約';
+
+  @override
+  String get loginPrivacyPolicy => 'プライバシーポリシー';
+
+  @override
   String get notificationIntroTitle => 'スケジュールになったら通知でお知らせ';
 
   @override

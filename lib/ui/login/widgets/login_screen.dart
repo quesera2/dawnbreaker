@@ -6,6 +6,7 @@ import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_view_model.dart';
 import 'package:dawnbreaker/ui/login/widgets/social_sign_in_button.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -226,8 +227,91 @@ class _SignInSheet extends StatelessWidget {
             ),
             child: Text(context.l10n.loginStartAsGuest),
           ),
+          // TODO: 規約とポリシーが用意できていないため空
+          _TermsNotice(onClickTerms: () {}, onClickPrivacy: () {}),
         ],
       ),
+    );
+  }
+}
+
+/// 利用規約、プライバシーポリシーの文言
+class _TermsNotice extends StatefulWidget {
+  const _TermsNotice({
+    required this.onClickTerms,
+    required this.onClickPrivacy,
+  });
+
+  final VoidCallback onClickTerms;
+  final VoidCallback onClickPrivacy;
+
+  @override
+  State<_TermsNotice> createState() => _TermsNoticeState();
+}
+
+class _TermsNoticeState extends State<_TermsNotice> {
+  late final TapGestureRecognizer _termsRecognizer;
+  late final TapGestureRecognizer _privacyRecognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    // widget 越しに呼ぶ。ハンドラを直接持つと差し替えられたとき古い方を掴んだままになる
+    _termsRecognizer = TapGestureRecognizer()
+      ..onTap = () => widget.onClickTerms();
+    _privacyRecognizer = TapGestureRecognizer()
+      ..onTap = () => widget.onClickPrivacy();
+  }
+
+  @override
+  void dispose() {
+    _termsRecognizer.dispose();
+    _privacyRecognizer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.appColorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Text.rich(
+        _termsText(context),
+        textAlign: TextAlign.center,
+        style: AppTextStyle.overline.copyWith(
+          color: colorScheme.textSubtle,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+    );
+  }
+
+  /// 文中の「利用規約」「プライバシーポリシー」だけをリンクにする。
+  TextSpan _termsText(BuildContext context) {
+    final terms = context.l10n.loginTermsOfService;
+    final privacy = context.l10n.loginPrivacyPolicy;
+    final linkStyle = TextStyle(
+      color: context.appColorScheme.textMuted,
+      decoration: TextDecoration.underline,
+    );
+
+    final sentence = context.l10n.loginTermsAgreement(terms, privacy);
+    final [before, between] = sentence.split(terms);
+    final [conjunction, after] = between.split(privacy);
+
+    return TextSpan(
+      children: [
+        TextSpan(text: before),
+        TextSpan(text: terms, style: linkStyle, recognizer: _termsRecognizer),
+        TextSpan(text: conjunction),
+        TextSpan(
+          text: privacy,
+          style: linkStyle,
+          recognizer: _privacyRecognizer,
+        ),
+        TextSpan(text: after),
+      ],
     );
   }
 }

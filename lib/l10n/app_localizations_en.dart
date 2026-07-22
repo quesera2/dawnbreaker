@@ -384,6 +384,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginStartAsGuest => 'Start as a guest';
 
   @override
+  String loginTermsAgreement(String terms, String privacy) {
+    return 'By signing in, you agree to the $terms and the $privacy.';
+  }
+
+  @override
+  String get loginTermsOfService => 'Terms of Service';
+
+  @override
+  String get loginPrivacyPolicy => 'Privacy Policy';
+
+  @override
   String get notificationIntroTitle => 'Get notified when tasks are due';
 
   @override

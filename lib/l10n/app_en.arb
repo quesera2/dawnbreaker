@@ -201,6 +201,19 @@
   "loginWithApple": "Sign in with Apple",
   "loginOr": "or",
   "loginStartAsGuest": "Start as a guest",
+  "loginTermsAgreement": "By signing in, you agree to the {terms} and the {privacy}.",
+  "@loginTermsAgreement": {
+    "placeholders": {
+      "terms": {
+        "type": "String"
+      },
+      "privacy": {
+        "type": "String"
+      }
+    }
+  },
+  "loginTermsOfService": "Terms of Service",
+  "loginPrivacyPolicy": "Privacy Policy",
   "notificationIntroTitle": "Get notified when tasks are due",
   "notificationIntroBody": "Enable notifications to be reminded when tasks are due. You can also set this up later.",
   "notificationIntroEnable": "Enable Notifications",

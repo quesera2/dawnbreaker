@@ -788,6 +788,24 @@ abstract class AppLocalizations {
   /// **'ゲストではじめる'**
   String get loginStartAsGuest;
 
+  /// No description provided for @loginTermsAgreement.
+  ///
+  /// In ja, this message translates to:
+  /// **'サインインすることで、{terms} および {privacy} に同意したものとみなされます。'**
+  String loginTermsAgreement(String terms, String privacy);
+
+  /// No description provided for @loginTermsOfService.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用規約'**
+  String get loginTermsOfService;
+
+  /// No description provided for @loginPrivacyPolicy.
+  ///
+  /// In ja, this message translates to:
+  /// **'プライバシーポリシー'**
+  String get loginPrivacyPolicy;
+
   /// No description provided for @notificationIntroTitle.
   ///
   /// In ja, this message translates to:
