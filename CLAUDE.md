@@ -54,10 +54,12 @@ Dart 3.7 以降の構文を積極的に使う：
 
 - **例外はリポジトリごとに定義する。** `StateError` などの汎用型を投げず、
   `xxx_repository_exception.dart` に `sealed class XxxRepositoryException` を作り、その下に具体的な型を並べる
+  （例: `lib/data/repository/task/task_repository_exception.dart`）
 - **例外のメッセージは英語で書く。** ログ・Crashlytics に出るものであり、ユーザーには見せない
-  （ユーザーに見せる文言は l10n を通す）
 - `!`（null assertion）で潰さない。`Null check operator used on a null value` としか残らず原因が読めないため、
   何が起きたかを書いた例外を投げる
+- ユーザーに見せる文言は例外のメッセージではなく ARB から取る。ViewModel での `ErrorMessage` への変換と
+  画面での表示は `.claude/rules/ui.md`「エラーハンドリング」を参照
 
 ## クラスのメンバー順序
 
