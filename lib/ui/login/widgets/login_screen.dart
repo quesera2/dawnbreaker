@@ -177,18 +177,24 @@ class _SignInSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = context.appColorScheme;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: colorScheme.bg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x47000000),
-            blurRadius: 44,
-            offset: Offset(0, -18),
-          ),
+        boxShadow: [
+          if (isDark)
+            // 暗い面に黒い影を落としても境界がにじむだけなので、上端を明るく縁取る。
+            // シートと同じ形を 1px 上にずらして描き、角丸に沿った線を出している
+            BoxShadow(color: colorScheme.border, offset: const Offset(0, -1))
+          else
+            BoxShadow(
+              color: colorScheme.shadow,
+              blurRadius: 44,
+              offset: const Offset(0, -18),
+            ),
         ],
       ),
       padding: EdgeInsets.fromLTRB(28, 26, 28, bottomInset + 26),
