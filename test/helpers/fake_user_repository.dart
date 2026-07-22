@@ -24,7 +24,10 @@ class FakeUserRepository implements UserRepository {
   Future<Guest> signInAsGuest() async {
     signInAsGuestCount++;
     if (shouldThrow) throw const SignInException('テストエラー');
-    return const Guest('signed-in-guest');
+    const user = Guest('signed-in-guest');
+    // 本物は authStateChanges() 経由でサインイン後のユーザーを流す
+    emit(user);
+    return user;
   }
 
   /// `authStateChanges()` からユーザーが流れてくる状況を作る

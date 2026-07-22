@@ -17,6 +17,11 @@ abstract interface class UserSettingsRepository {
   /// 失敗時は [UserSettingsSaveException] を投げる。
   Future<void> setNotificationSetting(NotificationSetting setting);
 
+  /// 有効・無効だけを書き換える。時刻・日はサーバーにある値をそのまま残す。
+  ///
+  /// 失敗時は [UserSettingsSaveException] を投げる。
+  Future<void> setNotificationEnabled(bool enabled);
+
   /// 放置アカウントの回収で使う最終アクティブ日時を更新する。
   ///
   /// 失敗時は [UserSettingsSaveException] を投げる。

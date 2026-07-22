@@ -97,6 +97,49 @@ void main() {
     });
   });
 
+  group('setNotificationEnabled', () {
+    test('設定済みの通知時刻を残したまま書き換える', () async {
+      await repository.setNotificationSetting(
+        const NotificationSetting(
+          notifyDay: NotifyDay.yesterday,
+          hour: 20,
+          minute: 30,
+        ),
+      );
+
+      await repository.setNotificationEnabled(true);
+
+      expect(
+        await repository.fetchNotificationSetting(),
+        const NotificationSetting(
+          enabled: true,
+          notifyDay: NotifyDay.yesterday,
+          hour: 20,
+          minute: 30,
+        ),
+      );
+    });
+
+    test('設定がまだなくても書ける', () async {
+      await repository.setNotificationEnabled(true);
+
+      expect((await repository.fetchNotificationSetting()).enabled, true);
+    });
+
+    test('タイムゾーンも一緒に保存される', () async {
+      await repository.setNotificationEnabled(true);
+      expect((await fetchUser())?['timezone'], timezone);
+    });
+
+    test('ユーザーの他のフィールドを消さない', () async {
+      await firestore.collection('users').doc(userId).set({
+        'fcmTokens': ['token-a'],
+      });
+      await repository.setNotificationEnabled(true);
+      expect((await fetchUser())?['fcmTokens'], ['token-a']);
+    });
+  });
+
   group('updateLastActiveAt', () {
     test('最終アクティブ日時が記録される', () async {
       await repository.updateLastActiveAt();

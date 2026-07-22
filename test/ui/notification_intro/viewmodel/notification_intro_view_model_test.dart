@@ -85,17 +85,6 @@ void main() {
           expect(saved.notifyDay, NotifyDay.yesterday);
         });
 
-        // 断られたときは users/{uid} の初期値（通知 OFF）のままにする
-        test('許可されなければ何も書かずにホームへ進む', () async {
-          fakeNotificationService.permissionResult = false;
-
-          await viewModel.onClickEnable();
-
-          expect(fakeUserSettingsRepository.notificationSetting.enabled, false);
-          expect(fakeNotificationService.registerTokenCount, 0);
-          expect(viewState.completed, isNotNull);
-        });
-
         test('ボタンが操作可能な状態に戻る', () async {
           await viewModel.onClickEnable();
 
@@ -103,17 +92,26 @@ void main() {
         });
       });
 
-      group('異常系', () {
+      group('許可されなかった場合', () {
         setUp(() {
-          fakeUserSettingsRepository.shouldThrow = true;
+          fakeNotificationService.permissionResult = false;
         });
 
-        test('エラーが通知される', () async {
+        // users/{uid} の初期値（通知 OFF）のままにする
+        test('何も書かない', () async {
+          await viewModel.onClickEnable();
+
+          expect(fakeUserSettingsRepository.notificationSetting.enabled, false);
+          expect(fakeNotificationService.registerTokenCount, 0);
+        });
+
+        // 一度断った端末では OS がダイアログを出さないため、設定アプリへ誘導する
+        test('OS の設定へ誘導される', () async {
           await viewModel.onClickEnable();
 
           expect(
             viewState.dialogMessage,
-            isA<NotificationEnableErrorMessage>(),
+            isA<NotificationPermissionDeniedMessage>(),
           );
         });
 
@@ -127,6 +125,46 @@ void main() {
           await viewModel.onClickEnable();
 
           expect(viewState.isEnabling, false);
+        });
+      });
+
+      // OS の許可も通知先の登録も済んでいるのに設定だけ書けない状態。ホームへ進めると
+      // 通知が有効になったと誤解させたまま、実際には配信されない
+      group('異常系', () {
+        group('設定を保存できない場合', () {
+          setUp(() {
+            fakeUserSettingsRepository.saveShouldThrow = true;
+          });
+
+          test('エラーが通知される', () async {
+            await viewModel.onClickEnable();
+
+            expect(
+              viewState.dialogMessage,
+              isA<NotificationEnableErrorMessage>(),
+            );
+          });
+
+          test('ホームへ進まない', () async {
+            await viewModel.onClickEnable();
+
+            expect(viewState.completed, isNull);
+          });
+
+          test('ボタンが操作可能な状態に戻る', () async {
+            await viewModel.onClickEnable();
+
+            expect(viewState.isEnabling, false);
+          });
+
+          test('通知設定は無効なままになる', () async {
+            await viewModel.onClickEnable();
+
+            expect(
+              fakeUserSettingsRepository.notificationSetting.enabled,
+              false,
+            );
+          });
         });
       });
     });

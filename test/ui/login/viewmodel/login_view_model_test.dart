@@ -1,5 +1,6 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
+import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -87,6 +88,63 @@ void main() {
           expect(fakeUserRepository.signInAsGuestCount, 1);
         });
 
+        // Android 12 以下は OS に通知の許可を求める仕組みがなく常に許可済みになるため、
+        // 通知が有効になる経路はここだけになる
+        test('通知が許可済みなら通知設定が有効になり通知先が登録される', () async {
+          fakeNotificationService.checkPermissionResult = true;
+
+          await viewModel.onClickStartAsGuest();
+          await pumpEventQueue();
+
+          expect(fakeUserSettingsRepository.notificationSetting.enabled, true);
+          expect(fakeNotificationService.registerTokenCount, 1);
+        });
+
+        // 別端末で設定済みの通知時刻を初期値に戻さない
+        test('通知が許可済みでも設定済みの通知時刻は保たれる', () async {
+          fakeNotificationService.checkPermissionResult = true;
+          fakeUserSettingsRepository.notificationSetting =
+              const NotificationSetting(hour: 7, minute: 30);
+
+          await viewModel.onClickStartAsGuest();
+          await pumpEventQueue();
+
+          final saved = fakeUserSettingsRepository.notificationSetting;
+          expect(saved.enabled, true);
+          expect(saved.hour, 7);
+          expect(saved.minute, 30);
+        });
+
+        test('通知が許可されていなければ通知設定は無効なままになる', () async {
+          fakeNotificationService.checkPermissionResult = false;
+
+          await viewModel.onClickStartAsGuest();
+          await pumpEventQueue();
+
+          expect(fakeUserSettingsRepository.notificationSetting.enabled, false);
+          expect(fakeNotificationService.registerTokenCount, 0);
+        });
+
+        // オフラインだと Firestore の書き込みが完了しないため、待つとホームへ進めなくなる
+        test('通知設定の保存を待たずにホームへ進む', () async {
+          fakeNotificationService.checkPermissionResult = true;
+          fakeUserSettingsRepository.neverCompletes = true;
+
+          await viewModel.onClickStartAsGuest();
+
+          expect(viewState.destination?.type, LoginDestination.home);
+        });
+
+        test('通知設定を保存できなくてもホームへ進む', () async {
+          fakeNotificationService.checkPermissionResult = true;
+          fakeUserSettingsRepository.saveShouldThrow = true;
+
+          await viewModel.onClickStartAsGuest();
+          await pumpEventQueue();
+
+          expect(viewState.destination?.type, LoginDestination.home);
+        });
+
         test('ボタンが操作可能な状態に戻る', () async {
           await viewModel.onClickStartAsGuest();
 
@@ -102,7 +160,7 @@ void main() {
 
         // 放置アカウントの回収に使うだけの値なので、ここで止めない
         test('最終アクティブ日時を更新できなくてもホームへ進む', () async {
-          fakeUserSettingsRepository.shouldThrow = true;
+          fakeUserSettingsRepository.saveShouldThrow = true;
 
           await viewModel.onClickStartAsGuest();
           await Future<void>.delayed(Duration.zero);

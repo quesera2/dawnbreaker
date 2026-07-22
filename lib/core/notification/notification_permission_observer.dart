@@ -36,15 +36,9 @@ class NotificationPermissionObserver extends _$NotificationPermissionObserver
         // 書き込みはオフラインだと完了しないため待たない。unawaited した Future の例外は
         // 外側の try/catch では捕まらないので、ここで受ける
         unawaited(
-          repository
-              .setNotificationSetting(setting.copyWith(enabled: false))
-              .onError((e, s) {
-                logger.e(
-                  'disable notification failed',
-                  error: e,
-                  stackTrace: s,
-                );
-              }),
+          repository.setNotificationEnabled(false).onError((e, s) {
+            logger.e('disable notification failed', error: e, stackTrace: s);
+          }),
         );
       }
     } catch (e, s) {

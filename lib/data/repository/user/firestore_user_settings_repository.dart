@@ -73,6 +73,20 @@ class FirestoreUserSettingsRepository implements UserSettingsRepository {
     }
   }
 
+  /// `merge: true` はネストしたマップを再帰的にマージするため、`enabled` だけを
+  /// 送れば時刻・日はサーバーにある値が残る
+  @override
+  Future<void> setNotificationEnabled(bool enabled) async {
+    try {
+      await _userRef().set({
+        'notificationSetting': {'enabled': enabled},
+        'timezone': timezone,
+      }, SetOptions(merge: true));
+    } catch (e) {
+      throw UserSettingsSaveException(e.toString());
+    }
+  }
+
   @override
   Future<void> updateLastActiveAt() async {
     try {

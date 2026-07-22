@@ -1,3 +1,4 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
@@ -16,8 +17,9 @@ class NotificationIntroViewModel extends _$NotificationIntroViewModel {
     if (state.isEnabling) return;
 
     state = state.copyWith(isEnabling: true);
+    final bool isGranted;
     try {
-      await _enableNotification();
+      isGranted = await _enableNotification();
     } catch (e, s) {
       logger.e('enable notification failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -28,6 +30,20 @@ class NotificationIntroViewModel extends _$NotificationIntroViewModel {
       return;
     }
     if (!ref.mounted) return;
+
+    // 一度断った端末では OS がダイアログを出さず即座に拒否が返るため、
+    // 設定アプリへ誘導しないと有効にする手段がなくなる
+    if (!isGranted) {
+      state = state.copyWith(
+        isEnabling: false,
+        dialogMessage: NotificationPermissionDeniedMessage(
+          primaryHandler: () =>
+              AppSettings.openAppSettings(type: AppSettingsType.notification),
+        ),
+      );
+      return;
+    }
+
     state = state.copyWith(
       isEnabling: false,
       completed: NotificationIntroCompletedEvent(),
@@ -44,20 +60,17 @@ class NotificationIntroViewModel extends _$NotificationIntroViewModel {
     state = state.copyWith(completed: NotificationIntroCompletedEvent());
   }
 
-  /// 許可されなかった場合は何も書かない。`users/{uid}` の初期値が通知 OFF のため、
-  /// 設定画面から明示的に有効化してもらう
-  ///
-  /// 既存アカウントで別端末からサインインするとこの画面を通るため、通知の時刻・日は
-  /// サーバーにある値を引き継ぐ。丸ごと書くと設定済みの時刻が初期値に戻る
-  Future<void> _enableNotification() async {
+  /// 許可されたかどうかを返す。許可されなかった場合は何も書かない。`users/{uid}` の
+  /// 初期値が通知 OFF のため、書かなければ無効のままになる
+  Future<bool> _enableNotification() async {
     final notificationService = await ref.read(
       fcmNotificationServiceProvider.future,
     );
-    if (!await notificationService.requestPermission()) return;
+    if (!await notificationService.requestPermission()) return false;
 
     await notificationService.registerToken();
     final userSettings = await ref.read(userSettingsRepositoryProvider.future);
-    final current = await userSettings.fetchNotificationSetting();
-    await userSettings.setNotificationSetting(current.copyWith(enabled: true));
+    await userSettings.setNotificationEnabled(true);
+    return true;
   }
 }
