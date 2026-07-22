@@ -1,81 +1,70 @@
-import 'dart:async';
-
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
-import 'package:dawnbreaker/data/repository/user/user_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class FakeUserRepository implements UserRepository {
-  FakeUserRepository(this._initialUser);
-
-  final AppUser _initialUser;
-  final _controller = StreamController<AppUser>.broadcast();
-
-  @override
-  AppUser getUser() => _initialUser;
-
-  @override
-  Stream<AppUser> watchUser() => _controller.stream;
-
-  @override
-  Future<Guest> signInAsGuest() async =>
-      throw UnimplementedError('not called in this test');
-
-  void emit(AppUser user) => _controller.add(user);
-
-  Future<void> close() => _controller.close();
-}
+import '../../../helpers/fake_user_repository.dart';
 
 void main() {
   late FakeUserRepository repository;
   late ProviderContainer container;
   late List<AppUser> notifiedUsers;
 
-  void createContainer(AppUser initialUser) {
+  void setUpContainer(AppUser initialUser) {
     repository = FakeUserRepository(initialUser);
     container = ProviderContainer(
       overrides: [userRepositoryProvider.overrideWithValue(repository)],
     );
     notifiedUsers = [];
-    container.listen(
-      currentUserProvider,
-      (_, next) => notifiedUsers.add(next),
-      fireImmediately: false,
-    );
+    container.listen(currentUserProvider, (_, next) => notifiedUsers.add(next));
     addTearDown(() async {
       container.dispose();
       await repository.close();
     });
   }
 
-  test('初期値は getUser() から同期で読める', () {
-    createContainer(const Guest('user-1'));
-    expect(container.read(currentUserProvider), const Guest('user-1'));
+  group('起動直後', () {
+    test('前回のセッションが残っていればそのユーザーになる', () {
+      setUpContainer(const Guest('user-1'));
+      expect(container.read(currentUserProvider), const Guest('user-1'));
+    });
+
+    test('セッションがなければ未サインインになる', () {
+      setUpContainer(const NoLogin());
+      expect(container.read(currentUserProvider), const NoLogin());
+    });
   });
 
-  test('サインインしていなければ NoLogin になる', () {
-    createContainer(const NoLogin());
-    expect(container.read(currentUserProvider), const NoLogin());
+  group('起動後にユーザーが変わったとき', () {
+    test('新しいユーザーが伝わる', () async {
+      setUpContainer(const NoLogin());
+
+      repository.emit(const Guest('user-1'));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(container.read(currentUserProvider), const Guest('user-1'));
+      expect(notifiedUsers, [const Guest('user-1')]);
+    });
+
+    test('ログアウトが伝わる', () async {
+      setUpContainer(const LoggedIn('user-1'));
+
+      repository.emit(const NoLogin());
+      await Future<void>.delayed(Duration.zero);
+
+      expect(container.read(currentUserProvider), const NoLogin());
+      expect(notifiedUsers, [const NoLogin()]);
+    });
   });
 
-  test('watchUser() の変化が state に反映される', () async {
-    createContainer(const NoLogin());
+  // authStateChanges() は購読した直後に現在のユーザーを 1 度流すため、
+  // 起動時は同じユーザーが 2 度届く。ここが通知として下流に漏れると、
+  // 値が変わっていないのに起動のたびにリポジトリと ViewModel が作り直される
+  test('同じユーザーが 2 度届いても作り直しは起きない', () async {
+    setUpContainer(const Guest('user-1'));
     container.read(currentUserProvider);
 
-    repository.emit(const Guest('user-1'));
-    await Future<void>.delayed(Duration.zero);
-
-    expect(container.read(currentUserProvider), const Guest('user-1'));
-    expect(notifiedUsers, [const Guest('user-1')]);
-  });
-
-  test('初期値と同じ値が Stream から届いても下流に通知されない', () async {
-    createContainer(const Guest('user-1'));
-    container.read(currentUserProvider);
-
-    // authStateChanges() が購読直後に現在値を 1 度流すのを模す
     repository.emit(const Guest('user-1'));
     await Future<void>.delayed(Duration.zero);
 
