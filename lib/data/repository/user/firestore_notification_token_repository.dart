@@ -8,7 +8,7 @@ part 'firestore_notification_token_repository.g.dart';
 
 @riverpod
 Future<NotificationTokenRepository> notificationTokenRepository(Ref ref) async {
-  final user = await ref.watch(currentUserProvider.future);
+  final user = ref.watch(currentUserProvider);
   return switch (user) {
     NoLogin() => throw StateError('サインインしていないユーザーはトークンを登録できない'),
     SignedInUser(:final id) => FirestoreNotificationTokenRepository(

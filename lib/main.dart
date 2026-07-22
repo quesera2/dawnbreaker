@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:dawnbreaker/app/app.dart';
+import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_permission_observer.dart';
 import 'package:dawnbreaker/data/preferences/shared_preferences_provider.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
+import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/firebase_options_dev.dart' as dev_options;
 import 'package:dawnbreaker/firebase_options_prod.dart' as prod_options;
@@ -42,7 +44,12 @@ void main() async {
   final container = ProviderContainer(
     overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
   );
-  await container.read(currentUserProvider.future);
+  // PR2 時点では挙動を変えないため、これまで getUser() が内部でやっていた匿名サインインを
+  // ここで明示的に呼ぶ。無条件に呼ぶと「匿名でない既存ユーザーはサインアウトされる」という
+  // signInAnonymously() の仕様を踏むため、NoLogin のときだけに絞る。外すのは PR4
+  if (container.read(currentUserProvider) is NoLogin) {
+    await container.read(userRepositoryProvider).signInAnonymously();
+  }
   await container.read(taskRepositoryProvider.future);
   // どちらも初回フレームの描画に必要なく、Firestore への書き込み Future はオフラインでは
   // 完了しないため待たない。待つとスプラッシュが出たままアプリが起動しなくなる
