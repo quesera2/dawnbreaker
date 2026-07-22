@@ -9,6 +9,11 @@ abstract interface class UserSettingsRepository {
   /// 失敗時は [UserSettingsLoadException] をストリームに流す。
   Stream<NotificationSetting> watchNotificationSetting();
 
+  /// 現在の設定を 1 回だけ読む。書き換える前に今の値を知りたいときに使う。
+  ///
+  /// 失敗時は [UserSettingsLoadException] を投げる。
+  Future<NotificationSetting> fetchNotificationSetting();
+
   /// 失敗時は [UserSettingsSaveException] を投げる。
   Future<void> setNotificationSetting(NotificationSetting setting);
 

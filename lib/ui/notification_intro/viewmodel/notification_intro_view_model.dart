@@ -57,7 +57,7 @@ class NotificationIntroViewModel extends _$NotificationIntroViewModel {
 
     await notificationService.registerToken();
     final userSettings = await ref.read(userSettingsRepositoryProvider.future);
-    final current = await userSettings.watchNotificationSetting().first;
+    final current = await userSettings.fetchNotificationSetting();
     await userSettings.setNotificationSetting(current.copyWith(enabled: true));
   }
 }

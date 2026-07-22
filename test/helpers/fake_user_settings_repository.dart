@@ -25,6 +25,12 @@ class FakeUserSettingsRepository implements UserSettingsRepository {
   }
 
   @override
+  Future<NotificationSetting> fetchNotificationSetting() async {
+    if (shouldThrow) throw const UserSettingsLoadException('テストエラー');
+    return notificationSetting;
+  }
+
+  @override
   Future<void> setNotificationSetting(NotificationSetting setting) async {
     if (shouldThrow) throw const UserSettingsSaveException('テストエラー');
     if (neverCompletes) await Completer<void>().future;

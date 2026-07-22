@@ -27,7 +27,7 @@ class NotificationPermissionObserver extends _$NotificationPermissionObserver
   Future<void> _syncPermission() async {
     try {
       final repository = await ref.read(userSettingsRepositoryProvider.future);
-      final setting = await repository.watchNotificationSetting().first;
+      final setting = await repository.fetchNotificationSetting();
       if (!setting.enabled) return;
 
       final service = await ref.read(fcmNotificationServiceProvider.future);
