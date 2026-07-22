@@ -14,3 +14,7 @@ class UserSettingsLoadException extends UserSettingsRepositoryException {
 class UserSettingsSaveException extends UserSettingsRepositoryException {
   const UserSettingsSaveException([super.message]);
 }
+
+class UserSettingsNotSignedInException extends UserSettingsRepositoryException {
+  const UserSettingsNotSignedInException([super.message]);
+}

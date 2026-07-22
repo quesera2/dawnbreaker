@@ -2,15 +2,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/data/repository/user/notification_token_repository.dart';
+import 'package:dawnbreaker/data/repository/user/notification_token_repository_exception.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'firestore_notification_token_repository.g.dart';
 
 @riverpod
 Future<NotificationTokenRepository> notificationTokenRepository(Ref ref) async {
-  final user = await ref.watch(currentUserProvider.future);
+  final user = ref.watch(currentUserProvider);
   return switch (user) {
-    NoLogin() => throw StateError('サインインしていないユーザーはトークンを登録できない'),
+    NoLogin() => throw const NotificationTokenNotSignedInException(
+      'cannot register a token without a signed-in user',
+    ),
     SignedInUser(:final id) => FirestoreNotificationTokenRepository(
       userId: id,
       firestore: FirebaseFirestore.instance,

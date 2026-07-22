@@ -31,8 +31,10 @@ paths:
 
 ## エラーハンドリング
 
-- Repository の例外は `sealed class TaskRepositoryException` のサブクラスとして定義（`lib/data/repository/task/task_repository_exception.dart`）
+Repository 側の例外の定義の仕方は CLAUDE.md「エラー処理」を参照。ここでは受け取った側の扱いを決める。
+
 - ViewModel は例外を `ErrorMessage` サブクラスに変換して UiState にセット（文字列不可）
+  - 例外のメッセージは英語でログにしか出さないため、画面に出す文言は必ず ARB から取る
   - 再試行可能なエラーは `handler` に retry 処理を渡す
   - 再試行不可なエラー（`TaskNotFoundErrorMessage` 等）は `handler` なし
 - UiState は `ErrorMessage? errorMessage` を `BaseUiState` 経由で保持
