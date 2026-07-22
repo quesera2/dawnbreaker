@@ -9,8 +9,6 @@ class FakeUserRepository implements UserRepository {
   final AppUser initialUser;
   final _controller = StreamController<AppUser>.broadcast();
 
-  bool signInAsGuestCalled = false;
-
   @override
   AppUser getUser() => initialUser;
 
@@ -18,10 +16,7 @@ class FakeUserRepository implements UserRepository {
   Stream<AppUser> watchUser() => _controller.stream;
 
   @override
-  Future<Guest> signInAsGuest() async {
-    signInAsGuestCalled = true;
-    return const Guest('signed-in-guest');
-  }
+  Future<Guest> signInAsGuest() async => const Guest('signed-in-guest');
 
   /// `authStateChanges()` からユーザーが流れてくる状況を作る
   void emit(AppUser user) => _controller.add(user);

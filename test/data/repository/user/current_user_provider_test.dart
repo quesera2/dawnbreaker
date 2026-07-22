@@ -63,7 +63,6 @@ void main() {
   // 値が変わっていないのに起動のたびにリポジトリと ViewModel が作り直される
   test('同じユーザーが 2 度届いても作り直しは起きない', () async {
     setUpContainer(const Guest('user-1'));
-    container.read(currentUserProvider);
 
     repository.emit(const Guest('user-1'));
     await Future<void>.delayed(Duration.zero);
