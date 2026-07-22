@@ -159,6 +159,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingErrorSaveFailed => 'Failed to save settings';
 
   @override
+  String get loginErrorSignInFailed => 'Sign-in failed';
+
+  @override
+  String get notificationIntroErrorEnableFailed =>
+      'Failed to turn on notifications';
+
+  @override
   String get editorTitleNew => 'Add Task';
 
   @override
@@ -340,7 +347,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingDemoTask3 => 'Toothbrush replacement';
 
   @override
-  String get onboardingNotificationPreviewBody => 'It\'s due today';
+  String get notificationIntroPreviewTaskName => 'Toothbrush replacement';
+
+  @override
+  String get notificationIntroPreviewBody => 'It\'s due today';
 
   @override
   String get onboardingDemoTask4 => 'Bath mold spray';
@@ -352,20 +362,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingDemoTask6 => 'Hair salon';
 
   @override
-  String get onboardingPage3Title => 'Get notified when tasks are due';
-
-  @override
-  String get onboardingPage3Body =>
-      'Enable notifications to be reminded when tasks are due. You can also set this up later.';
-
-  @override
-  String get onboardingEnableNotification => 'Enable Notifications';
-
-  @override
   String get onboardingNext => 'Next';
 
   @override
   String get onboardingStart => 'Register your first task';
+
+  @override
+  String get loginTagline =>
+      'Sign in and pick up where you left off\non any device.';
+
+  @override
+  String get loginWithGoogle => 'Sign in with Google';
+
+  @override
+  String get loginWithApple => 'Sign in with Apple';
+
+  @override
+  String get loginOr => 'or';
+
+  @override
+  String get loginStartAsGuest => 'Start as a guest';
+
+  @override
+  String get notificationIntroTitle => 'Get notified when tasks are due';
+
+  @override
+  String get notificationIntroBody =>
+      'Enable notifications to be reminded when tasks are due. You can also set this up later.';
+
+  @override
+  String get notificationIntroEnable => 'Enable Notifications';
+
+  @override
+  String get notificationIntroLater => 'Later';
 
   @override
   String get settingsTitle => 'Settings';
@@ -492,6 +521,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDebugColorSettingsReset => 'Color settings reset';
+
+  @override
+  String get settingsDebugOpenLogin => 'Open login screen';
+
+  @override
+  String get settingsDebugOpenNotificationIntro =>
+      'Open notification intro screen';
 
   @override
   String get settingsDebugForceCrash => 'Force crash';

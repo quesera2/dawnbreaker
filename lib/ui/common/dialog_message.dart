@@ -56,6 +56,15 @@ class DeleteTaskConfirmMessage extends DialogMessage {
   final String taskName;
 }
 
+class SignInErrorMessage extends DialogMessage {
+  SignInErrorMessage({required super.primaryHandler})
+    : super(type: DialogType.error);
+}
+
+class NotificationEnableErrorMessage extends DialogMessage {
+  NotificationEnableErrorMessage() : super(type: DialogType.error);
+}
+
 class NotificationPermissionDeniedMessage extends DialogMessage {
   NotificationPermissionDeniedMessage({required super.primaryHandler})
     : super(type: DialogType.info);

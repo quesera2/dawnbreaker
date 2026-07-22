@@ -1,10 +1,7 @@
 import 'package:dawnbreaker/core/logger/app_logger.dart';
-import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
-import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
-import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_ui_state.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
@@ -42,40 +39,6 @@ class OnboardingViewModel extends _$OnboardingViewModel {
         .fromSettings => OnboardingDestinationEvent(.pop),
       },
     );
-  }
-
-  // TODO: 通知設定はオンボーディングから消す
-  // Firestoreに保存するようにしたため、通知への誘導タイミングはログイン（ゲストアカウント作成後）に移動させる
-  Future<void> onRequestNotification() async {
-    final notificationService = await ref.read(
-      fcmNotificationServiceProvider.future,
-    );
-    final isGranted = await notificationService.requestPermission();
-    if (!ref.mounted) return;
-
-    if (!isGranted) {
-      state = state.copyWith(destination: OnboardingDestinationEvent(.next));
-      return;
-    }
-
-    await notificationService.registerToken();
-    if (!ref.mounted) return;
-
-    try {
-      final userSettings = await ref.read(
-        userSettingsRepositoryProvider.future,
-      );
-      await userSettings.setNotificationSetting(
-        const NotificationSetting(enabled: true),
-      );
-    } catch (e, s) {
-      logger.e('onRequestNotification failed', error: e, stackTrace: s);
-      if (!ref.mounted) return;
-      state = state.copyWith(dialogMessage: OnboardingSaveErrorMessage());
-      return;
-    }
-
-    state = state.copyWith(destination: OnboardingDestinationEvent(.next));
   }
 
   Future<void> onClickSkip() async {

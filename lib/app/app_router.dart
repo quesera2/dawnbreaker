@@ -5,6 +5,8 @@ import 'package:dawnbreaker/ui/app_detail/widgets/app_detail_screen.dart';
 import 'package:dawnbreaker/ui/color_label/widgets/color_label_screen.dart';
 import 'package:dawnbreaker/ui/editor/widgets/editor_screen.dart';
 import 'package:dawnbreaker/ui/home/widgets/home_screen.dart';
+import 'package:dawnbreaker/ui/login/widgets/login_screen.dart';
+import 'package:dawnbreaker/ui/notification_intro/widgets/notification_intro_screen.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_screen.dart';
 import 'package:dawnbreaker/ui/settings/display_settings/widget/display_settings_screen.dart';
@@ -68,6 +70,11 @@ GoRouter appRouter(Ref ref) {
             builder: (_, _) => const DisplaySettingsScreen(),
           ),
         ],
+      ),
+      GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+      GoRoute(
+        path: '/notification-intro',
+        builder: (_, _) => const NotificationIntroScreen(),
       ),
       GoRoute(
         path: '/onboarding',

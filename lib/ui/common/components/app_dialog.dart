@@ -104,6 +104,18 @@ LabelConfig _labels(BuildContext context, DialogMessage msg) => switch (msg) {
     primaryActionLabel: '',
     secondaryActionLabel: context.l10n.commonOk,
   ),
+  SignInErrorMessage() => (
+    title: context.l10n.commonErrorTitle,
+    messageText: context.l10n.loginErrorSignInFailed,
+    primaryActionLabel: context.l10n.commonRetry,
+    secondaryActionLabel: context.l10n.commonCancel,
+  ),
+  NotificationEnableErrorMessage() => (
+    title: context.l10n.commonErrorTitle,
+    messageText: context.l10n.notificationIntroErrorEnableFailed,
+    primaryActionLabel: '',
+    secondaryActionLabel: context.l10n.commonOk,
+  ),
   NotificationPermissionDeniedMessage() => (
     title: context.l10n.settingsNotificationPermissionTitle,
     messageText: context.l10n.settingsNotificationPermissionMessage,

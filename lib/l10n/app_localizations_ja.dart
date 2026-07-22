@@ -159,6 +159,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingErrorSaveFailed => '設定の保存に失敗しました';
 
   @override
+  String get loginErrorSignInFailed => 'サインインに失敗しました';
+
+  @override
+  String get notificationIntroErrorEnableFailed => '通知の設定に失敗しました';
+
+  @override
   String get editorTitleNew => '新規タスクを追加';
 
   @override
@@ -335,7 +341,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingDemoTask3 => '歯ブラシ交換';
 
   @override
-  String get onboardingNotificationPreviewBody => '予定日になりました';
+  String get notificationIntroPreviewTaskName => '歯ブラシ交換';
+
+  @override
+  String get notificationIntroPreviewBody => '予定日になりました';
 
   @override
   String get onboardingDemoTask4 => 'お風呂の防カビ剤';
@@ -347,20 +356,38 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingDemoTask6 => '美容院';
 
   @override
-  String get onboardingPage3Title => 'スケジュールになったら通知でお知らせ';
-
-  @override
-  String get onboardingPage3Body =>
-      '通知を有効にすると、予定日になったタイミングでお知らせします。通知は後から設定することもできます。';
-
-  @override
-  String get onboardingEnableNotification => '通知を有効にする';
-
-  @override
   String get onboardingNext => '次へ';
 
   @override
   String get onboardingStart => '最初のタスクを登録する';
+
+  @override
+  String get loginTagline => 'サインインすると、どの端末でも\n同じタスクを続きから使えます。';
+
+  @override
+  String get loginWithGoogle => 'Googleでサインイン';
+
+  @override
+  String get loginWithApple => 'Appleでサインイン';
+
+  @override
+  String get loginOr => 'または';
+
+  @override
+  String get loginStartAsGuest => 'ゲストではじめる';
+
+  @override
+  String get notificationIntroTitle => 'スケジュールになったら通知でお知らせ';
+
+  @override
+  String get notificationIntroBody =>
+      '通知を有効にすると、予定日になったタイミングでお知らせします。通知は後から設定することもできます。';
+
+  @override
+  String get notificationIntroEnable => '通知を有効にする';
+
+  @override
+  String get notificationIntroLater => 'あとで';
 
   @override
   String get settingsTitle => '設定';
@@ -482,6 +509,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsDebugColorSettingsReset => 'カラー設定をリセットしました';
+
+  @override
+  String get settingsDebugOpenLogin => 'ログイン画面を開く';
+
+  @override
+  String get settingsDebugOpenNotificationIntro => '通知の誘導画面を開く';
 
   @override
   String get settingsDebugForceCrash => 'クラッシュさせる';

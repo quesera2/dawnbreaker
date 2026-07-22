@@ -1,0 +1,262 @@
+import 'dart:math' as math;
+
+import 'package:dawnbreaker/app/app_colors.dart';
+import 'package:dawnbreaker/app/app_typography.dart';
+import 'package:dawnbreaker/core/util/context_extension.dart';
+import 'package:dawnbreaker/ui/common/messages_mixin.dart';
+import 'package:dawnbreaker/ui/login/viewmodel/login_view_model.dart';
+import 'package:dawnbreaker/ui/login/widgets/social_sign_in_button.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+/// ログイン画面だけのブランド表現。
+///
+/// 深いインディゴの面にワードマークを据え、シャンパンゴールドの細部で品位を出す。
+/// アプリ内の他の画面には出てこない配色のため、デザイントークンには持ち上げない。
+class _LoginBrandColors {
+  _LoginBrandColors._();
+
+  static const deep = Color(0xFF1D2335);
+  static const deepGlow = Color(0xFF2C344D);
+  static const champagne = Color(0xFFD9C190);
+  static const onDeep = Color(0xFFF2EDE2);
+  static const onDeepMuted = Color(0x99F2EDE2);
+  static const hairline = Color(0x38F2EDE2);
+}
+
+class LoginScreen extends ConsumerStatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen>
+    with MessagesListenMixin {
+  late final LoginViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = ref.read(loginViewModelProvider.notifier);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FlutterNativeSplash.remove();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    listenMessages(loginViewModelProvider);
+    final isSigningIn = ref.watch(
+      loginViewModelProvider.select((s) => s.isSigningIn),
+    );
+
+    ref.listen(loginViewModelProvider.select((s) => s.destination), (
+      prev,
+      next,
+    ) {
+      if (next == null || prev?.id == next.id) return;
+
+      switch (next.type) {
+        case .home:
+          context.go('/home');
+        case .notificationIntro:
+          context.go('/notification-intro');
+      }
+    });
+
+    return Scaffold(
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          // 上端の外側を光源にして、画面全体を一枚の面として見せる
+          gradient: RadialGradient(
+            center: Alignment(0, -1.16),
+            radius: 1.2,
+            colors: [_LoginBrandColors.deepGlow, _LoginBrandColors.deep],
+            stops: [0, 0.62],
+          ),
+        ),
+        child: Column(
+          children: [
+            const Expanded(child: SafeArea(bottom: false, child: _Wordmark())),
+            _SignInSheet(isSigningIn: isSigningIn, viewModel: _viewModel),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Wordmark extends StatelessWidget {
+  const _Wordmark();
+
+  static const _hairlineWidth = 148.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 54, 28, 12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const _Diamond(size: 6),
+          const SizedBox(height: 22),
+          Image.asset(
+            'assets/somniloop_wordmark.png',
+            height: 34,
+            color: _LoginBrandColors.onDeep,
+            colorBlendMode: BlendMode.srcIn,
+          ),
+          const SizedBox(height: 20),
+          const SizedBox(
+            width: _hairlineWidth,
+            child: Row(
+              children: [
+                Expanded(child: _Hairline()),
+                SizedBox(width: 10),
+                _Diamond(size: 4),
+                SizedBox(width: 10),
+                Expanded(child: _Hairline()),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            context.l10n.loginTagline,
+            textAlign: TextAlign.center,
+            style: AppTextStyle.caption.copyWith(
+              color: _LoginBrandColors.onDeepMuted,
+              fontWeight: FontWeight.w400,
+              letterSpacing: 1.44,
+              height: 2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Diamond extends StatelessWidget {
+  const _Diamond({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: math.pi / 4,
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: const ColoredBox(color: _LoginBrandColors.champagne),
+      ),
+    );
+  }
+}
+
+class _Hairline extends StatelessWidget {
+  const _Hairline();
+
+  @override
+  Widget build(BuildContext context) => const ColoredBox(
+    color: _LoginBrandColors.hairline,
+    child: SizedBox(height: 1),
+  );
+}
+
+class _SignInSheet extends StatelessWidget {
+  const _SignInSheet({required this.isSigningIn, required this.viewModel});
+
+  final bool isSigningIn;
+  final LoginViewModel viewModel;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.appColorScheme;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: colorScheme.bg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x47000000),
+            blurRadius: 44,
+            offset: Offset(0, -18),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.fromLTRB(28, 26, 28, bottomInset + 26),
+      child: Column(
+        spacing: 12,
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Phase9 で配線するまでは押しても何も起きない。onPressed を null にすると
+          // 「使えないボタン」に見えてしまうため、押せる見た目のままにする
+          SocialSignInButton(
+            provider: .google,
+            label: context.l10n.loginWithGoogle,
+            onPressed: isSigningIn ? null : () {},
+          ),
+          SocialSignInButton(
+            provider: .apple,
+            label: context.l10n.loginWithApple,
+            onPressed: isSigningIn ? null : () {},
+          ),
+          const _OrSeparator(),
+          // ソーシャルログインを主役にするため、ゲスト利用はここだけ弱いテキストボタンで置く
+          TextButton(
+            onPressed: isSigningIn ? null : viewModel.onClickStartAsGuest,
+            style: TextButton.styleFrom(
+              foregroundColor: colorScheme.textSubtle,
+              textStyle: AppTextStyle.caption,
+              minimumSize: const Size(double.infinity, 52),
+            ),
+            child: Text(context.l10n.loginStartAsGuest),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OrSeparator extends StatelessWidget {
+  const _OrSeparator();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.appColorScheme;
+    final line = Expanded(
+      child: ColoredBox(
+        color: colorScheme.border,
+        child: const SizedBox(height: 1),
+      ),
+    );
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        children: [
+          line,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              context.l10n.loginOr,
+              style: AppTextStyle.caption.copyWith(
+                color: colorScheme.textSubtle,
+                fontWeight: FontWeight.w400,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
+          line,
+        ],
+      ),
+    );
+  }
+}
