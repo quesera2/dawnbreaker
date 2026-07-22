@@ -299,6 +299,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
+        type: .middle,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(context.l10n.settingsDebugOpenLogin),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: colorScheme.textMuted,
+          ),
+        ),
+        onTap: () => context.push('/login'),
+      ),
+      divider,
+      AppListCell(
+        type: .middle,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(context.l10n.settingsDebugOpenNotificationIntro),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: colorScheme.textMuted,
+          ),
+        ),
+        onTap: () => context.push('/notification-intro'),
+      ),
+      divider,
+      AppListCell(
         type: .bottom,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),

@@ -59,6 +59,25 @@ void main() {
     });
   });
 
+  group('fetchNotificationSetting', () {
+    test('設定がまだない場合は通知しない設定を返す', () async {
+      final setting = await repository.fetchNotificationSetting();
+      expect(setting.enabled, false);
+    });
+
+    test('保存済みの設定を返す', () async {
+      const saved = NotificationSetting(
+        enabled: true,
+        notifyDay: NotifyDay.yesterday,
+        hour: 20,
+        minute: 30,
+      );
+      await repository.setNotificationSetting(saved);
+
+      expect(await repository.fetchNotificationSetting(), saved);
+    });
+  });
+
   group('setNotificationSetting', () {
     test('通知時刻を書き換えるとタイムゾーンも一緒に保存される', () async {
       await repository.setNotificationSetting(
@@ -74,6 +93,49 @@ void main() {
       await repository.setNotificationSetting(
         const NotificationSetting(enabled: true),
       );
+      expect((await fetchUser())?['fcmTokens'], ['token-a']);
+    });
+  });
+
+  group('setNotificationEnabled', () {
+    test('設定済みの通知時刻を残したまま書き換える', () async {
+      await repository.setNotificationSetting(
+        const NotificationSetting(
+          notifyDay: NotifyDay.yesterday,
+          hour: 20,
+          minute: 30,
+        ),
+      );
+
+      await repository.setNotificationEnabled(true);
+
+      expect(
+        await repository.fetchNotificationSetting(),
+        const NotificationSetting(
+          enabled: true,
+          notifyDay: NotifyDay.yesterday,
+          hour: 20,
+          minute: 30,
+        ),
+      );
+    });
+
+    test('設定がまだなくても書ける', () async {
+      await repository.setNotificationEnabled(true);
+
+      expect((await repository.fetchNotificationSetting()).enabled, true);
+    });
+
+    test('タイムゾーンも一緒に保存される', () async {
+      await repository.setNotificationEnabled(true);
+      expect((await fetchUser())?['timezone'], timezone);
+    });
+
+    test('ユーザーの他のフィールドを消さない', () async {
+      await firestore.collection('users').doc(userId).set({
+        'fcmTokens': ['token-a'],
+      });
+      await repository.setNotificationEnabled(true);
       expect((await fetchUser())?['fcmTokens'], ['token-a']);
     });
   });

@@ -10,7 +10,12 @@ class FakeUserSettingsRepository implements UserSettingsRepository {
   });
 
   NotificationSetting notificationSetting;
-  bool shouldThrow = false;
+
+  /// 読み取り時にエラーとするか
+  bool fetchShouldThrow = false;
+
+  /// 書き込み時にエラーとするか
+  bool saveShouldThrow = false;
 
   /// Firestore がオフラインのとき、書き込みの Future はサーバーの応答待ちで完了しない
   bool neverCompletes = false;
@@ -25,13 +30,30 @@ class FakeUserSettingsRepository implements UserSettingsRepository {
   }
 
   @override
+  Future<NotificationSetting> fetchNotificationSetting() async {
+    if (fetchShouldThrow) throw const UserSettingsLoadException('テストエラー');
+    return notificationSetting;
+  }
+
+  @override
   Future<void> setNotificationSetting(NotificationSetting setting) async {
-    if (shouldThrow) throw const UserSettingsSaveException('テストエラー');
+    if (saveShouldThrow) throw const UserSettingsSaveException('テストエラー');
     if (neverCompletes) await Completer<void>().future;
     notificationSetting = setting;
     _controller.add(setting);
   }
 
   @override
-  Future<void> updateLastActiveAt() async => updateLastActiveAtCount++;
+  Future<void> setNotificationEnabled(bool enabled) async {
+    if (saveShouldThrow) throw const UserSettingsSaveException('テストエラー');
+    if (neverCompletes) await Completer<void>().future;
+    notificationSetting = notificationSetting.copyWith(enabled: enabled);
+    _controller.add(notificationSetting);
+  }
+
+  @override
+  Future<void> updateLastActiveAt() async {
+    if (saveShouldThrow) throw const UserSettingsSaveException('テストエラー');
+    updateLastActiveAtCount++;
+  }
 }

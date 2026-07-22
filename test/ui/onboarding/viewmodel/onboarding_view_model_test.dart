@@ -1,6 +1,4 @@
-import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
-import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_ui_state.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_view_model.dart';
@@ -8,9 +6,7 @@ import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
-import '../../../helpers/fake_user_settings_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -18,8 +14,6 @@ void main() {
   group('OnboardingViewModel', () {
     late ProviderContainer container;
     late FakeOnboardingRepository fakeRepository;
-    late FakeNotificationService fakeNotificationService;
-    late FakeUserSettingsRepository fakeUserSettingsRepository;
     late OnboardingViewModel viewModel;
     late OnboardingUiState viewState;
 
@@ -36,17 +30,9 @@ void main() {
 
     setUp(() {
       fakeRepository = FakeOnboardingRepository();
-      fakeNotificationService = FakeNotificationService();
-      fakeUserSettingsRepository = FakeUserSettingsRepository();
       container = ProviderContainer(
         overrides: [
           onboardingRepositoryProvider.overrideWith((_) => fakeRepository),
-          fcmNotificationServiceProvider.overrideWith(
-            (_) async => fakeNotificationService,
-          ),
-          userSettingsRepositoryProvider.overrideWith(
-            (_) async => fakeUserSettingsRepository,
-          ),
         ],
       );
     });
@@ -115,49 +101,6 @@ void main() {
 
         test('画面遷移しない', () async {
           await viewModel.onClickDone();
-          expect(viewState.destination, isNull);
-        });
-      });
-    });
-
-    group('onRequestNotification', () {
-      group('正常系', () {
-        setUp(setUpState);
-
-        for (final (permissionGranted, notificationEnabled, description) in [
-          (true, true, '通知を許可すると通知設定が有効になり通知先が登録されて次のページへ進む'),
-          (false, false, '通知を拒否しても次のページへ進み通知設定も通知先も変わらない'),
-        ]) {
-          test(description, () async {
-            fakeNotificationService.permissionResult = permissionGranted;
-            await viewModel.onRequestNotification();
-            expect(viewState.destination?.type, OnboardingDestination.next);
-            expect(
-              fakeUserSettingsRepository.notificationSetting.enabled,
-              notificationEnabled,
-            );
-            expect(
-              fakeNotificationService.registerTokenCount,
-              permissionGranted ? 1 : 0,
-            );
-          });
-        }
-      });
-
-      group('異常系', () {
-        setUp(() {
-          fakeUserSettingsRepository.shouldThrow = true;
-          fakeNotificationService.permissionResult = true;
-          setUpState();
-        });
-
-        test('エラーが通知される', () async {
-          await viewModel.onRequestNotification();
-          expect(viewState.dialogMessage, isA<OnboardingSaveErrorMessage>());
-        });
-
-        test('画面遷移しない', () async {
-          await viewModel.onRequestNotification();
           expect(viewState.destination, isNull);
         });
       });

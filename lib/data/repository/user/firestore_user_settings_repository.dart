@@ -49,19 +49,37 @@ class FirestoreUserSettingsRepository implements UserSettingsRepository {
   @override
   Stream<NotificationSetting> watchNotificationSetting() => _userRef()
       .snapshots()
-      .map((snapshot) {
-        final setting = snapshot.data()?['notificationSetting'] as Map?;
-        return NotificationSetting.fromMap(
-          setting == null ? null : Map<String, dynamic>.from(setting),
-        );
-      })
+      .map(_toNotificationSetting)
       .handleError((Object e) => throw UserSettingsLoadException(e.toString()));
+
+  @override
+  Future<NotificationSetting> fetchNotificationSetting() async {
+    try {
+      return _toNotificationSetting(await _userRef().get());
+    } catch (e) {
+      throw UserSettingsLoadException(e.toString());
+    }
+  }
 
   @override
   Future<void> setNotificationSetting(NotificationSetting setting) async {
     try {
       await _userRef().set({
         'notificationSetting': setting.toJson(),
+        'timezone': timezone,
+      }, SetOptions(merge: true));
+    } catch (e) {
+      throw UserSettingsSaveException(e.toString());
+    }
+  }
+
+  /// `merge: true` はネストしたマップを再帰的にマージするため、`enabled` だけを
+  /// 送れば時刻・日はサーバーにある値が残る
+  @override
+  Future<void> setNotificationEnabled(bool enabled) async {
+    try {
+      await _userRef().set({
+        'notificationSetting': {'enabled': enabled},
         'timezone': timezone,
       }, SetOptions(merge: true));
     } catch (e) {
@@ -78,6 +96,17 @@ class FirestoreUserSettingsRepository implements UserSettingsRepository {
     } catch (e) {
       throw UserSettingsSaveException(e.toString());
     }
+  }
+
+  /// `users/{uid}` は初期化していないため、ドキュメントごと無いことがある。
+  /// その場合は初期値（通知 OFF）として扱う
+  NotificationSetting _toNotificationSetting(
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
+  ) {
+    final setting = snapshot.data()?['notificationSetting'] as Map?;
+    return NotificationSetting.fromMap(
+      setting == null ? null : Map<String, dynamic>.from(setting),
+    );
   }
 
   DocumentReference<Map<String, dynamic>> _userRef() =>

@@ -73,7 +73,7 @@ void main() {
         });
 
         test('保存が失敗しても未捕捉の例外にならない', () async {
-          fakeUserSettingsRepository.shouldThrow = true;
+          fakeUserSettingsRepository.saveShouldThrow = true;
           await resume();
         });
 

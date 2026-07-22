@@ -175,7 +175,7 @@ void main() {
         group('保存に失敗した場合', () {
           setUp(() async {
             await setUpLoaded();
-            fakeUserSettingsRepository.shouldThrow = true;
+            fakeUserSettingsRepository.saveShouldThrow = true;
           });
 
           test('例外は呼び出し元に伝播しない', () async {

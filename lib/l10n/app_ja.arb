@@ -69,6 +69,8 @@
   "taskErrorDeleteFailed": "削除に失敗しました",
   "taskErrorInvalidArgument": "入力内容が正しくありません",
   "onboardingErrorSaveFailed": "設定の保存に失敗しました",
+  "loginErrorSignInFailed": "サインインに失敗しました",
+  "notificationIntroErrorEnableFailed": "通知の設定に失敗しました",
   "editorTitleNew": "新規タスクを追加",
   "editorTitleEdit": "タスクを編集",
   "editorSectionBasic": "基本情報",
@@ -176,8 +178,8 @@
   "onboardingPage1Body": "オイル交換、フィルター掃除、歯ブラシ交換……いつやるか忘れがちなことを登録しておくだけです。",
   "onboardingPage2Title": "次はいつごろだっけ？　の悩みをなくす",
   "onboardingPage2Body": "過去の登録から間隔を算出して、どのくらいの頻度でやっているのかを可視化します。",
-  "onboardingPage4Title": "色でまとめると、見つけやすくなります",
-  "onboardingPage4Body": "カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。",
+  "onboardingPage3Title": "色でまとめると、見つけやすくなります",
+  "onboardingPage3Body": "カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。",
   "onboardingColorRed": "キッチン",
   "onboardingColorBlue": "家電",
   "onboardingColorGreen": "植物",
@@ -187,15 +189,35 @@
   "onboardingDemoTask1": "ベランダの虫除け",
   "onboardingDemoTask2": "オイル交換",
   "onboardingDemoTask3": "歯ブラシ交換",
-  "onboardingNotificationPreviewBody": "予定日になりました",
+  "notificationIntroPreviewTaskName": "歯ブラシ交換",
+  "notificationIntroPreviewBody": "予定日になりました",
   "onboardingDemoTask4": "お風呂の防カビ剤",
   "onboardingDemoTask5": "スニーカーの洗濯",
   "onboardingDemoTask6": "美容院",
-  "onboardingPage3Title": "スケジュールになったら通知でお知らせ",
-  "onboardingPage3Body": "通知を有効にすると、予定日になったタイミングでお知らせします。通知は後から設定することもできます。",
-  "onboardingEnableNotification": "通知を有効にする",
   "onboardingNext": "次へ",
   "onboardingStart": "最初のタスクを登録する",
+  "loginTagline": "サインインすると、どの端末でも\n同じタスクを続きから使えます。",
+  "loginWithGoogle": "Googleでサインイン",
+  "loginWithApple": "Appleでサインイン",
+  "loginOr": "または",
+  "loginStartAsGuest": "ゲストではじめる",
+  "loginTermsAgreement": "サインインすることで、{terms} および {privacy} に同意したものとみなされます。",
+  "@loginTermsAgreement": {
+    "placeholders": {
+      "terms": {
+        "type": "String"
+      },
+      "privacy": {
+        "type": "String"
+      }
+    }
+  },
+  "loginTermsOfService": "利用規約",
+  "loginPrivacyPolicy": "プライバシーポリシー",
+  "notificationIntroTitle": "スケジュールになったら通知でお知らせ",
+  "notificationIntroBody": "通知を有効にすると、予定日になったタイミングでお知らせします。通知は後から設定することもできます。",
+  "notificationIntroEnable": "通知を有効にする",
+  "notificationIntroLater": "あとで",
   "settingsTitle": "設定",
   "settingsSectionNotification": "通知",
   "settingsNotificationTitle": "予定日に通知",
@@ -236,5 +258,7 @@
   "settingsDebugTutorialFlagReset": "チュートリアルフラグをリセットしました",
   "settingsDebugResetColorSettings": "カラー設定をリセット",
   "settingsDebugColorSettingsReset": "カラー設定をリセットしました",
+  "settingsDebugOpenLogin": "ログイン画面を開く",
+  "settingsDebugOpenNotificationIntro": "通知の誘導画面を開く",
   "settingsDebugForceCrash": "クラッシュさせる"
 }

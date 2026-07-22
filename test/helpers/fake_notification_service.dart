@@ -12,9 +12,13 @@ class FakeNotificationService implements NotificationService {
   bool requestPermissionCalled = false;
   int registerTokenCount = 0;
 
+  /// 通知の状態を問い合わせられない状況を作る
+  bool checkPermissionShouldThrow = false;
+
   @override
   Future<bool> checkPermission() async {
     checkPermissionCalled = true;
+    if (checkPermissionShouldThrow) throw Exception('テストエラー');
     return checkPermissionResult;
   }
 

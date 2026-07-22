@@ -386,6 +386,18 @@ abstract class AppLocalizations {
   /// **'設定の保存に失敗しました'**
   String get onboardingErrorSaveFailed;
 
+  /// No description provided for @loginErrorSignInFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'サインインに失敗しました'**
+  String get loginErrorSignInFailed;
+
+  /// No description provided for @notificationIntroErrorEnableFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知の設定に失敗しました'**
+  String get notificationIntroErrorEnableFailed;
+
   /// No description provided for @editorTitleNew.
   ///
   /// In ja, this message translates to:
@@ -638,17 +650,17 @@ abstract class AppLocalizations {
   /// **'過去の登録から間隔を算出して、どのくらいの頻度でやっているのかを可視化します。'**
   String get onboardingPage2Body;
 
-  /// No description provided for @onboardingPage4Title.
+  /// No description provided for @onboardingPage3Title.
   ///
   /// In ja, this message translates to:
   /// **'色でまとめると、見つけやすくなります'**
-  String get onboardingPage4Title;
+  String get onboardingPage3Title;
 
-  /// No description provided for @onboardingPage4Body.
+  /// No description provided for @onboardingPage3Body.
   ///
   /// In ja, this message translates to:
   /// **'カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。'**
-  String get onboardingPage4Body;
+  String get onboardingPage3Body;
 
   /// No description provided for @onboardingColorRed.
   ///
@@ -704,11 +716,17 @@ abstract class AppLocalizations {
   /// **'歯ブラシ交換'**
   String get onboardingDemoTask3;
 
-  /// No description provided for @onboardingNotificationPreviewBody.
+  /// No description provided for @notificationIntroPreviewTaskName.
+  ///
+  /// In ja, this message translates to:
+  /// **'歯ブラシ交換'**
+  String get notificationIntroPreviewTaskName;
+
+  /// No description provided for @notificationIntroPreviewBody.
   ///
   /// In ja, this message translates to:
   /// **'予定日になりました'**
-  String get onboardingNotificationPreviewBody;
+  String get notificationIntroPreviewBody;
 
   /// No description provided for @onboardingDemoTask4.
   ///
@@ -728,24 +746,6 @@ abstract class AppLocalizations {
   /// **'美容院'**
   String get onboardingDemoTask6;
 
-  /// No description provided for @onboardingPage3Title.
-  ///
-  /// In ja, this message translates to:
-  /// **'スケジュールになったら通知でお知らせ'**
-  String get onboardingPage3Title;
-
-  /// No description provided for @onboardingPage3Body.
-  ///
-  /// In ja, this message translates to:
-  /// **'通知を有効にすると、予定日になったタイミングでお知らせします。通知は後から設定することもできます。'**
-  String get onboardingPage3Body;
-
-  /// No description provided for @onboardingEnableNotification.
-  ///
-  /// In ja, this message translates to:
-  /// **'通知を有効にする'**
-  String get onboardingEnableNotification;
-
   /// No description provided for @onboardingNext.
   ///
   /// In ja, this message translates to:
@@ -757,6 +757,78 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'最初のタスクを登録する'**
   String get onboardingStart;
+
+  /// No description provided for @loginTagline.
+  ///
+  /// In ja, this message translates to:
+  /// **'サインインすると、どの端末でも\n同じタスクを続きから使えます。'**
+  String get loginTagline;
+
+  /// No description provided for @loginWithGoogle.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleでサインイン'**
+  String get loginWithGoogle;
+
+  /// No description provided for @loginWithApple.
+  ///
+  /// In ja, this message translates to:
+  /// **'Appleでサインイン'**
+  String get loginWithApple;
+
+  /// No description provided for @loginOr.
+  ///
+  /// In ja, this message translates to:
+  /// **'または'**
+  String get loginOr;
+
+  /// No description provided for @loginStartAsGuest.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゲストではじめる'**
+  String get loginStartAsGuest;
+
+  /// No description provided for @loginTermsAgreement.
+  ///
+  /// In ja, this message translates to:
+  /// **'サインインすることで、{terms} および {privacy} に同意したものとみなされます。'**
+  String loginTermsAgreement(String terms, String privacy);
+
+  /// No description provided for @loginTermsOfService.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用規約'**
+  String get loginTermsOfService;
+
+  /// No description provided for @loginPrivacyPolicy.
+  ///
+  /// In ja, this message translates to:
+  /// **'プライバシーポリシー'**
+  String get loginPrivacyPolicy;
+
+  /// No description provided for @notificationIntroTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'スケジュールになったら通知でお知らせ'**
+  String get notificationIntroTitle;
+
+  /// No description provided for @notificationIntroBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知を有効にすると、予定日になったタイミングでお知らせします。通知は後から設定することもできます。'**
+  String get notificationIntroBody;
+
+  /// No description provided for @notificationIntroEnable.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知を有効にする'**
+  String get notificationIntroEnable;
+
+  /// No description provided for @notificationIntroLater.
+  ///
+  /// In ja, this message translates to:
+  /// **'あとで'**
+  String get notificationIntroLater;
 
   /// No description provided for @settingsTitle.
   ///
@@ -997,6 +1069,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'カラー設定をリセットしました'**
   String get settingsDebugColorSettingsReset;
+
+  /// No description provided for @settingsDebugOpenLogin.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログイン画面を開く'**
+  String get settingsDebugOpenLogin;
+
+  /// No description provided for @settingsDebugOpenNotificationIntro.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知の誘導画面を開く'**
+  String get settingsDebugOpenNotificationIntro;
 
   /// No description provided for @settingsDebugForceCrash.
   ///

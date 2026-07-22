@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
@@ -53,7 +51,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     _colors = [
       c.info,
       c.warning,
-      c.danger,
       c.successSoft,
     ].map((color) => Color.lerp(color, c.surface, 0.65)!).toList();
     _pageData = buildOnboardingPages(
@@ -66,7 +63,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
       ),
       onDone: _viewModel.onClickDone,
       onSkip: _viewModel.onClickSkip,
-      onRequestNotification: _viewModel.onRequestNotification,
     );
   }
 
@@ -92,13 +88,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
           context.go('/home/new_task');
         case .pop:
           context.pop();
-        case .next:
-          unawaited(
-            _pageController.nextPage(
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-            ),
-          );
       }
     });
 

@@ -90,7 +90,7 @@ class SettingsViewModel extends _$SettingsViewModel {
 
     final hasPermission = await notificationService.checkPermission();
     if (hasPermission) {
-      await _setNotificationSetting(state.notificationSetting);
+      await _setNotificationEnabled(true);
       if (!ref.mounted) return;
       state = state.copyWith(isNotificationUpdating: false);
       return;
@@ -114,7 +114,7 @@ class SettingsViewModel extends _$SettingsViewModel {
     await notificationService.registerToken();
     if (!ref.mounted) return;
 
-    await _setNotificationSetting(state.notificationSetting);
+    await _setNotificationEnabled(true);
     if (!ref.mounted) return;
 
     state = state.copyWith(isNotificationUpdating: false);
@@ -126,7 +126,7 @@ class SettingsViewModel extends _$SettingsViewModel {
       isNotificationUpdating: true,
       notificationSetting: updated,
     );
-    await _setNotificationSetting(updated);
+    await _setNotificationEnabled(false);
     if (!ref.mounted) return;
     state = state.copyWith(isNotificationUpdating: false);
   }
@@ -137,6 +137,16 @@ class SettingsViewModel extends _$SettingsViewModel {
     unawaited(
       userSettings.setNotificationSetting(setting).onError((e, s) {
         logger.e('setNotificationSetting failed', error: e, stackTrace: s);
+      }),
+    );
+  }
+
+  Future<void> _setNotificationEnabled(bool enabled) async {
+    final userSettings = await ref.read(userSettingsRepositoryProvider.future);
+    // Firestorage はオフラインキャッシュに書き込むため await しない（エラーは権限設定不備などで発生）
+    unawaited(
+      userSettings.setNotificationEnabled(enabled).onError((e, s) {
+        logger.e('setNotificationEnabled failed', error: e, stackTrace: s);
       }),
     );
   }

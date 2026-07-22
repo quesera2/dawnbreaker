@@ -118,13 +118,13 @@ class FcmNotificationServiceImpl implements NotificationService {
   @override
   Future<bool> checkPermission() async {
     final settings = await _messaging.getNotificationSettings();
-    return _isAuthorized(settings.authorizationStatus);
+    return settings.authorizationStatus.isAuthorized;
   }
 
   @override
   Future<bool> requestPermission() async {
     final settings = await _messaging.requestPermission();
-    return _isAuthorized(settings.authorizationStatus);
+    return settings.authorizationStatus.isAuthorized;
   }
 
   @override
@@ -159,9 +159,13 @@ class FcmNotificationServiceImpl implements NotificationService {
       ),
     );
   }
+}
 
-  bool _isAuthorized(AuthorizationStatus status) => switch (status) {
-    // provisional は静かな通知が届く状態なので、送信先として登録する
+extension on AuthorizationStatus {
+  /// 通知を送ってよい状態か。
+  ///
+  /// `provisional` は静かな通知が届く状態なので、送信先として登録してよい。
+  bool get isAuthorized => switch (this) {
     .authorized || .provisional => true,
     .denied || .notDetermined => false,
   };
