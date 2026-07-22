@@ -1,21 +1,48 @@
-import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-
+/// アプリ内で扱うユーザー。
+///
+/// 値等価を実装しているのは、`currentUserProvider` が同じ値を 2 度受け取るため。
+/// 初期値を `getUser()` から、その直後に同じ値が `watchUser()` から流れてくるので、
+/// 等価でないと起動のたびに下流が 1 度無駄に再構築される
 sealed class AppUser {
   const AppUser();
 }
 
-/// SQLiteでローカル動作するためのユーザー
-class LocalUser extends AppUser {
-  const LocalUser();
+/// 未サインイン、またはサインアウト後
+final class NoLogin extends AppUser {
+  const NoLogin();
+
+  @override
+  bool operator ==(Object other) => other is NoLogin;
+
+  @override
+  int get hashCode => (NoLogin).hashCode;
 }
 
-/// Firebase CloudStore
-class FirebaseAppUser extends AppUser {
-  const FirebaseAppUser(this._user);
+/// サインイン済み。必ず uid を持つ
+sealed class SignedInUser extends AppUser {
+  const SignedInUser(this.id);
 
-  final firebase_auth.User _user;
+  final String id;
+}
 
-  String get id => _user.uid;
+/// 匿名アカウント
+final class Guest extends SignedInUser {
+  const Guest(super.id);
 
-  bool get isAnonymous => _user.isAnonymous;
+  @override
+  bool operator ==(Object other) => other is Guest && other.id == id;
+
+  @override
+  int get hashCode => Object.hash(Guest, id);
+}
+
+/// Google / Apple にリンク済みのアカウント
+final class LoggedIn extends SignedInUser {
+  const LoggedIn(super.id);
+
+  @override
+  bool operator ==(Object other) => other is LoggedIn && other.id == id;
+
+  @override
+  int get hashCode => Object.hash(LoggedIn, id);
 }

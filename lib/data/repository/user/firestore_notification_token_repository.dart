@@ -10,20 +10,12 @@ part 'firestore_notification_token_repository.g.dart';
 Future<NotificationTokenRepository> notificationTokenRepository(Ref ref) async {
   final user = await ref.watch(currentUserProvider.future);
   return switch (user) {
-    LocalUser() => NoopNotificationTokenRepository(),
-    FirebaseAppUser(:final id) => FirestoreNotificationTokenRepository(
+    NoLogin() => throw StateError('サインインしていないユーザーはトークンを登録できない'),
+    SignedInUser(:final id) => FirestoreNotificationTokenRepository(
       userId: id,
       firestore: FirebaseFirestore.instance,
     ),
   };
-}
-
-class NoopNotificationTokenRepository implements NotificationTokenRepository {
-  @override
-  Future<void> addToken(String token) async {}
-
-  @override
-  Future<void> removeToken(String token) async {}
 }
 
 class FirestoreNotificationTokenRepository

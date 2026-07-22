@@ -35,7 +35,7 @@ void main() {
         ),
         userSettingsRepositoryProvider.overrideWith((_) async {
           if (repositoryUnavailable) {
-            throw const UnsupportedUserException('テストエラー');
+            throw const UserSettingsLoadException('テストエラー');
           }
           return fakeUserSettingsRepository;
         }),
