@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
+import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_ui_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -29,11 +32,28 @@ class LoginViewModel extends _$LoginViewModel {
     }
     if (!ref.mounted) return;
 
+    _updateLastActiveAt();
+
     final destination = await _resolveDestination();
     if (!ref.mounted) return;
     state = state.copyWith(
       isSigningIn: false,
       destination: LoginDestinationEvent(destination),
+    );
+  }
+
+  /// 放置アカウントの回収で使う最終アクティブ日時を進める。
+  ///
+  /// 画面遷移とは無関係なので待たない。Firestore への書き込みはオフラインだと
+  /// 完了しないため、待つとサインインが終わらなくなる
+  void _updateLastActiveAt() {
+    unawaited(
+      ref
+          .read(userSettingsRepositoryProvider.future)
+          .then((userSettings) => userSettings.updateLastActiveAt())
+          .onError((e, s) {
+            logger.e('updateLastActiveAt failed', error: e, stackTrace: s);
+          }),
     );
   }
 

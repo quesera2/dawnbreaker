@@ -33,5 +33,8 @@ class FakeUserSettingsRepository implements UserSettingsRepository {
   }
 
   @override
-  Future<void> updateLastActiveAt() async => updateLastActiveAtCount++;
+  Future<void> updateLastActiveAt() async {
+    if (shouldThrow) throw const UserSettingsSaveException('テストエラー');
+    updateLastActiveAtCount++;
+  }
 }

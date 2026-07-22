@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
+import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/notification_intro/viewmodel/notification_intro_ui_state.dart';
@@ -64,6 +67,24 @@ void main() {
           expect(viewState.completed, isNotNull);
         });
 
+        // 既存アカウントで別端末からサインインするとこの画面を通る
+        test('設定済みの通知時刻を保ったまま有効になる', () async {
+          fakeUserSettingsRepository.notificationSetting =
+              const NotificationSetting(
+                hour: 7,
+                minute: 30,
+                notifyDay: .yesterday,
+              );
+
+          await viewModel.onClickEnable();
+
+          final saved = fakeUserSettingsRepository.notificationSetting;
+          expect(saved.enabled, true);
+          expect(saved.hour, 7);
+          expect(saved.minute, 30);
+          expect(saved.notifyDay, NotifyDay.yesterday);
+        });
+
         // 断られたときは users/{uid} の初期値（通知 OFF）のままにする
         test('許可されなければ何も書かずにホームへ進む', () async {
           fakeNotificationService.permissionResult = false;
@@ -117,6 +138,17 @@ void main() {
         expect(fakeUserSettingsRepository.notificationSetting.enabled, false);
         expect(fakeNotificationService.requestPermissionCalled, false);
         expect(viewState.completed, isNotNull);
+      });
+
+      // 戻る操作もここを通る。書き込みの結果を捨てて画面を降りさせない
+      test('有効化の最中は受け付けない', () async {
+        fakeUserSettingsRepository.neverCompletes = true;
+        unawaited(viewModel.onClickEnable());
+        await Future<void>.delayed(Duration.zero);
+
+        viewModel.onSkip();
+
+        expect(viewState.completed, isNull);
       });
     });
   });

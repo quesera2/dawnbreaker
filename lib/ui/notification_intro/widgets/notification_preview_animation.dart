@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 
 /// 予定日に通知が届く様子を見せるイラスト。
 ///
-/// チュートリアルの通知ページと、アカウント作成後の通知誘導画面が共有する。
+/// アカウント作成後の通知誘導画面で使う。
 class NotificationPreviewAnimation extends StatefulWidget {
   const NotificationPreviewAnimation({super.key});
 
@@ -19,8 +19,6 @@ class NotificationPreviewAnimation extends StatefulWidget {
 class _NotificationPreviewAnimationState
     extends State<NotificationPreviewAnimation>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
   static const _iconSize = 72.0;
   static const _iconRadius = _iconSize / 2;
   static const _iconCenter = Offset(100, 90);
@@ -28,6 +26,8 @@ class _NotificationPreviewAnimationState
   static const _period = 1.0 / _rippleCount;
   static const _scaleUpTime = _period * 0.18;
   static const _pulseWindow = _period * 0.9;
+
+  late final AnimationController _controller;
 
   @override
   void initState() {

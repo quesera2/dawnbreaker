@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
+import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_ui_state.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_view_model.dart';
@@ -9,12 +10,14 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_user_repository.dart';
+import '../../../helpers/fake_user_settings_repository.dart';
 
 void main() {
   group('LoginViewModel', () {
     late ProviderContainer container;
     late FakeUserRepository fakeUserRepository;
     late FakeNotificationService fakeNotificationService;
+    late FakeUserSettingsRepository fakeUserSettingsRepository;
     late LoginViewModel viewModel;
     late LoginUiState viewState;
 
@@ -30,11 +33,15 @@ void main() {
     setUp(() {
       fakeUserRepository = FakeUserRepository(const NoLogin());
       fakeNotificationService = FakeNotificationService();
+      fakeUserSettingsRepository = FakeUserSettingsRepository();
       container = ProviderContainer(
         overrides: [
           userRepositoryProvider.overrideWith((_) => fakeUserRepository),
           fcmNotificationServiceProvider.overrideWith(
             (_) async => fakeNotificationService,
+          ),
+          userSettingsRepositoryProvider.overrideWith(
+            (_) async => fakeUserSettingsRepository,
           ),
         ],
       );
@@ -84,6 +91,23 @@ void main() {
           await viewModel.onClickStartAsGuest();
 
           expect(viewState.isSigningIn, false);
+        });
+
+        test('最終アクティブ日時が更新される', () async {
+          await viewModel.onClickStartAsGuest();
+          await Future<void>.delayed(Duration.zero);
+
+          expect(fakeUserSettingsRepository.updateLastActiveAtCount, 1);
+        });
+
+        // 放置アカウントの回収に使うだけの値なので、ここで止めない
+        test('最終アクティブ日時を更新できなくてもホームへ進む', () async {
+          fakeUserSettingsRepository.shouldThrow = true;
+
+          await viewModel.onClickStartAsGuest();
+          await Future<void>.delayed(Duration.zero);
+
+          expect(viewState.destination?.type, LoginDestination.home);
         });
 
         // 誘導を出すかどうかを決めるだけの問い合わせなので、ここで止めない
