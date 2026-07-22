@@ -650,17 +650,17 @@ abstract class AppLocalizations {
   /// **'過去の登録から間隔を算出して、どのくらいの頻度でやっているのかを可視化します。'**
   String get onboardingPage2Body;
 
-  /// No description provided for @onboardingPage4Title.
+  /// No description provided for @onboardingPage3Title.
   ///
   /// In ja, this message translates to:
   /// **'色でまとめると、見つけやすくなります'**
-  String get onboardingPage4Title;
+  String get onboardingPage3Title;
 
-  /// No description provided for @onboardingPage4Body.
+  /// No description provided for @onboardingPage3Body.
   ///
   /// In ja, this message translates to:
   /// **'カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。'**
-  String get onboardingPage4Body;
+  String get onboardingPage3Body;
 
   /// No description provided for @onboardingColorRed.
   ///

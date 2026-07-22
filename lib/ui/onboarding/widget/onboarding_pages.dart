@@ -50,10 +50,10 @@ List<OnboardingPageData> buildOnboardingPages(
   ),
   (
     page: OnboardingPage(
-      pageTitle: context.l10n.onboardingPage4Title,
-      pageDescription: context.l10n.onboardingPage4Body,
+      pageTitle: context.l10n.onboardingPage3Title,
+      pageDescription: context.l10n.onboardingPage3Body,
       backgroundColor: pageColors[2],
-      pageDetail: const _OnboardingPage4Description(),
+      pageDetail: const _OnboardingPage3Description(),
     ),
     buttons: _lastPageButtons(context, mode, onDone: onDone, onSkip: onSkip),
   ),
@@ -294,8 +294,8 @@ class _OnboardingPage2Description extends StatelessWidget {
   }
 }
 
-class _OnboardingPage4Description extends StatelessWidget {
-  const _OnboardingPage4Description();
+class _OnboardingPage3Description extends StatelessWidget {
+  const _OnboardingPage3Description();
 
   @override
   Widget build(BuildContext context) {

@@ -313,10 +313,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Intervals are calculated from past records to visualize how often you\'re actually doing each task.';
 
   @override
-  String get onboardingPage4Title => 'Group by color to find tasks faster';
+  String get onboardingPage3Title => 'Group by color to find tasks faster';
 
   @override
-  String get onboardingPage4Body =>
+  String get onboardingPage3Body =>
       'Color-code tasks by category or location to make your list easy to scan at a glance.';
 
   @override

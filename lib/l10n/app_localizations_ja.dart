@@ -308,10 +308,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingPage2Body => '過去の登録から間隔を算出して、どのくらいの頻度でやっているのかを可視化します。';
 
   @override
-  String get onboardingPage4Title => '色でまとめると、見つけやすくなります';
+  String get onboardingPage3Title => '色でまとめると、見つけやすくなります';
 
   @override
-  String get onboardingPage4Body => 'カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。';
+  String get onboardingPage3Body => 'カテゴリや場所などでタスクを色分けできます。一覧がひと目でわかりやすくなります。';
 
   @override
   String get onboardingColorRed => 'キッチン';
