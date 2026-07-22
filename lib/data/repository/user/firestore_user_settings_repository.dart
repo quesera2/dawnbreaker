@@ -12,7 +12,7 @@ part 'firestore_user_settings_repository.g.dart';
 @Riverpod(keepAlive: true)
 Future<UserSettingsRepository> userSettingsRepository(Ref ref) async {
   final user = ref.watch(currentUserProvider);
-  // タイムゾーンの取得はユーザーがいるときにしか要らない
+  final timeZone = await FlutterTimezone.getLocalTimezone();
   return switch (user) {
     NoLogin() => throw const UserSettingsNotSignedInException(
       'a signed-out user has no notification setting',
@@ -20,7 +20,7 @@ Future<UserSettingsRepository> userSettingsRepository(Ref ref) async {
     SignedInUser(:final id) => FirestoreUserSettingsRepository(
       userId: id,
       firestore: FirebaseFirestore.instance,
-      timezone: (await FlutterTimezone.getLocalTimezone()).identifier,
+      timezone: timeZone.identifier,
     ),
   };
 }
