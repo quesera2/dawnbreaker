@@ -246,32 +246,136 @@ abstract interface class UserRepository {
 
 ## Phase8
 
-主題は認証基盤の作り替え。SQLite / LocalUser を捨てて匿名認証に一本化し、Phase9 のログイン画面が
-乗る土台を用意する。ソーシャルログインはまだ入れず、全員が匿名（`Guest`）のまま新構造に載せ替える。
+主題は認証基盤の作り替え。SQLite / LocalUser を捨てて匿名認証に一本化し、ログイン画面までを用意する。
+ソーシャルログインのボタンは置くが配線はダミーで、全員が匿名（`Guest`）のまま新構造に載せ替える。
 旧 Phase10 の「起動時ブラックアウト」もここで閉じる。
 
-- [ ] `AppUser` を `NoLogin` / `SignedInUser`（`Guest` / `LoggedIn`）の sealed 階層に作り替える
-  - `LocalUser` を削除し、`SQLiteTaskRepositoryImpl` と drift を削除する
-  - `LocalUserRepository` も不要になり、`UserRepository` の実装は 1 つになる
-- [ ] `UserRepository` から `getUser()` を廃止し、問い合わせ（`watchUser()`）と命令（`signInAnonymously()` 等）を分ける
-  - `getUser()` は取得の名前でありながら匿名アカウントを作る副作用を持っており、これが起動時ブラックアウトの原因
-- [ ] `currentUserProvider` を `authStateChanges()` ベースの `Stream<AppUser>` に作り替え、
-      `taskRepositoryProvider` を `SignedInUser` の下流に置く
-  - 併せて、ホーム画面到達時点でユーザーの存在が保証されるなら ViewModel 群を `AsyncNotifier` から
-    戻せる可能性がある（Phase3 で非同期化したもの）。実際に見てから判断する
-- [ ] `main()` から匿名サインインを外し、復元済みの認証状態から初期ルートを決める
-  - 読み取りは通信を伴わないため失敗しない。スプラッシュは `runApp()` の直前に 1 度だけ消す
-  - ルーティングは 3 分岐（`Guest`/`LoggedIn` → ホーム、`NoLogin` × `onboarding_complete` でチュートリアル/ログイン）
-  - これで旧 Phase10 の「初回起動 × オフラインで `runApp()` に到達せず白画面」が解決する
-    （原因は `getUser()` 内の `signInAnonymously()`。読み取りではなくサインインを外すのが要点）
-- [ ] アカウント作成時に `users/{uid}` を初期化する処理を用意する
-  - `notificationSetting`（`enabled` は OS の許可状態から決める）/ `timezone` / `fcmTokens` / `lastActiveAt`
-  - **Phase7 / PR2 でチュートリアルの通知ステップが Firestore に書くようになったため、この処理がないと
-    uid のない状態で `users/{uid}` に書こうとして壊れる。**`main()` の `registerToken()` /
-    `updateLastActiveAt()` も、ユーザーがいる前提に置き直す
-- [ ] チュートリアルの通知ステップから Firestore への書き込みを外す
-  - チュートリアル中は OS の許可を求めるだけにして、設定の保存はアカウント作成後にまとめる
-  - 通知の誘導は「ログイン（またはゲスト作成）→ 通知が OFF なら ON を促す」の順に置き直す
+### 設計の決定事項
+
+#### `AppUser` は同期で読める
+
+`FirebaseAuth.instance.currentUser` はキャッシュを見る同期 getter で通信しない
+（`Firebase.initializeApp()` の中で永続化されたセッションが復元されるため、その後に読めば値が入っている）。
+つまり初期値を `await` せずに作れる。ここがこの Phase の設計全体の土台になる。
+
+```dart
+abstract interface class UserRepository {
+  /// 永続化されたセッションを読むだけ。副作用なし・通信なし
+  AppUser getUser();
+
+  /// 以降の変化を購読する
+  Stream<AppUser> watchUser();
+
+  /// 「ゲストではじめる」を押したときにだけ呼ぶ
+  Future<SignedInUser> signInAnonymously();
+
+  Future<SignedInUser> signInWithGoogle();
+  Future<SignedInUser> signInWithApple();
+  Future<void> signOut();
+  Future<void> deleteAccount();
+}
+```
+
+`getUser()` は名前を残し、匿名アカウントを作る副作用だけを取り除く。問題だったのは取得と生成が
+1 つのメソッドに同居していたことであって、名前そのものではない。
+
+#### `currentUserProvider` は `Notifier<AppUser>` にする（`AsyncNotifier` にしない）
+
+Riverpod では `build()` が `Future` を返すかどうかで消費側が `AsyncValue` を被るかが決まる。
+初期値が同期で作れる以上、`AsyncNotifier` にする理由がない。
+
+```dart
+@riverpod
+class CurrentUser extends _$CurrentUser {
+  @override
+  AppUser build() {
+    final repository = ref.watch(userRepositoryProvider);
+    final subscription = repository.watchUser().listen((user) => state = user);
+    ref.onDispose(subscription.cancel);
+    return repository.getUser();  // 同期・通信なし
+  }
+}
+```
+
+更新の出所が非同期（Stream）であることと、初期値が同期であることは別問題で、型に現れるのは後者だけ。
+Phase3 で全 ViewModel が `AsyncNotifier` になったのは `getUser()` の中で通信していたためなので、
+根元から通信を外せば連鎖ごと解ける（PR5）。
+
+リポジトリを直接呼ばずプロバイダを挟むのは、変更を Riverpod の依存グラフに載せるため。
+`ref.watch(userRepositoryProvider).getUser()` と書くとリポジトリのインスタンスは不変なので二度と
+再構築されず、ログアウトしても `taskRepositoryProvider` が古い uid を掴んだままになる。
+
+#### ルーティングは go_router の `redirect` に載せない
+
+初期ルートは `main()` が `getUser()` を 1 度読んで決め、以降は命令的に遷移する。
+ユーザーが切り替わる契機は「ゲスト作成」「ログアウト」「アカウント削除」しかなく、いずれも遷移先を
+知っているコードが引き起こすため、受動的に待ち受ける必要がない。他端末での削除によるトークン失効も、
+操作時のエラーとして検知する明示的な経路になる。
+
+`redirect` に載せると、アカウント作成直後は `Guest` になるため「`SignedInUser` → ホーム」の規則が
+通知設定の誘導画面を飛ばしてしまい、フロー中のルートを除外する例外を書く羽目になる。
+ログアウト時に「遷移してから `signOut()`」の順序が取れなくなるのも `redirect` を置いた場合。
+
+#### `taskRepositoryProvider` は `SignedInUser` しか受け取らない
+
+`NoLogin` を渡されたら `StateError` を投げる。ただしログアウト時に「ログイン画面へ遷移してから
+`signOut()` を呼ぶ」順序にすれば、ホーム画面が破棄済みで `taskRepositoryProvider` を監視している者が
+いないため、この経路には入らない（Phase10 で実装する際の順序）。
+
+### PR の区切り
+
+原則は Phase7 と同じで、**単独でマージしても壊れない**こと。認証は温まったセッションでは何も起きず
+初回起動でだけ壊れるため、各 PR の検証には新規インストール（セッションなし）・再起動（セッションあり）・
+**機内モード × 新規インストール** を含める。
+
+- [x] **PR1: 型の作り替えと SQLite / drift の削除**
+    - `AppUser` を `NoLogin` / `SignedInUser`（`Guest` / `LoggedIn`）の sealed 階層にする
+    - `LocalUser` / `LocalUserRepository` / `SQLiteTaskRepositoryImpl` / drift 一式を削除する
+    - `taskRepositoryProvider` / `FirestoreUserSettingsRepository` / `FirestoreNotificationTokenRepository` の
+      ユーザー種別による分岐が消える
+    - この時点では `getUser()` が匿名アカウントを作り続けるので、`NoLogin` は到達しない型として入るだけ
+    - 未リリースのため、ローカルに残っている drift のデータは捨ててよい
+- [ ] **PR2: `UserRepository` の問い合わせと命令を分ける（挙動は変えない）**
+    - `getUser()` から `signInAnonymously()` を取り除き、`watchUser()` を足す
+    - `currentUserProvider` を `Notifier<AppUser>` にする
+    - **`main()` は `getUser()` の後に `signInAnonymously()` を明示的に呼び続ける。** 挙動を変えないための
+      措置で、これを外すのは PR4
+    - **`taskRepositoryProvider` のシグネチャは `Future` のまま維持する。** ここで同期化すると全 ViewModel が
+      一斉にコンパイルエラーになり、PR が認証と無関係な差分で埋まる
+    - `build()` の中で `state` に代入することは Riverpod では許されないが、Stream の配送は購読時に値が
+      あっても必ずマイクロタスク以降になるため、`listen()` のコールバックが `build()` 中に走ることはない
+    - `authStateChanges()` は購読時に現在値を 1 回流すため、初期値は `getUser()` と合わせて 2 度届く。
+      `AppUser` の値等価（PR1 で実装済み）がこの 2 度目を吸収する。`.skip(1)` で捨てる方法は
+      「必ず即座に流す」前提に依存し、値がずれた場合に本物の変化を落とすので採らない
+    - `watchUser()` に `SettingsRepositoryImpl.watchHomeDisplayMode()` のような
+      「冒頭で `yield` して現在値を足す」処理は**要らない**。初期値は `getUser()` が供給しており、
+      Stream に求めているのは以降の変化だけだから。あちらで `yield` が要るのは、土台の
+      `StreamController` が現在値を再生せず、購読者が他に初期値を得る手段を持たないため
+- [ ] **PR3: ログイン画面とアカウント作成フロー**
+    - ログイン画面を作る。「ゲストではじめる」だけを配線し、Google / Apple のボタンはダミーで置く
+    - サインインは通信を伴うため、失敗したらこの画面上にエラーと再試行を出す
+    - アカウント作成時に `users/{uid}` を初期化する：`notificationSetting`（`enabled` は OS の許可状態から
+      決める）/ `timezone`（端末の現在値）/ `fcmTokens` / `lastActiveAt`
+    - 初期化は `additionalUserInfo.isNewUser` が `true` のときだけ走らせる。Phase8 では常に `true` だが、
+      Phase9 で既存アカウントにサインインし直したときに `notificationSetting` を初期値で上書きしないため。
+      壊れ方が静か（設定が黙って初期値に戻る）なので、後から足すと気づけない
+    - 作成後、通知が OFF なら通知設定の誘導画面を挟んでからホームへ。戻る操作はキャンセル扱いでホームへ
+      進み、以降は設定画面から明示的に有効化する
+    - チュートリアルの通知ステップから Firestore への書き込みを外す（OS の許可を求めるだけにする）
+- [ ] **PR4: `main()` から匿名サインインを外す**
+    - `main()` は `initializeApp()` → `getUser()` で初期ルートを決める → スプラッシュを消す → `runApp()`
+    - ルーティングは 3 分岐（`Guest`/`LoggedIn` → ホーム、`NoLogin` × `onboarding_complete` で
+      チュートリアル / ログイン画面）
+    - `registerToken()` / `updateLastActiveAt()` をユーザーがいる前提の場所に置き直す。`NoLogin` で
+      起動しうるようになるため、現在の `main()` の呼び出し位置では壊れる
+    - **ここで旧 Phase10 の「初回起動 × オフラインで `runApp()` に到達せず白画面」が解決する**
+      （原因は `getUser()` 内の `signInAnonymously()`。読み取りではなくサインインを外すのが要点）
+    - 検証: 機内モード × 新規インストールでチュートリアルまで到達すること
+- [ ] **PR5: `AsyncNotifier` の巻き戻し**
+    - `taskRepositoryProvider` を同期の `Provider` にし、Phase3 で `AsyncNotifier` にした ViewModel 群を
+      `Notifier` に戻す
+    - 機械的だが大量の差分になるため、認証の正しさとは分けて最後に置く
+    - **着手条件は PR4 の検証完了。** 混ぜるとリグレッションの切り分けができなくなる
 
 ## Phase9
 

@@ -14,10 +14,8 @@ Future<UserSettingsRepository> userSettingsRepository(Ref ref) async {
   final user = await ref.watch(currentUserProvider.future);
   final timeZone = await FlutterTimezone.getLocalTimezone();
   return switch (user) {
-    // LocalUser を作る経路は残っておらず、Phase8 で型ごと削除する。
-    // 通知設定は Firestore にしか置き場がないため、握り潰さず落とす
-    LocalUser() => throw const UnsupportedUserException('LocalUser は通知設定を持たない'),
-    FirebaseAppUser(:final id) => FirestoreUserSettingsRepository(
+    NoLogin() => throw StateError('サインインしていないユーザーは通知設定を持たない'),
+    SignedInUser(:final id) => FirestoreUserSettingsRepository(
       userId: id,
       firestore: FirebaseFirestore.instance,
       timezone: timeZone.identifier,

@@ -14,8 +14,3 @@ class UserSettingsLoadException extends UserSettingsRepositoryException {
 class UserSettingsSaveException extends UserSettingsRepositoryException {
   const UserSettingsSaveException([super.message]);
 }
-
-/// アカウントに紐づく設定を持てないユーザーで [UserSettingsRepository] を要求した。
-class UnsupportedUserException extends UserSettingsRepositoryException {
-  const UnsupportedUserException([super.message]);
-}

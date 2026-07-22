@@ -12,8 +12,12 @@ class FirebaseUserRepository implements UserRepository {
   @override
   Future<AppUser> getUser() async {
     final auth = FirebaseAuth.instance;
-    if (auth.currentUser != null) return FirebaseAppUser(auth.currentUser!);
+    final currentUser = auth.currentUser;
+    if (currentUser != null) return _toAppUser(currentUser);
     final credential = await auth.signInAnonymously();
-    return FirebaseAppUser(credential.user!);
+    return _toAppUser(credential.user!);
   }
+
+  AppUser _toAppUser(User user) =>
+      user.isAnonymous ? Guest(user.uid) : LoggedIn(user.uid);
 }
