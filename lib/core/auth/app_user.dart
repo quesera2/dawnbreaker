@@ -1,8 +1,10 @@
 /// アプリ内で扱うユーザー。
 ///
-/// 値等価を実装しているのは、`currentUserProvider` が同じ値を 2 度受け取るため。
-/// 初期値を `getUser()` から、その直後に同じ値が `watchUser()` から流れてくるので、
-/// 等価でないと起動のたびに下流が 1 度無駄に再構築される
+/// 値等価を実装しているのは、Riverpod が `state` への代入時に `previous != next` で
+/// 通知の要否を判定するため（`ProviderElement.defaultUpdateShouldNotify`）。
+/// `currentUserProvider` は初期値を `getUser()` から受け取り、その直後に同じ値を
+/// `watchUser()` からもう一度受け取る。等価でないとこの 2 度目が変更として下流に伝わり、
+/// 値が変わっていないのに起動のたびにリポジトリと ViewModel が作り直される
 sealed class AppUser {
   const AppUser();
 }
