@@ -1,32 +1,43 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
   ],
-  "labels": [
-    "renovate"
+  labels: [
+    'renovate',
   ],
-  "timezone": "Asia/Tokyo",
-  "schedule": [
-    "before 9am"
+  timezone: 'Asia/Tokyo',
+  schedule: [
+    'before 9am',
   ],
-  "prHourlyLimit": 3,
-  "prConcurrentLimit": 10,
-  "minimumReleaseAge": "3 days",
-  "packageRules": [
+  prHourlyLimit: 3,
+  prConcurrentLimit: 10,
+  minimumReleaseAge: '3 days',
+  packageRules: [
     {
-      "matchPackageNames": ["dev.flutter.flutter-plugin-loader.gradle.plugin"],
-      "enabled": false
+      matchPackageNames: [
+        'dev.flutter.flutter-plugin-loader.gradle.plugin',
+      ],
+      enabled: false,
     },
     {
-      "matchPackagePrefixes": ["firebase_"],
-      "matchManagers": ["pub"],
-      "groupName": "Firebase Flutter packages"
+      matchManagers: [
+        'pub',
+      ],
+      groupName: 'Firebase Flutter packages',
+      matchPackageNames: [
+        'firebase_{/,}**',
+      ],
     },
     {
-      "matchPackagePrefixes": ["com.google.firebase", "com.google.gms"],
-      "matchManagers": ["gradle"],
-      "groupName": "Firebase Gradle plugins"
-    }
+      matchManagers: [
+        'gradle',
+      ],
+      groupName: 'Firebase Gradle plugins',
+      matchPackageNames: [
+        'com.google.firebase{/,}**',
+        'com.google.gms{/,}**',
+      ],
+    },
   ],
 }
