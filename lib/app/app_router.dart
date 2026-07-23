@@ -1,6 +1,8 @@
 import 'package:dawnbreaker/app/app_colors.dart';
+import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:dawnbreaker/data/preferences/preferences_manager.dart';
+import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/app_detail_screen.dart';
 import 'package:dawnbreaker/ui/color_label/widgets/color_label_screen.dart';
 import 'package:dawnbreaker/ui/editor/widgets/editor_screen.dart';
@@ -19,12 +21,17 @@ part 'app_router.g.dart';
 
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
+  // サインイン状態とチュートリアル表示フラグで初期表示画面を分岐する
+  final user = ref.read(currentUserProvider);
   final preferencesManager = ref.read(preferencesManagerProvider);
   final isOnboardingCompleted = preferencesManager.get(
     onboardingCompleteKey,
     defaultValue: false,
   );
-  final initialLocation = isOnboardingCompleted ? '/home' : '/onboarding';
+  final initialLocation = switch (user) {
+    SignedInUser() => '/home',
+    NoLogin() => isOnboardingCompleted ? '/login' : '/onboarding',
+  };
 
   final router = GoRouter(
     initialLocation: initialLocation,

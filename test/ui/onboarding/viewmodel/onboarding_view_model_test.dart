@@ -60,8 +60,8 @@ void main() {
         for (final (mode, expected, description) in [
           (
             OnboardingMode.initial,
-            OnboardingDestination.newTask,
-            'チュートリアル完了後にタスク作成画面に遷移する',
+            OnboardingDestination.login,
+            'チュートリアル完了後にログイン画面に遷移する',
           ),
           (
             OnboardingMode.fromSettings,
@@ -110,9 +110,9 @@ void main() {
       group('正常系', () {
         setUp(setUpState);
 
-        test('ホーム画面に遷移する', () async {
+        test('ログイン画面に遷移する', () async {
           await viewModel.onClickSkip();
-          expect(viewState.destination?.type, OnboardingDestination.home);
+          expect(viewState.destination?.type, OnboardingDestination.login);
         });
       });
 

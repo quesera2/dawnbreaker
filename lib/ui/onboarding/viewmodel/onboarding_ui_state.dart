@@ -6,7 +6,7 @@ import 'package:uuid/uuid.dart';
 
 part 'onboarding_ui_state.freezed.dart';
 
-enum OnboardingDestination { home, newTask, pop }
+enum OnboardingDestination { login, pop }
 
 class OnboardingDestinationEvent {
   OnboardingDestinationEvent(this.type) : id = const Uuid().v4();

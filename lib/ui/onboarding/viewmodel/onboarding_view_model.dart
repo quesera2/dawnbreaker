@@ -35,7 +35,7 @@ class OnboardingViewModel extends _$OnboardingViewModel {
     if (!ref.mounted) return;
     state = state.copyWith(
       destination: switch (mode) {
-        .initial => OnboardingDestinationEvent(.newTask),
+        .initial => OnboardingDestinationEvent(.login),
         .fromSettings => OnboardingDestinationEvent(.pop),
       },
     );
@@ -59,6 +59,6 @@ class OnboardingViewModel extends _$OnboardingViewModel {
       return;
     }
     if (!ref.mounted) return;
-    state = state.copyWith(destination: OnboardingDestinationEvent(.home));
+    state = state.copyWith(destination: OnboardingDestinationEvent(.login));
   }
 }
