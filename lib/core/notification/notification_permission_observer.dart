@@ -10,6 +10,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'notification_permission_observer.g.dart';
 
+/// OS の通知権限が失われたときにアプリ設定も追従するように監視を行う
 @Riverpod(keepAlive: true)
 class NotificationPermissionObserver extends _$NotificationPermissionObserver
     with WidgetsBindingObserver {
@@ -32,21 +33,17 @@ class NotificationPermissionObserver extends _$NotificationPermissionObserver
     );
   }
 
-  /// 設定は有効なのに OS の許可が失われていたら、設定を無効に戻す。
-  ///
-  /// 完了を待っている呼び出し元がいないため、オフラインで最後の書き込みが終わらなくても困らない
   Future<void> _syncPermission() async {
-    // ログイン画面を開いたままアプリを行き来すると未サインインで復帰する。
-    // 通知設定の置き場が users/{uid} なので、同期する対象がそもそも無い
+    // 未ログインの場合は何もしない
     if (ref.read(currentUserProvider) is NoLogin) return;
 
-    final repository = await ref.read(userSettingsRepositoryProvider.future);
-    final setting = await repository.fetchNotificationSetting();
-    if (!setting.enabled) return;
-
+    // OSの通知権限がある場合は何もしない
     final service = await ref.read(fcmNotificationServiceProvider.future);
     if (await service.checkPermission()) return;
 
+    // 通知権限がなくなった場合、通知をOFFにする
+    // チェック→書き込みだと2回課金が発生するので常にOFFに倒す
+    final repository = await ref.read(userSettingsRepositoryProvider.future);
     await repository.setNotificationEnabled(false);
   }
 }

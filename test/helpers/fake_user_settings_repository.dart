@@ -20,6 +20,8 @@ class FakeUserSettingsRepository implements UserSettingsRepository {
   /// Firestore がオフラインのとき、書き込みの Future はサーバーの応答待ちで完了しない
   bool neverCompletes = false;
   int updateLastActiveAtCount = 0;
+  int fetchNotificationSettingCount = 0;
+  int setNotificationEnabledCount = 0;
 
   final _controller = StreamController<NotificationSetting>.broadcast();
 
@@ -31,6 +33,7 @@ class FakeUserSettingsRepository implements UserSettingsRepository {
 
   @override
   Future<NotificationSetting> fetchNotificationSetting() async {
+    fetchNotificationSettingCount++;
     if (fetchShouldThrow) throw const UserSettingsLoadException('テストエラー');
     return notificationSetting;
   }
@@ -45,6 +48,7 @@ class FakeUserSettingsRepository implements UserSettingsRepository {
 
   @override
   Future<void> setNotificationEnabled(bool enabled) async {
+    setNotificationEnabledCount++;
     if (saveShouldThrow) throw const UserSettingsSaveException('テストエラー');
     if (neverCompletes) await Completer<void>().future;
     notificationSetting = notificationSetting.copyWith(enabled: enabled);
