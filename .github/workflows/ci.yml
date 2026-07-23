@@ -12,6 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # 実物は .gitignore で除外されており CI に存在しないが、flavor.dart の
+      # コンパイルに必要なのでダミーを置く
+      - name: Prepare Firebase options
+        run: |
+          cp tool/ci/firebase_options_dev.dart lib/firebase_options_dev.dart
+          cp tool/ci/firebase_options_prod.dart lib/firebase_options_prod.dart
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -27,7 +34,10 @@ jobs:
       - name: Install junitreport
         run: dart pub global activate junitreport
 
+      # shell を明示すると pipefail が有効になる。既定の bash -e のままだと
+      # 終了コードが tojunit のものになり、テストが落ちても緑になる
       - name: Run tests
+        shell: bash
         run: flutter test --coverage --machine | tojunit --output report.xml
 
       - name: Upload coverage to Codecov
