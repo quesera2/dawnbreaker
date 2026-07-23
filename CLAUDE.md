@@ -14,7 +14,10 @@
 - **状態管理**: Riverpod
 - **モデル**: Freezed
 - **ルーティング**: go_router
-- **データ永続化** drift
+- **データ永続化**: Cloud Firestore（端末固有の設定のみ SharedPreferences）
+- **認証**: Firebase Authentication（匿名 / ゲスト）
+- **プッシュ通知**: Firebase Cloud Messaging
+- **サーバーサイド**: Cloud Functions（TypeScript、`functions/`）
 
 ## コード生成
 
@@ -78,7 +81,7 @@ Widget クラスの場合はこの原則に従うと次の順になる：
 lib/
   app/          # App ウィジェット、テーマ定義
   core/         # 汎用ユーティリティ
-  generated/    # 生成コード（手動変更しない）
+  l10n/         # ARB と生成されたローカライズ
   data/
     model/      # Freezed モデル
     repository/ # Repository インターフェースと実装
