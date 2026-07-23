@@ -180,7 +180,7 @@ void main() {
       expect(task.scheduledAt, isNull);
     });
 
-    test('scheduled タイプでスケジュール設定がないとき追加できない', () async {
+    test('scheduled タイプでスケジュール設定がないとき追加できない', () {
       expect(
         () => repository.addTask(
           taskType: TaskType.scheduled,
@@ -225,7 +225,7 @@ void main() {
       expect(task.scheduleUnit, ScheduleUnit.week);
     });
 
-    test('存在しないタスクは取得できない', () async {
+    test('存在しないタスクは取得できない', () {
       expect(
         () => repository.findTaskById('non-existent'),
         throwsA(isA<TaskRepositoryException>()),

@@ -62,7 +62,7 @@ void main() {
     });
 
     group('setDisplayMode', () {
-      setUp(() async => setUpLoaded());
+      setUp(() => setUpLoaded());
 
       test('表示モードが変更される', () async {
         await viewModel.setDisplayMode(HomeDisplayMode.byColor);
@@ -77,7 +77,7 @@ void main() {
     });
 
     group('外部変更', () {
-      setUp(() async => setUpLoaded());
+      setUp(() => setUpLoaded());
 
       test('リポジトリの変更がstateに反映される', () async {
         await fakeSettingsRepository.setHomeDisplayMode(

@@ -43,7 +43,7 @@ void main() {
     });
 
     group('新規作成モード', () {
-      setUp(() async {
+      setUp(() {
         setUpContainer();
         final p = editorViewModelProvider();
         viewModel = container.read(p.notifier);
@@ -175,7 +175,7 @@ void main() {
 
       group('ロード後', () {
         group('period タスク', () {
-          setUp(() async => setUpLoaded(taskId: 'task-1'));
+          setUp(() => setUpLoaded(taskId: 'task-1'));
 
           test('タスクの内容が反映される', () {
             expect(viewState.isLoading, false);
@@ -187,7 +187,7 @@ void main() {
         });
 
         group('scheduled タスク', () {
-          setUp(() async => setUpLoaded(taskId: 'task-2'));
+          setUp(() => setUpLoaded(taskId: 'task-2'));
 
           test('スケジュール設定が反映される', () {
             expect(viewState.isLoading, false);
@@ -198,7 +198,7 @@ void main() {
         });
 
         group('タスクが存在しない場合', () {
-          setUp(() async => setUpLoaded(taskId: 'non-existent'));
+          setUp(() => setUpLoaded(taskId: 'non-existent'));
 
           test('読み込みエラーが通知される', () {
             expect(viewState.isLoading, false);
@@ -215,7 +215,7 @@ void main() {
         });
 
         group('save', () {
-          setUp(() async => setUpLoaded(taskId: 'task-1'));
+          setUp(() => setUpLoaded(taskId: 'task-1'));
 
           group('正常系', () {
             test('編集内容を保存できる', () async {

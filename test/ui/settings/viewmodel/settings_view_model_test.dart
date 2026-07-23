@@ -66,10 +66,10 @@ void main() {
           (_) => fakeOnboardingRepository,
         ),
         fcmNotificationServiceProvider.overrideWith(
-          (_) async => fakeNotificationService,
+          (_) => fakeNotificationService,
         ),
         userSettingsRepositoryProvider.overrideWith(
-          (_) async => fakeUserSettingsRepository,
+          (_) => fakeUserSettingsRepository,
         ),
       ],
     );
@@ -115,7 +115,7 @@ void main() {
 
     group('ロード後', () {
       group('通知が有効な場合', () {
-        setUp(() async => setUpLoaded());
+        setUp(() => setUpLoaded());
 
         test('読み込みが完了している', () {
           expect(viewState.isLoading, false);
@@ -131,7 +131,7 @@ void main() {
       });
 
       group('通知が無効な場合', () {
-        setUp(() async => setUpLoaded(notificationEnabled: false));
+        setUp(() => setUpLoaded(notificationEnabled: false));
 
         test('通知が無効である', () {
           expect(viewState.notificationSetting.enabled, false);
@@ -140,7 +140,7 @@ void main() {
 
       group('setNotificationEnabled', () {
         group('falseの場合', () {
-          setUp(() async => setUpLoaded());
+          setUp(() => setUpLoaded());
 
           test('処理中はisNotificationUpdatingがtrueになる', () async {
             final future = viewModel.setNotificationEnabled(false);
@@ -194,7 +194,7 @@ void main() {
         group('trueの場合', () {
           group('権限がある場合', () {
             setUp(
-              () async => setUpLoaded(
+              () => setUpLoaded(
                 notificationEnabled: false,
                 checkPermissionResult: true,
               ),
@@ -213,7 +213,7 @@ void main() {
 
           group('権限がなく取得に成功した場合', () {
             setUp(
-              () async => setUpLoaded(
+              () => setUpLoaded(
                 notificationEnabled: false,
                 checkPermissionResult: false,
                 permissionResult: true,
@@ -274,7 +274,7 @@ void main() {
       });
 
       group('setNotificationTime', () {
-        setUp(() async => setUpLoaded());
+        setUp(() => setUpLoaded());
 
         test('通知時間が更新される', () async {
           await viewModel.setNotificationTime(
@@ -314,7 +314,7 @@ void main() {
 
       group('表示モードの初期値', () {
         group('タイムラインの場合', () {
-          setUp(() async => setUpLoaded());
+          setUp(() => setUpLoaded());
 
           test('表示モードがタイムラインである', () {
             expect(viewState.displayMode, HomeDisplayMode.timeline);
@@ -323,7 +323,7 @@ void main() {
 
         group('カラーグループの場合', () {
           setUp(
-            () async =>
+            () =>
                 setUpLoaded(initialDisplayMode: HomeDisplayMode.byColor),
           );
 
@@ -334,7 +334,7 @@ void main() {
       });
 
       group('表示モードの外部変更', () {
-        setUp(() async => setUpLoaded());
+        setUp(() => setUpLoaded());
 
         test('リポジトリの変更がstateに反映される', () async {
           await fakeSettingsRepository.setHomeDisplayMode(
@@ -346,7 +346,7 @@ void main() {
       });
 
       group('通知設定の外部変更', () {
-        setUp(() async => setUpLoaded());
+        setUp(() => setUpLoaded());
 
         test('リポジトリの変更がstateに反映される', () async {
           await fakeUserSettingsRepository.setNotificationSetting(
@@ -358,7 +358,7 @@ void main() {
       });
 
       group('deleteTutorialFlag', () {
-        setUp(() async => setUpLoaded());
+        setUp(() => setUpLoaded());
 
         test('チュートリアルフラグが削除される', () async {
           await viewModel.deleteTutorialFlag();
@@ -381,7 +381,7 @@ void main() {
       });
 
       group('setProgressBarAnimationEnabled', () {
-        setUp(() async => setUpLoaded());
+        setUp(() => setUpLoaded());
 
         test('アニメーションが無効になる', () async {
           await viewModel.setProgressBarAnimationEnabled(false);
@@ -396,7 +396,7 @@ void main() {
       });
 
       group('プログレスバーアニメーションの外部変更', () {
-        setUp(() async => setUpLoaded());
+        setUp(() => setUpLoaded());
 
         test('リポジトリの変更がstateに反映される', () async {
           await fakeSettingsRepository.setProgressBarAnimationEnabled(false);

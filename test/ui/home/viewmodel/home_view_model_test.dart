@@ -143,7 +143,7 @@ void main() {
     });
 
     group('ロード後', () {
-      setUp(() async => setUpLoaded());
+      setUp(() => setUpLoaded());
 
       test('タスクが読み込まれる', () {
         expect(viewState.isLoading, false);
@@ -308,7 +308,7 @@ void main() {
     });
 
     group('taskList 分類', () {
-      setUp(() async => setUpLoaded(tasks: classificationTasks));
+      setUp(() => setUpLoaded(tasks: classificationTasks));
 
       test('all フィルタ: 超過タスクが overdue、それ以外が upcoming に入る', () {
         final tl = viewState.taskList;
@@ -357,7 +357,7 @@ void main() {
 
     group('byColor モード', () {
       setUp(
-        () async => setUpLoaded(
+        () => setUpLoaded(
           tasks: _colorTasks,
           settings: FakeSettingsRepository(
             initialDisplayMode: HomeDisplayMode.byColor,
@@ -398,7 +398,7 @@ void main() {
     });
 
     group('taskCount', () {
-      setUp(() async => setUpLoaded(tasks: classificationTasks));
+      setUp(() => setUpLoaded(tasks: classificationTasks));
 
       test('all は全タスク数を返す', () {
         expect(viewState.taskCount.all, 5);
