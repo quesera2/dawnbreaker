@@ -21,35 +21,32 @@ class NotificationPermissionObserver extends _$NotificationPermissionObserver
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      unawaited(_syncPermission());
-    }
+    if (state != AppLifecycleState.resumed) return;
+
+    // ライフサイクルの通知は同期で返す必要があるため待てない。待たない Future の例外は
+    // 未捕捉の非同期例外になるので、ここで受ける
+    unawaited(
+      _syncPermission().onError((e, s) {
+        logger.e('syncPermission failed', error: e, stackTrace: s);
+      }),
+    );
   }
 
+  /// 設定は有効なのに OS の許可が失われていたら、設定を無効に戻す。
+  ///
+  /// 完了を待っている呼び出し元がいないため、オフラインで最後の書き込みが終わらなくても困らない
   Future<void> _syncPermission() async {
     // ログイン画面を開いたままアプリを行き来すると未サインインで復帰する。
     // 通知設定の置き場が users/{uid} なので、同期する対象がそもそも無い
     if (ref.read(currentUserProvider) is NoLogin) return;
 
-    try {
-      final repository = await ref.read(userSettingsRepositoryProvider.future);
-      final setting = await repository.fetchNotificationSetting();
-      if (!setting.enabled) return;
+    final repository = await ref.read(userSettingsRepositoryProvider.future);
+    final setting = await repository.fetchNotificationSetting();
+    if (!setting.enabled) return;
 
-      final service = await ref.read(fcmNotificationServiceProvider.future);
-      final hasPermission = await service.checkPermission();
-      if (!hasPermission) {
-        // 書き込みはオフラインだと完了しないため待たない。unawaited した Future の例外は
-        // 外側の try/catch では捕まらないので、ここで受ける
-        unawaited(
-          repository.setNotificationEnabled(false).onError((e, s) {
-            logger.e('disable notification failed', error: e, stackTrace: s);
-          }),
-        );
-      }
-    } catch (e, s) {
-      // 呼び出し元が unawaited のため、ここで握らないと未捕捉の非同期例外になる
-      logger.e('syncPermission failed', error: e, stackTrace: s);
-    }
+    final service = await ref.read(fcmNotificationServiceProvider.future);
+    if (await service.checkPermission()) return;
+
+    await repository.setNotificationEnabled(false);
   }
 }

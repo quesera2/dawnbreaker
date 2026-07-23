@@ -83,11 +83,6 @@ void main() {
           fakeUserSettingsRepository.saveShouldThrow = true;
           await resume();
         });
-
-        test('保存がオフラインで完了しなくても処理が完了する', () async {
-          fakeUserSettingsRepository.neverCompletes = true;
-          await resume();
-        });
       });
     });
 
