@@ -27,7 +27,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
 
   @override
   AppDetailUiState build({required String taskId}) {
-    _repository = ref.read(taskRepositoryProvider);
+    _repository = ref.watch(taskRepositoryProvider);
     _listenForTaskUpdates(taskId);
     return const AppDetailUiState();
   }

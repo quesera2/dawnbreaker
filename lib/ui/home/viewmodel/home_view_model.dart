@@ -24,7 +24,7 @@ class HomeViewModel extends _$HomeViewModel {
 
   @override
   HomeUiState build() {
-    _taskRepository = ref.read(taskRepositoryProvider);
+    _taskRepository = ref.watch(taskRepositoryProvider);
     _settingsRepository = ref.read(settingsRepositoryProvider);
     _initialize();
     return const HomeUiState(isLoading: true);

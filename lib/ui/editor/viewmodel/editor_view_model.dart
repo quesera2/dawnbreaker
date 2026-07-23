@@ -21,7 +21,7 @@ class EditorViewModel extends _$EditorViewModel {
 
   @override
   EditorUiState build({String? taskId}) {
-    _repository = ref.read(taskRepositoryProvider);
+    _repository = ref.watch(taskRepositoryProvider);
     if (taskId != null) {
       unawaited(_loadTask(taskId));
       return const EditorUiState(isLoading: true);
@@ -71,14 +71,12 @@ class EditorViewModel extends _$EditorViewModel {
     if (!state.canSave) return;
     state = state.copyWith(isSaving: true, dialogMessage: null);
     try {
-      final EditorUiState newState;
-      if (taskId == null) {
-        newState = await _createTask();
+      final id = taskId;
+      if (id == null) {
+        await _createTask();
       } else {
-        newState = await _updateTask(taskId!);
+        await _updateTask(id);
       }
-      if (!ref.mounted) return;
-      state = newState;
     } on TaskRepositoryException catch (e, s) {
       logger.e('save failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -89,43 +87,45 @@ class EditorViewModel extends _$EditorViewModel {
     }
   }
 
-  Future<EditorUiState> _createTask() async {
-    final s = state;
+  Future<void> _createTask() async {
+    final input = state;
     final newId = await _repository.addTask(
-      taskType: s.type,
-      name: s.name,
-      icon: s.icon,
-      color: s.color,
-      scheduleValue: s.scheduleValue,
-      scheduleUnit: s.scheduleUnit,
+      taskType: input.type,
+      name: input.name,
+      icon: input.icon,
+      color: input.color,
+      scheduleValue: input.scheduleValue,
+      scheduleUnit: input.scheduleUnit,
     );
-    return state.copyWith(
+    if (!ref.mounted) return;
+    state = state.copyWith(
       isSaving: false,
       isSaved: true,
       snackBarMessage: TaskCreateSuccess(
-        taskName: s.name,
+        taskName: input.name,
         handler: () => _repository.deleteTask(newId),
       ),
     );
   }
 
-  Future<EditorUiState> _updateTask(String id) async {
-    final s = state;
+  Future<void> _updateTask(String id) async {
+    final input = state;
     final originalTask = await _repository.findTaskById(id);
     await _repository.updateTask(
       taskId: id,
-      taskType: s.type,
-      name: s.name,
-      icon: s.icon,
-      color: s.color,
-      scheduleValue: s.scheduleValue,
-      scheduleUnit: s.scheduleUnit,
+      taskType: input.type,
+      name: input.name,
+      icon: input.icon,
+      color: input.color,
+      scheduleValue: input.scheduleValue,
+      scheduleUnit: input.scheduleUnit,
     );
-    return state.copyWith(
+    if (!ref.mounted) return;
+    state = state.copyWith(
       isSaving: false,
       isSaved: true,
       snackBarMessage: TaskUpdateSuccess(
-        taskName: s.name,
+        taskName: input.name,
         handler: () => _revertTask(originalTask),
       ),
     );
