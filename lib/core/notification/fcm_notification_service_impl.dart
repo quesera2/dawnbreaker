@@ -15,9 +15,7 @@ part 'fcm_notification_service_impl.g.dart';
 
 @Riverpod(keepAlive: true)
 Future<NotificationService> fcmNotificationService(Ref ref) async {
-  final repository = await ref.watch(
-    notificationTokenRepositoryProvider.future,
-  );
+  final repository = ref.watch(notificationTokenRepositoryProvider);
   final messaging = FirebaseMessaging.instance;
   final appLocalizations = await ref.watch(appLocalizationsProvider.future);
   final service = FcmNotificationServiceImpl(

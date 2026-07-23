@@ -25,10 +25,10 @@ void main() {
       overrides: [
         userRepositoryProvider.overrideWithValue(userRepository),
         fcmNotificationServiceProvider.overrideWith(
-          (_) async => fakeNotificationService,
+          (_) => fakeNotificationService,
         ),
         userSettingsRepositoryProvider.overrideWith(
-          (_) async => fakeUserSettingsRepository,
+          (_) => fakeUserSettingsRepository,
         ),
       ],
     );

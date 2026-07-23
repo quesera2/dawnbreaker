@@ -39,10 +39,10 @@ void main() {
         overrides: [
           userRepositoryProvider.overrideWith((_) => fakeUserRepository),
           fcmNotificationServiceProvider.overrideWith(
-            (_) async => fakeNotificationService,
+            (_) => fakeNotificationService,
           ),
           userSettingsRepositoryProvider.overrideWith(
-            (_) async => fakeUserSettingsRepository,
+            (_) => fakeUserSettingsRepository,
           ),
         ],
       );

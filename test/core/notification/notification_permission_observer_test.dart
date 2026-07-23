@@ -37,9 +37,9 @@ void main() {
       overrides: [
         userRepositoryProvider.overrideWithValue(userRepository),
         fcmNotificationServiceProvider.overrideWith(
-          (_) async => fakeNotificationService,
+          (_) => fakeNotificationService,
         ),
-        userSettingsRepositoryProvider.overrideWith((_) async {
+        userSettingsRepositoryProvider.overrideWith((_) {
           if (repositoryUnavailable) {
             throw const UserSettingsLoadException('テストエラー');
           }

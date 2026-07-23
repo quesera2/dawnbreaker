@@ -35,10 +35,10 @@ void main() {
       container = ProviderContainer(
         overrides: [
           fcmNotificationServiceProvider.overrideWith(
-            (_) async => fakeNotificationService,
+            (_) => fakeNotificationService,
           ),
           userSettingsRepositoryProvider.overrideWith(
-            (_) async => fakeUserSettingsRepository,
+            (_) => fakeUserSettingsRepository,
           ),
         ],
       );
