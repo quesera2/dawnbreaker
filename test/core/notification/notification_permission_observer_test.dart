@@ -1,6 +1,8 @@
+import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_permission_observer.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
+import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_settings_repository_exception.dart';
 import 'package:flutter/widgets.dart';
@@ -8,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/fake_notification_service.dart';
+import '../../helpers/fake_user_repository.dart';
 import '../../helpers/fake_user_settings_repository.dart';
 
 void main() {
@@ -21,6 +24,7 @@ void main() {
     bool notificationEnabled = true,
     bool checkPermissionResult = true,
     bool repositoryUnavailable = false,
+    AppUser user = const Guest('user-1'),
   }) {
     fakeNotificationService = FakeNotificationService(
       checkPermissionResult: checkPermissionResult,
@@ -28,8 +32,10 @@ void main() {
     fakeUserSettingsRepository = FakeUserSettingsRepository(
       notificationSetting: NotificationSetting(enabled: notificationEnabled),
     );
+    final userRepository = FakeUserRepository(user);
     container = ProviderContainer(
       overrides: [
+        userRepositoryProvider.overrideWithValue(userRepository),
         fcmNotificationServiceProvider.overrideWith(
           (_) async => fakeNotificationService,
         ),
@@ -41,6 +47,7 @@ void main() {
         }),
       ],
     );
+    addTearDown(userRepository.close);
   }
 
   /// レジュームを通知し、`unawaited` された同期処理が終わるまで待つ
@@ -88,6 +95,15 @@ void main() {
       setUp(() => setUpContainer(notificationEnabled: false));
 
       test('権限を確認しない', () async {
+        await resume();
+        expect(fakeNotificationService.checkPermissionCalled, false);
+      });
+    });
+
+    group('サインインしていない場合', () {
+      setUp(() => setUpContainer(user: const NoLogin()));
+
+      test('同期する設定がないため権限を確認しない', () async {
         await resume();
         expect(fakeNotificationService.checkPermissionCalled, false);
       });

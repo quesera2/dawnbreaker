@@ -1,6 +1,8 @@
 import 'package:dawnbreaker/app/app_colors.dart';
+import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/preferences/preference_key.dart';
 import 'package:dawnbreaker/data/preferences/preferences_manager.dart';
+import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/app_detail_screen.dart';
 import 'package:dawnbreaker/ui/color_label/widgets/color_label_screen.dart';
 import 'package:dawnbreaker/ui/editor/widgets/editor_screen.dart';
@@ -24,7 +26,14 @@ GoRouter appRouter(Ref ref) {
     onboardingCompleteKey,
     defaultValue: false,
   );
-  final initialLocation = isOnboardingCompleted ? '/home' : '/onboarding';
+  // 監視ではなく 1 度だけ読む。ユーザーが切り替わる契機はゲスト作成・ログアウト・
+  // アカウント削除しかなく、いずれも遷移先を知っているコードが命令的に遷移するため。
+  // 監視すると切り替わりのたびに GoRouter ごと作り直されてしまう
+  final user = ref.read(currentUserProvider);
+  final initialLocation = switch (user) {
+    SignedInUser() => '/home',
+    NoLogin() => isOnboardingCompleted ? '/login' : '/onboarding',
+  };
 
   final router = GoRouter(
     initialLocation: initialLocation,

@@ -82,10 +82,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
       if (next == null || prev?.id == next.id) return;
 
       switch (next.type) {
-        case .home:
-          context.go('/home');
-        case .newTask:
-          context.go('/home/new_task');
+        case .login:
+          context.go('/login');
         case .pop:
           context.pop();
       }
