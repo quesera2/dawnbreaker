@@ -32,6 +32,7 @@ linter:
   rules:
     avoid_print: true
     prefer_single_quotes: true
+    unnecessary_async: true
     unawaited_futures: true
     discarded_futures: true
     prefer_final_locals: true
