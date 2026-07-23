@@ -8,7 +8,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'firestore_notification_token_repository.g.dart';
 
 @riverpod
-Future<NotificationTokenRepository> notificationTokenRepository(Ref ref) async {
+NotificationTokenRepository notificationTokenRepository(Ref ref) {
   final user = ref.watch(currentUserProvider);
   return switch (user) {
     NoLogin() => throw const NotificationTokenNotSignedInException(
