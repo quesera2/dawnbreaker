@@ -43,16 +43,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
     final provider = editorViewModelProvider(taskId: widget.taskId);
     listenMessages(provider);
 
-    if (widget.taskId != null) {
-      ref.listen(provider.select((s) => s.isLoading), (prev, next) {
-        if (next == false && prev != false) {
-          _nameController.text = ref.read(provider).name;
-        }
-      });
-    }
+    // 読み込んだ name を入力欄へ反映する。入力中は onChanged で state と一致するため何もしない
+    ref.listen(provider.select((s) => s.name), (_, name) {
+      if (_nameController.text != name) _nameController.text = name;
+    });
 
-    ref.listen(provider.select((s) => s.isSaved), (prev, next) {
-      if (next && prev != true) context.pop();
+    ref.listen(provider.select((s) => s.isSaved), (_, isSaved) {
+      if (isSaved) context.pop();
     });
 
     final uiState = ref.watch(provider);

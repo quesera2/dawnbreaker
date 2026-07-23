@@ -40,8 +40,8 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
     final provider = appDetailViewModelProvider(taskId: widget.taskId);
     listenMessages(provider);
 
-    ref.listen(provider.select((s) => s.shouldPop), (prev, next) {
-      if (next && prev != true) context.pop();
+    ref.listen(provider.select((s) => s.shouldPop), (_, shouldPop) {
+      if (shouldPop) context.pop();
     });
 
     final uiState = ref.watch(provider);
