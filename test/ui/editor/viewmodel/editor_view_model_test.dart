@@ -32,11 +32,9 @@ void main() {
     Future<void> setUpLoaded({String? taskId}) async {
       setUpContainer();
       final p = editorViewModelProvider(taskId: taskId);
-      await waitUntilAsync(container, p, (s) => !s.isLoading);
+      await waitUntil(container, p, (s) => !s.isLoading);
       viewModel = container.read(p.notifier);
-      container.listen(p, (_, next) {
-        if (next.hasValue) viewState = next.requireValue;
-      }, fireImmediately: true);
+      container.listen(p, (_, next) => viewState = next, fireImmediately: true);
     }
 
     tearDown(() {
@@ -49,10 +47,11 @@ void main() {
         setUpContainer();
         final p = editorViewModelProvider();
         viewModel = container.read(p.notifier);
-        viewState = await container.read(p.future);
-        container.listen(p, (_, next) {
-          if (next.hasValue) viewState = next.requireValue;
-        }, fireImmediately: false);
+        container.listen(
+          p,
+          (_, next) => viewState = next,
+          fireImmediately: true,
+        );
       });
 
       test('初期状態が正しい', () {
@@ -153,10 +152,7 @@ void main() {
           throwingRepo.dispose();
         });
         final n = c.read(p.notifier);
-        localState = await c.read(p.future);
-        c.listen(p, (_, next) {
-          if (next.hasValue) localState = next.requireValue;
-        }, fireImmediately: false);
+        c.listen(p, (_, next) => localState = next, fireImmediately: true);
         n.updateName('散髪');
         await n.save();
         expect(localState!.isSaved, false);

@@ -18,16 +18,17 @@ void main() {
       await repository.close();
     });
 
-    // autoDispose なので、購読しないまま読むと結果が出る前に破棄される。
-    // また Riverpod は失敗した Provider を自動で作り直すため、`.future` は完了しない。
-    // 状態に載ったエラーを見る
-    final subscription = container.listen(taskRepositoryProvider, (_, _) {});
-    addTearDown(subscription.close);
-    await Future<void>.delayed(Duration.zero);
-
-    expect(
-      container.read(taskRepositoryProvider).error,
-      isA<TaskNotSignedInException>(),
+    // read() は例外を ProviderException に包んで投げ、その型は公開されていない。
+    // onError には元の例外がそのまま届くのでこちらで受ける
+    Object? thrown;
+    final subscription = container.listen(
+      taskRepositoryProvider,
+      (_, _) {},
+      onError: (error, _) => thrown = error,
+      fireImmediately: true,
     );
+    addTearDown(subscription.close);
+
+    expect(thrown, isA<TaskNotSignedInException>());
   });
 }

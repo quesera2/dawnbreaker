@@ -19,24 +19,4 @@ mixin MessagesListenMixin<T extends ConsumerStatefulWidget>
       AppSnackBar.show(context, next);
     });
   }
-
-  void listenAsyncMessages<S extends BaseUiState>(
-    ProviderListenable<AsyncValue<S>> provider,
-  ) {
-    ref.listen(provider.select((async) => async.value?.dialogMessage), (
-      prev,
-      next,
-    ) {
-      if (next == null || prev?.id == next.id) return;
-      unawaited(AppDialog.show(context, next));
-    });
-
-    ref.listen(provider.select((async) => async.value?.snackBarMessage), (
-      prev,
-      next,
-    ) {
-      if (next == null || prev?.id == next.id) return;
-      AppSnackBar.show(context, next);
-    });
-  }
 }

@@ -41,23 +41,21 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
   @override
   Widget build(BuildContext context) {
     final provider = editorViewModelProvider(taskId: widget.taskId);
-    listenAsyncMessages(provider);
+    listenMessages(provider);
 
     if (widget.taskId != null) {
-      ref.listen(provider.select((s) => s.value?.isLoading), (prev, next) {
+      ref.listen(provider.select((s) => s.isLoading), (prev, next) {
         if (next == false && prev != false) {
-          _nameController.text = ref.read(provider).value?.name ?? '';
+          _nameController.text = ref.read(provider).name;
         }
       });
     }
 
-    ref.listen(provider, (prev, next) {
-      if (next case AsyncData(:final value) when value.isSaved) {
-        if (prev?.value?.isSaved != true) context.pop();
-      }
+    ref.listen(provider.select((s) => s.isSaved), (prev, next) {
+      if (next && prev != true) context.pop();
     });
 
-    final uiState = ref.watch(provider).value;
+    final uiState = ref.watch(provider);
     final viewModel = ref.read(provider.notifier);
     final isNew = widget.taskId == null;
 
@@ -68,7 +66,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
             : context.l10n.editorTitleEdit,
         onBack: () => context.pop(),
       ),
-      body: uiState == null || uiState.isLoading
+      body: uiState.isLoading
           ? const SizedBox.shrink()
           : _EditorBody(
               uiState: uiState,
@@ -76,11 +74,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
               nameController: _nameController,
             ),
       bottomNavigationBar: _SaveBar(
-        enabled:
-            uiState != null &&
-            uiState.canSave &&
-            !uiState.isLoading &&
-            !uiState.isSaving,
+        enabled: uiState.canSave && !uiState.isLoading && !uiState.isSaving,
         isNew: isNew,
         onSave: viewModel.save,
       ),

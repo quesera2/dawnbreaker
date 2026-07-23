@@ -14,20 +14,3 @@ Future<void> waitUntil<T>(
   await completer.future;
   sub.close();
 }
-
-Future<void> waitUntilAsync<T>(
-  ProviderContainer container,
-  ProviderListenable<AsyncValue<T>> provider,
-  bool Function(T) condition,
-) async {
-  final completer = Completer<void>();
-  final sub = container.listen(provider, (_, next) {
-    if (next.hasValue &&
-        condition(next.requireValue) &&
-        !completer.isCompleted) {
-      completer.complete();
-    }
-  }, fireImmediately: true);
-  await completer.future;
-  sub.close();
-}
