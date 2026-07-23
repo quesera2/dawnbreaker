@@ -34,5 +34,10 @@
     "typescript": "~6.0.0",
     "typescript-eslint": "^8.63.0"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "firebase-functions-test": {
+      "firebase-admin": "$firebase-admin"
+    }
+  }
 }
