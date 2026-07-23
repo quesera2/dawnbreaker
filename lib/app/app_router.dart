@@ -21,15 +21,13 @@ part 'app_router.g.dart';
 
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
+  // サインイン状態とチュートリアル表示フラグで初期表示画面を分岐する
+  final user = ref.read(currentUserProvider);
   final preferencesManager = ref.read(preferencesManagerProvider);
   final isOnboardingCompleted = preferencesManager.get(
     onboardingCompleteKey,
     defaultValue: false,
   );
-  // 監視ではなく 1 度だけ読む。ユーザーが切り替わる契機はゲスト作成・ログアウト・
-  // アカウント削除しかなく、いずれも遷移先を知っているコードが命令的に遷移するため。
-  // 監視すると切り替わりのたびに GoRouter ごと作り直されてしまう
-  final user = ref.read(currentUserProvider);
   final initialLocation = switch (user) {
     SignedInUser() => '/home',
     NoLogin() => isOnboardingCompleted ? '/login' : '/onboarding',
