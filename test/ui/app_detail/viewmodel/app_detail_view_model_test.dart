@@ -40,21 +40,25 @@ void main() {
     Future<void> setUpLoaded({String? taskId}) async {
       final id = taskId ?? _taskOneHistory.id;
       setUpContainer(taskId: id);
-      await waitUntilAsync(container, provider, (s) => !s.isLoading);
+      await waitUntil(container, provider, (s) => !s.isLoading);
       viewModel = container.read(provider.notifier);
-      container.listen(provider, (_, next) {
-        if (next.hasValue) viewState = next.requireValue;
-      }, fireImmediately: true);
+      container.listen(
+        provider,
+        (_, next) => viewState = next,
+        fireImmediately: true,
+      );
     }
 
     Future<void> setUpLoadedWithThrow() async {
       setUpContainer();
       fakeRepository.shouldThrow = true;
-      await waitUntilAsync(container, provider, (s) => !s.isLoading);
+      await waitUntil(container, provider, (s) => !s.isLoading);
       viewModel = container.read(provider.notifier);
-      container.listen(provider, (_, next) {
-        if (next.hasValue) viewState = next.requireValue;
-      }, fireImmediately: true);
+      container.listen(
+        provider,
+        (_, next) => viewState = next,
+        fireImmediately: true,
+      );
     }
 
     tearDown(() {
@@ -68,9 +72,9 @@ void main() {
       test('データ取得前はローディング中でタスクは表示されない', () {
         final state = container.read(provider);
         expect(state.isLoading, true);
-        expect(state.value?.task, isNull);
-        expect(state.value?.historyStats, isNull);
-        expect(state.value?.shouldPop ?? false, false);
+        expect(state.task, isNull);
+        expect(state.historyStats, isNull);
+        expect(state.shouldPop, false);
       });
     });
 
@@ -249,7 +253,7 @@ void main() {
               executedAt: DateTime(2026, 2, 1),
               comment: '更新コメント',
             );
-            await waitUntilAsync(
+            await waitUntil(
               container,
               provider,
               (s) => s.history.any(
@@ -363,7 +367,7 @@ void main() {
               DateTime(2026, 4, 1),
               null,
             );
-            await waitUntilAsync(
+            await waitUntil(
               container,
               provider,
               (s) => s.history.length == 2,
@@ -573,7 +577,7 @@ void main() {
               _taskOneHistory,
               _taskOneHistoryEntries.first,
             );
-            await waitUntilAsync(container, provider, (s) => s.history.isEmpty);
+            await waitUntil(container, provider, (s) => s.history.isEmpty);
             expect(viewState.history, isEmpty);
           });
 

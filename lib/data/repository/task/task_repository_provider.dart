@@ -10,8 +10,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'task_repository_provider.g.dart';
 
 @riverpod
-Future<TaskRepository> taskRepository(Ref ref) async {
-  // PR5 で同期の Provider にする。ここで変えると全 ViewModel に波及するため据え置く
+TaskRepository taskRepository(Ref ref) {
   final user = ref.watch(currentUserProvider);
   return switch (user) {
     NoLogin() => throw const TaskNotSignedInException(

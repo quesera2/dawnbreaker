@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dawnbreaker/core/logger/app_logger.dart';
-import 'package:dawnbreaker/core/util/async_value_extension.dart';
 import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest2;
 import 'package:dawnbreaker/data/model/task_history.dart';
 import 'package:dawnbreaker/data/model/task_history_cursor.dart';
@@ -27,8 +26,8 @@ class AppDetailViewModel extends _$AppDetailViewModel {
   late StreamController<_HistorySnapshot> _historyUpdatesController;
 
   @override
-  Future<AppDetailUiState> build({required String taskId}) async {
-    _repository = await ref.read(taskRepositoryProvider.future);
+  AppDetailUiState build({required String taskId}) {
+    _repository = ref.watch(taskRepositoryProvider);
     _listenForTaskUpdates(taskId);
     return const AppDetailUiState();
   }
@@ -51,35 +50,31 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         executedAt: executedAt,
         comment: comment,
       );
-      final patched = _patchHistory(state.requireValue.history, updatedHistory);
-      state = state.update(
-        (s) => s.copyWith(
-          snackBarMessage: TaskExecutionUpdateSuccess(
-            handler: () => updateExecution(
-              task,
-              history,
-              executedAt: history.executedAt,
-              comment: history.comment,
-            ),
+      final patched = _patchHistory(state.history, updatedHistory);
+      state = state.copyWith(
+        snackBarMessage: TaskExecutionUpdateSuccess(
+          handler: () => updateExecution(
+            task,
+            history,
+            executedAt: history.executedAt,
+            comment: history.comment,
           ),
         ),
       );
       _historyUpdatesController.add((
         items: patched,
-        hasMore: state.requireValue.hasMoreHistory,
+        hasMore: state.hasMoreHistory,
       ));
     } on TaskRepositoryException catch (e, s) {
       logger.e('updateExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.update(
-        (s) => s.copyWith(
-          dialogMessage: TaskUpdateErrorMessage(
-            primaryHandler: () => updateExecution(
-              task,
-              history,
-              executedAt: executedAt,
-              comment: comment,
-            ),
+      state = state.copyWith(
+        dialogMessage: TaskUpdateErrorMessage(
+          primaryHandler: () => updateExecution(
+            task,
+            history,
+            executedAt: executedAt,
+            comment: comment,
           ),
         ),
       );
@@ -87,42 +82,36 @@ class AppDetailViewModel extends _$AppDetailViewModel {
   }
 
   void showDeleteTaskDialog() {
-    final task = state.requireValue.task;
+    final task = state.task;
     if (task == null) return;
-    state = state.update(
-      (s) => s.copyWith(
-        dialogMessage: DeleteTaskConfirmMessage(
-          task.name,
-          primaryHandler: () => deleteTask(),
-        ),
+    state = state.copyWith(
+      dialogMessage: DeleteTaskConfirmMessage(
+        task.name,
+        primaryHandler: () => deleteTask(),
       ),
     );
   }
 
   @visibleForTesting
   Future<void> deleteTask() async {
-    final task = state.requireValue.task;
+    final task = state.task;
     if (task == null) return;
     try {
       // deleteTask が返す削除時点の全履歴を、直近件数の制限なしにそのまま undo に使う
       final deletedHistory = await _repository.deleteTask(task.id);
       if (!ref.mounted) return;
       // タスク削除で watchTaskById で前の画面に戻る処理が走る
-      state = state.update(
-        (s) => s.copyWith(
-          snackBarMessage: TaskDeleteSuccess(
-            taskName: task.name,
-            handler: () => _repository.restoreTask([(task, deletedHistory)]),
-          ),
+      state = state.copyWith(
+        snackBarMessage: TaskDeleteSuccess(
+          taskName: task.name,
+          handler: () => _repository.restoreTask([(task, deletedHistory)]),
         ),
       );
     } on TaskRepositoryException catch (e, s) {
       logger.e('deleteTask failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.update(
-        (s) => s.copyWith(
-          dialogMessage: TaskDeleteErrorMessage(primaryHandler: deleteTask),
-        ),
+      state = state.copyWith(
+        dialogMessage: TaskDeleteErrorMessage(primaryHandler: deleteTask),
       );
     }
   }
@@ -139,28 +128,24 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         comment: comment,
       );
       if (!ref.mounted) return;
-      final updated = _insertIntoHistory(state.requireValue.history, history);
-      state = state.update(
-        (s) => s.copyWith(
-          snackBarMessage: TaskCompleteSuccess(
-            taskName: task.name,
-            handler: () =>
-                _repository.deleteExecution(history.id, taskId: task.id),
-          ),
+      final updated = _insertIntoHistory(state.history, history);
+      state = state.copyWith(
+        snackBarMessage: TaskCompleteSuccess(
+          taskName: task.name,
+          handler: () =>
+              _repository.deleteExecution(history.id, taskId: task.id),
         ),
       );
       _historyUpdatesController.add((
         items: updated,
-        hasMore: state.requireValue.hasMoreHistory,
+        hasMore: state.hasMoreHistory,
       ));
     } on TaskRepositoryException catch (e, s) {
       logger.e('recordExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.update(
-        (s) => s.copyWith(
-          dialogMessage: TaskSaveErrorMessage(
-            primaryHandler: () => recordExecution(task, executedAt, comment),
-          ),
+      state = state.copyWith(
+        dialogMessage: TaskSaveErrorMessage(
+          primaryHandler: () => recordExecution(task, executedAt, comment),
         ),
       );
     }
@@ -170,48 +155,40 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     try {
       await _repository.deleteExecution(history.id, taskId: task.id);
       if (!ref.mounted) return;
-      final updated = state.requireValue.history
-          .where((h) => h.id != history.id)
-          .toList();
-      state = state.update(
-        (s) => s.copyWith(
-          snackBarMessage: TaskExecutionDeleteSuccess(
-            taskName: task.name,
+      final updated = state.history.where((h) => h.id != history.id).toList();
+      state = state.copyWith(
+        snackBarMessage: TaskExecutionDeleteSuccess(
+          taskName: task.name,
+          executedAt: history.executedAt,
+          handler: () => _repository.recordExecution(
+            task.id,
             executedAt: history.executedAt,
-            handler: () => _repository.recordExecution(
-              task.id,
-              executedAt: history.executedAt,
-              comment: history.comment,
-            ),
+            comment: history.comment,
           ),
         ),
       );
       _historyUpdatesController.add((
         items: updated,
-        hasMore: state.requireValue.hasMoreHistory,
+        hasMore: state.hasMoreHistory,
       ));
     } on TaskRepositoryException catch (e, s) {
       logger.e('deleteExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.update(
-        (s) => s.copyWith(
-          dialogMessage: TaskExecutionDeleteErrorMessage(
-            primaryHandler: () => deleteExecution(task, history),
-          ),
+      state = state.copyWith(
+        dialogMessage: TaskExecutionDeleteErrorMessage(
+          primaryHandler: () => deleteExecution(task, history),
         ),
       );
     }
   }
 
   Future<void> loadMoreHistory() async {
-    final current = state.value;
-    if (current == null) return;
-    if (!current.hasMoreHistory || current.isLoadingMoreHistory) return;
+    if (!state.hasMoreHistory || state.isLoadingMoreHistory) return;
 
-    final oldestLoaded = current.history.firstOrNull;
+    final oldestLoaded = state.history.firstOrNull;
     if (oldestLoaded == null) return;
 
-    state = state.update((s) => s.copyWith(isLoadingMoreHistory: true));
+    state = state.copyWith(isLoadingMoreHistory: true);
     try {
       final page = await _repository.fetchTaskHistory(
         taskId,
@@ -221,13 +198,13 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         ),
       );
       if (!ref.mounted) return;
-      final merged = [...page.items.reversed, ...state.requireValue.history];
-      state = state.update((s) => s.copyWith(isLoadingMoreHistory: false));
+      final merged = [...page.items.reversed, ...state.history];
+      state = state.copyWith(isLoadingMoreHistory: false);
       _historyUpdatesController.add((items: merged, hasMore: page.hasMore));
     } on TaskRepositoryException catch (e, s) {
       logger.e('fetchTaskHistory failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.update((s) => s.copyWith(isLoadingMoreHistory: false));
+      state = state.copyWith(isLoadingMoreHistory: false);
     }
   }
 
@@ -240,25 +217,21 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     void handleError(Object error, StackTrace stackTrace) {
       logger.e('タスク詳細の取得に失敗', error: error, stackTrace: stackTrace);
       if (!ref.mounted) return;
-      state = state.update(
-        (s) => s.copyWith(isLoading: false, shouldPop: true),
-      );
+      state = state.copyWith(isLoading: false, shouldPop: true);
     }
 
     // タスクが削除されると null が流れてくるので、history 側を待たずに前の画面に戻る
     final taskDeletedSubscription = taskStream.listen((task) {
       if (task != null) return;
       if (!ref.mounted) return;
-      state = state.update(
-        (s) => s.copyWith(
-          isLoading: false,
-          task: null,
-          history: [],
-          historyStats: null,
-          daysSinceLastExecution: null,
-          averageIntervalDays: null,
-          shouldPop: true,
-        ),
+      state = state.copyWith(
+        isLoading: false,
+        task: null,
+        history: [],
+        historyStats: null,
+        daysSinceLastExecution: null,
+        averageIntervalDays: null,
+        shouldPop: true,
       );
     }, onError: handleError);
 
@@ -280,12 +253,10 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       _historyUpdatesController.stream,
       (TaskItem task, _HistorySnapshot history) {
         if (!ref.mounted) return;
-        state = state.update(
-          (s) => s.updateTaskAndHistory(
-            _withRecomputedSchedule(task, history.items),
-            history.items,
-            hasMoreHistory: history.hasMore,
-          ),
+        state = state.updateTaskAndHistory(
+          _withRecomputedSchedule(task, history.items),
+          history.items,
+          hasMoreHistory: history.hasMore,
         );
       },
       onError: handleError,

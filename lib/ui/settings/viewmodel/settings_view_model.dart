@@ -24,11 +24,11 @@ part 'settings_view_model.g.dart';
 
 @riverpod
 class SettingsViewModel extends _$SettingsViewModel {
-  late SettingsRepository _repository;
+  late SettingsRepository _settingsRepository;
 
   @override
   SettingsUiState build() {
-    _repository = ref.read(settingsRepositoryProvider);
+    _settingsRepository = ref.read(settingsRepositoryProvider);
     unawaited(_initialize());
     return const SettingsUiState();
   }
@@ -41,8 +41,8 @@ class SettingsViewModel extends _$SettingsViewModel {
 
     final disposable = combineLatest3(
       userSettingsRepository.watchNotificationSetting(),
-      _repository.watchHomeDisplayMode(),
-      _repository.watchProgressBarAnimationEnabled(),
+      _settingsRepository.watchHomeDisplayMode(),
+      _settingsRepository.watchProgressBarAnimationEnabled(),
       (NotificationSetting notification, HomeDisplayMode mode, bool animation) {
         state = state.copyWith(
           notificationSetting: notification,
@@ -152,11 +152,12 @@ class SettingsViewModel extends _$SettingsViewModel {
   }
 
   Future<void> setProgressBarAnimationEnabled(bool value) async {
-    await _repository.setProgressBarAnimationEnabled(value);
+    await _settingsRepository.setProgressBarAnimationEnabled(value);
   }
 
+  // デバッグメニュー専用。TaskRepository は Firebase に触るため、ここでだけ読む
   Future<void> generateDummyTasks() async {
-    final repository = await ref.read(taskRepositoryProvider.future);
+    final repository = ref.read(taskRepositoryProvider);
     await repository.deleteAllTasks();
     await repository.restoreTask(
       buildDummyTasks(now: DateTime.now(), random: Random()),
@@ -165,8 +166,9 @@ class SettingsViewModel extends _$SettingsViewModel {
     state = state.copyWith(snackBarMessage: DebugDummyTasksGeneratedMessage());
   }
 
+  // デバッグメニュー専用。TaskRepository は Firebase に触るため、ここでだけ読む
   Future<void> deleteAllTasks() async {
-    final repository = await ref.read(taskRepositoryProvider.future);
+    final repository = ref.read(taskRepositoryProvider);
     await repository.deleteAllTasks();
     if (!ref.mounted) return;
     state = state.copyWith(snackBarMessage: AllTasksDeletedMessage());
@@ -180,7 +182,7 @@ class SettingsViewModel extends _$SettingsViewModel {
   }
 
   Future<void> resetColorSettings() async {
-    await _repository.setColorSettings(List<ColorSetting>.empty());
+    await _settingsRepository.setColorSettings(List<ColorSetting>.empty());
     if (!ref.mounted) return;
     state = state.copyWith(snackBarMessage: ColorSettingsResetMessage());
   }
