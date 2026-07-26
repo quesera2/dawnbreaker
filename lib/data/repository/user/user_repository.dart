@@ -9,4 +9,7 @@ abstract interface class UserRepository {
 
   /// 「ゲストではじめる」を押したときにだけ呼ぶ
   Future<Guest> signInAsGuest();
+
+  /// Google のサインイン UI を出してログインする。ユーザーが中断したら `null` を返す
+  Future<LoggedIn?> signInWithGoogle();
 }

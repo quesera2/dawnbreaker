@@ -89,11 +89,12 @@ Cloud Functions 側に移した。
 | 状況 | 挙動 |
 |---|---|
 | credential が未使用 | `linkWithCredential` で昇格。uid もデータもそのまま |
-| credential が使用済み | 「現在の N 件のタスクは失われます」と警告し、了承後に `signInWithCredential`。ゲスト側のデータは捨てる |
+| credential が使用済み | ゲスト側にデータがあれば「いまのタスクは引き継がれません。サインインするとゲストで作成したタスクは失われ、元に戻せません」と警告し、了承後に `signInWithCredential`。ゲスト側のデータは捨てる |
 
 移行先アカウントのタスクが 0 件だった（アカウントを作ったが放置していた）場合もデータは引き継がない。そこは自己責任ということで…。
 
-警告に件数を出してキャンセルできるようにすることで、不意のデータ喪失は防ぐ。
+件数は数えず、データがあるか（`limit(1)` の存在確認）だけを見る。データがある旨を警告して
+キャンセルできるようにすることで、不意のデータ喪失は防ぐ。
 
 ### ゲストとリンク済みで操作を出し分ける
 
@@ -121,27 +122,60 @@ Cloud Functions 側に移した。
 
 ## Phase9
 
-主題はソーシャルログイン。Phase8 で作ったログイン画面にダミーで置いたボタンを配線し、匿名からの昇格を実装する。
+主題は Google サインイン。Phase8 で作ったログイン画面にダミーで置いたボタンのうち Google を配線し、
+匿名からの昇格を実装する。
 ログアウト・アカウント削除は Phase10 に回すため、ここではスタブでよい（**このフェーズはストアに出さない**前提）。
 
-- [ ] Google / Apple のサインインを配線する
-  - 画面・「ゲストではじめる」・失敗時のエラーと再試行は Phase8 の PR3 で作成済み。
-    ここで残っているのはダミーで置いた 2 つのボタンの中身
-  - <s>ID/Password</s> はサインイン・パスワードリマインドなどの画面が必要になるため廃止
-  - ブランド規定に沿ったボタンに仕上げる。PR3 のマークは公式アセットだが、寸法（Apple はタイトルが
-    ボタン高さの 43%、ロゴの高さはボタンの高さ）までは追い込んでいない
-  - 前回サインインしたプロバイダを SharedPreferences に記録し、ログイン画面で示す
-    （Apple のプライベートリレー経由で別アカウントを作ってしまう事故を防ぐ）
-- [ ] 匿名からの昇格を実装する
-  - ログイン画面にモード（初回 / 昇格）を足し、昇格で来たときは「または」と「ゲストではじめる」を隠す。
-    設定画面の「ログイン」から遷移するため、ゲストのままはじめる選択肢が意味を持たない
-  - credential が未使用なら `linkWithCredential` で昇格（uid もデータもそのまま）
-  - `credential-already-in-use` のときは警告ダイアログを出し、了承後にサインインし直す
-    - 例外オブジェクトが持つ credential を使う（Apple は nonce の都合で元の credential を再利用できない）
-    - サインイン前に `fcmTokens` から自端末のトークンを `arrayRemove` し、サインイン後に新 uid へ `arrayUnion` する
-- [ ] チュートリアル画面にログインについての項目を追加する（旧 Phase9）
-  - スキップの考え方を修正する必要があるかもしれない
-- [ ] ログアウト・アカウント削除はスタブにしておく（本実装は Phase10）
+Apple サインインは Sign In with Apple の capability が有料の Apple Developer Program 必須のため、
+ストアに出さない Phase9 では**一旦ドロップ**する。ただし後から差し込めるよう、credential の取得元を
+抽象化し、`UserRepository` は `OAuthCredential` を汎用に受ける形にしておく。詳細は
+「Apple サインインは将来対応」を参照。
+
+各 PR は、マージした時点で実機で操作して確認できる単位に切る（UI からネイティブ設定まで1機能を通す）。
+依存は PR1 → PR2 → PR3 と一方向に増やす。
+
+- [ ] **PR1: Google でログインして動く状態にする**
+    - `google_sign_in` 追加＋ネイティブ設定（iOS reversed client id / URL scheme、Android SHA・OAuth クライアント）
+    - credential 取得の seam を薄く1メソッドに置き、`UserRepository.signInWithGoogle` を足す
+      （Apple は将来 sibling を足すだけにする。今は Google 1つなので抽象化を作り込みすぎない）
+    - ログイン画面の Google ボタンを実配線。画面・「ゲストではじめる」・失敗時のエラーと再試行、
+      サインイン後の通知誘導/ホーム振り分け（`_resolveDestination`）は Phase8 PR3 で作成済みのものに載せる
+    - Apple ボタンはログイン画面から一旦下ろす。`SocialProvider` は `google` / `apple` の両値を残す
+    - <s>ID/Password</s> はサインイン・パスワードリマインドなどの画面が必要になるため廃止
+    - ※ ネイティブ設定は CI で検証できないため実機確認が要る
+- [ ] **PR2: 匿名からの昇格**
+    - 設定画面のゲスト向け「ログイン」導線を正規化し、昇格モードで `/login` へ遷移する
+      （現状はデバッグ項目 `settingsDebugOpenLogin` しかない。ここが昇格の入り口になる）
+    - ログイン画面にモード（初回 / 昇格）を足し、昇格で来たときは「または」と「ゲストではじめる」を隠す
+    - credential が未使用なら `linkWithCredential` で昇格（uid もデータもそのまま）
+    - `credential-already-in-use` のときは警告ダイアログ（`loginSwitchAccount*` を ARB に追加）を出し、
+      了承後にサインインし直す
+        - 例外オブジェクトが持つ credential を使う
+        - サインイン前に `fcmTokens` から自端末のトークンを `arrayRemove` し、サインイン後に新 uid へ `arrayUnion` する
+    - ※ `firebase_auth_mocks` が `linkWithCredential` / `credential-already-in-use` を再現できるか着手直後に確認する。
+      弱ければ2つの実アカウントで手動確認する
+- [ ] **PR3: リンク済みの設定出し分け＋ログアウト/削除スタブ**
+    - LoggedIn には「ログアウト / アカウント削除」を、ゲストには「ログイン」を出す（設計方針の表どおり）
+    - 昇格（PR2）が入って初めて LoggedIn に到達できるため、このPRは最後に置く
+    - ログアウト・アカウント削除はハンドラだけスタブにしておく（本実装は Phase10）
+
+### Apple サインインは将来対応（要有料アカウント）
+
+Sign In with Apple は App ID に紐づく Service capability で、有効化には有料の Apple Developer Program が要る。
+無料の Personal Team では有効化できない。加えて審査ガイドライン 5.1.1(v)（他社ソーシャルログインを出すなら
+Sign In with Apple も出す）自体がストア公開＝有料アカウントを前提にしている。
+
+そのため Apple はストア公開が視野に入る段階（Phase10 前後）に回す。Phase9 では以下を残し、
+Apple 追加を「credential 取得元を 1 つ足してボタンを再表示するだけ」に留める。
+
+- credential 取得を抽象化し、`UserRepository` は `OAuthCredential` を汎用に受ける
+- `SocialProvider` に `apple` を残す（ボタンは非表示）
+- 昇格の `linkWithCredential` / `credential-already-in-use` 経路はプロバイダに依存しない作りにする
+  （Apple は nonce の都合で元の credential を再利用できないため、例外が持つ credential を使う設計が効く）
+
+Apple のプライベートリレー経由で誤って別アカウントを作っても、初回ログインは uid を切り替えるだけで
+どちらのデータも消さないため、正しいプロバイダで入り直せば元の `users/{uid}` に戻って復元される。
+回復可能なので「前回プロバイダを記録して事前に防ぐ」対策は入れない。
 
 ## Phase10
 

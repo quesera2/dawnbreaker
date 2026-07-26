@@ -12,6 +12,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,11 +26,24 @@ class AppStartup {
     _startCrashReporting();
 
     await initializeDateFormatting();
+    await _initializeGoogleSignIn();
 
     final container = await _createContainer();
     // 遅延させても良い処理は以下に書く
     startDeferredWork(container);
     return container;
+  }
+
+  /// Google サインインのシングルトンを初期化する。
+  ///
+  /// `GoogleSignIn.instance.initialize()` はプロセスに一度だけ呼ぶ必要があるため、
+  /// 起動処理でまとめて済ませる。iOS は GoogleService-Info.plist の CLIENT_ID を、
+  /// Android は google-services.json 由来の default_web_client_id を自動で読むため、
+  /// 引数は渡さない。失敗しても起動は止めず、実際にサインインを試みた時点でエラーにする
+  static Future<void> _initializeGoogleSignIn() async {
+    await GoogleSignIn.instance.initialize().onError((e, s) {
+      logger.e('google sign-in init failed', error: e, stackTrace: s);
+    });
   }
 
   /// Flutter とプラットフォームの未捕捉例外を Crashlytics へ送るようにする
