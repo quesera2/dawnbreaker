@@ -22,15 +22,11 @@ GoogleCredentialSource googleCredentialSource(Ref ref) =>
     GoogleSignInCredentialSource();
 
 class GoogleSignInCredentialSource implements GoogleCredentialSource {
-  /// `authenticate()` の前に一度だけ初期化する必要がある。`late final` により
-  /// 初回アクセスで一度だけ実行され、以降は同じ Future を待つ。
-  /// iOS は GoogleService-Info.plist の CLIENT_ID を、Android は google-services.json
-  /// 由来の default_web_client_id を自動で読むため、引数は渡さない
-  late final Future<void> _initialization = GoogleSignIn.instance.initialize();
+  bool _initialized = false;
 
   @override
   Future<AuthCredential?> getCredential() async {
-    await _initialization;
+    await _ensureInitialized();
     try {
       final account = await GoogleSignIn.instance.authenticate();
       final idToken = account.authentication.idToken;
@@ -45,5 +41,14 @@ class GoogleSignInCredentialSource implements GoogleCredentialSource {
       if (e.code == GoogleSignInExceptionCode.canceled) return null;
       throw SignInException('google sign-in failed: ${e.code}');
     }
+  }
+
+  /// `authenticate()` の前に一度だけ初期化する。
+  /// iOS は GoogleService-Info.plist の CLIENT_ID を、Android は google-services.json
+  /// 由来の default_web_client_id を自動で読むため、引数は渡さない
+  Future<void> _ensureInitialized() async {
+    if (_initialized) return;
+    await GoogleSignIn.instance.initialize();
+    _initialized = true;
   }
 }
