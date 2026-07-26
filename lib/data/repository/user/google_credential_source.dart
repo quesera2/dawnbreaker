@@ -1,31 +1,27 @@
 import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'google_auth_token_source.g.dart';
+part 'google_credential_source.g.dart';
 
-/// Google サインインで得たトークン。Firebase の credential 生成に使う。
-class GoogleAuthTokens {
-  const GoogleAuthTokens({required this.idToken});
-
-  final String idToken;
-}
-
-/// Google のサインイン UI を出してトークンを取る。
+/// Google のサインイン UI を出し、Firebase 用の credential を作って返す。
 ///
 /// `GoogleSignIn.instance` はシングルトンで差し替えられないため、リポジトリから
 /// 直接触らずこの seam を挟む。テストでは fake に差し替える。
-abstract interface class GoogleAuthTokenSource {
-  /// サインイン UI を出してトークンを返す。ユーザーが中断したら `null` を返す。
-  Future<GoogleAuthTokens?> getTokens();
+/// Google 固有の処理（トークン取得と `GoogleAuthProvider` への詰め替え）はここで閉じ、
+/// リポジトリには `AuthCredential` だけを渡す。
+abstract interface class GoogleCredentialSource {
+  /// サインイン UI を出して credential を返す。ユーザーが中断したら `null` を返す。
+  Future<AuthCredential?> getCredential();
 }
 
 @riverpod
-GoogleAuthTokenSource googleAuthTokenSource(Ref ref) =>
-    GoogleSignInTokenSource();
+GoogleCredentialSource googleCredentialSource(Ref ref) =>
+    GoogleSignInCredentialSource();
 
-class GoogleSignInTokenSource implements GoogleAuthTokenSource {
-  GoogleSignInTokenSource({GoogleSignIn? googleSignIn})
+class GoogleSignInCredentialSource implements GoogleCredentialSource {
+  GoogleSignInCredentialSource({GoogleSignIn? googleSignIn})
     : _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
 
   final GoogleSignIn _googleSignIn;
@@ -36,7 +32,7 @@ class GoogleSignInTokenSource implements GoogleAuthTokenSource {
   Future<void>? _initialization;
 
   @override
-  Future<GoogleAuthTokens?> getTokens() async {
+  Future<AuthCredential?> getCredential() async {
     await (_initialization ??= _googleSignIn.initialize());
     try {
       final account = await _googleSignIn.authenticate();
@@ -46,7 +42,7 @@ class GoogleSignInTokenSource implements GoogleAuthTokenSource {
           'google sign-in succeeded but returned no id token',
         );
       }
-      return GoogleAuthTokens(idToken: idToken);
+      return GoogleAuthProvider.credential(idToken: idToken);
     } on GoogleSignInException catch (e) {
       // ユーザーが中断しただけならエラー扱いにしない
       if (e.code == GoogleSignInExceptionCode.canceled) return null;

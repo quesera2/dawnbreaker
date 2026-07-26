@@ -1,5 +1,5 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
-import 'package:dawnbreaker/data/repository/user/google_auth_token_source.dart';
+import 'package:dawnbreaker/data/repository/user/google_credential_source.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,17 +10,17 @@ part 'firebase_user_repository.g.dart';
 @riverpod
 UserRepository userRepository(Ref ref) => FirebaseUserRepository(
   auth: FirebaseAuth.instance,
-  googleTokenSource: ref.watch(googleAuthTokenSourceProvider),
+  googleCredentialSource: ref.watch(googleCredentialSourceProvider),
 );
 
 class FirebaseUserRepository implements UserRepository {
   FirebaseUserRepository({
     required this._auth,
-    required this._googleTokenSource,
+    required this._googleCredentialSource,
   });
 
   final FirebaseAuth _auth;
-  final GoogleAuthTokenSource _googleTokenSource;
+  final GoogleCredentialSource _googleCredentialSource;
 
   /// `currentUser` は `Firebase.initializeApp()` が復元したセッションを見る同期 getter で、
   /// 通信もアカウント作成もしない
@@ -42,9 +42,8 @@ class FirebaseUserRepository implements UserRepository {
 
   @override
   Future<LoggedIn?> signInWithGoogle() async {
-    final tokens = await _googleTokenSource.getTokens();
-    if (tokens == null) return null;
-    final credential = GoogleAuthProvider.credential(idToken: tokens.idToken);
+    final credential = await _googleCredentialSource.getCredential();
+    if (credential == null) return null;
     return _signInWithCredential(credential);
   }
 
