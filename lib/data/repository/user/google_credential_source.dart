@@ -13,13 +13,12 @@ CredentialSource googleCredentialSource(Ref ref) =>
 /// Google サインインの [CredentialSource]。
 ///
 /// `GoogleSignIn.instance`（private コンストラクタのシングルトン）を包む薄いアダプタ。
+/// シングルトンの `initialize()` はプロセスに一度だけ呼ぶ必要があるため、
+/// 起動処理（`AppStartup`）で済ませておく前提で、ここでは呼ばない。
 /// 単体テストはせず、テストは [CredentialSource] の fake で書く。
 class GoogleSignInCredentialSource implements CredentialSource {
-  bool _initialized = false;
-
   @override
   Future<AuthCredential?> getCredential() async {
-    await _ensureInitialized();
     try {
       final account = await GoogleSignIn.instance.authenticate();
       final idToken = account.authentication.idToken;
@@ -34,14 +33,5 @@ class GoogleSignInCredentialSource implements CredentialSource {
       if (e.code == GoogleSignInExceptionCode.canceled) return null;
       throw SignInException('google sign-in failed: ${e.code}');
     }
-  }
-
-  /// `authenticate()` の前に一度だけ初期化する。
-  /// iOS は GoogleService-Info.plist の CLIENT_ID を、Android は google-services.json
-  /// 由来の default_web_client_id を自動で読むため、引数は渡さない
-  Future<void> _ensureInitialized() async {
-    if (_initialized) return;
-    await GoogleSignIn.instance.initialize();
-    _initialized = true;
   }
 }
