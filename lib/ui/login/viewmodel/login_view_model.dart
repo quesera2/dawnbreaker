@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_service.dart';
@@ -32,6 +33,42 @@ class LoginViewModel extends _$LoginViewModel {
       return;
     }
     if (!ref.mounted) return;
+
+    _updateLastActiveAt();
+
+    final destination = await _resolveDestination();
+    if (!ref.mounted) return;
+    state = state.copyWith(
+      isSigningIn: false,
+      destination: LoginDestinationEvent(destination),
+    );
+  }
+
+  Future<void> onClickSignInWithGoogle() async {
+    if (state.isSigningIn) return;
+
+    state = state.copyWith(isSigningIn: true);
+    final LoggedIn? user;
+    try {
+      user = await ref.read(userRepositoryProvider).signInWithGoogle();
+    } catch (e, s) {
+      logger.e('signInWithGoogle failed', error: e, stackTrace: s);
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        isSigningIn: false,
+        dialogMessage: SignInErrorMessage(
+          primaryHandler: onClickSignInWithGoogle,
+        ),
+      );
+      return;
+    }
+    if (!ref.mounted) return;
+
+    // ユーザーがサインインを中断しただけ。エラーではないのでダイアログは出さない
+    if (user == null) {
+      state = state.copyWith(isSigningIn: false);
+      return;
+    }
 
     _updateLastActiveAt();
 

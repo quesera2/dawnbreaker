@@ -213,5 +213,103 @@ void main() {
         });
       });
     });
+
+    group('Google でサインイン', () {
+      setUp(setUpState);
+
+      group('正常系', () {
+        for (final (hasPermission, destination, description) in [
+          (true, LoginDestination.home, '通知が許可済みならそのままホームへ進む'),
+          (false, LoginDestination.notificationIntro, '通知が許可されていなければ通知の誘導を挟む'),
+        ]) {
+          test(description, () async {
+            fakeNotificationService.checkPermissionResult = hasPermission;
+
+            await viewModel.onClickSignInWithGoogle();
+
+            expect(viewState.destination?.type, destination);
+          });
+        }
+
+        test('サインインが 1 度だけ呼ばれる', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(fakeUserRepository.signInWithGoogleCount, 1);
+        });
+
+        test('ボタンが操作可能な状態に戻る', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.isSigningIn, false);
+        });
+
+        test('最終アクティブ日時が更新される', () async {
+          await viewModel.onClickSignInWithGoogle();
+          await Future<void>.delayed(Duration.zero);
+
+          expect(fakeUserSettingsRepository.updateLastActiveAtCount, 1);
+        });
+      });
+
+      // ユーザーが認証画面を閉じただけ。失敗ではない
+      group('中断したとき', () {
+        setUp(() {
+          fakeUserRepository.cancelSignIn = true;
+        });
+
+        test('エラーは出さない', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.dialogMessage, isNull);
+        });
+
+        test('画面遷移しない', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.destination, isNull);
+        });
+
+        test('ボタンが操作可能な状態に戻る', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.isSigningIn, false);
+        });
+      });
+
+      group('異常系', () {
+        setUp(() {
+          fakeUserRepository.shouldThrow = true;
+        });
+
+        test('エラーが通知される', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.dialogMessage, isA<SignInErrorMessage>());
+        });
+
+        test('画面遷移しない', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.destination, isNull);
+        });
+
+        test('ボタンが操作可能な状態に戻る', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.isSigningIn, false);
+        });
+
+        test('その場で再試行できる', () async {
+          await viewModel.onClickSignInWithGoogle();
+          fakeUserRepository.shouldThrow = false;
+
+          viewState.dialogMessage?.primaryHandler?.call();
+          await Future<void>.delayed(Duration.zero);
+
+          expect(fakeUserRepository.signInWithGoogleCount, 2);
+          expect(viewState.destination?.type, LoginDestination.home);
+        });
+      });
+    });
   });
 }

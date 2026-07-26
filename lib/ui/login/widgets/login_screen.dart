@@ -204,18 +204,12 @@ class _SignInSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Phase9 で配線するまでは押しても何も起きない。onPressed を null にすると
-          // 「使えないボタン」に見えてしまうため、押せる見た目のままにする
           SocialSignInButton(
             provider: .google,
             label: context.l10n.loginWithGoogle,
-            onPressed: isSigningIn ? null : () {},
+            onPressed: isSigningIn ? null : viewModel.onClickSignInWithGoogle,
           ),
-          SocialSignInButton(
-            provider: .apple,
-            label: context.l10n.loginWithApple,
-            onPressed: isSigningIn ? null : () {},
-          ),
+          // Apple は有料アカウント要件のため一旦ドロップ。将来 Phase9 の追加 PR で戻す
           const _OrSeparator(),
           // ソーシャルログインを主役にするため、ゲスト利用はここだけ弱いテキストボタンで置く
           TextButton(
