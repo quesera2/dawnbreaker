@@ -1,11 +1,38 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
+import 'package:dawnbreaker/data/repository/user/google_auth_token_source.dart';
+import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mock_exceptions/mock_exceptions.dart';
+
+/// Google のトークン取得を差し替える。`tokens` が `null` なら中断を表す
+class _FakeGoogleAuthTokenSource implements GoogleAuthTokenSource {
+  _FakeGoogleAuthTokenSource({this.tokens});
+
+  final GoogleAuthTokens? tokens;
+  int getTokensCount = 0;
+
+  @override
+  Future<GoogleAuthTokens?> getTokens() async {
+    getTokensCount++;
+    return tokens;
+  }
+}
 
 void main() {
-  FirebaseUserRepository createRepository(MockFirebaseAuth auth) =>
-      FirebaseUserRepository(auth: auth);
+  FirebaseUserRepository createRepository(
+    MockFirebaseAuth auth, {
+    GoogleAuthTokenSource? googleTokenSource,
+  }) => FirebaseUserRepository(
+    auth: auth,
+    googleTokenSource:
+        googleTokenSource ??
+        _FakeGoogleAuthTokenSource(
+          tokens: const GoogleAuthTokens(idToken: 'id-token'),
+        ),
+  );
 
   group('起動時のユーザーの読み取り', () {
     test('セッションが残っていなければ未サインインになる', () {
@@ -92,4 +119,57 @@ void main() {
       expect(repository.getUser(), const Guest('guest-1'));
     });
   });
+
+  group('Google でサインイン', () {
+    test('リンク済みユーザーが返る', () async {
+      final auth = MockFirebaseAuth(mockUser: MockUser(uid: 'user-1'));
+      final repository = createRepository(auth);
+
+      expect(await repository.signInWithGoogle(), const LoggedIn('user-1'));
+    });
+
+    test('ユーザーが中断したら null を返し、サインインしない', () async {
+      final auth = MockFirebaseAuth();
+      final repository = createRepository(
+        auth,
+        googleTokenSource: _FakeGoogleAuthTokenSource(),
+      );
+
+      expect(await repository.signInWithGoogle(), isNull);
+      expect(auth.currentUser, isNull);
+    });
+
+    test('サインインに失敗したら例外が伝わる', () async {
+      final auth = MockFirebaseAuth(mockUser: MockUser(uid: 'user-1'));
+      whenCalling(
+        Invocation.method(#signInWithCredential, [anything]),
+      ).on(auth).thenThrow(FirebaseAuthException(code: 'network-error'));
+      final repository = createRepository(auth);
+
+      await expectLater(
+        repository.signInWithGoogle(),
+        throwsA(isA<FirebaseAuthException>()),
+      );
+    });
+
+    test('トークン取得が失敗したら SignInException が伝わる', () async {
+      final auth = MockFirebaseAuth();
+      final repository = createRepository(
+        auth,
+        googleTokenSource: _ThrowingGoogleAuthTokenSource(),
+      );
+
+      await expectLater(
+        repository.signInWithGoogle(),
+        throwsA(isA<SignInException>()),
+      );
+    });
+  });
+}
+
+/// トークン取得そのものが失敗する状況を作る
+class _ThrowingGoogleAuthTokenSource implements GoogleAuthTokenSource {
+  @override
+  Future<GoogleAuthTokens?> getTokens() async =>
+      throw const SignInException('google sign-in failed');
 }
