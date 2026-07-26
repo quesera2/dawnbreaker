@@ -22,17 +22,17 @@ GoogleCredentialSource googleCredentialSource(Ref ref) =>
     GoogleSignInCredentialSource();
 
 class GoogleSignInCredentialSource implements GoogleCredentialSource {
-  /// `authenticate()` の前に一度だけ呼ぶ必要がある。結果を保持して以降は使い回す。
+  /// `authenticate()` の前に一度だけ初期化する必要がある。`late final` により
+  /// 初回アクセスで一度だけ実行され、以降は同じ Future を待つ。
   /// iOS は GoogleService-Info.plist の CLIENT_ID を、Android は google-services.json
   /// 由来の default_web_client_id を自動で読むため、引数は渡さない
-  Future<void>? _initialization;
+  late final Future<void> _initialization = GoogleSignIn.instance.initialize();
 
   @override
   Future<AuthCredential?> getCredential() async {
-    final googleSignIn = GoogleSignIn.instance;
-    await (_initialization ??= googleSignIn.initialize());
+    await _initialization;
     try {
-      final account = await googleSignIn.authenticate();
+      final account = await GoogleSignIn.instance.authenticate();
       final idToken = account.authentication.idToken;
       if (idToken == null) {
         throw const SignInException(
