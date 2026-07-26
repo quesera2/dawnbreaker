@@ -27,9 +27,11 @@
 		<key>CFBundleURLTypes</key>
 		<array>
 			<!-- Google サインインの OAuth リダイレクト用 URL スキーム。
-			     Info.plist は dev / prod で共有するため両フレーバーの REVERSED_CLIENT_ID を併記し、
-			     SDK が起動中のフレーバーに一致するものを選ぶ。値は GoogleService-Info-{Dev,Prod}.plist より。
-			     TODO(prod): prod プロジェクトで Google を有効化後に prod の REVERSED_CLIENT_ID を追加する -->
+			     Runner/Info.plist は dev / prod で共有する1ファイルのため、フレーバーごとの
+			     REVERSED_CLIENT_ID をここに登録する。SDK は per-flavor でコピーされる
+			     GoogleService-Info.plist の CLIENT_ID に一致するスキームだけを使うので、
+			     複数登録しても無害。値は GoogleService-Info-{Dev,Prod}.plist より。
+			     いまは dev のみ。prod は Google 有効化後に prod の REVERSED_CLIENT_ID を追記する -->
 			<dict>
 				<key>CFBundleTypeRole</key>
 				<string>Editor</string>
