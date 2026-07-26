@@ -1,4 +1,5 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
+import 'package:dawnbreaker/data/repository/user/credential_source.dart';
 import 'package:dawnbreaker/data/repository/user/google_credential_source.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
@@ -20,7 +21,7 @@ class FirebaseUserRepository implements UserRepository {
   });
 
   final FirebaseAuth _auth;
-  final GoogleCredentialSource _googleCredentialSource;
+  final CredentialSource _googleCredentialSource;
 
   /// `currentUser` は `Firebase.initializeApp()` が復元したセッションを見る同期 getter で、
   /// 通信もアカウント作成もしない

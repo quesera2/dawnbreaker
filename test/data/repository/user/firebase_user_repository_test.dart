@@ -1,15 +1,15 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
+import 'package:dawnbreaker/data/repository/user/credential_source.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
-import 'package:dawnbreaker/data/repository/user/google_credential_source.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mock_exceptions/mock_exceptions.dart';
 
-/// Google の credential 取得を差し替える。`credential` が `null` なら中断を表す
-class _FakeGoogleCredentialSource implements GoogleCredentialSource {
-  _FakeGoogleCredentialSource({this.credential});
+/// credential 取得を差し替える。`credential` が `null` なら中断を表す
+class _FakeCredentialSource implements CredentialSource {
+  _FakeCredentialSource({this.credential});
 
   final AuthCredential? credential;
   int getCredentialCount = 0;
@@ -24,12 +24,12 @@ class _FakeGoogleCredentialSource implements GoogleCredentialSource {
 void main() {
   FirebaseUserRepository createRepository(
     MockFirebaseAuth auth, {
-    GoogleCredentialSource? googleCredentialSource,
+    CredentialSource? googleCredentialSource,
   }) => FirebaseUserRepository(
     auth: auth,
     googleCredentialSource:
         googleCredentialSource ??
-        _FakeGoogleCredentialSource(
+        _FakeCredentialSource(
           credential: GoogleAuthProvider.credential(idToken: 'id-token'),
         ),
   );
@@ -132,7 +132,7 @@ void main() {
       final auth = MockFirebaseAuth();
       final repository = createRepository(
         auth,
-        googleCredentialSource: _FakeGoogleCredentialSource(),
+        googleCredentialSource: _FakeCredentialSource(),
       );
 
       expect(await repository.signInWithGoogle(), isNull);
@@ -156,7 +156,7 @@ void main() {
       final auth = MockFirebaseAuth();
       final repository = createRepository(
         auth,
-        googleCredentialSource: _ThrowingGoogleCredentialSource(),
+        googleCredentialSource: _ThrowingCredentialSource(),
       );
 
       await expectLater(
@@ -168,7 +168,7 @@ void main() {
 }
 
 /// credential 取得そのものが失敗する状況を作る
-class _ThrowingGoogleCredentialSource implements GoogleCredentialSource {
+class _ThrowingCredentialSource implements CredentialSource {
   @override
   Future<AuthCredential?> getCredential() async =>
       throw const SignInException('google sign-in failed');

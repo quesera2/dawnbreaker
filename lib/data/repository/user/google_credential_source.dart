@@ -1,3 +1,4 @@
+import 'package:dawnbreaker/data/repository/user/credential_source.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -5,23 +6,15 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'google_credential_source.g.dart';
 
-/// Google のサインイン UI を出し、Firebase 用の credential を作って返す。
-///
-/// この抽象がテストの seam。`GoogleSignInCredentialSource` は
-/// `GoogleSignIn.instance`（private コンストラクタのシングルトン）を包むだけの
-/// 薄いアダプタで単体テストはせず、テストはこのインターフェースの fake で書く。
-/// Google 固有の処理（トークン取得と `GoogleAuthProvider` への詰め替え）はここで閉じ、
-/// リポジトリには `AuthCredential` だけを渡す。
-abstract interface class GoogleCredentialSource {
-  /// サインイン UI を出して credential を返す。ユーザーが中断したら `null` を返す。
-  Future<AuthCredential?> getCredential();
-}
-
 @riverpod
-GoogleCredentialSource googleCredentialSource(Ref ref) =>
+CredentialSource googleCredentialSource(Ref ref) =>
     GoogleSignInCredentialSource();
 
-class GoogleSignInCredentialSource implements GoogleCredentialSource {
+/// Google サインインの [CredentialSource]。
+///
+/// `GoogleSignIn.instance`（private コンストラクタのシングルトン）を包む薄いアダプタ。
+/// 単体テストはせず、テストは [CredentialSource] の fake で書く。
+class GoogleSignInCredentialSource implements CredentialSource {
   bool _initialized = false;
 
   @override
