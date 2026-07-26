@@ -209,7 +209,7 @@ class _SignInSheet extends StatelessWidget {
             label: context.l10n.loginWithGoogle,
             onPressed: isSigningIn ? null : viewModel.onClickSignInWithGoogle,
           ),
-          // Apple は有料アカウント要件のため一旦ドロップ。将来 Phase9 の追加 PR で戻す
+          // Apple は有料アカウント要件のため一旦ドロップ
           const _OrSeparator(),
           // ソーシャルログインを主役にするため、ゲスト利用はここだけ弱いテキストボタンで置く
           TextButton(
