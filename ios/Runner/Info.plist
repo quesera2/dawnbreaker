@@ -24,6 +24,21 @@
 		<string>????</string>
 		<key>CFBundleVersion</key>
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<key>CFBundleURLTypes</key>
+		<array>
+			<!-- Google サインインの OAuth リダイレクト用 URL スキーム。
+			     Info.plist は dev / prod で共有するため両フレーバーの REVERSED_CLIENT_ID を併記し、
+			     SDK が起動中のフレーバーに一致するものを選ぶ。値は GoogleService-Info-{Dev,Prod}.plist より。
+			     TODO(prod): prod プロジェクトで Google を有効化後に prod の REVERSED_CLIENT_ID を追加する -->
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>com.googleusercontent.apps.1060698971305-se72mor8bn3c0n07ec0gj4sjsgk5jtn5</string>
+				</array>
+			</dict>
+		</array>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>UIApplicationSceneManifest</key>
