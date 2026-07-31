@@ -5,9 +5,8 @@ import 'package:app_settings/app_settings.dart';
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
-import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest3;
+import 'package:dawnbreaker/core/util/stream_util.dart';
 import 'package:dawnbreaker/data/model/color_setting.dart';
-import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
@@ -46,23 +45,22 @@ class SettingsViewModel extends _$SettingsViewModel {
     );
     if (!ref.mounted) return;
 
-    final disposable = combineLatest3(
+    final disposable = combineLatest4(
       userSettingsRepository.watchNotificationSetting(),
       _settingsRepository.watchHomeDisplayMode(),
       _settingsRepository.watchProgressBarAnimationEnabled(),
-      (NotificationSetting notification, HomeDisplayMode mode, bool animation) {
+      PackageInfo.fromPlatform().asStream(),
+      (notification, mode, animation, info) {
         state = state.copyWith(
+          isLoading: false,
           notificationSetting: notification,
           displayMode: mode,
           progressBarAnimationEnabled: animation,
+          version: info.version,
         );
       },
     );
     ref.onDispose(() => unawaited(disposable()));
-
-    final info = await PackageInfo.fromPlatform();
-    if (!ref.mounted) return;
-    state = state.copyWith(isLoading: false, version: info.version);
   }
 
   Future<void> setNotificationEnabled(bool value) async {
