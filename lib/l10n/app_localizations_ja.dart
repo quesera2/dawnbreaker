@@ -499,6 +499,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsAccountLoginDescription => 'サインインすると、機種変更してもタスクを引き継げます。';
 
   @override
+  String get settingsAccountLogout => 'ログアウト';
+
+  @override
+  String get settingsAccountDelete => 'アカウントを削除';
+
+  @override
   String get settingsSectionInfo => '情報';
 
   @override

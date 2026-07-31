@@ -1022,6 +1022,18 @@ abstract class AppLocalizations {
   /// **'サインインすると、機種変更してもタスクを引き継げます。'**
   String get settingsAccountLoginDescription;
 
+  /// No description provided for @settingsAccountLogout.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログアウト'**
+  String get settingsAccountLogout;
+
+  /// No description provided for @settingsAccountDelete.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウントを削除'**
+  String get settingsAccountDelete;
+
   /// No description provided for @settingsSectionInfo.
   ///
   /// In ja, this message translates to:

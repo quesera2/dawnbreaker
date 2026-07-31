@@ -250,6 +250,8 @@
   "settingsSectionAccount": "Account",
   "settingsAccountLogin": "Sign in",
   "settingsAccountLoginDescription": "Sign in to keep your tasks when you change devices.",
+  "settingsAccountLogout": "Sign out",
+  "settingsAccountDelete": "Delete account",
   "settingsSectionInfo": "Info",
   "settingsVersion": "Version",
   "settingsTutorial": "Tutorial",

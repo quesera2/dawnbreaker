@@ -250,6 +250,8 @@
   "settingsSectionAccount": "アカウント",
   "settingsAccountLogin": "ログイン",
   "settingsAccountLoginDescription": "サインインすると、機種変更してもタスクを引き継げます。",
+  "settingsAccountLogout": "ログアウト",
+  "settingsAccountDelete": "アカウントを削除",
   "settingsSectionInfo": "情報",
   "settingsVersion": "バージョン",
   "settingsTutorial": "チュートリアル",

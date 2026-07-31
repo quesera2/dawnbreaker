@@ -62,10 +62,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               progressBarAnimationEnabled:
                   viewState.progressBarAnimationEnabled,
             ),
-            if (viewState.isGuest) ...[
-              const SizedBox(height: 24),
-              ..._accountSection(context),
-            ],
+            const SizedBox(height: 24),
+            ..._accountSection(context, isGuest: viewState.isGuest),
             const SizedBox(height: 24),
             ..._infoSection(context, viewState.version),
             if (kDebugMode) ...[
@@ -189,14 +187,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         .byColor => context.l10n.settingsDisplayHomeByColor,
       };
 
-  /// ゲストの昇格の入り口。リンク済みの操作（ログアウト・アカウント削除）は別途用意する
-  List<Widget> _accountSection(BuildContext context) {
+  /// ゲストには昇格の入り口だけを出す。
+  ///
+  /// 匿名アカウントには credential がなく、ログアウトすると二度と戻れないため出さない。
+  /// アカウント削除も、Apple の削除要件が掛かるのはリンク済みだけなので出さない
+  List<Widget> _accountSection(BuildContext context, {required bool isGuest}) =>
+      [
+        AppSectionHeader(
+          title: Text(context.l10n.settingsSectionAccount),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+        ),
+        if (isGuest)
+          ..._guestAccountCells(context)
+        else
+          ..._userAccountCells(context),
+      ];
+
+  /// ゲスト時のメニュー
+  List<Widget> _guestAccountCells(BuildContext context) {
     final colorScheme = context.appColorScheme;
     return [
-      AppSectionHeader(
-        title: Text(context.l10n.settingsSectionAccount),
-        padding: const EdgeInsets.symmetric(vertical: 8),
-      ),
       AppListCell(
         type: .single,
         child: ListTile(
@@ -210,6 +220,44 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           ),
         ),
         onTap: () => context.push('/login', extra: LoginMode.accountSignInOnly),
+      ),
+    ];
+  }
+
+  /// ログイン済みの場合のメニュー
+  List<Widget> _userAccountCells(BuildContext context) {
+    final colorScheme = context.appColorScheme;
+    final divider = Divider(height: 1, color: colorScheme.divider);
+    return [
+      AppListCell(
+        type: .top,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(context.l10n.settingsAccountLogout),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: colorScheme.textMuted,
+          ),
+        ),
+        onTap: () => _viewModel.signOut(),
+      ),
+      divider,
+      AppListCell(
+        type: .bottom,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(
+            context.l10n.settingsAccountDelete,
+            style: AppTextStyle.body.copyWith(color: colorScheme.danger),
+          ),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: colorScheme.textMuted,
+          ),
+        ),
+        onTap: () => _viewModel.deleteAccount(),
       ),
     ];
   }

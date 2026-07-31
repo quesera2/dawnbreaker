@@ -512,6 +512,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Sign in to keep your tasks when you change devices.';
 
   @override
+  String get settingsAccountLogout => 'Sign out';
+
+  @override
+  String get settingsAccountDelete => 'Delete account';
+
+  @override
   String get settingsSectionInfo => 'Info';
 
   @override
