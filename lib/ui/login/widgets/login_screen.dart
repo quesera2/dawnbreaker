@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:dawnbreaker/app/app_colors.dart';
@@ -5,7 +6,7 @@ import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_view_model.dart';
-import 'package:dawnbreaker/ui/login/widgets/login_mode.dart';
+import 'package:dawnbreaker/ui/login/widgets/login_param.dart';
 import 'package:dawnbreaker/ui/login/widgets/social_sign_in_button.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -29,9 +30,9 @@ class _LoginBrandColors {
 }
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key, required this.mode});
+  const LoginScreen({super.key, required this.param});
 
-  final LoginMode mode;
+  final LoginParam param;
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -41,21 +42,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     with MessagesListenMixin {
   late final LoginViewModelProvider _viewState;
   late final LoginViewModel _viewModel;
+  Animation<double>? _transition;
 
   @override
   void initState() {
     super.initState();
-    _viewState = loginViewModelProvider(mode: widget.mode);
+    _viewState = loginViewModelProvider(param: widget.param);
     _viewModel = ref.read(_viewState.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FlutterNativeSplash.remove();
+      if (widget.param.executeLogout) _signOutAfterTransition();
     });
+  }
+
+  @override
+  void dispose() {
+    _transition?.removeStatusListener(_onTransitionStatus);
+    super.dispose();
+  }
+
+  /// 遷移が終わってからサインアウトする。
+  ///
+  /// この画面が入場し切るまで、送り出した側（設定画面）は破棄されない。
+  /// 残った購読を抱えたまま NoLogin にすると permission-denied になる
+  void _signOutAfterTransition() {
+    final transition = ModalRoute.of(context)?.animation;
+    if (transition == null || transition.isCompleted) {
+      unawaited(_viewModel.signOut());
+      return;
+    }
+    _transition = transition..addStatusListener(_onTransitionStatus);
+  }
+
+  void _onTransitionStatus(AnimationStatus status) {
+    if (!status.isCompleted) return;
+    _transition?.removeStatusListener(_onTransitionStatus);
+    _transition = null;
+    unawaited(_viewModel.signOut());
   }
 
   @override
   Widget build(BuildContext context) {
     listenMessages(_viewState);
     final isSigningIn = ref.watch(_viewState.select((s) => s.isSigningIn));
+    final isSigningOut = ref.watch(_viewState.select((s) => s.isSigningOut));
 
     ref.listen(_viewState.select((s) => s.destination), (prev, next) {
       if (next == null || prev?.id == next.id) return;
@@ -71,25 +101,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     });
 
     return Scaffold(
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          // 上端の外側を光源にして、画面全体を一枚の面として見せる
-          gradient: RadialGradient(
-            center: Alignment(0, -1.16),
-            radius: 1.2,
-            colors: [_LoginBrandColors.deepGlow, _LoginBrandColors.deep],
-            stops: [0, 0.62],
-          ),
-        ),
-        child: Column(
-          children: [
-            const Expanded(child: SafeArea(bottom: false, child: _Wordmark())),
-            _SignInSheet(
-              mode: widget.mode,
-              isSigningIn: isSigningIn,
-              viewModel: _viewModel,
+      body: _ProgressOverlay(
+        visible: isSigningIn || isSigningOut,
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            // 上端の外側を光源にして、画面全体を一枚の面として見せる
+            gradient: RadialGradient(
+              center: Alignment(0, -1.16),
+              radius: 1.2,
+              colors: [_LoginBrandColors.deepGlow, _LoginBrandColors.deep],
+              stops: [0, 0.62],
             ),
-          ],
+          ),
+          child: Column(
+            children: [
+              const Expanded(
+                child: SafeArea(bottom: false, child: _Wordmark()),
+              ),
+              _SignInSheet(
+                showGuest: widget.param.showGuest,
+                isSigningIn: isSigningIn,
+                viewModel: _viewModel,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -176,12 +211,12 @@ class _Hairline extends StatelessWidget {
 
 class _SignInSheet extends StatelessWidget {
   const _SignInSheet({
-    required this.mode,
+    required this.showGuest,
     required this.isSigningIn,
     required this.viewModel,
   });
 
-  final LoginMode mode;
+  final bool showGuest;
   final bool isSigningIn;
   final LoginViewModel viewModel;
 
@@ -222,7 +257,7 @@ class _SignInSheet extends StatelessWidget {
           ),
           // Apple は有料アカウント要件のため一旦ドロップ
           // 既にゲストとして使っている人には、ゲスト利用の選択肢を出さない
-          if (mode == .showGuest) ...[
+          if (showGuest) ...[
             const _OrSeparator(),
             // ソーシャルログインを主役にするため、ゲスト利用はここだけ弱いテキストボタンで置く
             TextButton(
@@ -355,6 +390,34 @@ class _OrSeparator extends StatelessWidget {
           line,
         ],
       ),
+    );
+  }
+}
+
+/// 処理中であることを示し、その間の操作を塞ぐ。
+///
+/// サインインもログアウトも外部との往復があって数秒かかりうる。ボタンを無効に
+/// するだけだと、押せないのが処理中なのか不具合なのか分からない
+class _ProgressOverlay extends StatelessWidget {
+  const _ProgressOverlay({required this.visible, required this.child});
+
+  final bool visible;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        child,
+        if (visible)
+          ColoredBox(
+            color: context.appColorScheme.overlay,
+            // 裏のボタンに触れないよう、面ごと覆う
+            child: const SizedBox.expand(
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ),
+      ],
     );
   }
 }

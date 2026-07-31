@@ -9,8 +9,9 @@ import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/data/repository/user/sign_in_result.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
+import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_ui_state.dart';
-import 'package:dawnbreaker/ui/login/widgets/login_mode.dart';
+import 'package:dawnbreaker/ui/login/widgets/login_param.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -20,7 +21,7 @@ part 'login_view_model.g.dart';
 @riverpod
 class LoginViewModel extends _$LoginViewModel {
   @override
-  LoginUiState build({required LoginMode mode}) => const LoginUiState();
+  LoginUiState build({required LoginParam param}) => const LoginUiState();
 
   Future<void> onClickStartAsGuest() async {
     if (state.isSigningIn) return;
@@ -63,6 +64,44 @@ class LoginViewModel extends _$LoginViewModel {
       if (!ref.mounted) return;
       _showSignInError(onClickSignInWithGoogle);
       return;
+    }
+  }
+
+  /// ログアウトを仕上げる。設定画面から `executeLogout` で来たときに、
+  /// 遷移が終わってから画面側が呼ぶ。
+  ///
+  /// 設定画面が残っている間にサインアウトすると、残った購読が permission-denied になる
+  Future<void> signOut() async {
+    if (state.isSigningOut) return;
+    state = state.copyWith(isSigningOut: true);
+
+    // サインアウトすると通知の送信先を引けなくなるため、先に捨てる。
+    // Firestore の fcmTokens はここでは消さない。無効なトークンは送信側が掃除する
+    await _deleteToken();
+    if (!ref.mounted) return;
+
+    try {
+      await ref.read(userRepositoryProvider).signOut();
+    } catch (e, s) {
+      logger.e('signOut failed', error: e, stackTrace: s);
+    }
+    if (!ref.mounted) return;
+
+    state = state.copyWith(
+      isSigningOut: false,
+      snackBarMessage: SignedOutMessage(),
+    );
+  }
+
+  /// この端末のトークンを捨てる。失敗してもログアウトは続ける
+  Future<void> _deleteToken() async {
+    try {
+      final notificationService = await ref.read(
+        fcmNotificationServiceProvider.future,
+      );
+      await notificationService.deleteToken();
+    } catch (e, s) {
+      logger.e('deleteToken failed', error: e, stackTrace: s);
     }
   }
 
@@ -124,14 +163,13 @@ class LoginViewModel extends _$LoginViewModel {
     _updateLastActiveAt();
 
     final LoginDestination destination;
-    switch (mode) {
-      case .showGuest:
-        destination = await _resolveDestination();
-      // 通知の誘導は挟まない。ゲストとして使っていた時点で誘導は済んでおり、
-      // ここは設定画面から来た操作なので元の画面へ戻す
-      case .accountSignInOnly:
-        await _registerToken();
-        destination = .back;
+    if (param.showGuest) {
+      destination = await _resolveDestination();
+    } else {
+      // 昇格では通知の誘導を挟まない。ゲストとして使っていた時点で誘導は済んでおり、
+      // 設定画面から来た操作なので元の画面へ戻す
+      await _registerToken();
+      destination = .back;
     }
     if (!ref.mounted) return;
 

@@ -46,6 +46,10 @@ class TaskExecutionDeleteSuccess extends SnackBarMessage {
   final DateTime executedAt;
 }
 
+class SignedOutMessage extends SnackBarMessage {
+  SignedOutMessage();
+}
+
 class DebugDummyTasksGeneratedMessage extends SnackBarMessage {
   DebugDummyTasksGeneratedMessage();
 }

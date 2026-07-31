@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
@@ -8,7 +6,7 @@ import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
-import 'package:dawnbreaker/ui/login/widgets/login_mode.dart';
+import 'package:dawnbreaker/ui/login/widgets/login_param.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_ui_state.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_view_model.dart';
@@ -40,23 +38,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   Widget build(BuildContext context) {
     listenMessages(settingsViewModelProvider);
     final viewState = ref.watch(settingsViewModelProvider);
-
-    ref.listen(settingsViewModelProvider.select((s) => s.destination), (
-      prev,
-      next,
-    ) {
-      if (next == null || prev?.id == next.id) return;
-
-      switch (next.type) {
-        case .login:
-          context.go('/login');
-          // 画面が入れ替わってからサインアウトする。ホーム画面が残ったまま
-          // NoLogin にすると、タスクの読み込みが例外になる
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            unawaited(_viewModel.completeSignOut());
-          });
-      }
-    });
 
     if (viewState.isLoading) {
       return const Scaffold();
@@ -238,7 +219,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             color: colorScheme.textMuted,
           ),
         ),
-        onTap: () => context.push('/login', extra: LoginMode.accountSignInOnly),
+        onTap: () =>
+            context.push('/login', extra: const LoginParam(showGuest: false)),
       ),
     ];
   }
@@ -259,7 +241,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             color: colorScheme.textMuted,
           ),
         ),
-        onTap: () => unawaited(_viewModel.signOut()),
+        // ログアウト自体はログイン画面が行う。ここで NoLogin にすると、
+        // まだ残っているこの画面の購読が permission-denied になる
+        onTap: () =>
+            context.go('/login', extra: const LoginParam(executeLogout: true)),
       ),
       divider,
       AppListCell(

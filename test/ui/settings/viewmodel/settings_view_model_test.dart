@@ -389,62 +389,6 @@ void main() {
         });
       });
 
-      // クラウドにデータは残るため確認は挟まない。サインインし直せば戻ってくる
-      group('ログアウト', () {
-        setUp(() => setUpLoaded(user: const LoggedIn('user-1')));
-
-        test('ログイン画面へ送る', () async {
-          await viewModel.signOut();
-
-          expect(viewState.destination?.type, SettingsDestination.login);
-        });
-
-        // この端末宛に通知が届き続けないようにする
-        test('通知の送信先から外してトークンを捨てる', () async {
-          await viewModel.signOut();
-
-          expect(fakeNotificationService.unregisterTokenCount, 1);
-          expect(fakeNotificationService.deleteTokenCount, 1);
-        });
-
-        // ホーム画面が残ったまま NoLogin にすると、タスクの読み込みが例外になる
-        test('画面が切り替わるまでサインアウトしない', () async {
-          await viewModel.signOut();
-
-          expect(fakeUserRepository.signOutCount, 0);
-
-          await viewModel.completeSignOut();
-
-          expect(fakeUserRepository.signOutCount, 1);
-        });
-
-        test('連打してもログアウトは1度しか始まらない', () async {
-          final signingOut = viewModel.signOut();
-          await viewModel.signOut();
-          await signingOut;
-
-          expect(fakeNotificationService.unregisterTokenCount, 1);
-        });
-
-        // ここで止めるとログアウトできなくなるほうが困る
-        test('通知の後始末に失敗してもログイン画面へ送る', () async {
-          fakeNotificationService.unregisterTokenShouldThrow = true;
-
-          await viewModel.signOut();
-
-          expect(viewState.destination?.type, SettingsDestination.login);
-        });
-
-        test('サインアウトに失敗しても画面は戻さない', () async {
-          await viewModel.signOut();
-          fakeUserRepository.shouldThrow = true;
-
-          await viewModel.completeSignOut();
-
-          expect(viewState.destination?.type, SettingsDestination.login);
-        });
-      });
-
       group('deleteTutorialFlag', () {
         setUp(() => setUpLoaded());
 

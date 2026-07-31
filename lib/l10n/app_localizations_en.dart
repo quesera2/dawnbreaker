@@ -402,6 +402,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginSwitchAccountConfirm => 'Sign in';
 
   @override
+  String get loginSignedOut => 'Signed out';
+
+  @override
   String get notificationIntroTitle => 'Get notified when tasks are due';
 
   @override

@@ -28,6 +28,9 @@ class FakeNotificationService implements NotificationService {
   /// 通知先の解除が失敗する状況を作る
   bool unregisterTokenShouldThrow = false;
 
+  /// トークンの破棄が失敗する状況を作る
+  bool deleteTokenShouldThrow = false;
+
   @override
   Future<bool> checkPermission() async {
     checkPermissionCalled = true;
@@ -51,6 +54,7 @@ class FakeNotificationService implements NotificationService {
   @override
   Future<void> deleteToken() async {
     deleteTokenCount++;
+    if (deleteTokenShouldThrow) throw Exception('テストエラー');
   }
 
   @override

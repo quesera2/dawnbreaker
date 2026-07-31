@@ -395,6 +395,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get loginSwitchAccountConfirm => 'サインインする';
 
   @override
+  String get loginSignedOut => 'ログアウトしました';
+
+  @override
   String get notificationIntroTitle => 'スケジュールになったら通知でお知らせ';
 
   @override

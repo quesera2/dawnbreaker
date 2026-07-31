@@ -216,6 +216,7 @@
   "loginPrivacyPolicy": "プライバシーポリシー",
   "loginSwitchAccountMessage": "このアカウントは別のユーザーとして登録済みです。サインインすると、ゲストで作成したタスクは失われ、元に戻せません。",
   "loginSwitchAccountConfirm": "サインインする",
+  "loginSignedOut": "ログアウトしました",
   "notificationIntroTitle": "スケジュールになったら通知でお知らせ",
   "notificationIntroBody": "通知を有効にすると、予定日になったタイミングでお知らせします。通知は後から設定することもできます。",
   "notificationIntroEnable": "通知を有効にする",

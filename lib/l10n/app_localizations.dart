@@ -818,6 +818,12 @@ abstract class AppLocalizations {
   /// **'サインインする'**
   String get loginSwitchAccountConfirm;
 
+  /// No description provided for @loginSignedOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログアウトしました'**
+  String get loginSignedOut;
+
   /// No description provided for @notificationIntroTitle.
   ///
   /// In ja, this message translates to:
