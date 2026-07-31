@@ -359,7 +359,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingNext => '次へ';
 
   @override
-  String get onboardingStart => '最初のタスクを登録する';
+  String get onboardingStart => 'サインインへ進む';
 
   @override
   String get loginTagline => 'サインインすると、どの端末でも\n同じタスクを続きから使えます。';

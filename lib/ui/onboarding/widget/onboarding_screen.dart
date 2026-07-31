@@ -62,7 +62,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
         curve: Curves.easeInOut,
       ),
       onDone: _viewModel.onClickDone,
-      onSkip: _viewModel.onClickSkip,
     );
   }
 
@@ -195,30 +194,11 @@ class _ButtonArea extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsGeometry.symmetric(horizontal: 20, vertical: 16),
-      child: Column(
-        spacing: 8,
-        children: [
-          AppButton(
-            label: buttons.primaryLabel,
-            onPressed: isCompleting ? null : buttons.primaryAction,
-            fullWidth: true,
-            size: AppButtonSize.large,
-          ),
-          if (buttons.hasSecondaryArea)
-            Visibility(
-              visible: buttons.secondaryLabel != null,
-              maintainSize: true,
-              maintainAnimation: true,
-              maintainState: true,
-              child: AppButton(
-                label: buttons.secondaryLabel ?? '',
-                onPressed: isCompleting ? null : buttons.secondaryAction,
-                fullWidth: true,
-                size: AppButtonSize.large,
-                variant: AppButtonVariant.ghost,
-              ),
-            ),
-        ],
+      child: AppButton(
+        label: buttons.primaryLabel,
+        onPressed: isCompleting ? null : buttons.primaryAction,
+        fullWidth: true,
+        size: AppButtonSize.large,
       ),
     );
   }

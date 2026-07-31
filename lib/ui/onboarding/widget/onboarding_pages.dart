@@ -12,13 +12,7 @@ import 'package:dawnbreaker/ui/common/components/app_task_list_item.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:flutter/material.dart';
 
-typedef ButtonConfig = ({
-  String primaryLabel,
-  VoidCallback primaryAction,
-  String? secondaryLabel,
-  VoidCallback? secondaryAction,
-  bool hasSecondaryArea,
-});
+typedef ButtonConfig = ({String primaryLabel, VoidCallback primaryAction});
 
 typedef OnboardingPageData = ({OnboardingPage page, ButtonConfig buttons});
 
@@ -28,7 +22,6 @@ List<OnboardingPageData> buildOnboardingPages(
   required OnboardingMode mode,
   required VoidCallback onNext,
   required VoidCallback onDone,
-  required VoidCallback onSkip,
 }) => [
   (
     page: OnboardingPage(
@@ -37,7 +30,7 @@ List<OnboardingPageData> buildOnboardingPages(
       backgroundColor: pageColors[0],
       pageDetail: _OnboardingPage1Description(backgroundColor: pageColors[0]),
     ),
-    buttons: _nextOnlyButtons(context, mode, onNext: onNext),
+    buttons: _nextButtons(context, onNext: onNext),
   ),
   (
     page: OnboardingPage(
@@ -46,7 +39,7 @@ List<OnboardingPageData> buildOnboardingPages(
       backgroundColor: pageColors[1],
       pageDetail: const _OnboardingPage2Description(),
     ),
-    buttons: _nextOnlyButtons(context, mode, onNext: onNext),
+    buttons: _nextButtons(context, onNext: onNext),
   ),
   (
     page: OnboardingPage(
@@ -55,43 +48,26 @@ List<OnboardingPageData> buildOnboardingPages(
       backgroundColor: pageColors[2],
       pageDetail: const _OnboardingPage3Description(),
     ),
-    buttons: _lastPageButtons(context, mode, onDone: onDone, onSkip: onSkip),
+    buttons: _lastPageButtons(context, mode, onDone: onDone),
   ),
 ];
 
-ButtonConfig _nextOnlyButtons(
-  BuildContext context,
-  OnboardingMode mode, {
+ButtonConfig _nextButtons(
+  BuildContext context, {
   required VoidCallback onNext,
-}) => (
-  primaryLabel: context.l10n.onboardingNext,
-  primaryAction: onNext,
-  secondaryLabel: null,
-  secondaryAction: null,
-  hasSecondaryArea: mode == .initial,
-);
+}) => (primaryLabel: context.l10n.onboardingNext, primaryAction: onNext);
 
 ButtonConfig _lastPageButtons(
   BuildContext context,
   OnboardingMode mode, {
   required VoidCallback onDone,
-  required VoidCallback onSkip,
-}) => switch (mode) {
-  .initial => (
-    primaryLabel: context.l10n.onboardingStart,
-    primaryAction: onDone,
-    secondaryLabel: context.l10n.commonSkip,
-    secondaryAction: onSkip,
-    hasSecondaryArea: true,
-  ),
-  .fromSettings => (
-    primaryLabel: context.l10n.commonClose,
-    primaryAction: onDone,
-    secondaryLabel: null,
-    secondaryAction: null,
-    hasSecondaryArea: false,
-  ),
-};
+}) => (
+  primaryLabel: switch (mode) {
+    .initial => context.l10n.onboardingStart,
+    .fromSettings => context.l10n.commonClose,
+  },
+  primaryAction: onDone,
+);
 
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({

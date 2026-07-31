@@ -365,7 +365,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingNext => 'Next';
 
   @override
-  String get onboardingStart => 'Register your first task';
+  String get onboardingStart => 'Continue to sign in';
 
   @override
   String get loginTagline =>

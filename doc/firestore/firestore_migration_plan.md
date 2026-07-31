@@ -134,7 +134,7 @@ Apple サインインは Sign In with Apple の capability が有料の Apple De
 各 PR は、マージした時点で実機で操作して確認できる単位に切る（UI からネイティブ設定まで1機能を通す）。
 依存は PR1 → PR2 → PR3 と一方向に増やす。
 
-- [ ] **PR1: Google でログインして動く状態にする**
+- [x] **PR1: Google でログインして動く状態にする**
     - `google_sign_in` 追加＋ネイティブ設定（iOS reversed client id / URL scheme、Android SHA・OAuth クライアント）
     - credential 取得の seam を薄く1メソッドに置き、`UserRepository.signInWithGoogle` を足す
       （Apple は将来 sibling を足すだけにする。今は Google 1つなので抽象化を作り込みすぎない）

@@ -755,7 +755,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingStart.
   ///
   /// In ja, this message translates to:
-  /// **'最初のタスクを登録する'**
+  /// **'サインインへ進む'**
   String get onboardingStart;
 
   /// No description provided for @loginTagline.
