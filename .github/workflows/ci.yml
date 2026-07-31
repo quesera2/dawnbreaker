@@ -22,8 +22,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          cache: true
+          flutter-version-file: .fvmrc
 
       - name: Install dependencies
         run: flutter pub get
