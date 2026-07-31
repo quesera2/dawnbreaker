@@ -29,6 +29,12 @@ class FakeTaskRepository implements TaskRepository {
   int _nextId = 100;
 
   @override
+  Future<bool> hasAnyTask() async {
+    if (shouldThrow) throw const TaskLoadException('テストエラー');
+    return _tasks.isNotEmpty;
+  }
+
+  @override
   Stream<List<TaskItem>> allTaskItems() {
     unawaited(
       Future.microtask(() {

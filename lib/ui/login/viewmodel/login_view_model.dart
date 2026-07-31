@@ -4,6 +4,7 @@ import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_service.dart';
+import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
@@ -121,14 +122,37 @@ class LoginViewModel extends _$LoginViewModel {
         state = state.copyWith(isSigningIn: false);
       case LinkSucceeded(:final user):
         await _completeSignIn(user.id);
-      // ゲストのタスクを捨てる操作になるため、了承を得るまでサインインしない
       case LinkCredentialInUse(:final credential):
-        state = state.copyWith(
-          isSigningIn: false,
-          dialogMessage: SwitchAccountConfirmMessage(
-            primaryHandler: () => unawaited(_switchAccount(credential)),
-          ),
-        );
+        await _confirmSwitchAccount(credential);
+    }
+  }
+
+  /// 乗り換えるとゲストのタスクは失われる。失うものがあるときだけ了承を求める
+  Future<void> _confirmSwitchAccount(AuthCredential credential) async {
+    if (!await _hasTasksToLose()) {
+      await _switchAccount(credential);
+      return;
+    }
+    if (!ref.mounted) return;
+
+    state = state.copyWith(
+      isSigningIn: false,
+      dialogMessage: SwitchAccountConfirmMessage(
+        primaryHandler: () => unawaited(_switchAccount(credential)),
+      ),
+    );
+  }
+
+  /// 乗り換えで失うタスクがあるか。件数は問わない。
+  ///
+  /// 確かめられなかったときは「ある」とみなす。黙って消してしまうより、
+  /// 消えるものがないときに一度多く確認するほうが害が小さい
+  Future<bool> _hasTasksToLose() async {
+    try {
+      return await ref.read(taskRepositoryProvider).hasAnyTask();
+    } catch (e, s) {
+      logger.e('hasAnyTask failed', error: e, stackTrace: s);
+      return true;
     }
   }
 

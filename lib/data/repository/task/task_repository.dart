@@ -17,6 +17,10 @@ abstract interface class TaskRepository {
 
   Future<TaskItem> findTaskById(String taskId);
 
+  // タスクが1件でもあるか。件数は数えない。
+  // アカウントを乗り換えると今のタスクは失われるため、失うものがあるかの判断に使う
+  Future<bool> hasAnyTask();
+
   // 実行履歴を新しい方から遡ってページ単位で取得する（返却順は新しい順）。
   // cursor が null のときは最新のページを返す。詳細画面での表示専用で、
   // ホーム画面の一覧取得（allTaskItems）はこれを呼ばない

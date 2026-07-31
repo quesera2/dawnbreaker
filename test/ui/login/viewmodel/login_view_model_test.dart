@@ -1,6 +1,10 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
+import 'package:dawnbreaker/data/model/schedule_unit.dart';
+import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_type.dart';
+import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -11,6 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_notification_service.dart';
+import '../../../helpers/fake_task_repository.dart';
 import '../../../helpers/fake_user_repository.dart';
 import '../../../helpers/fake_user_settings_repository.dart';
 
@@ -20,6 +25,7 @@ void main() {
     late FakeUserRepository fakeUserRepository;
     late FakeNotificationService fakeNotificationService;
     late FakeUserSettingsRepository fakeUserSettingsRepository;
+    late FakeTaskRepository fakeTaskRepository;
     late LoginViewModelProvider provider;
     late LoginViewModel viewModel;
     late LoginUiState viewState;
@@ -40,13 +46,25 @@ void main() {
       setUpState(LoginMode.promotion);
     }
 
+    /// 乗り換えると失われるタスクがある状況を作る
+    Future<void> addGuestTask() => fakeTaskRepository.addTask(
+      taskType: TaskType.scheduled,
+      name: '掃除',
+      icon: '🧹',
+      color: TaskColor.none,
+      scheduleValue: 1,
+      scheduleUnit: ScheduleUnit.month,
+    );
+
     setUp(() {
       fakeUserRepository = FakeUserRepository(const NoLogin());
       fakeNotificationService = FakeNotificationService();
       fakeUserSettingsRepository = FakeUserSettingsRepository();
+      fakeTaskRepository = FakeTaskRepository();
       container = ProviderContainer(
         overrides: [
           userRepositoryProvider.overrideWith((_) => fakeUserRepository),
+          taskRepositoryProvider.overrideWith((_) => fakeTaskRepository),
           fcmNotificationServiceProvider.overrideWith(
             (_) => fakeNotificationService,
           ),
@@ -397,8 +415,9 @@ void main() {
 
       // 昇格先のアカウントが既にある場合。ゲストのデータは引き継げない
       group('アカウントが既に使われているとき', () {
-        setUp(() {
+        setUp(() async {
           fakeUserRepository.credentialAlreadyInUse = true;
+          await addGuestTask();
         });
 
         test('データが失われることを確認する', () async {
@@ -433,6 +452,28 @@ void main() {
 
           expect(fakeNotificationService.unregisterTokenCount, 1);
           expect(fakeNotificationService.registerTokenCount, 1);
+        });
+
+        // 失うものがないなら、確認する意味がない
+        test('ゲストのタスクがなければ確認せずに乗り換える', () async {
+          await fakeTaskRepository.deleteAllTasks();
+
+          await viewModel.onClickSignInWithGoogle();
+          await pumpEventQueue();
+
+          expect(viewState.dialogMessage, isNull);
+          expect(fakeUserRepository.signInWithLinkedCredentialCount, 1);
+          expect(viewState.destination?.type, LoginDestination.back);
+        });
+
+        // 黙って消してしまうより、余分に確認するほうが害が小さい
+        test('タスクの有無を確認できなければ確認する', () async {
+          fakeTaskRepository.shouldThrow = true;
+
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.dialogMessage, isA<SwitchAccountConfirmMessage>());
+          expect(fakeUserRepository.signInWithLinkedCredentialCount, 0);
         });
 
         test('乗り換えに失敗したらエラーが通知される', () async {

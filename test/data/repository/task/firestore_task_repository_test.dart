@@ -233,6 +233,23 @@ void main() {
     });
   });
 
+  group('hasAnyTask', () {
+    test('タスクが1件もなければ false', () async {
+      expect(await repository.hasAnyTask(), false);
+    });
+
+    test('タスクがあれば true', () async {
+      await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '✂️',
+        color: TaskColor.none,
+      );
+
+      expect(await repository.hasAnyTask(), true);
+    });
+  });
+
   group('recordExecution', () {
     test('実行履歴が追加される', () async {
       final id = await repository.addTask(
