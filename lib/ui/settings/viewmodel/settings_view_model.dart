@@ -31,12 +31,13 @@ class SettingsViewModel extends _$SettingsViewModel {
   @override
   SettingsUiState build() {
     _settingsRepository = ref.read(settingsRepositoryProvider);
-    // 昇格するとゲストでなくなる。戻ってきたときにログイン導線が残らないよう追随する
+    // ユーザー状態に応じて表示を出し分ける、ログインから戻ってきた場合に更新されるようにする
     ref.listen(currentUserProvider, (_, next) {
       state = state.copyWith(isGuest: next is Guest);
     });
     unawaited(_initialize());
-    return SettingsUiState(isGuest: ref.read(currentUserProvider) is Guest);
+    final user = ref.read(currentUserProvider);
+    return SettingsUiState(isGuest: user is Guest);
   }
 
   Future<void> _initialize() async {

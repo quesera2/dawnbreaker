@@ -55,8 +55,8 @@ class LoginViewModel extends _$LoginViewModel {
   }
 
   Future<void> onClickSignInWithGoogle() => switch (mode) {
-    .initial => _signInWithGoogle(),
-    .promotion => _linkWithGoogle(),
+    .showGuest => _signInWithGoogle(),
+    .accountSignInOnly => _linkWithGoogle(),
   };
 
   Future<void> _signInWithGoogle() async {

@@ -21,9 +21,6 @@ class FirebaseUserRepository implements UserRepository {
     required this._googleCredentialSource,
   });
 
-  /// 昇格しようとした credential が既に別のアカウントで使われているときのコード
-  static const _credentialAlreadyInUse = 'credential-already-in-use';
-
   final FirebaseAuth _auth;
   final CredentialSource _googleCredentialSource;
 
@@ -73,15 +70,19 @@ class FirebaseUserRepository implements UserRepository {
     try {
       result = await currentUser.linkWithCredential(credential);
     } on FirebaseAuthException catch (e) {
-      if (e.code != _credentialAlreadyInUse) rethrow;
-      // Apple は nonce の都合で元の credential を再利用できないため、例外が持つ方を使う
-      final linkedCredential = e.credential;
-      if (linkedCredential == null) {
-        throw const SignInException(
-          'credential-already-in-use came without a credential',
-        );
+      if (e.code == 'credential-already-in-use') {
+        // Apple は nonce の都合で元の credential を再利用できないため、
+        // 例外で渡された credential を使う必要がある
+        final linkedCredential = e.credential;
+        if (linkedCredential == null) {
+          throw const SignInException(
+            'credential-already-in-use came without a credential',
+          );
+        }
+        return LinkCredentialInUse(linkedCredential);
+      } else {
+        rethrow;
       }
-      return LinkCredentialInUse(linkedCredential);
     }
 
     final user = result.user;

@@ -30,7 +30,7 @@ void main() {
     late LoginViewModel viewModel;
     late LoginUiState viewState;
 
-    void setUpState([LoginMode mode = LoginMode.initial]) {
+    void setUpState([LoginMode mode = LoginMode.showGuest]) {
       provider = loginViewModelProvider(mode: mode);
       viewModel = container.read(provider.notifier);
       container.listen(
@@ -43,7 +43,7 @@ void main() {
     /// ゲストとして使っている人がアカウントを結び付けにくる状況を作る
     void setUpPromotion() {
       fakeUserRepository.emit(const Guest('guest-1'));
-      setUpState(LoginMode.promotion);
+      setUpState(LoginMode.accountSignInOnly);
     }
 
     /// 乗り換えると失われるタスクがある状況を作る

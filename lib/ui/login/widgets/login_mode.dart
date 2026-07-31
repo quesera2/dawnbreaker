@@ -1,6 +1,7 @@
-/// ログイン画面をどの立場で開いたか。
-///
-/// [initial] は未サインインからの入口で、ゲスト利用も選べる。
-/// [promotion] は既にゲストとして使っている人がアカウントを結び付けにくる入口で、
-/// ゲスト導線は出さず、サインイン後は元の画面へ戻る
-enum LoginMode { initial, promotion }
+enum LoginMode {
+  /// アカウントサインイン・ゲスト利用の両方を表示
+  showGuest,
+
+  /// アカウントサインインのみ
+  accountSignInOnly,
+}

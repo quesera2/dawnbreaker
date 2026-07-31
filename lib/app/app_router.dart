@@ -82,7 +82,7 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/login',
         builder: (_, state) =>
-            LoginScreen(mode: state.extra as LoginMode? ?? LoginMode.initial),
+            LoginScreen(mode: state.extra as LoginMode? ?? LoginMode.showGuest),
       ),
       GoRoute(
         path: '/notification-intro',

@@ -222,7 +222,7 @@ class _SignInSheet extends StatelessWidget {
           ),
           // Apple は有料アカウント要件のため一旦ドロップ
           // 既にゲストとして使っている人には、ゲスト利用の選択肢を出さない
-          if (mode == .initial) ...[
+          if (mode == .showGuest) ...[
             const _OrSeparator(),
             // ソーシャルログインを主役にするため、ゲスト利用はここだけ弱いテキストボタンで置く
             TextButton(

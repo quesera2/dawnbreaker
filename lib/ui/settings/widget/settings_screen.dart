@@ -1,17 +1,17 @@
 import 'package:dawnbreaker/app/app_colors.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
-import 'package:dawnbreaker/ui/settings/viewmodel/settings_ui_state.dart';
 import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/login/widgets/login_mode.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
+import 'package:dawnbreaker/ui/settings/viewmodel/settings_ui_state.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_view_model.dart';
 import 'package:dawnbreaker/ui/settings/widget/notification_time_picker.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -209,7 +209,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             color: colorScheme.textMuted,
           ),
         ),
-        onTap: () => context.push('/login', extra: LoginMode.promotion),
+        onTap: () => context.push('/login', extra: LoginMode.accountSignInOnly),
       ),
     ];
   }
