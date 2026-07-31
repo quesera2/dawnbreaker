@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:app_settings/app_settings.dart';
+import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/util/stream_util.dart' show combineLatest3;
@@ -12,6 +13,7 @@ import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_imp
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
+import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
@@ -29,8 +31,12 @@ class SettingsViewModel extends _$SettingsViewModel {
   @override
   SettingsUiState build() {
     _settingsRepository = ref.read(settingsRepositoryProvider);
+    // 昇格するとゲストでなくなる。戻ってきたときにログイン導線が残らないよう追随する
+    ref.listen(currentUserProvider, (_, next) {
+      state = state.copyWith(isGuest: next is Guest);
+    });
     unawaited(_initialize());
-    return const SettingsUiState();
+    return SettingsUiState(isGuest: ref.read(currentUserProvider) is Guest);
   }
 
   Future<void> _initialize() async {
