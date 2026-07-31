@@ -1,16 +1,17 @@
 import 'package:dawnbreaker/app/app_colors.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
-import 'package:dawnbreaker/ui/settings/viewmodel/settings_ui_state.dart';
 import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
+import 'package:dawnbreaker/ui/login/widgets/login_mode.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
+import 'package:dawnbreaker/ui/settings/viewmodel/settings_ui_state.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_view_model.dart';
 import 'package:dawnbreaker/ui/settings/widget/notification_time_picker.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -61,6 +62,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               progressBarAnimationEnabled:
                   viewState.progressBarAnimationEnabled,
             ),
+            if (viewState.isGuest) ...[
+              const SizedBox(height: 24),
+              ..._accountSection(context),
+            ],
             const SizedBox(height: 24),
             ..._infoSection(context, viewState.version),
             if (kDebugMode) ...[
@@ -184,6 +189,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         .byColor => context.l10n.settingsDisplayHomeByColor,
       };
 
+  /// ゲストの昇格の入り口。リンク済みの操作（ログアウト・アカウント削除）は別途用意する
+  List<Widget> _accountSection(BuildContext context) {
+    final colorScheme = context.appColorScheme;
+    return [
+      AppSectionHeader(
+        title: Text(context.l10n.settingsSectionAccount),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+      ),
+      AppListCell(
+        type: .single,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(context.l10n.settingsAccountLogin),
+          subtitle: Text(context.l10n.settingsAccountLoginDescription),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: colorScheme.textMuted,
+          ),
+        ),
+        onTap: () => context.push('/login', extra: LoginMode.accountSignInOnly),
+      ),
+    ];
+  }
+
   List<Widget> _infoSection(BuildContext context, String version) {
     final colorScheme = context.appColorScheme;
     final divider = Divider(height: 1, color: colorScheme.divider);
@@ -296,20 +326,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           ),
         ),
         onTap: () => viewModel.resetColorSettings(),
-      ),
-      divider,
-      AppListCell(
-        type: .middle,
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          title: Text(context.l10n.settingsDebugOpenLogin),
-          trailing: Icon(
-            Icons.arrow_forward_ios,
-            size: 16,
-            color: colorScheme.textMuted,
-          ),
-        ),
-        onTap: () => context.push('/login'),
       ),
       divider,
       AppListCell(

@@ -64,6 +64,16 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   }
 
   @override
+  Future<bool> hasAnyTask() async {
+    try {
+      final snapshot = await _taskDefinitionsRef().limit(1).get();
+      return snapshot.docs.isNotEmpty;
+    } catch (e) {
+      throw TaskLoadException(e.toString());
+    }
+  }
+
+  @override
   Future<TaskHistoryPage> fetchTaskHistory(
     String taskId, {
     TaskHistoryCursor? cursor,

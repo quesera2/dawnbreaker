@@ -806,6 +806,18 @@ abstract class AppLocalizations {
   /// **'プライバシーポリシー'**
   String get loginPrivacyPolicy;
 
+  /// No description provided for @loginSwitchAccountMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'このアカウントは別のユーザーとして登録済みです。サインインすると、ゲストで作成したタスクは失われ、元に戻せません。'**
+  String get loginSwitchAccountMessage;
+
+  /// No description provided for @loginSwitchAccountConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'サインインする'**
+  String get loginSwitchAccountConfirm;
+
   /// No description provided for @notificationIntroTitle.
   ///
   /// In ja, this message translates to:
@@ -992,6 +1004,24 @@ abstract class AppLocalizations {
   /// **'ドラッグハンドルを使って表示順を変更できます。'**
   String get colorLabelSortDescription;
 
+  /// No description provided for @settingsSectionAccount.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウント'**
+  String get settingsSectionAccount;
+
+  /// No description provided for @settingsAccountLogin.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログイン'**
+  String get settingsAccountLogin;
+
+  /// No description provided for @settingsAccountLoginDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'サインインすると、機種変更してもタスクを引き継げます。'**
+  String get settingsAccountLoginDescription;
+
   /// No description provided for @settingsSectionInfo.
   ///
   /// In ja, this message translates to:
@@ -1069,12 +1099,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'カラー設定をリセットしました'**
   String get settingsDebugColorSettingsReset;
-
-  /// No description provided for @settingsDebugOpenLogin.
-  ///
-  /// In ja, this message translates to:
-  /// **'ログイン画面を開く'**
-  String get settingsDebugOpenLogin;
 
   /// No description provided for @settingsDebugOpenNotificationIntro.
   ///

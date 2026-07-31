@@ -1,13 +1,18 @@
 import 'dart:async';
 
-import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_service.dart';
+import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
+import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
+import 'package:dawnbreaker/data/repository/user/sign_in_result.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_ui_state.dart';
+import 'package:dawnbreaker/ui/login/widgets/login_mode.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'login_view_model.g.dart';
@@ -15,7 +20,7 @@ part 'login_view_model.g.dart';
 @riverpod
 class LoginViewModel extends _$LoginViewModel {
   @override
-  LoginUiState build() => const LoginUiState();
+  LoginUiState build({required LoginMode mode}) => const LoginUiState();
 
   Future<void> onClickStartAsGuest() async {
     if (state.isSigningIn) return;
@@ -26,58 +31,150 @@ class LoginViewModel extends _$LoginViewModel {
     } catch (e, s) {
       logger.e('signInAsGuest failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.copyWith(
-        isSigningIn: false,
-        dialogMessage: SignInErrorMessage(primaryHandler: onClickStartAsGuest),
-      );
+      _showSignInError(onClickStartAsGuest);
       return;
     }
     if (!ref.mounted) return;
 
+    await _completeSignIn();
+  }
+
+  /// 初回は素直にサインインし、昇格ではゲストのタスクを保ったまま結び付ける。
+  /// どちらもユーザーから見れば Google のボタンを押した 1 つの操作なので、入口は分けない
+  Future<void> onClickSignInWithGoogle() async {
+    if (state.isSigningIn) return;
+
+    state = state.copyWith(isSigningIn: true);
+    try {
+      final repository = ref.read(userRepositoryProvider);
+      final result = await repository.signInWithGoogle();
+      if (!ref.mounted) return;
+      switch (result) {
+        // ユーザーがサインインを中断しただけ。エラーではないのでダイアログは出さない
+        case SignInCancelled():
+          state = state.copyWith(isSigningIn: false);
+        case SignInSucceeded():
+          await _completeSignIn();
+        case SignInCredentialInUse(:final credential):
+          await _confirmSwitchAccount(credential);
+      }
+    } catch (e, s) {
+      logger.e('signInWithGoogle failed', error: e, stackTrace: s);
+      if (!ref.mounted) return;
+      _showSignInError(onClickSignInWithGoogle);
+      return;
+    }
+  }
+
+  /// 乗り換えるとゲストのタスクは失われる。失うものがあるときだけ了承を求める
+  Future<void> _confirmSwitchAccount(AuthCredential credential) async {
+    if (!await _hasTasksToLose()) {
+      await _switchAccount(credential);
+      return;
+    }
+    if (!ref.mounted) return;
+
+    state = state.copyWith(
+      isSigningIn: false,
+      dialogMessage: SwitchAccountConfirmMessage(
+        primaryHandler: () => unawaited(_switchAccount(credential)),
+      ),
+    );
+  }
+
+  /// 乗り換えで失うタスクがあるか。件数は問わない。
+  ///
+  /// 確かめられなかったときは「ある」とみなす。黙って消してしまうより、
+  /// 消えるものがないときに一度多く確認するほうが害が小さい
+  Future<bool> _hasTasksToLose() async {
+    try {
+      return await ref.read(taskRepositoryProvider).hasAnyTask();
+    } catch (e, s) {
+      logger.e('hasAnyTask failed', error: e, stackTrace: s);
+      return true;
+    }
+  }
+
+  /// 昇格をあきらめて、credential を持っているアカウントへ乗り換える。
+  /// ゲストで作ったタスクはここで見捨てる
+  Future<void> _switchAccount(AuthCredential credential) async {
+    state = state.copyWith(isSigningIn: true);
+
+    // 捨てるアカウント宛の通知がこの端末に届き続けないよう、乗り換える前に送信先から外す
+    await _unregisterToken();
+    if (!ref.mounted) return;
+
+    try {
+      await ref
+          .read(userRepositoryProvider)
+          .signInWithLinkedCredential(credential);
+    } catch (e, s) {
+      logger.e('signInWithLinkedCredential failed', error: e, stackTrace: s);
+      if (!ref.mounted) return;
+      _showSignInError(() => unawaited(_switchAccount(credential)));
+      return;
+    }
+    if (!ref.mounted) return;
+
+    await _completeSignIn();
+  }
+
+  /// サインインしたあとの始末。行き先はモードで決まる
+  Future<void> _completeSignIn() async {
     _updateLastActiveAt();
 
-    final destination = await _resolveDestination();
+    final LoginDestination destination;
+    switch (mode) {
+      case .showGuest:
+        destination = await _resolveDestination();
+      // 通知の誘導は挟まない。ゲストとして使っていた時点で誘導は済んでおり、
+      // ここは設定画面から来た操作なので元の画面へ戻す
+      case .accountSignInOnly:
+        await _registerToken();
+        destination = .back;
+    }
     if (!ref.mounted) return;
+
     state = state.copyWith(
       isSigningIn: false,
       destination: LoginDestinationEvent(destination),
     );
   }
 
-  Future<void> onClickSignInWithGoogle() async {
-    if (state.isSigningIn) return;
-
-    state = state.copyWith(isSigningIn: true);
-    final LoggedIn? user;
-    try {
-      user = await ref.read(userRepositoryProvider).signInWithGoogle();
-    } catch (e, s) {
-      logger.e('signInWithGoogle failed', error: e, stackTrace: s);
-      if (!ref.mounted) return;
-      state = state.copyWith(
-        isSigningIn: false,
-        dialogMessage: SignInErrorMessage(
-          primaryHandler: onClickSignInWithGoogle,
-        ),
-      );
-      return;
-    }
-    if (!ref.mounted) return;
-
-    // ユーザーがサインインを中断しただけ。エラーではないのでダイアログは出さない
-    if (user == null) {
-      state = state.copyWith(isSigningIn: false);
-      return;
-    }
-
-    _updateLastActiveAt();
-
-    final destination = await _resolveDestination();
-    if (!ref.mounted) return;
+  /// サインインの失敗を伝えて、その場で再試行できるようにする
+  void _showSignInError(VoidCallback retry) {
     state = state.copyWith(
       isSigningIn: false,
-      destination: LoginDestinationEvent(destination),
+      dialogMessage: SignInErrorMessage(primaryHandler: retry),
     );
+  }
+
+  /// 通知の送信先をサインイン後のユーザーに付け替える。
+  Future<void> _registerToken() async {
+    try {
+      // 送信先を持つリポジトリは currentUserProvider から uid を受け取る。その更新は
+      // authStateChanges() 経由で一拍遅れるため、読み直してから登録する。
+      // 読み直しは同期で、サインイン済みのユーザーがそのまま返る
+      ref.invalidate(currentUserProvider);
+      final notificationService = await ref.read(
+        fcmNotificationServiceProvider.future,
+      );
+      await notificationService.registerToken();
+    } catch (e, s) {
+      logger.e('registerToken failed', error: e, stackTrace: s);
+    }
+  }
+
+  /// この端末を通知の送信先から外す。失敗しても乗り換えは続ける
+  Future<void> _unregisterToken() async {
+    try {
+      final notificationService = await ref.read(
+        fcmNotificationServiceProvider.future,
+      );
+      await notificationService.unregisterToken();
+    } catch (e, s) {
+      logger.e('unregisterToken failed', error: e, stackTrace: s);
+    }
   }
 
   /// 放置アカウントの回収で使う最終アクティブ日時を進める。

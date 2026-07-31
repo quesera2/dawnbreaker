@@ -1,15 +1,21 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
+import 'package:dawnbreaker/data/model/schedule_unit.dart';
+import 'package:dawnbreaker/data/model/task_color.dart';
+import 'package:dawnbreaker/data/model/task_type.dart';
+import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_ui_state.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_view_model.dart';
+import 'package:dawnbreaker/ui/login/widgets/login_mode.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_notification_service.dart';
+import '../../../helpers/fake_task_repository.dart';
 import '../../../helpers/fake_user_repository.dart';
 import '../../../helpers/fake_user_settings_repository.dart';
 
@@ -19,25 +25,46 @@ void main() {
     late FakeUserRepository fakeUserRepository;
     late FakeNotificationService fakeNotificationService;
     late FakeUserSettingsRepository fakeUserSettingsRepository;
+    late FakeTaskRepository fakeTaskRepository;
+    late LoginViewModelProvider provider;
     late LoginViewModel viewModel;
     late LoginUiState viewState;
 
-    void setUpState() {
-      viewModel = container.read(loginViewModelProvider.notifier);
+    void setUpState([LoginMode mode = LoginMode.showGuest]) {
+      provider = loginViewModelProvider(mode: mode);
+      viewModel = container.read(provider.notifier);
       container.listen(
-        loginViewModelProvider,
+        provider,
         (_, next) => viewState = next,
         fireImmediately: true,
       );
     }
 
+    /// ゲストとして使っている人がアカウントを結び付けにくる状況を作る
+    void setUpPromotion() {
+      fakeUserRepository.emit(const Guest('guest-1'));
+      setUpState(LoginMode.accountSignInOnly);
+    }
+
+    /// 乗り換えると失われるタスクがある状況を作る
+    Future<void> addGuestTask() => fakeTaskRepository.addTask(
+      taskType: TaskType.scheduled,
+      name: '掃除',
+      icon: '🧹',
+      color: TaskColor.none,
+      scheduleValue: 1,
+      scheduleUnit: ScheduleUnit.month,
+    );
+
     setUp(() {
       fakeUserRepository = FakeUserRepository(const NoLogin());
       fakeNotificationService = FakeNotificationService();
       fakeUserSettingsRepository = FakeUserSettingsRepository();
+      fakeTaskRepository = FakeTaskRepository();
       container = ProviderContainer(
         overrides: [
           userRepositoryProvider.overrideWith((_) => fakeUserRepository),
+          taskRepositoryProvider.overrideWith((_) => fakeTaskRepository),
           fcmNotificationServiceProvider.overrideWith(
             (_) => fakeNotificationService,
           ),
@@ -62,6 +89,27 @@ void main() {
 
       test('遷移先が決まっていない', () {
         expect(viewState.destination, isNull);
+      });
+    });
+
+    // サインイン中に押し直されてもアカウントを二重に作らない
+    group('サインイン中に押し直したとき', () {
+      setUp(setUpState);
+
+      test('ゲストのアカウントは1つしか作られない', () async {
+        final signingIn = viewModel.onClickStartAsGuest();
+        await viewModel.onClickStartAsGuest();
+        await signingIn;
+
+        expect(fakeUserRepository.signInAsGuestCount, 1);
+      });
+
+      test('Google のサインインは1度しか始まらない', () async {
+        final signingIn = viewModel.onClickSignInWithGoogle();
+        await viewModel.onClickSignInWithGoogle();
+        await signingIn;
+
+        expect(fakeUserRepository.signInWithGoogleCount, 1);
       });
     });
 
@@ -308,6 +356,201 @@ void main() {
 
           expect(fakeUserRepository.signInWithGoogleCount, 2);
           expect(viewState.destination?.type, LoginDestination.home);
+        });
+      });
+    });
+
+    group('ゲストから昇格する', () {
+      setUp(setUpPromotion);
+
+      group('正常系', () {
+        // 昇格かどうかはリポジトリが今のユーザーを見て決める。ここでは uid が
+        // 変わらないこと（＝ゲストのデータが残ること）を見る
+        test('ゲストのデータを保ったままサインインする', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(fakeUserRepository.signInWithGoogleCount, 1);
+          expect(fakeUserRepository.getUser(), const LoggedIn('guest-1'));
+        });
+
+        // ゲストとして使っていた時点で通知の誘導は済んでいる
+        test('通知の誘導を挟まず元の画面へ戻る', () async {
+          fakeNotificationService.checkPermissionResult = false;
+
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.destination?.type, LoginDestination.back);
+        });
+
+        test('通知の送信先が登録される', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(fakeNotificationService.registerTokenCount, 1);
+        });
+
+        test('最終アクティブ日時が更新される', () async {
+          await viewModel.onClickSignInWithGoogle();
+          await Future<void>.delayed(Duration.zero);
+
+          expect(fakeUserSettingsRepository.updateLastActiveAtCount, 1);
+        });
+
+        test('ボタンが操作可能な状態に戻る', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.isSigningIn, false);
+        });
+
+        // 送信先の登録はサインインの成否とは別の話なので、ここで足を止めない
+        test('通知の送信先を登録できなくても元の画面へ戻る', () async {
+          fakeNotificationService.registerTokenShouldThrow = true;
+
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.destination?.type, LoginDestination.back);
+        });
+      });
+
+      // ユーザーが認証画面を閉じただけ。失敗ではない
+      group('中断したとき', () {
+        setUp(() {
+          fakeUserRepository.cancelSignIn = true;
+        });
+
+        test('エラーは出さない', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.dialogMessage, isNull);
+        });
+
+        test('画面遷移しない', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.destination, isNull);
+        });
+
+        test('ボタンが操作可能な状態に戻る', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.isSigningIn, false);
+        });
+      });
+
+      // 昇格先のアカウントが既にある場合。ゲストのデータは引き継げない
+      group('アカウントが既に使われているとき', () {
+        setUp(() async {
+          fakeUserRepository.credentialAlreadyInUse = true;
+          await addGuestTask();
+        });
+
+        test('データが失われることを確認する', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.dialogMessage, isA<SwitchAccountConfirmMessage>());
+        });
+
+        test('了承するまでサインインしない', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(fakeUserRepository.signInWithLinkedCredentialCount, 0);
+          expect(viewState.destination, isNull);
+        });
+
+        test('了承すると乗り換えて元の画面へ戻る', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          viewState.dialogMessage?.primaryHandler?.call();
+          await pumpEventQueue();
+
+          expect(fakeUserRepository.signInWithLinkedCredentialCount, 1);
+          expect(viewState.destination?.type, LoginDestination.back);
+        });
+
+        // 送信先の付け替えはサインインの成否とは別の話なので、ここで止めない
+        test('通知の送信先を外せなくても乗り換える', () async {
+          fakeNotificationService.unregisterTokenShouldThrow = true;
+
+          await viewModel.onClickSignInWithGoogle();
+
+          viewState.dialogMessage?.primaryHandler?.call();
+          await pumpEventQueue();
+
+          expect(fakeUserRepository.signInWithLinkedCredentialCount, 1);
+          expect(viewState.destination?.type, LoginDestination.back);
+        });
+
+        // 捨てるアカウント宛の通知がこの端末に届き続けないようにする
+        test('通知の送信先が乗り換え先のアカウントに移る', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          viewState.dialogMessage?.primaryHandler?.call();
+          await pumpEventQueue();
+
+          expect(fakeNotificationService.unregisterTokenCount, 1);
+          expect(fakeNotificationService.registerTokenCount, 1);
+        });
+
+        // 失うものがないなら、確認する意味がない
+        test('ゲストのタスクがなければ確認せずに乗り換える', () async {
+          await fakeTaskRepository.deleteAllTasks();
+
+          await viewModel.onClickSignInWithGoogle();
+          await pumpEventQueue();
+
+          expect(viewState.dialogMessage, isNull);
+          expect(fakeUserRepository.signInWithLinkedCredentialCount, 1);
+          expect(viewState.destination?.type, LoginDestination.back);
+        });
+
+        // 黙って消してしまうより、余分に確認するほうが害が小さい
+        test('タスクの有無を確認できなければ確認する', () async {
+          fakeTaskRepository.shouldThrow = true;
+
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.dialogMessage, isA<SwitchAccountConfirmMessage>());
+          expect(fakeUserRepository.signInWithLinkedCredentialCount, 0);
+        });
+
+        test('乗り換えに失敗したらエラーが通知される', () async {
+          await viewModel.onClickSignInWithGoogle();
+          fakeUserRepository.shouldThrow = true;
+
+          viewState.dialogMessage?.primaryHandler?.call();
+          await pumpEventQueue();
+
+          expect(viewState.dialogMessage, isA<SignInErrorMessage>());
+          expect(viewState.destination, isNull);
+          expect(viewState.isSigningIn, false);
+        });
+      });
+
+      group('異常系', () {
+        setUp(() {
+          fakeUserRepository.shouldThrow = true;
+        });
+
+        test('エラーが通知される', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.dialogMessage, isA<SignInErrorMessage>());
+        });
+
+        test('画面遷移しない', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          expect(viewState.destination, isNull);
+        });
+
+        test('その場で再試行できる', () async {
+          await viewModel.onClickSignInWithGoogle();
+          fakeUserRepository.shouldThrow = false;
+
+          viewState.dialogMessage?.primaryHandler?.call();
+          await pumpEventQueue();
+
+          expect(fakeUserRepository.signInWithGoogleCount, 2);
+          expect(viewState.destination?.type, LoginDestination.back);
         });
       });
     });

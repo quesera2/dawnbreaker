@@ -63,4 +63,29 @@ void main() {
       });
     });
   });
+
+  group('unregisterToken', () {
+    test('通知先から外れる', () async {
+      setUpService();
+      await service.unregisterToken();
+      expect(repository.removedTokens, ['test-token']);
+    });
+
+    // 許可されていなくても登録済みのトークンは残っている。
+    // 外さないと、捨てたアカウント宛の通知がこの端末に届き続ける
+    test('通知が許可されていなくても通知先から外れる', () async {
+      setUpService(authorizationStatus: AuthorizationStatus.denied);
+      await service.unregisterToken();
+      expect(repository.removedTokens, ['test-token']);
+    });
+
+    group('トークンを取得できない場合', () {
+      setUp(() => setUpService(token: null));
+
+      test('何もしない', () async {
+        await service.unregisterToken();
+        expect(repository.removedTokens, isEmpty);
+      });
+    });
+  });
 }

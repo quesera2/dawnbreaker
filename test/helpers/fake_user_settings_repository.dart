@@ -4,6 +4,8 @@ import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/user/user_settings_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_settings_repository_exception.dart';
 
+import 'watch_stream.dart';
+
 class FakeUserSettingsRepository implements UserSettingsRepository {
   FakeUserSettingsRepository({
     this.notificationSetting = const NotificationSetting(),
@@ -26,10 +28,8 @@ class FakeUserSettingsRepository implements UserSettingsRepository {
   final _controller = StreamController<NotificationSetting>.broadcast();
 
   @override
-  Stream<NotificationSetting> watchNotificationSetting() async* {
-    yield notificationSetting;
-    yield* _controller.stream;
-  }
+  Stream<NotificationSetting> watchNotificationSetting() =>
+      watchWithCurrent(notificationSetting, _controller.stream);
 
   @override
   Future<NotificationSetting> fetchNotificationSetting() async {

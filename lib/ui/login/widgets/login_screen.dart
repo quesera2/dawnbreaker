@@ -5,6 +5,7 @@ import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_view_model.dart';
+import 'package:dawnbreaker/ui/login/widgets/login_mode.dart';
 import 'package:dawnbreaker/ui/login/widgets/social_sign_in_button.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,9 @@ class _LoginBrandColors {
 }
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, required this.mode});
+
+  final LoginMode mode;
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -36,12 +39,14 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen>
     with MessagesListenMixin {
+  late final LoginViewModelProvider _viewState;
   late final LoginViewModel _viewModel;
 
   @override
   void initState() {
     super.initState();
-    _viewModel = ref.read(loginViewModelProvider.notifier);
+    _viewState = loginViewModelProvider(mode: widget.mode);
+    _viewModel = ref.read(_viewState.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FlutterNativeSplash.remove();
     });
@@ -49,15 +54,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    listenMessages(loginViewModelProvider);
-    final isSigningIn = ref.watch(
-      loginViewModelProvider.select((s) => s.isSigningIn),
-    );
+    listenMessages(_viewState);
+    final isSigningIn = ref.watch(_viewState.select((s) => s.isSigningIn));
 
-    ref.listen(loginViewModelProvider.select((s) => s.destination), (
-      prev,
-      next,
-    ) {
+    ref.listen(_viewState.select((s) => s.destination), (prev, next) {
       if (next == null || prev?.id == next.id) return;
 
       switch (next.type) {
@@ -65,6 +65,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           context.go('/home');
         case .notificationIntro:
           context.go('/notification-intro');
+        case .back:
+          context.pop();
       }
     });
 
@@ -82,7 +84,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         child: Column(
           children: [
             const Expanded(child: SafeArea(bottom: false, child: _Wordmark())),
-            _SignInSheet(isSigningIn: isSigningIn, viewModel: _viewModel),
+            _SignInSheet(
+              mode: widget.mode,
+              isSigningIn: isSigningIn,
+              viewModel: _viewModel,
+            ),
           ],
         ),
       ),
@@ -169,8 +175,13 @@ class _Hairline extends StatelessWidget {
 }
 
 class _SignInSheet extends StatelessWidget {
-  const _SignInSheet({required this.isSigningIn, required this.viewModel});
+  const _SignInSheet({
+    required this.mode,
+    required this.isSigningIn,
+    required this.viewModel,
+  });
 
+  final LoginMode mode;
   final bool isSigningIn;
   final LoginViewModel viewModel;
 
@@ -210,17 +221,20 @@ class _SignInSheet extends StatelessWidget {
             onPressed: isSigningIn ? null : viewModel.onClickSignInWithGoogle,
           ),
           // Apple は有料アカウント要件のため一旦ドロップ
-          const _OrSeparator(),
-          // ソーシャルログインを主役にするため、ゲスト利用はここだけ弱いテキストボタンで置く
-          TextButton(
-            onPressed: isSigningIn ? null : viewModel.onClickStartAsGuest,
-            style: TextButton.styleFrom(
-              foregroundColor: colorScheme.textSubtle,
-              textStyle: AppTextStyle.caption,
-              minimumSize: const Size(double.infinity, 52),
+          // 既にゲストとして使っている人には、ゲスト利用の選択肢を出さない
+          if (mode == .showGuest) ...[
+            const _OrSeparator(),
+            // ソーシャルログインを主役にするため、ゲスト利用はここだけ弱いテキストボタンで置く
+            TextButton(
+              onPressed: isSigningIn ? null : viewModel.onClickStartAsGuest,
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.textSubtle,
+                textStyle: AppTextStyle.caption,
+                minimumSize: const Size(double.infinity, 52),
+              ),
+              child: Text(context.l10n.loginStartAsGuest),
             ),
-            child: Text(context.l10n.loginStartAsGuest),
-          ),
+          ],
           // TODO: 規約とポリシーが用意できていないため空
           _TermsNotice(onClickTerms: () {}, onClickPrivacy: () {}),
         ],

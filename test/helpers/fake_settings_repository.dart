@@ -4,6 +4,8 @@ import 'package:dawnbreaker/data/model/color_setting.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
 
+import 'watch_stream.dart';
+
 class FakeSettingsRepository implements SettingsRepository {
   FakeSettingsRepository({
     HomeDisplayMode initialDisplayMode = HomeDisplayMode.timeline,
@@ -22,10 +24,8 @@ class FakeSettingsRepository implements SettingsRepository {
   final _progressBarAnimationController = StreamController<bool>.broadcast();
 
   @override
-  Stream<HomeDisplayMode> watchHomeDisplayMode() async* {
-    yield displayMode;
-    yield* _displayModeController.stream;
-  }
+  Stream<HomeDisplayMode> watchHomeDisplayMode() =>
+      watchWithCurrent(displayMode, _displayModeController.stream);
 
   @override
   Future<void> setHomeDisplayMode(HomeDisplayMode value) async {
@@ -34,10 +34,8 @@ class FakeSettingsRepository implements SettingsRepository {
   }
 
   @override
-  Stream<List<ColorSetting>> watchColorSettings() async* {
-    yield colorSettings;
-    yield* _colorSettingsController.stream;
-  }
+  Stream<List<ColorSetting>> watchColorSettings() =>
+      watchWithCurrent(colorSettings, _colorSettingsController.stream);
 
   @override
   Future<void> setColorSettings(List<ColorSetting> settings) async {
@@ -46,10 +44,10 @@ class FakeSettingsRepository implements SettingsRepository {
   }
 
   @override
-  Stream<bool> watchProgressBarAnimationEnabled() async* {
-    yield progressBarAnimationEnabled;
-    yield* _progressBarAnimationController.stream;
-  }
+  Stream<bool> watchProgressBarAnimationEnabled() => watchWithCurrent(
+    progressBarAnimationEnabled,
+    _progressBarAnimationController.stream,
+  );
 
   @override
   Future<void> setProgressBarAnimationEnabled(bool value) async {

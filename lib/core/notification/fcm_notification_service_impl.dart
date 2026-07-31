@@ -136,6 +136,13 @@ class FcmNotificationServiceImpl implements NotificationService {
     await _repository.addToken(token);
   }
 
+  @override
+  Future<void> unregisterToken() async {
+    final token = await _messaging.getToken();
+    if (token == null) return;
+    await _repository.removeToken(token);
+  }
+
   Future<void> show(RemoteMessage message) async {
     if (!Platform.isAndroid) return;
 

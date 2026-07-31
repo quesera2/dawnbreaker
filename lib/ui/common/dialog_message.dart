@@ -61,6 +61,13 @@ class SignInErrorMessage extends DialogMessage {
     : super(type: DialogType.error);
 }
 
+/// 昇格しようとしたアカウントが既に使われていたとき、ゲストのタスクを
+/// 捨ててよいか確かめる
+class SwitchAccountConfirmMessage extends DialogMessage {
+  SwitchAccountConfirmMessage({required super.primaryHandler})
+    : super(type: DialogType.destruction);
+}
+
 class NotificationEnableErrorMessage extends DialogMessage {
   NotificationEnableErrorMessage() : super(type: DialogType.error);
 }

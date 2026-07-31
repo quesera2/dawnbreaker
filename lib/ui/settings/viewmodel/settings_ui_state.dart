@@ -16,6 +16,7 @@ abstract class SettingsUiState with _$SettingsUiState implements BaseUiState {
     @Default(false) bool isNotificationUpdating,
     @Default(HomeDisplayMode.timeline) HomeDisplayMode displayMode,
     @Default(true) bool progressBarAnimationEnabled,
+    @Default(false) bool isGuest,
     DialogMessage? dialogMessage,
     SnackBarMessage? snackBarMessage,
   }) = _SettingsUiState;

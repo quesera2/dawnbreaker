@@ -143,7 +143,7 @@ Apple サインインは Sign In with Apple の capability が有料の Apple De
     - Apple ボタンはログイン画面から一旦下ろす。`SocialProvider` は `google` / `apple` の両値を残す
     - <s>ID/Password</s> はサインイン・パスワードリマインドなどの画面が必要になるため廃止
     - ※ ネイティブ設定は CI で検証できないため実機確認が要る
-- [ ] **PR2: 匿名からの昇格**
+- [x] **PR2: 匿名からの昇格**
     - 設定画面のゲスト向け「ログイン」導線を正規化し、昇格モードで `/login` へ遷移する
       （現状はデバッグ項目 `settingsDebugOpenLogin` しかない。ここが昇格の入り口になる）
     - ログイン画面にモード（初回 / 昇格）を足し、昇格で来たときは「または」と「ゲストではじめる」を隠す
@@ -152,8 +152,9 @@ Apple サインインは Sign In with Apple の capability が有料の Apple De
       了承後にサインインし直す
         - 例外オブジェクトが持つ credential を使う
         - サインイン前に `fcmTokens` から自端末のトークンを `arrayRemove` し、サインイン後に新 uid へ `arrayUnion` する
-    - ※ `firebase_auth_mocks` が `linkWithCredential` / `credential-already-in-use` を再現できるか着手直後に確認する。
-      弱ければ2つの実アカウントで手動確認する
+    - ※ `firebase_auth_mocks` は `credential-already-in-use` は仕込めるが、匿名ユーザーの
+      `linkWithCredential` は再現できない（リンク後も匿名のままだと決め打ちして assert する）。
+      昇格が成功する経路だけ `MockUser` を継承して差し替えた。実際に uid が保たれるかは実機確認が要る
 - [ ] **PR3: リンク済みの設定出し分け＋ログアウト/削除スタブ**
     - LoggedIn には「ログアウト / アカウント削除」を、ゲストには「ログイン」を出す（設計方針の表どおり）
     - 昇格（PR2）が入って初めて LoggedIn に到達できるため、このPRは最後に置く

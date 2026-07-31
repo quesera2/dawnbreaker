@@ -1,11 +1,13 @@
 import 'package:app_settings/app_settings.dart';
 import 'package:app_settings/app_settings_platform_interface.dart';
+import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart'
     show NotificationSetting, NotifyDay;
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
+import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
@@ -18,6 +20,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
 import '../../../helpers/fake_settings_repository.dart';
+import '../../../helpers/fake_user_repository.dart';
 import '../../../helpers/fake_user_settings_repository.dart';
 import '../../../helpers/mock_app_settings_platform.dart';
 import '../../../helpers/riverpod_test_helper.dart';
@@ -32,6 +35,7 @@ void main() {
   late FakeSettingsRepository fakeSettingsRepository;
   late FakeNotificationService fakeNotificationService;
   late FakeUserSettingsRepository fakeUserSettingsRepository;
+  late FakeUserRepository fakeUserRepository;
 
   void setUpContainer({
     bool notificationEnabled = true,
@@ -39,6 +43,7 @@ void main() {
     bool permissionResult = true,
     HomeDisplayMode initialDisplayMode = HomeDisplayMode.timeline,
     bool initialProgressBarAnimationEnabled = true,
+    AppUser user = const Guest('guest-1'),
   }) {
     PackageInfo.setMockInitialValues(
       appName: 'dawnbreaker',
@@ -59,8 +64,10 @@ void main() {
       checkPermissionResult: checkPermissionResult,
       permissionResult: permissionResult,
     );
+    fakeUserRepository = FakeUserRepository(user);
     container = ProviderContainer(
       overrides: [
+        userRepositoryProvider.overrideWith((_) => fakeUserRepository),
         settingsRepositoryProvider.overrideWithValue(fakeSettingsRepository),
         onboardingRepositoryProvider.overrideWith(
           (_) => fakeOnboardingRepository,
@@ -81,6 +88,7 @@ void main() {
     bool permissionResult = true,
     HomeDisplayMode initialDisplayMode = HomeDisplayMode.timeline,
     bool initialProgressBarAnimationEnabled = true,
+    AppUser user = const Guest('guest-1'),
   }) async {
     setUpContainer(
       notificationEnabled: notificationEnabled,
@@ -88,6 +96,7 @@ void main() {
       permissionResult: permissionResult,
       initialDisplayMode: initialDisplayMode,
       initialProgressBarAnimationEnabled: initialProgressBarAnimationEnabled,
+      user: user,
     );
     await waitUntil(container, settingsViewModelProvider, (s) => !s.isLoading);
     viewModel = container.read(settingsViewModelProvider.notifier);
@@ -98,9 +107,35 @@ void main() {
     );
   }
 
-  tearDown(() => container.dispose());
+  tearDown(() async {
+    container.dispose();
+    await fakeUserRepository.close();
+  });
 
   group('SettingsViewModel', () {
+    // 昇格の入り口はゲストにだけ出す（リンク済みには別の操作を出す）
+    group('ログイン導線', () {
+      for (final (user, isGuest, description) in [
+        (const Guest('guest-1'), true, 'ゲストには出す'),
+        (const LoggedIn('user-1'), false, 'リンク済みには出さない'),
+      ]) {
+        test(description, () async {
+          await setUpLoaded(user: user);
+
+          expect(viewState.isGuest, isGuest);
+        });
+      }
+
+      test('昇格したら出さなくなる', () async {
+        await setUpLoaded(user: const Guest('guest-1'));
+
+        fakeUserRepository.emit(const LoggedIn('guest-1'));
+        await pumpEventQueue();
+
+        expect(viewState.isGuest, false);
+      });
+    });
+
     group('初期状態', () {
       setUp(() => setUpContainer());
 
@@ -322,10 +357,7 @@ void main() {
         });
 
         group('カラーグループの場合', () {
-          setUp(
-            () =>
-                setUpLoaded(initialDisplayMode: HomeDisplayMode.byColor),
-          );
+          setUp(() => setUpLoaded(initialDisplayMode: HomeDisplayMode.byColor));
 
           test('表示モードがカラーグループである', () {
             expect(viewState.displayMode, HomeDisplayMode.byColor);
