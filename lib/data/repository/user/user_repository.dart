@@ -15,10 +15,6 @@ abstract interface class UserRepository {
   /// Google のサインイン UI を出してログインする
   Future<SignInResult> signInWithGoogle();
 
-  /// Google のサインイン UI を出して、いまの匿名アカウントを昇格させる。
-  /// credential が既に使われていたときは [SignInCredentialInUse] を返すだけで、サインインはしない
-  Future<SignInResult> linkWithGoogle();
-
   /// [SignInCredentialInUse] が持っていた credential でサインインし直す。
   ///
   /// 昇格をあきらめて別のアカウントへ乗り換える操作で、いまの匿名アカウントのデータは捨てる。

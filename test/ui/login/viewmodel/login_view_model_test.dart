@@ -343,11 +343,13 @@ void main() {
       setUp(setUpPromotion);
 
       group('正常系', () {
-        test('ゲストのデータを保ったままアカウントを結び付ける', () async {
+        // 昇格かどうかはリポジトリが今のユーザーを見て決める。ここでは uid が
+        // 変わらないこと（＝ゲストのデータが残ること）を見る
+        test('ゲストのデータを保ったままサインインする', () async {
           await viewModel.onClickSignInWithGoogle();
 
-          expect(fakeUserRepository.linkWithGoogleCount, 1);
-          expect(fakeUserRepository.signInWithGoogleCount, 0);
+          expect(fakeUserRepository.signInWithGoogleCount, 1);
+          expect(fakeUserRepository.getUser(), const LoggedIn('guest-1'));
         });
 
         // ゲストとして使っていた時点で通知の誘導は済んでいる
@@ -513,7 +515,7 @@ void main() {
           viewState.dialogMessage?.primaryHandler?.call();
           await pumpEventQueue();
 
-          expect(fakeUserRepository.linkWithGoogleCount, 2);
+          expect(fakeUserRepository.signInWithGoogleCount, 2);
           expect(viewState.destination?.type, LoginDestination.back);
         });
       });

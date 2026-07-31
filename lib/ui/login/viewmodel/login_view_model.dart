@@ -52,29 +52,24 @@ class LoginViewModel extends _$LoginViewModel {
     if (state.isSigningIn) return;
 
     state = state.copyWith(isSigningIn: true);
-    final SignInResult result;
     try {
       final repository = ref.read(userRepositoryProvider);
-      result = await switch (mode) {
-        .showGuest => repository.signInWithGoogle(),
-        .accountSignInOnly => repository.linkWithGoogle(),
-      };
+      final result = await repository.signInWithGoogle();
+      if (!ref.mounted) return;
+      switch (result) {
+        // ユーザーがサインインを中断しただけ。エラーではないのでダイアログは出さない
+        case SignInCancelled():
+          state = state.copyWith(isSigningIn: false);
+        case SignInSucceeded(:final user):
+          await _completeSignIn(user.id);
+        case SignInCredentialInUse(:final credential):
+          await _confirmSwitchAccount(credential);
+      }
     } catch (e, s) {
       logger.e('signInWithGoogle failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
       _showSignInError(onClickSignInWithGoogle);
       return;
-    }
-    if (!ref.mounted) return;
-
-    switch (result) {
-      // ユーザーがサインインを中断しただけ。エラーではないのでダイアログは出さない
-      case SignInCancelled():
-        state = state.copyWith(isSigningIn: false);
-      case SignInSucceeded(:final user):
-        await _completeSignIn(user.id);
-      case SignInCredentialInUse(:final credential):
-        await _confirmSwitchAccount(credential);
     }
   }
 

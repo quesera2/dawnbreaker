@@ -170,54 +170,54 @@ void main() {
     });
   });
 
-  group('ゲストから昇格する', () {
-    // mock_exceptions の登録先は MockUser の値等価で引かれる。uid を使い回すと
-    // 前のテストで仕込んだ例外が次のテストにも効いてしまうため、テストごとに変える
-    MockFirebaseAuth signedInAsGuest(String uid) => MockFirebaseAuth(
-      signedIn: true,
-      mockUser: MockUser(isAnonymous: true, uid: uid),
-    );
+  group('ゲストのままサインインする', () {
+    MockFirebaseAuth signedInAsGuest({FirebaseAuthException? linkError}) =>
+        MockFirebaseAuth(
+          signedIn: true,
+          mockUser: _LinkableMockUser(uid: 'guest-1', linkError: linkError),
+        );
 
     test('uid を保ったままリンク済みになる', () async {
-      final auth = MockFirebaseAuth(
-        signedIn: true,
-        mockUser: _LinkableMockUser(uid: 'guest-1'),
-      );
-
-      final result = await createRepository(auth).linkWithGoogle();
+      final result = await createRepository(
+        signedInAsGuest(),
+      ).signInWithGoogle();
 
       expect(result, isA<SignInSucceeded>());
       expect((result as SignInSucceeded).user, const LoggedIn('guest-1'));
     });
 
     test('ユーザーが中断したらリンクしない', () async {
-      final auth = signedInAsGuest('guest-cancelled');
       final repository = createRepository(
-        auth,
+        signedInAsGuest(),
         googleCredentialSource: _FakeCredentialSource(),
       );
 
-      expect(await repository.linkWithGoogle(), isA<SignInCancelled>());
+      expect(await repository.signInWithGoogle(), isA<SignInCancelled>());
     });
 
-    test('サインインしていなければ SignInException が伝わる', () async {
-      final repository = createRepository(MockFirebaseAuth());
-
-      await expectLater(
-        repository.linkWithGoogle(),
-        throwsA(isA<SignInException>()),
+    // 匿名でないユーザーをリンクしようとすると provider-already-linked で失敗する
+    test('リンク済みユーザーなら昇格させず、サインインし直す', () async {
+      final auth = MockFirebaseAuth(
+        signedIn: true,
+        mockUser: MockUser(uid: 'user-1'),
       );
+      whenCalling(Invocation.method(#linkWithCredential, [anything]))
+          .on(auth.currentUser!)
+          .thenThrow(FirebaseAuthException(code: 'provider-already-linked'));
+
+      final result = await createRepository(auth).signInWithGoogle();
+
+      expect(result, isA<SignInSucceeded>());
+      expect((result as SignInSucceeded).user, const LoggedIn('user-1'));
     });
 
     test('リンクに失敗したら例外が伝わる', () async {
-      final auth = signedInAsGuest('guest-link-failed');
-      whenCalling(Invocation.method(#linkWithCredential, [anything]))
-          .on(auth.currentUser!)
-          .thenThrow(FirebaseAuthException(code: 'network-error'));
-      final repository = createRepository(auth);
+      final auth = signedInAsGuest(
+        linkError: FirebaseAuthException(code: 'network-error'),
+      );
 
       await expectLater(
-        repository.linkWithGoogle(),
+        createRepository(auth).signInWithGoogle(),
         throwsA(isA<FirebaseAuthException>()),
       );
     });
@@ -229,34 +229,30 @@ void main() {
       late MockFirebaseAuth auth;
 
       setUp(() {
-        // MockFirebaseAuth はサインイン先を mockUser で表す。ここでは credential を
-        // 既に持っているアカウントを置き、乗り換えるとそこに入ることを見る
-        auth = MockFirebaseAuth(
-          signedIn: true,
-          mockUser: MockUser(uid: 'linked-account-user'),
+        auth = signedInAsGuest(
+          linkError: FirebaseAuthException(
+            code: 'credential-already-in-use',
+            credential: linkedCredential,
+          ),
         );
-        whenCalling(Invocation.method(#linkWithCredential, [anything]))
-            .on(auth.currentUser!)
-            .thenThrow(
-              FirebaseAuthException(
-                code: 'credential-already-in-use',
-                credential: linkedCredential,
-              ),
-            );
       });
 
       // ここでサインインするとゲストのデータを黙って捨てることになる
       test('サインインせず、乗り換えに使う credential を返す', () async {
-        final result = await createRepository(auth).linkWithGoogle();
+        final result = await createRepository(auth).signInWithGoogle();
 
         expect(result, isA<SignInCredentialInUse>());
         expect((result as SignInCredentialInUse).credential, linkedCredential);
+        expect(auth.currentUser?.uid, 'guest-1');
       });
 
       test('了承後に乗り換えるとリンク済みユーザーになる', () async {
         final repository = createRepository(auth);
         final result =
-            await repository.linkWithGoogle() as SignInCredentialInUse;
+            await repository.signInWithGoogle() as SignInCredentialInUse;
+        // MockFirebaseAuth はサインイン先を mockUser で表す。
+        // credential を既に持っているアカウントに差し替えて乗り換えを再現する
+        auth.mockUser = MockUser(uid: 'linked-account-user');
 
         expect(
           await repository.signInWithLinkedCredential(result.credential),
@@ -266,16 +262,12 @@ void main() {
 
       // 例外に credential が入っていないと乗り換え先が分からず、無言で失敗してしまう
       test('credential が付いていなければ SignInException が伝わる', () async {
-        final auth = signedInAsGuest('guest-credential-missing');
-        whenCalling(Invocation.method(#linkWithCredential, [anything]))
-            .on(auth.currentUser!)
-            .thenThrow(
-              FirebaseAuthException(code: 'credential-already-in-use'),
-            );
-        final repository = createRepository(auth);
+        final auth = signedInAsGuest(
+          linkError: FirebaseAuthException(code: 'credential-already-in-use'),
+        );
 
         await expectLater(
-          repository.linkWithGoogle(),
+          createRepository(auth).signInWithGoogle(),
           throwsA(isA<SignInException>()),
         );
       });
@@ -290,11 +282,18 @@ void main() {
 // MockUser 自身が可変フィールドを持つため、継承すると @immutable 違反になる
 // ignore: must_be_immutable
 class _LinkableMockUser extends MockUser {
-  _LinkableMockUser({required String super.uid}) : super(isAnonymous: true);
+  _LinkableMockUser({required String super.uid, this.linkError})
+    : super(isAnonymous: true);
+
+  /// リンクが失敗する状況を作る
+  final FirebaseAuthException? linkError;
 
   @override
-  Future<UserCredential> linkWithCredential(AuthCredential credential) async =>
-      _LinkedUserCredential(MockUser(uid: uid));
+  Future<UserCredential> linkWithCredential(AuthCredential credential) async {
+    final error = linkError;
+    if (error != null) throw error;
+    return _LinkedUserCredential(MockUser(uid: uid));
+  }
 }
 
 class _LinkedUserCredential implements UserCredential {

@@ -27,7 +27,6 @@ class FakeUserRepository implements UserRepository {
 
   int signInAsGuestCount = 0;
   int signInWithGoogleCount = 0;
-  int linkWithGoogleCount = 0;
   int signInWithLinkedCredentialCount = 0;
 
   @override
@@ -55,28 +54,18 @@ class FakeUserRepository implements UserRepository {
     signInWithGoogleCount++;
     if (shouldThrow) throw const SignInException('テストエラー');
     if (cancelSignIn) return const SignInCancelled();
-    const user = LoggedIn('signed-in-google-user');
-    // 本物は authStateChanges() 経由でサインイン後のユーザーを流す
-    emit(user);
-    return const SignInSucceeded(user);
-  }
-
-  @override
-  Future<SignInResult> linkWithGoogle() async {
-    linkWithGoogleCount++;
-    if (shouldThrow) throw const SignInException('テストエラー');
-    if (cancelSignIn) return const SignInCancelled();
     if (credentialAlreadyInUse) {
       return SignInCredentialInUse(
         GoogleAuthProvider.credential(idToken: 'linked-id-token'),
       );
     }
 
-    // 昇格では uid が変わらない
-    final user = LoggedIn(switch (_user) {
-      SignedInUser(:final id) => id,
-      NoLogin() => 'promoted-user',
-    });
+    // ゲストのままなら昇格になり、uid は変わらない
+    final user = switch (_user) {
+      SignedInUser(:final id) => LoggedIn(id),
+      NoLogin() => const LoggedIn('signed-in-google-user'),
+    };
+    // 本物は authStateChanges() 経由でサインイン後のユーザーを流す
     emit(user);
     return SignInSucceeded(user);
   }

@@ -43,38 +43,19 @@ class FirebaseUserRepository implements UserRepository {
   }
 
   @override
-  Future<SignInResult> signInWithGoogle() =>
-      _withGoogleCredential(_signInAsLinkedUser);
-
-  @override
-  Future<SignInResult> linkWithGoogle() => _withGoogleCredential(_link);
-
-  /// Google のサインイン UI を出して credential を渡す。
-  /// 中断はサインインでも昇格でも同じ扱いなので、ここでまとめて受ける
-  Future<SignInResult> _withGoogleCredential(
-    Future<SignInResult> Function(AuthCredential credential) signIn,
-  ) async {
+  Future<SignInResult> signInWithGoogle() async {
     final credential = await _googleCredentialSource.getCredential();
     if (credential == null) return const SignInCancelled();
-    return signIn(credential);
-  }
-
-  Future<SignInResult> _signInAsLinkedUser(AuthCredential credential) async =>
-      SignInSucceeded(await _signInWithCredential(credential));
-
-  /// Google / Apple などプロバイダに依らず credential を匿名アカウントに結び付ける。
-  ///
-  /// 既に使われている credential だったときは、ここではサインインまで進めない。
-  /// 進めるとゲストのデータを黙って捨てることになるため、判断は呼び出し元に返す
-  Future<SignInResult> _link(AuthCredential credential) async {
-    final currentUser = _auth.currentUser;
-    if (currentUser == null) {
-      throw const SignInException('cannot link a credential without a session');
-    }
-
-    final UserCredential result;
     try {
-      result = await currentUser.linkWithCredential(credential);
+      final currentUser = _auth.currentUser;
+      final LoggedIn user;
+      if (currentUser != null && currentUser.isAnonymous) {
+        // ゲストのまま押されたときは昇格になる。uid もデータもそのまま残る
+        user = await _linkCredential(currentUser, credential);
+      } else {
+        user = await _signInWithCredential(credential);
+      }
+      return SignInSucceeded(user);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'credential-already-in-use') {
         // Apple は nonce の都合で元の credential を再利用できないため、
@@ -90,12 +71,19 @@ class FirebaseUserRepository implements UserRepository {
         rethrow;
       }
     }
+  }
 
-    final user = result.user;
-    if (user == null) {
+  /// 匿名アカウントに credential を結び付ける。
+  ///
+  /// 既に使われている credential だったときは `credential-already-in-use` が飛ぶ。
+  /// ここではサインインまで進めない。進めるとゲストのデータを黙って捨てることになる
+  Future<LoggedIn> _linkCredential(User user, AuthCredential credential) async {
+    final result = await user.linkWithCredential(credential);
+    final linkedUser = result.user;
+    if (linkedUser == null) {
       throw const SignInException('link succeeded but returned no user');
     }
-    return SignInSucceeded(LoggedIn(user.uid));
+    return LoggedIn(linkedUser.uid);
   }
 
   @override
