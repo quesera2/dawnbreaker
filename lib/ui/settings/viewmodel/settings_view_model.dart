@@ -13,6 +13,7 @@ import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
+import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
@@ -160,9 +161,46 @@ class SettingsViewModel extends _$SettingsViewModel {
     await _settingsRepository.setProgressBarAnimationEnabled(value);
   }
 
-  // TODO: Phase10 で実装する。トークンを外す → signOut → ログイン画面へ遷移する
-  void signOut() {
-    logger.w('sign out is not implemented yet');
+  /// ログアウトの前半。通知の後始末をしてからログイン画面へ送る。
+  ///
+  /// サインアウト自体は画面が切り替わってから [completeSignOut] で行う。
+  /// ホーム画面が残ったまま NoLogin にすると、タスクの読み込みが例外になる
+  Future<void> signOut() async {
+    if (state.isSigningOut) return;
+    state = state.copyWith(isSigningOut: true);
+
+    await _discardToken();
+    if (!ref.mounted) return;
+
+    state = state.copyWith(
+      isSigningOut: false,
+      destination: SettingsDestinationEvent(.login),
+    );
+  }
+
+  /// ログアウトの後半。ログイン画面へ切り替わったあとに呼ぶ
+  Future<void> completeSignOut() async {
+    try {
+      await ref.read(userRepositoryProvider).signOut();
+    } catch (e, s) {
+      logger.e('signOut failed', error: e, stackTrace: s);
+    }
+  }
+
+  /// この端末を送信先から外し、トークンごと捨てる。
+  ///
+  /// 失敗してもログアウトは続ける。ここで止めるとログアウトできなくなるほうが困る。
+  /// 外し損ねたトークンは、送信側が無効なトークンとして扱う
+  Future<void> _discardToken() async {
+    try {
+      final notificationService = await ref.read(
+        fcmNotificationServiceProvider.future,
+      );
+      await notificationService.unregisterToken();
+      await notificationService.deleteToken();
+    } catch (e, s) {
+      logger.e('discard token failed', error: e, stackTrace: s);
+    }
   }
 
   // TODO: Phase10 で実装する。データとアカウントを消し、チュートリアルの最初へ戻す

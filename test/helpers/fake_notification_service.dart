@@ -14,6 +14,7 @@ class FakeNotificationService implements NotificationService {
   bool requestPermissionCalled = false;
   int registerTokenCount = 0;
   int unregisterTokenCount = 0;
+  int deleteTokenCount = 0;
 
   /// 通知の状態を問い合わせられない状況を作る
   bool checkPermissionShouldThrow = false;
@@ -45,6 +46,11 @@ class FakeNotificationService implements NotificationService {
     registerTokenCount++;
     if (registerTokenShouldThrow) throw Exception('テストエラー');
     if (registerTokenNeverCompletes) await Completer<void>().future;
+  }
+
+  @override
+  Future<void> deleteToken() async {
+    deleteTokenCount++;
   }
 
   @override

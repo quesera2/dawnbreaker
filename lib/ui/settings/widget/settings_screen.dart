@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
@@ -38,6 +40,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   Widget build(BuildContext context) {
     listenMessages(settingsViewModelProvider);
     final viewState = ref.watch(settingsViewModelProvider);
+
+    ref.listen(settingsViewModelProvider.select((s) => s.destination), (
+      prev,
+      next,
+    ) {
+      if (next == null || prev?.id == next.id) return;
+
+      switch (next.type) {
+        case .login:
+          context.go('/login');
+          // 画面が入れ替わってからサインアウトする。ホーム画面が残ったまま
+          // NoLogin にすると、タスクの読み込みが例外になる
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            unawaited(_viewModel.completeSignOut());
+          });
+      }
+    });
 
     if (viewState.isLoading) {
       return const Scaffold();
@@ -240,7 +259,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             color: colorScheme.textMuted,
           ),
         ),
-        onTap: () => _viewModel.signOut(),
+        onTap: () => unawaited(_viewModel.signOut()),
       ),
       divider,
       AppListCell(

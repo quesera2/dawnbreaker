@@ -28,6 +28,7 @@ class FakeUserRepository implements UserRepository {
   int signInAsGuestCount = 0;
   int signInWithGoogleCount = 0;
   int signInWithLinkedCredentialCount = 0;
+  int signOutCount = 0;
 
   @override
   AppUser getUser() => _user;
@@ -47,6 +48,13 @@ class FakeUserRepository implements UserRepository {
     // 本物は authStateChanges() 経由でサインイン後のユーザーを流す
     emit(user);
     return user;
+  }
+
+  @override
+  Future<void> signOut() async {
+    signOutCount++;
+    if (shouldThrow) throw const SignInException('テストエラー');
+    emit(const NoLogin());
   }
 
   @override
