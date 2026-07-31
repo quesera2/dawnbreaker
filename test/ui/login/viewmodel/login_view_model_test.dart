@@ -92,6 +92,27 @@ void main() {
       });
     });
 
+    // サインイン中に押し直されてもアカウントを二重に作らない
+    group('サインイン中に押し直したとき', () {
+      setUp(setUpState);
+
+      test('ゲストのアカウントは1つしか作られない', () async {
+        final signingIn = viewModel.onClickStartAsGuest();
+        await viewModel.onClickStartAsGuest();
+        await signingIn;
+
+        expect(fakeUserRepository.signInAsGuestCount, 1);
+      });
+
+      test('Google のサインインは1度しか始まらない', () async {
+        final signingIn = viewModel.onClickSignInWithGoogle();
+        await viewModel.onClickSignInWithGoogle();
+        await signingIn;
+
+        expect(fakeUserRepository.signInWithGoogleCount, 1);
+      });
+    });
+
     group('ゲストではじめる', () {
       setUp(setUpState);
 
@@ -436,6 +457,19 @@ void main() {
         });
 
         test('了承すると乗り換えて元の画面へ戻る', () async {
+          await viewModel.onClickSignInWithGoogle();
+
+          viewState.dialogMessage?.primaryHandler?.call();
+          await pumpEventQueue();
+
+          expect(fakeUserRepository.signInWithLinkedCredentialCount, 1);
+          expect(viewState.destination?.type, LoginDestination.back);
+        });
+
+        // 送信先の付け替えはサインインの成否とは別の話なので、ここで止めない
+        test('通知の送信先を外せなくても乗り換える', () async {
+          fakeNotificationService.unregisterTokenShouldThrow = true;
+
           await viewModel.onClickSignInWithGoogle();
 
           viewState.dialogMessage?.primaryHandler?.call();
