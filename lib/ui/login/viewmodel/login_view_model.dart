@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_service.dart';
@@ -20,11 +19,6 @@ part 'login_view_model.g.dart';
 
 @riverpod
 class LoginViewModel extends _$LoginViewModel {
-  /// 乗り換え後のユーザーが `currentUserProvider` に反映されるのを待つ上限。
-  ///
-  /// 待つのは通知の送信先を決めるためだけなので、届かなくてもサインインは成立している
-  static const _userUpdateTimeout = Duration(seconds: 5);
-
   @override
   LoginUiState build({required LoginMode mode}) => const LoginUiState();
 
@@ -32,9 +26,8 @@ class LoginViewModel extends _$LoginViewModel {
     if (state.isSigningIn) return;
 
     state = state.copyWith(isSigningIn: true);
-    final Guest user;
     try {
-      user = await ref.read(userRepositoryProvider).signInAsGuest();
+      await ref.read(userRepositoryProvider).signInAsGuest();
     } catch (e, s) {
       logger.e('signInAsGuest failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -43,7 +36,7 @@ class LoginViewModel extends _$LoginViewModel {
     }
     if (!ref.mounted) return;
 
-    await _completeSignIn(user.id);
+    await _completeSignIn();
   }
 
   /// 初回は素直にサインインし、昇格ではゲストのタスクを保ったまま結び付ける。
@@ -60,8 +53,8 @@ class LoginViewModel extends _$LoginViewModel {
         // ユーザーがサインインを中断しただけ。エラーではないのでダイアログは出さない
         case SignInCancelled():
           state = state.copyWith(isSigningIn: false);
-        case SignInSucceeded(:final user):
-          await _completeSignIn(user.id);
+        case SignInSucceeded():
+          await _completeSignIn();
         case SignInCredentialInUse(:final credential):
           await _confirmSwitchAccount(credential);
       }
@@ -111,9 +104,8 @@ class LoginViewModel extends _$LoginViewModel {
     await _unregisterToken();
     if (!ref.mounted) return;
 
-    final LoggedIn user;
     try {
-      user = await ref
+      await ref
           .read(userRepositoryProvider)
           .signInWithLinkedCredential(credential);
     } catch (e, s) {
@@ -124,11 +116,11 @@ class LoginViewModel extends _$LoginViewModel {
     }
     if (!ref.mounted) return;
 
-    await _completeSignIn(user.id);
+    await _completeSignIn();
   }
 
   /// サインインしたあとの始末。行き先はモードで決まる
-  Future<void> _completeSignIn(String userId) async {
+  Future<void> _completeSignIn() async {
     _updateLastActiveAt();
 
     final LoginDestination destination;
@@ -138,7 +130,7 @@ class LoginViewModel extends _$LoginViewModel {
       // 通知の誘導は挟まない。ゲストとして使っていた時点で誘導は済んでおり、
       // ここは設定画面から来た操作なので元の画面へ戻す
       case .accountSignInOnly:
-        await _registerToken(userId);
+        await _registerToken();
         destination = .back;
     }
     if (!ref.mounted) return;
@@ -158,12 +150,12 @@ class LoginViewModel extends _$LoginViewModel {
   }
 
   /// 通知の送信先をサインイン後のユーザーに付け替える。
-  ///
-  /// 失敗しても進める。送信先の登録はサインインの成否とは別の話で、ここで足を止めると
-  /// サインインは済んでいるのにアプリが使えなくなる
-  Future<void> _registerToken(String userId) async {
+  Future<void> _registerToken() async {
     try {
-      await _waitForCurrentUser(userId);
+      // 送信先を持つリポジトリは currentUserProvider から uid を受け取る。その更新は
+      // authStateChanges() 経由で一拍遅れるため、読み直してから登録する。
+      // 読み直しは同期で、サインイン済みのユーザーがそのまま返る
+      ref.invalidate(currentUserProvider);
       final notificationService = await ref.read(
         fcmNotificationServiceProvider.future,
       );
@@ -171,25 +163,6 @@ class LoginViewModel extends _$LoginViewModel {
     } catch (e, s) {
       logger.e('registerToken failed', error: e, stackTrace: s);
     }
-  }
-
-  /// `currentUserProvider` がサインイン後のユーザーになるまで待つ。
-  ///
-  /// 通知の送信先を持つリポジトリはこのプロバイダから uid を受け取るが、その更新は
-  /// `authStateChanges()` 経由で一拍遅れる。待たずに書くと乗り換え前の uid へ
-  /// トークンを書き戻してしまう
-  Future<void> _waitForCurrentUser(String userId) {
-    bool hasArrived(AppUser user) => user is SignedInUser && user.id == userId;
-
-    if (hasArrived(ref.read(currentUserProvider))) return Future.value();
-
-    final completer = Completer<void>();
-    final subscription = ref.listen(currentUserProvider, (_, next) {
-      if (hasArrived(next) && !completer.isCompleted) completer.complete();
-    });
-    return completer.future
-        .timeout(_userUpdateTimeout)
-        .whenComplete(subscription.close);
   }
 
   /// この端末を通知の送信先から外す。失敗しても乗り換えは続ける
