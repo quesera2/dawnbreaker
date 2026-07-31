@@ -1,7 +1,7 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/repository/user/credential_source.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
-import 'package:dawnbreaker/data/repository/user/link_result.dart';
+import 'package:dawnbreaker/data/repository/user/sign_in_result.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
@@ -126,17 +126,20 @@ void main() {
       final auth = MockFirebaseAuth(mockUser: MockUser(uid: 'user-1'));
       final repository = createRepository(auth);
 
-      expect(await repository.signInWithGoogle(), const LoggedIn('user-1'));
+      final result = await repository.signInWithGoogle();
+
+      expect(result, isA<SignInSucceeded>());
+      expect((result as SignInSucceeded).user, const LoggedIn('user-1'));
     });
 
-    test('ユーザーが中断したら null を返し、サインインしない', () async {
+    test('ユーザーが中断したらサインインしない', () async {
       final auth = MockFirebaseAuth();
       final repository = createRepository(
         auth,
         googleCredentialSource: _FakeCredentialSource(),
       );
 
-      expect(await repository.signInWithGoogle(), isNull);
+      expect(await repository.signInWithGoogle(), isA<SignInCancelled>());
       expect(auth.currentUser, isNull);
     });
 
@@ -183,8 +186,8 @@ void main() {
 
       final result = await createRepository(auth).linkWithGoogle();
 
-      expect(result, isA<LinkSucceeded>());
-      expect((result as LinkSucceeded).user, const LoggedIn('guest-1'));
+      expect(result, isA<SignInSucceeded>());
+      expect((result as SignInSucceeded).user, const LoggedIn('guest-1'));
     });
 
     test('ユーザーが中断したらリンクしない', () async {
@@ -194,7 +197,7 @@ void main() {
         googleCredentialSource: _FakeCredentialSource(),
       );
 
-      expect(await repository.linkWithGoogle(), isA<LinkCancelled>());
+      expect(await repository.linkWithGoogle(), isA<SignInCancelled>());
     });
 
     test('サインインしていなければ SignInException が伝わる', () async {
@@ -246,13 +249,14 @@ void main() {
       test('サインインせず、乗り換えに使う credential を返す', () async {
         final result = await createRepository(auth).linkWithGoogle();
 
-        expect(result, isA<LinkCredentialInUse>());
-        expect((result as LinkCredentialInUse).credential, linkedCredential);
+        expect(result, isA<SignInCredentialInUse>());
+        expect((result as SignInCredentialInUse).credential, linkedCredential);
       });
 
       test('了承後に乗り換えるとリンク済みユーザーになる', () async {
         final repository = createRepository(auth);
-        final result = await repository.linkWithGoogle() as LinkCredentialInUse;
+        final result =
+            await repository.linkWithGoogle() as SignInCredentialInUse;
 
         expect(
           await repository.signInWithLinkedCredential(result.credential),

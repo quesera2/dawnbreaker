@@ -1,7 +1,7 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/repository/user/credential_source.dart';
 import 'package:dawnbreaker/data/repository/user/google_credential_source.dart';
-import 'package:dawnbreaker/data/repository/user/link_result.dart';
+import 'package:dawnbreaker/data/repository/user/sign_in_result.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -43,24 +43,30 @@ class FirebaseUserRepository implements UserRepository {
   }
 
   @override
-  Future<LoggedIn?> signInWithGoogle() async {
-    final credential = await _googleCredentialSource.getCredential();
-    if (credential == null) return null;
-    return _signInWithCredential(credential);
-  }
+  Future<SignInResult> signInWithGoogle() =>
+      _withGoogleCredential(_signInAsLinkedUser);
 
   @override
-  Future<LinkResult> linkWithGoogle() async {
+  Future<SignInResult> linkWithGoogle() => _withGoogleCredential(_link);
+
+  /// Google のサインイン UI を出して credential を渡す。
+  /// 中断はサインインでも昇格でも同じ扱いなので、ここでまとめて受ける
+  Future<SignInResult> _withGoogleCredential(
+    Future<SignInResult> Function(AuthCredential credential) signIn,
+  ) async {
     final credential = await _googleCredentialSource.getCredential();
-    if (credential == null) return const LinkCancelled();
-    return _link(credential);
+    if (credential == null) return const SignInCancelled();
+    return signIn(credential);
   }
+
+  Future<SignInResult> _signInAsLinkedUser(AuthCredential credential) async =>
+      SignInSucceeded(await _signInWithCredential(credential));
 
   /// Google / Apple などプロバイダに依らず credential を匿名アカウントに結び付ける。
   ///
   /// 既に使われている credential だったときは、ここではサインインまで進めない。
   /// 進めるとゲストのデータを黙って捨てることになるため、判断は呼び出し元に返す
-  Future<LinkResult> _link(AuthCredential credential) async {
+  Future<SignInResult> _link(AuthCredential credential) async {
     final currentUser = _auth.currentUser;
     if (currentUser == null) {
       throw const SignInException('cannot link a credential without a session');
@@ -79,7 +85,7 @@ class FirebaseUserRepository implements UserRepository {
             'credential-already-in-use came without a credential',
           );
         }
-        return LinkCredentialInUse(linkedCredential);
+        return SignInCredentialInUse(linkedCredential);
       } else {
         rethrow;
       }
@@ -89,7 +95,7 @@ class FirebaseUserRepository implements UserRepository {
     if (user == null) {
       throw const SignInException('link succeeded but returned no user');
     }
-    return LinkSucceeded(LoggedIn(user.uid));
+    return SignInSucceeded(LoggedIn(user.uid));
   }
 
   @override

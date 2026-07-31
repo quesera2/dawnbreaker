@@ -8,11 +8,12 @@ import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
-import 'package:dawnbreaker/data/repository/user/link_result.dart';
+import 'package:dawnbreaker/data/repository/user/sign_in_result.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_ui_state.dart';
 import 'package:dawnbreaker/ui/login/widgets/login_mode.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'login_view_model.g.dart';
@@ -31,98 +32,48 @@ class LoginViewModel extends _$LoginViewModel {
     if (state.isSigningIn) return;
 
     state = state.copyWith(isSigningIn: true);
+    final Guest user;
     try {
-      await ref.read(userRepositoryProvider).signInAsGuest();
+      user = await ref.read(userRepositoryProvider).signInAsGuest();
     } catch (e, s) {
       logger.e('signInAsGuest failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.copyWith(
-        isSigningIn: false,
-        dialogMessage: SignInErrorMessage(primaryHandler: onClickStartAsGuest),
-      );
+      _showSignInError(onClickStartAsGuest);
       return;
     }
     if (!ref.mounted) return;
 
-    _updateLastActiveAt();
-
-    final destination = await _resolveDestination();
-    if (!ref.mounted) return;
-    state = state.copyWith(
-      isSigningIn: false,
-      destination: LoginDestinationEvent(destination),
-    );
+    await _completeSignIn(user.id);
   }
 
-  Future<void> onClickSignInWithGoogle() => switch (mode) {
-    .showGuest => _signInWithGoogle(),
-    .accountSignInOnly => _linkWithGoogle(),
-  };
-
-  Future<void> _signInWithGoogle() async {
+  /// 初回は素直にサインインし、昇格ではゲストのタスクを保ったまま結び付ける。
+  /// どちらもユーザーから見れば Google のボタンを押した 1 つの操作なので、入口は分けない
+  Future<void> onClickSignInWithGoogle() async {
     if (state.isSigningIn) return;
 
     state = state.copyWith(isSigningIn: true);
-    final LoggedIn? user;
+    final SignInResult result;
     try {
-      user = await ref.read(userRepositoryProvider).signInWithGoogle();
+      final repository = ref.read(userRepositoryProvider);
+      result = await switch (mode) {
+        .showGuest => repository.signInWithGoogle(),
+        .accountSignInOnly => repository.linkWithGoogle(),
+      };
     } catch (e, s) {
       logger.e('signInWithGoogle failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.copyWith(
-        isSigningIn: false,
-        dialogMessage: SignInErrorMessage(
-          primaryHandler: onClickSignInWithGoogle,
-        ),
-      );
-      return;
-    }
-    if (!ref.mounted) return;
-
-    // ユーザーがサインインを中断しただけ。エラーではないのでダイアログは出さない
-    if (user == null) {
-      state = state.copyWith(isSigningIn: false);
-      return;
-    }
-
-    _updateLastActiveAt();
-
-    final destination = await _resolveDestination();
-    if (!ref.mounted) return;
-    state = state.copyWith(
-      isSigningIn: false,
-      destination: LoginDestinationEvent(destination),
-    );
-  }
-
-  /// ゲストで作ったタスクを保ったままアカウントを結び付ける
-  Future<void> _linkWithGoogle() async {
-    if (state.isSigningIn) return;
-
-    state = state.copyWith(isSigningIn: true);
-    final LinkResult result;
-    try {
-      result = await ref.read(userRepositoryProvider).linkWithGoogle();
-    } catch (e, s) {
-      logger.e('linkWithGoogle failed', error: e, stackTrace: s);
-      if (!ref.mounted) return;
-      state = state.copyWith(
-        isSigningIn: false,
-        dialogMessage: SignInErrorMessage(
-          primaryHandler: onClickSignInWithGoogle,
-        ),
-      );
+      _showSignInError(onClickSignInWithGoogle);
       return;
     }
     if (!ref.mounted) return;
 
     switch (result) {
       // ユーザーがサインインを中断しただけ。エラーではないのでダイアログは出さない
-      case LinkCancelled():
+      case SignInCancelled():
         state = state.copyWith(isSigningIn: false);
-      case LinkSucceeded(:final user):
+      case SignInSucceeded(:final user):
         await _completeSignIn(user.id);
-      case LinkCredentialInUse(:final credential):
+      case SignInCredentialInUse(:final credential):
         await _confirmSwitchAccount(credential);
     }
   }
@@ -173,12 +124,7 @@ class LoginViewModel extends _$LoginViewModel {
     } catch (e, s) {
       logger.e('signInWithLinkedCredential failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.copyWith(
-        isSigningIn: false,
-        dialogMessage: SignInErrorMessage(
-          primaryHandler: () => unawaited(_switchAccount(credential)),
-        ),
-      );
+      _showSignInError(() => unawaited(_switchAccount(credential)));
       return;
     }
     if (!ref.mounted) return;
@@ -186,19 +132,33 @@ class LoginViewModel extends _$LoginViewModel {
     await _completeSignIn(user.id);
   }
 
-  /// 昇格・乗り換えのあと始末。
-  ///
-  /// 通知の誘導は挟まない。ゲストとして使っていた時点で誘導は済んでおり、
-  /// ここは設定画面から来た操作なので元の画面へ戻す
+  /// サインインしたあとの始末。行き先はモードで決まる
   Future<void> _completeSignIn(String userId) async {
-    await _registerToken(userId);
-    if (!ref.mounted) return;
-
     _updateLastActiveAt();
+
+    final LoginDestination destination;
+    switch (mode) {
+      case .showGuest:
+        destination = await _resolveDestination();
+      // 通知の誘導は挟まない。ゲストとして使っていた時点で誘導は済んでおり、
+      // ここは設定画面から来た操作なので元の画面へ戻す
+      case .accountSignInOnly:
+        await _registerToken(userId);
+        destination = .back;
+    }
+    if (!ref.mounted) return;
 
     state = state.copyWith(
       isSigningIn: false,
-      destination: LoginDestinationEvent(.back),
+      destination: LoginDestinationEvent(destination),
+    );
+  }
+
+  /// サインインの失敗を伝えて、その場で再試行できるようにする
+  void _showSignInError(VoidCallback retry) {
+    state = state.copyWith(
+      isSigningIn: false,
+      dialogMessage: SignInErrorMessage(primaryHandler: retry),
     );
   }
 

@@ -1,5 +1,5 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
-import 'package:dawnbreaker/data/repository/user/link_result.dart';
+import 'package:dawnbreaker/data/repository/user/sign_in_result.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 abstract interface class UserRepository {
@@ -12,14 +12,14 @@ abstract interface class UserRepository {
   /// 「ゲストではじめる」を押したときにだけ呼ぶ
   Future<Guest> signInAsGuest();
 
-  /// Google のサインイン UI を出してログインする。ユーザーが中断したら `null` を返す
-  Future<LoggedIn?> signInWithGoogle();
+  /// Google のサインイン UI を出してログインする
+  Future<SignInResult> signInWithGoogle();
 
   /// Google のサインイン UI を出して、いまの匿名アカウントを昇格させる。
-  /// credential が既に使われていたときは [LinkCredentialInUse] を返すだけで、サインインはしない
-  Future<LinkResult> linkWithGoogle();
+  /// credential が既に使われていたときは [SignInCredentialInUse] を返すだけで、サインインはしない
+  Future<SignInResult> linkWithGoogle();
 
-  /// [LinkCredentialInUse] が持っていた credential でサインインし直す。
+  /// [SignInCredentialInUse] が持っていた credential でサインインし直す。
   ///
   /// 昇格をあきらめて別のアカウントへ乗り換える操作で、いまの匿名アカウントのデータは捨てる。
   /// 了承を得たあとにだけ呼ぶ

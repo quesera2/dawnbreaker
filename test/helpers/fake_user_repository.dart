@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:dawnbreaker/core/auth/app_user.dart';
-import 'package:dawnbreaker/data/repository/user/link_result.dart';
+import 'package:dawnbreaker/data/repository/user/sign_in_result.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -51,23 +51,23 @@ class FakeUserRepository implements UserRepository {
   }
 
   @override
-  Future<LoggedIn?> signInWithGoogle() async {
+  Future<SignInResult> signInWithGoogle() async {
     signInWithGoogleCount++;
     if (shouldThrow) throw const SignInException('テストエラー');
-    if (cancelSignIn) return null;
+    if (cancelSignIn) return const SignInCancelled();
     const user = LoggedIn('signed-in-google-user');
     // 本物は authStateChanges() 経由でサインイン後のユーザーを流す
     emit(user);
-    return user;
+    return const SignInSucceeded(user);
   }
 
   @override
-  Future<LinkResult> linkWithGoogle() async {
+  Future<SignInResult> linkWithGoogle() async {
     linkWithGoogleCount++;
     if (shouldThrow) throw const SignInException('テストエラー');
-    if (cancelSignIn) return const LinkCancelled();
+    if (cancelSignIn) return const SignInCancelled();
     if (credentialAlreadyInUse) {
-      return LinkCredentialInUse(
+      return SignInCredentialInUse(
         GoogleAuthProvider.credential(idToken: 'linked-id-token'),
       );
     }
@@ -78,7 +78,7 @@ class FakeUserRepository implements UserRepository {
       NoLogin() => 'promoted-user',
     });
     emit(user);
-    return LinkSucceeded(user);
+    return SignInSucceeded(user);
   }
 
   @override
