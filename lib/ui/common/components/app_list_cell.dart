@@ -1,11 +1,14 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
+import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
-enum AppListCellType {
+enum AppListCellVariant { normal, destruction }
+
+enum AppListCellStyle {
   top,
   middle,
   bottom,
@@ -44,24 +47,28 @@ enum AppListCellType {
 class AppListCell extends StatelessWidget {
   const AppListCell({
     super.key,
-    required this.type,
+    required this.style,
     required this.child,
+    this.variant = .normal,
     this.onTap,
   });
 
-  final AppListCellType type;
+  final AppListCellStyle style;
   final Widget child;
+  final AppListCellVariant variant;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColorScheme;
-    final borderRadius = type.borderRadius(const Radius.circular(AppRadius.lg));
+    final borderRadius = style.borderRadius(
+      const Radius.circular(AppRadius.lg),
+    );
 
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 48),
       child: DecoratedBox(
-        decoration: type.boxDecoration(
+        decoration: style.boxDecoration(
           backgroundColor: colors.surface,
           borderColor: colors.border,
           borderRadius: borderRadius,
@@ -72,11 +79,31 @@ class AppListCell extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: onTap,
-              child: Align(alignment: Alignment.centerLeft, child: child),
+              child: _applyVariant(
+                context,
+                Align(alignment: Alignment.centerLeft, child: child),
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  /// 取り返しのつかない操作は本文の見た目で伝える。
+  ///
+  /// `ListTile` は周囲の `DefaultTextStyle` を見ずに `ListTileTheme` から
+  /// スタイルを解決するため、素の `Text` を置いた場合と両方に効かせる
+  Widget _applyVariant(BuildContext context, Widget content) {
+    if (variant == .normal) return content;
+
+    final style = AppTextStyle.body.copyWith(
+      color: context.appColorScheme.danger,
+      fontWeight: FontWeight.bold,
+    );
+    return ListTileTheme.merge(
+      titleTextStyle: style,
+      child: DefaultTextStyle.merge(style: style, child: content),
     );
   }
 
@@ -103,13 +130,28 @@ final class AppListCellShowCase extends PreviewShowCase {
   @override
   Widget buildPreview(BuildContext context) {
     final c = context.appColorScheme;
-    Widget cell(AppListCellType type, String label) => AppListCell(
-      type: type,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Text(label, style: TextStyle(color: c.text)),
-      ),
-    );
+    Widget cell(
+      AppListCellStyle type,
+      String label, {
+      AppListCellVariant variant = .normal,
+    }) {
+      // destruction は AppListCell が本文のスタイルを与えるため、ここでは指定しない
+      final TextStyle? style;
+      if (variant == .destruction) {
+        style = null;
+      } else {
+        style = TextStyle(color: c.text);
+      }
+      return AppListCell(
+        style: type,
+        variant: variant,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(label, style: style),
+        ),
+      );
+    }
+
     final items = [
       const AppSectionHeader(title: Text('single block')),
       cell(.single, 'single content'),
@@ -119,6 +161,9 @@ final class AppListCellShowCase extends PreviewShowCase {
       cell(.middle, '2nd line'),
       cell(.middle, '3rd line'),
       cell(.bottom, '4th line'),
+      const SizedBox(height: 20),
+      const AppSectionHeader(title: Text('destruction')),
+      cell(.single, 'delete account', variant: .destruction),
     ];
     return Material(
       type: MaterialType.transparency,

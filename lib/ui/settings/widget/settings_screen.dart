@@ -89,7 +89,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       AppListCell(
-        type: setting.enabled ? .top : .single,
+        style: setting.enabled ? .top : .single,
         child: ListTile(
           title: Text(context.l10n.settingsNotificationTitle),
           trailing: Switch(
@@ -103,7 +103,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       if (setting.enabled) ...[
         divider,
         AppListCell(
-          type: .bottom,
+          style: .bottom,
           child: NotificationTimeTile(
             setting: setting,
             onChanged: (t) => _viewModel.setNotificationTime(
@@ -130,7 +130,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       AppListCell(
-        type: .top,
+        style: .top,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDisplayType),
@@ -154,7 +154,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .middle,
+        style: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsColorGroupTitle),
@@ -169,7 +169,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .bottom,
+        style: .bottom,
         child: ListTile(
           title: Text(context.l10n.settingsDisplayProgressBarAnimation),
           trailing: Switch(
@@ -208,7 +208,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     final colorScheme = context.appColorScheme;
     return [
       AppListCell(
-        type: .single,
+        style: .single,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsAccountLogin),
@@ -231,7 +231,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     final divider = Divider(height: 1, color: colorScheme.divider);
     return [
       AppListCell(
-        type: .top,
+        style: .top,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsAccountLogout),
@@ -248,13 +248,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .bottom,
+        style: .bottom,
+        variant: .destruction,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          title: Text(
-            context.l10n.settingsAccountDelete,
-            style: AppTextStyle.body.copyWith(color: colorScheme.danger),
-          ),
+          title: Text(context.l10n.settingsAccountDelete),
           trailing: Icon(
             Icons.arrow_forward_ios,
             size: 16,
@@ -275,7 +273,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       AppListCell(
-        type: .top,
+        style: .top,
         child: ListTile(
           title: Text(context.l10n.settingsVersion),
           trailing: Text(version, style: AppTextStyle.caption),
@@ -283,7 +281,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .middle,
+        style: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsTutorial),
@@ -298,7 +296,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .bottom,
+        style: .bottom,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsLicense),
@@ -325,7 +323,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       AppListCell(
-        type: .top,
+        style: .top,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugGenerateDummyTasks),
@@ -339,7 +337,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .middle,
+        style: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugDeleteAllTasks),
@@ -353,7 +351,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .middle,
+        style: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugResetTutorialFlag),
@@ -367,7 +365,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .middle,
+        style: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugResetColorSettings),
@@ -381,7 +379,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .middle,
+        style: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugOpenNotificationIntro),
@@ -395,7 +393,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .bottom,
+        style: .bottom,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugForceCrash),
