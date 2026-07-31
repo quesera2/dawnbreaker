@@ -13,6 +13,7 @@ class FakeNotificationService implements NotificationService {
   bool checkPermissionCalled = false;
   bool requestPermissionCalled = false;
   int registerTokenCount = 0;
+  int unregisterTokenCount = 0;
 
   /// 通知の状態を問い合わせられない状況を作る
   bool checkPermissionShouldThrow = false;
@@ -22,6 +23,9 @@ class FakeNotificationService implements NotificationService {
 
   /// Firestore がオフラインのとき、書き込みの Future はサーバーの応答待ちで完了しない
   bool registerTokenNeverCompletes = false;
+
+  /// 通知先の解除が失敗する状況を作る
+  bool unregisterTokenShouldThrow = false;
 
   @override
   Future<bool> checkPermission() async {
@@ -41,5 +45,11 @@ class FakeNotificationService implements NotificationService {
     registerTokenCount++;
     if (registerTokenShouldThrow) throw Exception('テストエラー');
     if (registerTokenNeverCompletes) await Completer<void>().future;
+  }
+
+  @override
+  Future<void> unregisterToken() async {
+    unregisterTokenCount++;
+    if (unregisterTokenShouldThrow) throw Exception('テストエラー');
   }
 }

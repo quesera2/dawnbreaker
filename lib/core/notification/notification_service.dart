@@ -12,4 +12,10 @@ abstract interface class NotificationService {
   /// Android は許可がなくてもトークンを取得できるが、表示されない通知の送信先を
   /// 抱えても仕方がないので、同じく許可済みのときだけ登録する。
   Future<void> registerToken();
+
+  /// いま登録されている送信先からこの端末を外す。
+  ///
+  /// アカウントを乗り換える直前に呼ぶ。外し忘れると、捨てたアカウント宛の通知が
+  /// この端末に届き続ける
+  Future<void> unregisterToken();
 }
