@@ -195,20 +195,18 @@ void main() {
       expect(await repository.signInWithGoogle(), isA<SignInCancelled>());
     });
 
-    // 匿名でないユーザーをリンクしようとすると provider-already-linked で失敗する
-    test('リンク済みユーザーなら昇格させず、サインインし直す', () async {
+    // 無言でアカウントが入れ替わらないようにする。乗り換えはログアウトを挟む導線にする
+    test('リンク済みユーザーはサインインできない', () async {
       final auth = MockFirebaseAuth(
         signedIn: true,
         mockUser: MockUser(uid: 'user-1'),
       );
-      whenCalling(Invocation.method(#linkWithCredential, [anything]))
-          .on(auth.currentUser!)
-          .thenThrow(FirebaseAuthException(code: 'provider-already-linked'));
 
-      final result = await createRepository(auth).signInWithGoogle();
-
-      expect(result, isA<SignInSucceeded>());
-      expect((result as SignInSucceeded).user, const LoggedIn('user-1'));
+      await expectLater(
+        createRepository(auth).signInWithGoogle(),
+        throwsA(isA<SignInException>()),
+      );
+      expect(auth.currentUser?.uid, 'user-1');
     });
 
     test('リンクに失敗したら例外が伝わる', () async {

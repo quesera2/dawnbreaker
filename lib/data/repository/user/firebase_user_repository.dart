@@ -49,11 +49,17 @@ class FirebaseUserRepository implements UserRepository {
     try {
       final currentUser = _auth.currentUser;
       final LoggedIn user;
-      if (currentUser != null && currentUser.isAnonymous) {
+      if (currentUser == null) {
+        user = await _signInWithCredential(credential);
+      } else if (currentUser.isAnonymous) {
         // ゲストのまま押されたときは昇格になる。uid もデータもそのまま残る
         user = await _linkCredential(currentUser, credential);
       } else {
-        user = await _signInWithCredential(credential);
+        // リンク済みのまま別のアカウントに入ると、無言でアカウントが入れ替わる。
+        // 乗り換えるなら一度ログアウトを挟む導線にする
+        throw const SignInException(
+          'cannot sign in while already linked to an account',
+        );
       }
       return SignInSucceeded(user);
     } on FirebaseAuthException catch (e) {
