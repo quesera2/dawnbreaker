@@ -20,8 +20,14 @@ part 'login_view_model.g.dart';
 
 @riverpod
 class LoginViewModel extends _$LoginViewModel {
+  /// サインアウトを始めたか。`isSigningOut` は画面が出た時点で立っているため、
+  /// 二重実行の判定にはこちらを使う
+  var _signOutStarted = false;
+
   @override
-  LoginUiState build({required LoginParam param}) => const LoginUiState();
+  LoginUiState build({required LoginParam param}) =>
+      // ログアウトで来たときは遷移中からスピナーを出したままにする
+      LoginUiState(isSigningOut: param.executeLogout);
 
   Future<void> onClickStartAsGuest() async {
     if (state.isSigningIn) return;
@@ -72,8 +78,8 @@ class LoginViewModel extends _$LoginViewModel {
   ///
   /// 設定画面が残っている間にサインアウトすると、残った購読が permission-denied になる
   Future<void> signOut() async {
-    if (state.isSigningOut) return;
-    state = state.copyWith(isSigningOut: true);
+    if (_signOutStarted) return;
+    _signOutStarted = true;
 
     // サインアウトすると通知の送信先を引けなくなるため、先に捨てる。
     // Firestore の fcmTokens はここでは消さない。無効なトークンは送信側が掃除する

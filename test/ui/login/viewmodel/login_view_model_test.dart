@@ -368,6 +368,11 @@ void main() {
         setUpState(const LoginParam(executeLogout: true));
       });
 
+      // 遷移中に一瞬ボタンが見えないよう、画面が出た時点で塞いでおく
+      test('サインアウトを始める前から操作を塞ぐ', () {
+        expect(viewState.isSigningOut, true);
+      });
+
       test('サインアウトする', () async {
         await viewModel.signOut();
 
