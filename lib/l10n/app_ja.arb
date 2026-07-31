@@ -214,6 +214,8 @@
   },
   "loginTermsOfService": "利用規約",
   "loginPrivacyPolicy": "プライバシーポリシー",
+  "loginSwitchAccountMessage": "このアカウントは別のユーザーとして登録済みです。サインインすると、ゲストで作成したタスクは失われ、元に戻せません。",
+  "loginSwitchAccountConfirm": "サインインする",
   "notificationIntroTitle": "スケジュールになったら通知でお知らせ",
   "notificationIntroBody": "通知を有効にすると、予定日になったタイミングでお知らせします。通知は後から設定することもできます。",
   "notificationIntroEnable": "通知を有効にする",
@@ -245,6 +247,9 @@
   "colorLabelSortSectionTitle": "カラーグループを並び替え",
   "colorLabelEditDescription": "ラベルをタップして編集できます。空欄にするとデフォルト名に戻ります。",
   "colorLabelSortDescription": "ドラッグハンドルを使って表示順を変更できます。",
+  "settingsSectionAccount": "アカウント",
+  "settingsAccountLogin": "ログイン",
+  "settingsAccountLoginDescription": "サインインすると、機種変更してもタスクを引き継げます。",
   "settingsSectionInfo": "情報",
   "settingsVersion": "バージョン",
   "settingsTutorial": "チュートリアル",
@@ -258,7 +263,6 @@
   "settingsDebugTutorialFlagReset": "チュートリアルフラグをリセットしました",
   "settingsDebugResetColorSettings": "カラー設定をリセット",
   "settingsDebugColorSettingsReset": "カラー設定をリセットしました",
-  "settingsDebugOpenLogin": "ログイン画面を開く",
   "settingsDebugOpenNotificationIntro": "通知の誘導画面を開く",
   "settingsDebugForceCrash": "クラッシュさせる"
 }

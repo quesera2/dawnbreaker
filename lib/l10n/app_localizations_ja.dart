@@ -388,6 +388,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get loginPrivacyPolicy => 'プライバシーポリシー';
 
   @override
+  String get loginSwitchAccountMessage =>
+      'このアカウントは別のユーザーとして登録済みです。サインインすると、ゲストで作成したタスクは失われ、元に戻せません。';
+
+  @override
+  String get loginSwitchAccountConfirm => 'サインインする';
+
+  @override
   String get notificationIntroTitle => 'スケジュールになったら通知でお知らせ';
 
   @override
@@ -483,6 +490,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get colorLabelSortDescription => 'ドラッグハンドルを使って表示順を変更できます。';
 
   @override
+  String get settingsSectionAccount => 'アカウント';
+
+  @override
+  String get settingsAccountLogin => 'ログイン';
+
+  @override
+  String get settingsAccountLoginDescription => 'サインインすると、機種変更してもタスクを引き継げます。';
+
+  @override
   String get settingsSectionInfo => '情報';
 
   @override
@@ -520,9 +536,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsDebugColorSettingsReset => 'カラー設定をリセットしました';
-
-  @override
-  String get settingsDebugOpenLogin => 'ログイン画面を開く';
 
   @override
   String get settingsDebugOpenNotificationIntro => '通知の誘導画面を開く';

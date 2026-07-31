@@ -395,6 +395,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginPrivacyPolicy => 'Privacy Policy';
 
   @override
+  String get loginSwitchAccountMessage =>
+      'This account is already registered as another user. If you sign in, the tasks you created as a guest will be lost and cannot be restored.';
+
+  @override
+  String get loginSwitchAccountConfirm => 'Sign in';
+
+  @override
   String get notificationIntroTitle => 'Get notified when tasks are due';
 
   @override
@@ -495,6 +502,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use the drag handle to change the display order.';
 
   @override
+  String get settingsSectionAccount => 'Account';
+
+  @override
+  String get settingsAccountLogin => 'Sign in';
+
+  @override
+  String get settingsAccountLoginDescription =>
+      'Sign in to keep your tasks when you change devices.';
+
+  @override
   String get settingsSectionInfo => 'Info';
 
   @override
@@ -532,9 +549,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDebugColorSettingsReset => 'Color settings reset';
-
-  @override
-  String get settingsDebugOpenLogin => 'Open login screen';
 
   @override
   String get settingsDebugOpenNotificationIntro =>

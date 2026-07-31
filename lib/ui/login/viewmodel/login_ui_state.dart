@@ -6,7 +6,7 @@ import 'package:uuid/uuid.dart';
 
 part 'login_ui_state.freezed.dart';
 
-enum LoginDestination { home, notificationIntro }
+enum LoginDestination { home, notificationIntro, back }
 
 class LoginDestinationEvent {
   LoginDestinationEvent(this.type) : id = const Uuid().v4();

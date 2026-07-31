@@ -110,6 +110,12 @@ LabelConfig _labels(BuildContext context, DialogMessage msg) => switch (msg) {
     primaryActionLabel: context.l10n.commonRetry,
     secondaryActionLabel: context.l10n.commonCancel,
   ),
+  SwitchAccountConfirmMessage() => (
+    title: context.l10n.commonConfirmTitle,
+    messageText: context.l10n.loginSwitchAccountMessage,
+    primaryActionLabel: context.l10n.loginSwitchAccountConfirm,
+    secondaryActionLabel: context.l10n.commonCancel,
+  ),
   NotificationEnableErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.notificationIntroErrorEnableFailed,

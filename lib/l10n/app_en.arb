@@ -214,6 +214,8 @@
   },
   "loginTermsOfService": "Terms of Service",
   "loginPrivacyPolicy": "Privacy Policy",
+  "loginSwitchAccountMessage": "This account is already registered as another user. If you sign in, the tasks you created as a guest will be lost and cannot be restored.",
+  "loginSwitchAccountConfirm": "Sign in",
   "notificationIntroTitle": "Get notified when tasks are due",
   "notificationIntroBody": "Enable notifications to be reminded when tasks are due. You can also set this up later.",
   "notificationIntroEnable": "Enable Notifications",
@@ -245,6 +247,9 @@
   "colorLabelSortSectionTitle": "Reorder Color Groups",
   "colorLabelEditDescription": "Tap a label to edit it. Leave it blank to use the default name.",
   "colorLabelSortDescription": "Use the drag handle to change the display order.",
+  "settingsSectionAccount": "Account",
+  "settingsAccountLogin": "Sign in",
+  "settingsAccountLoginDescription": "Sign in to keep your tasks when you change devices.",
   "settingsSectionInfo": "Info",
   "settingsVersion": "Version",
   "settingsTutorial": "Tutorial",
@@ -258,7 +263,6 @@
   "settingsDebugTutorialFlagReset": "Tutorial flag reset",
   "settingsDebugResetColorSettings": "Reset color settings",
   "settingsDebugColorSettingsReset": "Color settings reset",
-  "settingsDebugOpenLogin": "Open login screen",
   "settingsDebugOpenNotificationIntro": "Open notification intro screen",
   "settingsDebugForceCrash": "Force crash"
 }
