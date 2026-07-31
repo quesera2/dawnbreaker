@@ -155,7 +155,7 @@ Apple サインインは Sign In with Apple の capability が有料の Apple De
     - ※ `firebase_auth_mocks` は `credential-already-in-use` は仕込めるが、匿名ユーザーの
       `linkWithCredential` は再現できない（リンク後も匿名のままだと決め打ちして assert する）。
       昇格が成功する経路だけ `MockUser` を継承して差し替えた。実際に uid が保たれるかは実機確認が要る
-- [ ] **PR3: リンク済みの設定出し分け＋ログアウト/削除スタブ**
+- [x] **PR3: リンク済みの設定出し分け＋ログアウト/削除スタブ**
     - LoggedIn には「ログアウト / アカウント削除」を、ゲストには「ログイン」を出す（設計方針の表どおり）
     - 昇格（PR2）が入って初めて LoggedIn に到達できるため、このPRは最後に置く
     - ログアウト・アカウント削除はハンドラだけスタブにしておく（本実装は Phase10）
