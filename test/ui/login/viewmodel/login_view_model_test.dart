@@ -399,14 +399,6 @@ void main() {
         expect(viewState.isSigningOut, false);
       });
 
-      test('連打してもサインアウトは1度しか始まらない', () async {
-        final signingOut = viewModel.signOut();
-        await viewModel.signOut();
-        await signingOut;
-
-        expect(fakeUserRepository.signOutCount, 1);
-      });
-
       // ここで止めるとログアウトできなくなるほうが困る
       test('トークンを捨てられなくてもサインアウトする', () async {
         fakeNotificationService.deleteTokenShouldThrow = true;
