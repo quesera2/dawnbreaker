@@ -1,6 +1,5 @@
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_radius.dart';
-import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/components/preview_show_case.dart';
 import 'package:flutter/material.dart';
@@ -92,18 +91,25 @@ class AppListCell extends StatelessWidget {
 
   /// 取り返しのつかない操作は本文の見た目で伝える。
   ///
-  /// `ListTile` は周囲の `DefaultTextStyle` を見ずに `ListTileTheme` から
-  /// スタイルを解決するため、素の `Text` を置いた場合と両方に効かせる
+  /// 大きさは周りのセルと揃え、色と太さだけ変える。`ListTile` は周囲の
+  /// `DefaultTextStyle` を見ずに `ListTileTheme` から解決するため、
+  /// 素の `Text` を置いた場合と両方に効かせる
   Widget _applyVariant(BuildContext context, Widget content) {
     if (variant == .normal) return content;
 
-    final style = AppTextStyle.body.copyWith(
-      color: context.appColorScheme.danger,
-      fontWeight: FontWeight.bold,
-    );
+    final danger = context.appColorScheme.danger;
+    final titleStyle =
+        ListTileTheme.of(context).titleTextStyle ??
+        Theme.of(context).textTheme.bodyLarge;
     return ListTileTheme.merge(
-      titleTextStyle: style,
-      child: DefaultTextStyle.merge(style: style, child: content),
+      titleTextStyle: titleStyle?.copyWith(
+        color: danger,
+        fontWeight: FontWeight.bold,
+      ),
+      child: DefaultTextStyle.merge(
+        style: TextStyle(color: danger, fontWeight: FontWeight.bold),
+        child: content,
+      ),
     );
   }
 
