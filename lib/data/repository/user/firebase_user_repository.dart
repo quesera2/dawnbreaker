@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/repository/user/credential_source.dart';
 import 'package:dawnbreaker/data/repository/user/google_credential_source.dart';
+import 'package:dawnbreaker/data/repository/user/link_result.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,6 +20,9 @@ class FirebaseUserRepository implements UserRepository {
     required this._auth,
     required this._googleCredentialSource,
   });
+
+  /// 昇格しようとした credential が既に別のアカウントで使われているときのコード
+  static const _credentialAlreadyInUse = 'credential-already-in-use';
 
   final FirebaseAuth _auth;
   final CredentialSource _googleCredentialSource;
@@ -47,6 +51,49 @@ class FirebaseUserRepository implements UserRepository {
     if (credential == null) return null;
     return _signInWithCredential(credential);
   }
+
+  @override
+  Future<LinkResult> linkWithGoogle() async {
+    final credential = await _googleCredentialSource.getCredential();
+    if (credential == null) return const LinkCancelled();
+    return _link(credential);
+  }
+
+  /// Google / Apple などプロバイダに依らず credential を匿名アカウントに結び付ける。
+  ///
+  /// 既に使われている credential だったときは、ここではサインインまで進めない。
+  /// 進めるとゲストのデータを黙って捨てることになるため、判断は呼び出し元に返す
+  Future<LinkResult> _link(AuthCredential credential) async {
+    final currentUser = _auth.currentUser;
+    if (currentUser == null) {
+      throw const SignInException('cannot link a credential without a session');
+    }
+
+    final UserCredential result;
+    try {
+      result = await currentUser.linkWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      if (e.code != _credentialAlreadyInUse) rethrow;
+      // Apple は nonce の都合で元の credential を再利用できないため、例外が持つ方を使う
+      final linkedCredential = e.credential;
+      if (linkedCredential == null) {
+        throw const SignInException(
+          'credential-already-in-use came without a credential',
+        );
+      }
+      return LinkCredentialInUse(linkedCredential);
+    }
+
+    final user = result.user;
+    if (user == null) {
+      throw const SignInException('link succeeded but returned no user');
+    }
+    return LinkSucceeded(LoggedIn(user.uid));
+  }
+
+  @override
+  Future<LoggedIn> signInWithLinkedCredential(AuthCredential credential) =>
+      _signInWithCredential(credential);
 
   /// Google / Apple などプロバイダに依らず credential でサインインする。
   /// Apple を足すときはトークン取得だけ増やし、この経路を使い回す

@@ -1,28 +1,44 @@
 import 'dart:async';
 
 import 'package:dawnbreaker/core/auth/app_user.dart';
+import 'package:dawnbreaker/data/repository/user/link_result.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FakeUserRepository implements UserRepository {
-  FakeUserRepository(this.initialUser);
+  FakeUserRepository(this.initialUser) : _user = initialUser;
+
+  /// 昇格しようとした credential を既に持っているアカウント
+  static const linkedAccountUser = LoggedIn('linked-account-user');
 
   final AppUser initialUser;
   final _controller = StreamController<AppUser>.broadcast();
+  AppUser _user;
 
   /// サインインが通信に失敗する状況を作る
   bool shouldThrow = false;
 
   /// Google サインインをユーザーが中断した状況を作る
   bool cancelSignIn = false;
+
+  /// 昇格しようとした credential が既に別のアカウントで使われている状況を作る
+  bool credentialAlreadyInUse = false;
+
   int signInAsGuestCount = 0;
   int signInWithGoogleCount = 0;
+  int linkWithGoogleCount = 0;
+  int signInWithLinkedCredentialCount = 0;
 
   @override
-  AppUser getUser() => initialUser;
+  AppUser getUser() => _user;
 
+  /// 本物の `authStateChanges()` は購読した時点のユーザーを 1 度流してから変化を流す
   @override
-  Stream<AppUser> watchUser() => _controller.stream;
+  Stream<AppUser> watchUser() async* {
+    yield _user;
+    yield* _controller.stream;
+  }
 
   @override
   Future<Guest> signInAsGuest() async {
@@ -45,8 +61,39 @@ class FakeUserRepository implements UserRepository {
     return user;
   }
 
+  @override
+  Future<LinkResult> linkWithGoogle() async {
+    linkWithGoogleCount++;
+    if (shouldThrow) throw const SignInException('テストエラー');
+    if (cancelSignIn) return const LinkCancelled();
+    if (credentialAlreadyInUse) {
+      return LinkCredentialInUse(
+        GoogleAuthProvider.credential(idToken: 'linked-id-token'),
+      );
+    }
+
+    // 昇格では uid が変わらない
+    final user = LoggedIn(switch (_user) {
+      SignedInUser(:final id) => id,
+      NoLogin() => 'promoted-user',
+    });
+    emit(user);
+    return LinkSucceeded(user);
+  }
+
+  @override
+  Future<LoggedIn> signInWithLinkedCredential(AuthCredential credential) async {
+    signInWithLinkedCredentialCount++;
+    if (shouldThrow) throw const SignInException('テストエラー');
+    emit(linkedAccountUser);
+    return linkedAccountUser;
+  }
+
   /// `authStateChanges()` からユーザーが流れてくる状況を作る
-  void emit(AppUser user) => _controller.add(user);
+  void emit(AppUser user) {
+    _user = user;
+    _controller.add(user);
+  }
 
   Future<void> close() => _controller.close();
 }
