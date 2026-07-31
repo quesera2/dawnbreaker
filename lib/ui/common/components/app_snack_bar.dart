@@ -69,6 +69,7 @@ abstract final class AppSnackBar {
     ),
     actionLabel: context.l10n.commonUndo,
   ),
+  SignedOutMessage() => (text: context.l10n.loginSignedOut, actionLabel: ''),
   DebugDummyTasksGeneratedMessage() => (
     text: context.l10n.settingsDebugDummyTasksGenerated,
     actionLabel: '',

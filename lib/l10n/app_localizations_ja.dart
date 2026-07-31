@@ -395,6 +395,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get loginSwitchAccountConfirm => 'サインインする';
 
   @override
+  String get loginSignedOut => 'ログアウトしました';
+
+  @override
   String get notificationIntroTitle => 'スケジュールになったら通知でお知らせ';
 
   @override
@@ -497,6 +500,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsAccountLoginDescription => 'サインインすると、機種変更してもタスクを引き継げます。';
+
+  @override
+  String get settingsAccountLogout => 'ログアウト';
+
+  @override
+  String get settingsAccountDelete => 'アカウントを削除';
 
   @override
   String get settingsSectionInfo => '情報';

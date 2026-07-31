@@ -184,7 +184,7 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
             padding: const EdgeInsets.symmetric(horizontal: 20),
             sliver: SliverToBoxAdapter(
               child: AppListCell(
-                type: .single,
+                style: .single,
                 child: SizedBox(
                   width: double.infinity,
                   child: Padding(

@@ -36,7 +36,7 @@ class DisplaySettingsScreen extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     AppListCell(
-                      type: .top,
+                      style: .top,
                       child: RadioListTile<HomeDisplayMode>(
                         value: .timeline,
                         title: Text(context.l10n.settingsDisplayHomeTimeline),
@@ -47,7 +47,7 @@ class DisplaySettingsScreen extends ConsumerWidget {
                     ),
                     divider,
                     AppListCell(
-                      type: .bottom,
+                      style: .bottom,
                       child: RadioListTile<HomeDisplayMode>(
                         value: .byColor,
                         title: Text(context.l10n.settingsDisplayHomeByColor),

@@ -34,7 +34,7 @@ class AppDetailHistoryItem extends StatelessWidget {
   static const _dotBottomY = _dotTopY + _dotSize;
   static const _lineLeft = _paddingH + _dotSize / 2 - _lineWidth / 2;
 
-  AppListCellType get _type => switch ((isFirst, isLast)) {
+  AppListCellStyle get _type => switch ((isFirst, isLast)) {
     (true, true) => .single,
     (true, false) => .top,
     (false, true) => .bottom,
@@ -55,7 +55,7 @@ class AppDetailHistoryItem extends StatelessWidget {
     final dotColor = taskColor.baseColor(context);
 
     return AppListCell(
-      type: _type,
+      style: _type,
       onTap: onTap,
       child: Stack(
         children: [

@@ -6,7 +6,7 @@ import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
-import 'package:dawnbreaker/ui/login/widgets/login_mode.dart';
+import 'package:dawnbreaker/ui/login/widgets/login_param.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_ui_state.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/settings_view_model.dart';
@@ -62,10 +62,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               progressBarAnimationEnabled:
                   viewState.progressBarAnimationEnabled,
             ),
-            if (viewState.isGuest) ...[
-              const SizedBox(height: 24),
-              ..._accountSection(context),
-            ],
+            const SizedBox(height: 24),
+            ..._accountSection(context, isGuest: viewState.isGuest),
             const SizedBox(height: 24),
             ..._infoSection(context, viewState.version),
             if (kDebugMode) ...[
@@ -91,7 +89,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       AppListCell(
-        type: setting.enabled ? .top : .single,
+        style: setting.enabled ? .top : .single,
         child: ListTile(
           title: Text(context.l10n.settingsNotificationTitle),
           trailing: Switch(
@@ -105,7 +103,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       if (setting.enabled) ...[
         divider,
         AppListCell(
-          type: .bottom,
+          style: .bottom,
           child: NotificationTimeTile(
             setting: setting,
             onChanged: (t) => _viewModel.setNotificationTime(
@@ -132,7 +130,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       AppListCell(
-        type: .top,
+        style: .top,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDisplayType),
@@ -156,7 +154,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .middle,
+        style: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsColorGroupTitle),
@@ -171,7 +169,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .bottom,
+        style: .bottom,
         child: ListTile(
           title: Text(context.l10n.settingsDisplayProgressBarAnimation),
           trailing: Switch(
@@ -189,16 +187,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         .byColor => context.l10n.settingsDisplayHomeByColor,
       };
 
-  /// ゲストの昇格の入り口。リンク済みの操作（ログアウト・アカウント削除）は別途用意する
-  List<Widget> _accountSection(BuildContext context) {
+  /// ゲストには昇格の入り口だけを出す。
+  ///
+  /// 匿名アカウントには credential がなく、ログアウトすると二度と戻れないため出さない。
+  /// アカウント削除も、Apple の削除要件が掛かるのはリンク済みだけなので出さない
+  List<Widget> _accountSection(BuildContext context, {required bool isGuest}) =>
+      [
+        AppSectionHeader(
+          title: Text(context.l10n.settingsSectionAccount),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+        ),
+        if (isGuest)
+          ..._guestAccountCells(context)
+        else
+          ..._userAccountCells(context),
+      ];
+
+  /// ゲスト時のメニュー
+  List<Widget> _guestAccountCells(BuildContext context) {
     final colorScheme = context.appColorScheme;
     return [
-      AppSectionHeader(
-        title: Text(context.l10n.settingsSectionAccount),
-        padding: const EdgeInsets.symmetric(vertical: 8),
-      ),
       AppListCell(
-        type: .single,
+        style: .single,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsAccountLogin),
@@ -209,7 +219,47 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             color: colorScheme.textMuted,
           ),
         ),
-        onTap: () => context.push('/login', extra: LoginMode.accountSignInOnly),
+        onTap: () =>
+            context.push('/login', extra: const LoginParam(showGuest: false)),
+      ),
+    ];
+  }
+
+  /// ログイン済みの場合のメニュー
+  List<Widget> _userAccountCells(BuildContext context) {
+    final colorScheme = context.appColorScheme;
+    final divider = Divider(height: 1, color: colorScheme.divider);
+    return [
+      AppListCell(
+        style: .top,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(context.l10n.settingsAccountLogout),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: colorScheme.textMuted,
+          ),
+        ),
+        // ログアウト自体はログイン画面が行う。ここで NoLogin にすると、
+        // まだ残っているこの画面の購読が permission-denied になる
+        onTap: () =>
+            context.go('/login', extra: const LoginParam(executeLogout: true)),
+      ),
+      divider,
+      AppListCell(
+        style: .bottom,
+        variant: .destruction,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: Text(context.l10n.settingsAccountDelete),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: colorScheme.textMuted,
+          ),
+        ),
+        onTap: () => _viewModel.deleteAccount(),
       ),
     ];
   }
@@ -223,7 +273,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       AppListCell(
-        type: .top,
+        style: .top,
         child: ListTile(
           title: Text(context.l10n.settingsVersion),
           trailing: Text(version, style: AppTextStyle.caption),
@@ -231,7 +281,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .middle,
+        style: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsTutorial),
@@ -246,7 +296,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .bottom,
+        style: .bottom,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsLicense),
@@ -273,7 +323,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         padding: const EdgeInsets.symmetric(vertical: 8),
       ),
       AppListCell(
-        type: .top,
+        style: .top,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugGenerateDummyTasks),
@@ -287,7 +337,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .middle,
+        style: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugDeleteAllTasks),
@@ -301,7 +351,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .middle,
+        style: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugResetTutorialFlag),
@@ -315,7 +365,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .middle,
+        style: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugResetColorSettings),
@@ -329,7 +379,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .middle,
+        style: .middle,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugOpenNotificationIntro),
@@ -343,7 +393,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ),
       divider,
       AppListCell(
-        type: .bottom,
+        style: .bottom,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(context.l10n.settingsDebugForceCrash),

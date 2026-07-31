@@ -402,6 +402,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginSwitchAccountConfirm => 'Sign in';
 
   @override
+  String get loginSignedOut => 'Signed out';
+
+  @override
   String get notificationIntroTitle => 'Get notified when tasks are due';
 
   @override
@@ -510,6 +513,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsAccountLoginDescription =>
       'Sign in to keep your tasks when you change devices.';
+
+  @override
+  String get settingsAccountLogout => 'Sign out';
+
+  @override
+  String get settingsAccountDelete => 'Delete account';
 
   @override
   String get settingsSectionInfo => 'Info';

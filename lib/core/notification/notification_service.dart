@@ -13,4 +13,10 @@ abstract interface class NotificationService {
 
   /// 現在アカウントに登録されている通知送信先からこの端末を外す
   Future<void> unregisterToken();
+
+  /// この端末のトークンそのものを捨てる。
+  ///
+  /// ログアウトのように、以降この端末を送信先として使わないときに呼ぶ。
+  /// 次にサインインしたときは新しいトークンが発行される
+  Future<void> deleteToken();
 }

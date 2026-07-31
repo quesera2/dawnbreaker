@@ -93,6 +93,9 @@ class FirebaseUserRepository implements UserRepository {
   }
 
   @override
+  Future<void> signOut() => _auth.signOut();
+
+  @override
   Future<LoggedIn> signInWithLinkedCredential(AuthCredential credential) =>
       _signInWithCredential(credential);
 

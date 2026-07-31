@@ -7,7 +7,7 @@ import 'package:dawnbreaker/ui/app_detail/widgets/app_detail_screen.dart';
 import 'package:dawnbreaker/ui/color_label/widgets/color_label_screen.dart';
 import 'package:dawnbreaker/ui/editor/widgets/editor_screen.dart';
 import 'package:dawnbreaker/ui/home/widgets/home_screen.dart';
-import 'package:dawnbreaker/ui/login/widgets/login_mode.dart';
+import 'package:dawnbreaker/ui/login/widgets/login_param.dart';
 import 'package:dawnbreaker/ui/login/widgets/login_screen.dart';
 import 'package:dawnbreaker/ui/notification_intro/widgets/notification_intro_screen.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
@@ -81,8 +81,9 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: '/login',
-        builder: (_, state) =>
-            LoginScreen(mode: state.extra as LoginMode? ?? LoginMode.showGuest),
+        builder: (_, state) => LoginScreen(
+          param: state.extra as LoginParam? ?? const LoginParam(),
+        ),
       ),
       GoRoute(
         path: '/notification-intro',

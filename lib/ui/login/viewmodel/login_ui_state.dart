@@ -21,6 +21,7 @@ abstract class LoginUiState with _$LoginUiState implements BaseUiState {
 
   const factory LoginUiState({
     @Default(false) bool isSigningIn,
+    @Default(false) bool isSigningOut,
     LoginDestinationEvent? destination,
     DialogMessage? dialogMessage,
     SnackBarMessage? snackBarMessage,

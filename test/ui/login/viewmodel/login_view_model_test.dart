@@ -8,9 +8,10 @@ import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
+import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_ui_state.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_view_model.dart';
-import 'package:dawnbreaker/ui/login/widgets/login_mode.dart';
+import 'package:dawnbreaker/ui/login/widgets/login_param.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -30,8 +31,8 @@ void main() {
     late LoginViewModel viewModel;
     late LoginUiState viewState;
 
-    void setUpState([LoginMode mode = LoginMode.showGuest]) {
-      provider = loginViewModelProvider(mode: mode);
+    void setUpState([LoginParam param = const LoginParam()]) {
+      provider = loginViewModelProvider(param: param);
       viewModel = container.read(provider.notifier);
       container.listen(
         provider,
@@ -43,7 +44,7 @@ void main() {
     /// ゲストとして使っている人がアカウントを結び付けにくる状況を作る
     void setUpPromotion() {
       fakeUserRepository.emit(const Guest('guest-1'));
-      setUpState(LoginMode.accountSignInOnly);
+      setUpState(const LoginParam(showGuest: false));
     }
 
     /// 乗り換えると失われるタスクがある状況を作る
@@ -357,6 +358,62 @@ void main() {
           expect(fakeUserRepository.signInWithGoogleCount, 2);
           expect(viewState.destination?.type, LoginDestination.home);
         });
+      });
+    });
+
+    // 設定画面から executeLogout で来たとき、遷移が終わってから画面が呼ぶ
+    group('ログアウトする', () {
+      setUp(() {
+        fakeUserRepository.emit(const LoggedIn('user-1'));
+        setUpState(const LoginParam(executeLogout: true));
+      });
+
+      // 遷移中に一瞬ボタンが見えないよう、画面が出た時点で塞いでおく
+      test('サインアウトを始める前から操作を塞ぐ', () {
+        expect(viewState.isSigningOut, true);
+      });
+
+      test('サインアウトする', () async {
+        await viewModel.signOut();
+
+        expect(fakeUserRepository.signOutCount, 1);
+      });
+
+      // Firestore の fcmTokens は消さない。無効なトークンは送信側が掃除する
+      test('この端末のトークンを捨てる', () async {
+        await viewModel.signOut();
+
+        expect(fakeNotificationService.deleteTokenCount, 1);
+        expect(fakeNotificationService.unregisterTokenCount, 0);
+      });
+
+      test('ログアウトしたことを伝える', () async {
+        await viewModel.signOut();
+
+        expect(viewState.snackBarMessage, isA<SignedOutMessage>());
+      });
+
+      test('終わったら操作できる状態に戻る', () async {
+        await viewModel.signOut();
+
+        expect(viewState.isSigningOut, false);
+      });
+
+      // ここで止めるとログアウトできなくなるほうが困る
+      test('トークンを捨てられなくてもサインアウトする', () async {
+        fakeNotificationService.deleteTokenShouldThrow = true;
+
+        await viewModel.signOut();
+
+        expect(fakeUserRepository.signOutCount, 1);
+      });
+
+      test('サインアウトに失敗しても操作できる状態に戻る', () async {
+        fakeUserRepository.shouldThrow = true;
+
+        await viewModel.signOut();
+
+        expect(viewState.isSigningOut, false);
       });
     });
 

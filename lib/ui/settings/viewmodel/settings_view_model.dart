@@ -160,6 +160,11 @@ class SettingsViewModel extends _$SettingsViewModel {
     await _settingsRepository.setProgressBarAnimationEnabled(value);
   }
 
+  // TODO: Phase10 で実装する。データとアカウントを消し、チュートリアルの最初へ戻す
+  void deleteAccount() {
+    logger.w('account deletion is not implemented yet');
+  }
+
   // デバッグメニュー専用。TaskRepository は Firebase に触るため、ここでだけ読む
   Future<void> generateDummyTasks() async {
     final repository = ref.read(taskRepositoryProvider);
