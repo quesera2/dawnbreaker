@@ -78,37 +78,28 @@ Cloud Functions 側に移した。
     - `taskRepositoryProvider` を同期の `Provider` にし、Phase3 で `AsyncNotifier` にした
       ViewModel 群を `Notifier` に戻す
 
-## 設計方針（Phase9 以降）
+## 設計方針
 
 ### アカウント間でタスクデータを移動しない
 
-データの置き場は `users/{uid}` だけ。サインインでやることは uid を保つか、uid を乗り換えるかのどちらかで、乗り換えるときは前の uid のデータを見捨てる。マージはしない。
+データの置き場は `users/{uid}` だけ。サインインでやることは uid を保つか、uid を乗り換えるかの
+どちらかで、乗り換えるときは前の uid のデータを見捨てる。マージはしない。
 
-判定に使うのは Auth の情報だけで、`users/{uid}` にデータがあるかどうかは判定しない。その credential が既に Firebase アカウントに使われているかどうかを見る。
+判定に使うのは Auth の情報（credential が既に使われているか）だけで、`users/{uid}` にデータが
+あるかどうかでは分岐しない。
 
-| 状況 | 挙動 |
-|---|---|
-| credential が未使用 | `linkWithCredential` で昇格。uid もデータもそのまま |
-| credential が使用済み | ゲスト側にデータがあれば「いまのタスクは引き継がれません。サインインするとゲストで作成したタスクは失われ、元に戻せません」と警告し、了承後に `signInWithCredential`。ゲスト側のデータは捨てる |
+### ゲストにはログアウトを出さない
 
-移行先アカウントのタスクが 0 件だった（アカウントを作ったが放置していた）場合もデータは引き継がない。そこは自己責任ということで…。
+匿名アカウントには credential がないため、ログアウトすると二度と戻れず不可逆なデータ喪失になる。
 
-件数は数えず、データがあるか（`limit(1)` の存在確認）だけを見る。データがある旨を警告して
-キャンセルできるようにすることで、不意のデータ喪失は防ぐ。
+### ログアウト・アカウント削除で Firestore のオフラインキャッシュは消さない
 
-### ゲストとリンク済みで操作を出し分ける
-
-| ユーザー種別 | 設定画面に出す操作 |
-|---|---|
-| ゲスト（匿名） | ログイン のみ |
-| リンク済み | ログアウト / アカウント削除 |
-
-- ゲストに「ログアウト」は出さない。匿名アカウントには credential がないので、ログアウトすると二度と戻れず、不可逆なデータ喪失が起きてしまうため。
-- リンク済みにログインを出さないの。別のアカウントにログインする場合は、一度ログアウトを挟む。
-- ログアウトをするとユーザーをクリアして（Guest ではなく NoLogin になる）、ログイン画面へ行く。データはクラウドに残っているので、サインインし直せば戻ってくる。
-- アカウント削除の行き先はチュートリアルの最初（NoLogin かつ `onboarding_complete` も消す）。最初の画面に戻ることで、完全にデータが消えたという雰囲気を出す。
-
-※ アカウント削除があるのは、Apple のアカウント削除要件（App Store Review Guideline 5.1.1(v)）があるため。この制限は匿名ユーザーには掛からないので、ゲストは「アカウント削除」を用意しない。
+- `clearPersistence()` は「主にテスト用で、安全な消去は試みない」と明記されており、プライバシー保護にならない
+- キャッシュはパス単位で保持されるため、新しいセッションが `users/{旧uid}` を引くことはない
+- キャッシュは既定 40MB 上限の LRU で自己管理される
+- 実行時に `terminate()` を呼ぶと、以降その Firestore インスタンスは `clearPersistence()` 以外の
+  全メソッドが `FirebaseException` を投げるようになり、サインインし直しても復帰できない
+- 未送信の書き込みが残っていても、再送時にセキュリティルールで弾かれて捨てられる
 
 ### ルーティングは go_router の `redirect` に載せない
 
@@ -117,88 +108,86 @@ Cloud Functions 側に移した。
 知っているコードが引き起こすため、受動的に待ち受ける必要がない。他端末での削除によるトークン失効も、
 操作時のエラーとして検知する明示的な経路になる。
 
-ログアウト時は「ログイン画面へ遷移してから `signOut()` を呼ぶ」順序にする。ホーム画面が破棄済みなら
-`taskRepositoryProvider` を監視している者がいないため、`NoLogin` で例外を投げる経路に入らない。
-
 ## Phase9
 
-主題は Google サインイン。Phase8 で作ったログイン画面にダミーで置いたボタンのうち Google を配線し、
-匿名からの昇格を実装する。
-ログアウト・アカウント削除は Phase10 に回すため、ここではスタブでよい（**このフェーズはストアに出さない**前提）。
-
-Apple サインインは Sign In with Apple の capability が有料の Apple Developer Program 必須のため、
-ストアに出さない Phase9 では**一旦ドロップ**する。ただし後から差し込めるよう、credential の取得元を
-抽象化し、`UserRepository` は `OAuthCredential` を汎用に受ける形にしておく。詳細は
-「Apple サインインは将来対応」を参照。
-
-各 PR は、マージした時点で実機で操作して確認できる単位に切る（UI からネイティブ設定まで1機能を通す）。
-依存は PR1 → PR2 → PR3 と一方向に増やす。
+主題は Google サインイン。Phase8 でダミーだったボタンを配線し、匿名からの昇格までを通した。
+Apple サインインは有料の Apple Developer Program が要るためドロップした
+（→ 末尾「Apple Developer Program に登録したらやること」）。
 
 - [x] **PR1: Google でログインして動く状態にする**
     - `google_sign_in` 追加＋ネイティブ設定（iOS reversed client id / URL scheme、Android SHA・OAuth クライアント）
-    - credential 取得の seam を薄く1メソッドに置き、`UserRepository.signInWithGoogle` を足す
-      （Apple は将来 sibling を足すだけにする。今は Google 1つなので抽象化を作り込みすぎない）
-    - ログイン画面の Google ボタンを実配線。画面・「ゲストではじめる」・失敗時のエラーと再試行、
-      サインイン後の通知誘導/ホーム振り分け（`_resolveDestination`）は Phase8 PR3 で作成済みのものに載せる
-    - Apple ボタンはログイン画面から一旦下ろす。`SocialProvider` は `google` / `apple` の両値を残す
+    - credential 取得の seam を 1 メソッドに置き、`UserRepository.signInWithGoogle` を足す
     - <s>ID/Password</s> はサインイン・パスワードリマインドなどの画面が必要になるため廃止
-    - ※ ネイティブ設定は CI で検証できないため実機確認が要る
 - [x] **PR2: 匿名からの昇格**
-    - 設定画面のゲスト向け「ログイン」導線を正規化し、昇格モードで `/login` へ遷移する
-      （現状はデバッグ項目 `settingsDebugOpenLogin` しかない。ここが昇格の入り口になる）
-    - ログイン画面にモード（初回 / 昇格）を足し、昇格で来たときは「または」と「ゲストではじめる」を隠す
-    - credential が未使用なら `linkWithCredential` で昇格（uid もデータもそのまま）
-    - `credential-already-in-use` のときは警告ダイアログ（`loginSwitchAccount*` を ARB に追加）を出し、
-      了承後にサインインし直す
-        - 例外オブジェクトが持つ credential を使う
-        - サインイン前に `fcmTokens` から自端末のトークンを `arrayRemove` し、サインイン後に新 uid へ `arrayUnion` する
-    - ※ `firebase_auth_mocks` は `credential-already-in-use` は仕込めるが、匿名ユーザーの
-      `linkWithCredential` は再現できない（リンク後も匿名のままだと決め打ちして assert する）。
-      昇格が成功する経路だけ `MockUser` を継承して差し替えた。実際に uid が保たれるかは実機確認が要る
-- [x] **PR3: リンク済みの設定出し分け＋ログアウト/削除スタブ**
-    - LoggedIn には「ログアウト / アカウント削除」を、ゲストには「ログイン」を出す（設計方針の表どおり）
-    - 昇格（PR2）が入って初めて LoggedIn に到達できるため、このPRは最後に置く
-    - ログアウトはここで実装した（Phase10 から前倒し）。アカウント削除はスタブのまま
-
-### Apple サインインは将来対応（要有料アカウント）
-
-Sign In with Apple は App ID に紐づく Service capability で、有効化には有料の Apple Developer Program が要る。
-無料の Personal Team では有効化できない。加えて審査ガイドライン 5.1.1(v)（他社ソーシャルログインを出すなら
-Sign In with Apple も出す）自体がストア公開＝有料アカウントを前提にしている。
-
-そのため Apple はストア公開が視野に入る段階（Phase10 前後）に回す。Phase9 では以下を残し、
-Apple 追加を「credential 取得元を 1 つ足してボタンを再表示するだけ」に留める。
-
-- credential 取得を抽象化し、`UserRepository` は `OAuthCredential` を汎用に受ける
-- `SocialProvider` に `apple` を残す（ボタンは非表示）
-- 昇格の `linkWithCredential` / `credential-already-in-use` 経路はプロバイダに依存しない作りにする
-  （Apple は nonce の都合で元の credential を再利用できないため、例外が持つ credential を使う設計が効く）
-
-Apple のプライベートリレー経由で誤って別アカウントを作っても、初回ログインは uid を切り替えるだけで
-どちらのデータも消さないため、正しいプロバイダで入り直せば元の `users/{uid}` に戻って復元される。
-回復可能なので「前回プロバイダを記録して事前に防ぐ」対策は入れない。
+    - 設定画面の「ログイン」から昇格モードで `/login` へ遷移し、`linkWithCredential` で uid ごと引き継ぐ
+    - `credential-already-in-use` のときは警告ダイアログを出し、了承後に例外が持つ credential でサインインし直す。
+      `fcmTokens` は旧 uid から `arrayRemove` し、新 uid へ `arrayUnion` する
+    - ※ `firebase_auth_mocks` は匿名ユーザーの `linkWithCredential` を再現できない
+      （リンク後も匿名のままだと決め打ちして assert する）ため、昇格が成功する経路だけ
+      `MockUser` を継承して差し替えた。uid が保たれるかの確認は実機で行う
+- [x] **PR3: リンク済みの設定出し分け＋ログアウト**
+    - LoggedIn には「ログアウト / アカウント削除」を、ゲストには「ログイン」を出す
+    - ログアウトは `fcmTokens` から `arrayRemove` → `deleteToken()` → ログイン画面へ遷移 → `signOut()` の順。
+      `signOut()` を遷移より先に呼ぶと、ホーム画面が残ったまま `NoLogin` になりタスクの読み込みが例外になる
+    - アカウント削除はスタブのまま Phase10 へ送った
 
 ## Phase10
 
-主題はアカウントのライフサイクルと落穂拾い。ログアウト・削除・回収バッチを実装し、
-ここで初めてストア公開に耐える状態にする（Apple のアカウント削除要件を満たすのもここ）。
+主題はアカウントのライフサイクル。アカウント削除と、その取りこぼしを掃除する仕組みを入れる。
 
-- [x] ログアウトを実装する（リンク済みユーザーのみ）※ 他に依存しないため Phase9 PR3 で先行実装した
-  - `fcmTokens` から `arrayRemove` → `deleteToken()` → ログイン画面へ → `signOut()`
-    （`signOut()` は遷移の後。ホーム画面が残ったまま `NoLogin` にすると、タスクの読み込みが例外になる）
-  - Firestore のオフラインキャッシュは**消さない**
-    - `clearPersistence()` は「主にテスト用で、安全な消去は試みない」と明記されており、プライバシー保護にならない
-    - キャッシュはパス単位で保持されるため、新しいセッションが `users/{旧uid}` を引くことはない
-    - キャッシュは既定 40MB 上限の LRU で自己管理される
-    - 実行時に `terminate()` を呼ぶと、以降その Firestore インスタンスは `clearPersistence()` 以外の
-      全メソッドが `FirebaseException` を投げるようになり、サインインし直しても復帰できない
-    - 未送信の書き込みが残っていても、再送時にセキュリティルールで弾かれて捨てられる
-- [ ] アカウント削除を実装する（callable function）
-  - Apple トークンの revoke（クライアント）→ `recursiveDelete(users/{uid})` → `admin.auth().deleteUser(uid)`
-  - クライアントの `user.delete()` は `requires-recent-login` で失敗しうるため、Admin SDK 側で消す
-  - 削除後は `OnboardingRepository.removeCompletion()` を呼び、`NoLogin` かつ未視聴の状態にしてチュートリアルへ戻す
-- [ ] 放置アカウントを回収する定期実行 Function を作る（削除の安全網）
-  - Auth に存在しない uid の Firestore データを削除する
-    （`auth/user-not-found` が確定した場合に限り、かつ `lastActiveAt` から一定期間経過していること）
-  - 匿名かつ `lastActiveAt` から長期間更新のないアカウントを Auth ごと削除する
-- [ ] 他端末でのアカウント削除によるトークン失効を、操作時のエラーとして検知しダイアログ経由でログイン画面へ誘導する
+- [ ] **PR1: アカウント削除**
+    - functions に `deleteAccount` を `onCall` で追加する
+        - `recursiveDelete(users/{uid})` → `admin.auth().deleteUser(uid)` の順で消す。
+          逆順だとデータ削除に失敗したときユーザーがサインインできなくなり、
+          自力で再実行できないまま `users/{uid}` が誰にも辿れないゴミとして残る。
+          この順なら Auth が生きているので、もう一度削除を実行すれば続きから消せる
+        - uid は引数で受けず `request.auth.uid` を使う。引数で受けると他人の uid を渡して消せてしまう
+        - クライアントの `user.delete()` は `requires-recent-login` で失敗しうるため、Admin SDK 側で消す
+    - クライアントは `cloud_functions` を追加し、`UserRepository.deleteAccount()` の中で
+      `httpsCallable('deleteAccount')` を呼ぶ。リージョンは functions 側が未指定（`us-central1`）で
+      クライアントの既定と一致するため設定は要らない
+        - `FirebaseFunctionsException` は `UserRepositoryException` のサブクラスに変換する
+        - `cloud_functions` にモックがないため、テストは `UserRepository` の Fake で差し替える
+    - 確認ダイアログ（`destruction`）→ `deleteToken()` → callable → チュートリアル先頭へ遷移 →
+      `OnboardingRepository.removeCompletion()`。最初の画面に戻すことで、完全に消えた雰囲気を出す
+    - `fcmTokens` の `arrayRemove` は不要（`users/{uid}` ごと消えるため）。端末側の `deleteToken()` は要る
+- [ ] **PR2: 他端末で削除されたことの検知**
+    - 削除されるとトークン更新が失敗して SDK がローカルでサインアウトするため、
+      `authStateChanges()` → `currentUserProvider` が `NoLogin` → `taskRepositoryProvider` が
+      NoLogin 版に切り替わり、既存の `TaskNotSignedInException` として観測できる。
+      `permission-denied` を見て判定する必要はない（ルール設定ミスと区別できないため、そうしない）
+    - ViewModel の `catch` で `TaskNotSignedInException` だけ手前に分け、
+      ログイン画面へ誘導する `DialogMessage` を出す（8 箇所）
+    - 検知はトークン更新の契機まで遅れるが、設計方針の「操作時のエラーとして検知する」と一致している
+    - ログアウトでは「ホーム画面が残ったまま `NoLogin` にすると例外になる」ことを避けたが、
+      ここではその例外が検知したい信号そのものになる
+- [ ] **PR3: 放置アカウントを回収する定期実行 Function（削除の安全網）**
+    - Auth に存在しない uid の Firestore データを削除する
+      （`auth/user-not-found` が確定した場合に限り、かつ `lastActiveAt` から一定期間経過していること）
+    - 匿名かつ `lastActiveAt` から長期間更新のないアカウントを Auth ごと削除する
+    - しきい値は用途が違うので別々に持ち、`defineInt` と `.env.<プロジェクトID>` で環境ごとに変える。
+      prod プロジェクトを作る際は `.env` を足すだけでよい形にする
+
+      | 対象 | dev | prod 想定 |
+      |---|---|---|
+      | Auth に無い uid の Firestore データ（削除の失敗残骸） | 1日 | 7日 |
+      | 匿名かつ長期間未使用のアカウント | 3日 | 180日 |
+
+      dev で日数を分けるのは、片方だけ発火する状態を作って経路を切り分けられるようにするため
+
+## Apple Developer Program に登録したらやること
+
+Sign in with Apple も APNs も capability の有効化に有料の Apple Developer Program が要り、
+無料の Personal Team では有効化できない。どちらも登録するまで保留している。
+
+### APNs（iOS のプッシュ通知）
+
+- [ ] Push Notifications capability を有効化し、`aps-environment` の entitlements を追加する
+      （現状 `ios/Runner` に entitlements ファイル自体がない）
+- [ ] APNs 認証キー（.p8）を作り、Firebase コンソールに登録する
+
+### Sign in with Apple
+
+- [ ] Sign in with Apple の capability を有効化し、credential の取得元を足す
+- [ ] ログイン画面に Apple ボタンを戻す
+- [ ] アカウント削除に Apple トークンの revoke（クライアント）を足す
