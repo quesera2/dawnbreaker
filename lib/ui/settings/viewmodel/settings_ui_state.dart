@@ -8,10 +8,9 @@ import 'package:uuid/uuid.dart';
 
 part 'settings_ui_state.freezed.dart';
 
-/// アカウントの削除に同意したこと。受け取った画面はチュートリアルの先頭へ遷移し、
-/// 遷移先が削除を実行する
-class DeleteAccountConfirmedEvent {
-  DeleteAccountConfirmedEvent() : id = const Uuid().v4();
+/// アカウントを消し終えたこと。受け取った画面はチュートリアルの先頭へ戻す
+class AccountDeletedEvent {
+  AccountDeletedEvent() : id = const Uuid().v4();
 
   final String id;
 }
@@ -26,7 +25,8 @@ abstract class SettingsUiState with _$SettingsUiState implements BaseUiState {
     @Default(HomeDisplayMode.timeline) HomeDisplayMode displayMode,
     @Default(true) bool progressBarAnimationEnabled,
     @Default(false) bool isGuest,
-    DeleteAccountConfirmedEvent? deleteAccountConfirmed,
+    @Default(false) bool isDeletingAccount,
+    AccountDeletedEvent? accountDeleted,
     DialogMessage? dialogMessage,
     SnackBarMessage? snackBarMessage,
   }) = _SettingsUiState;

@@ -79,14 +79,11 @@ class DeleteAccountConfirmMessage extends DialogMessage {
     : super(type: DialogType.destruction);
 }
 
-/// 削除に失敗したときのエラー。再試行するか、やめて元の画面へ戻るかを選ばせる。
-///
-/// 閉じただけだと、削除を引き受けたチュートリアル画面に取り残される
+/// 削除に失敗したときのエラー。消えたかどうかを曖昧にしないよう、
+/// 枠外タップでは閉じさせず、再試行かキャンセルを選ばせる
 class DeleteAccountErrorMessage extends DialogMessage {
-  DeleteAccountErrorMessage({
-    required super.primaryHandler,
-    required super.secondaryHandler,
-  }) : super(type: DialogType.error, dismissible: false);
+  DeleteAccountErrorMessage({required super.primaryHandler})
+    : super(type: DialogType.error, dismissible: false);
 }
 
 class NotificationEnableErrorMessage extends DialogMessage {

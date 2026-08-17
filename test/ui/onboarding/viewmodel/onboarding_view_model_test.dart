@@ -1,5 +1,4 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
-import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -9,7 +8,6 @@ import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../helpers/fake_notification_service.dart';
 import '../../../helpers/fake_onboarding_repository.dart';
 import '../../../helpers/fake_user_repository.dart';
 
@@ -19,7 +17,6 @@ void main() {
   group('OnboardingViewModel', () {
     late ProviderContainer container;
     late FakeOnboardingRepository fakeRepository;
-    late FakeNotificationService fakeNotificationService;
     late FakeUserRepository fakeUserRepository;
     late OnboardingViewModel viewModel;
     late OnboardingUiState viewState;
@@ -37,14 +34,10 @@ void main() {
 
     setUp(() {
       fakeRepository = FakeOnboardingRepository();
-      fakeNotificationService = FakeNotificationService();
       fakeUserRepository = FakeUserRepository(const LoggedIn('user-1'));
       container = ProviderContainer(
         overrides: [
           onboardingRepositoryProvider.overrideWith((_) => fakeRepository),
-          fcmNotificationServiceProvider.overrideWith(
-            (_) => fakeNotificationService,
-          ),
           userRepositoryProvider.overrideWith((_) => fakeUserRepository),
         ],
       );
@@ -153,136 +146,53 @@ void main() {
         });
       });
     });
-    // 削除は設定画面ではなくこの画面が行う。設定画面を残したままサインアウトすると、
+    // サインアウトだけはこの画面が行う。設定画面を残したままサインアウトすると、
     // まだ生きている購読が NoLogin で走って例外になるため（ログアウトと同じ形）
-    group('deleteAccount', () {
+    group('finishAccountDeletion', () {
       group('正常系', () {
-        setUp(() => setUpState(mode: .executeAccountDeletion));
-
-        test('アカウントを消す', () async {
-          await viewModel.deleteAccount();
-          expect(fakeUserRepository.deleteAccountCount, 1);
-        });
-
-        test('消したアカウント宛の通知が届かないよう、トークンを捨てる', () async {
-          await viewModel.deleteAccount();
-          expect(fakeNotificationService.deleteTokenCount, 1);
-        });
+        setUp(() => setUpState(mode: .afterAccountDeletion));
 
         test('消えたアカウントのセッションを残さない', () async {
-          await viewModel.deleteAccount();
+          await viewModel.finishAccountDeletion();
           expect(fakeUserRepository.signOutCount, 1);
         });
 
         test('開き直したときにチュートリアルから始まるようにする', () async {
-          await viewModel.deleteAccount();
+          await viewModel.finishAccountDeletion();
           expect(fakeRepository.removeCompletionCalled, true);
         });
 
-        test('処理中は操作を塞ぐ', () async {
-          final future = viewModel.deleteAccount();
-          expect(viewState.isDeletingAccount, true);
-          await future;
-          expect(viewState.isDeletingAccount, false);
-        });
-
-        test('トークンを捨てられなくても削除は続く', () async {
-          fakeNotificationService.deleteTokenShouldThrow = true;
-          await viewModel.deleteAccount();
-          expect(fakeUserRepository.deleteAccountCount, 1);
-          expect(fakeUserRepository.signOutCount, 1);
-        });
-
         test('チュートリアルを終えるとログイン画面へ進む', () async {
-          await viewModel.deleteAccount();
+          await viewModel.finishAccountDeletion();
           await viewModel.onClickDone();
           expect(viewState.destination?.type, OnboardingDestination.login);
         });
       });
 
       group('異常系', () {
-        test('削除を引き受けていない画面では実行できない', () {
+        test('削除後に戻ってきた画面でなければ実行できない', () {
           setUpState();
-          expect(() => viewModel.deleteAccount(), throwsStateError);
-        });
-
-        group('削除に失敗した場合', () {
-          setUp(() {
-            setUpState(mode: .executeAccountDeletion);
-            fakeUserRepository.shouldFailDeleteAccount = true;
-          });
-
-          test('エラーが通知される', () async {
-            await viewModel.deleteAccount();
-            expect(viewState.dialogMessage, isA<DeleteAccountErrorMessage>());
-          });
-
-          test('消えていないのでサインアウトしない', () async {
-            await viewModel.deleteAccount();
-            expect(fakeUserRepository.signOutCount, 0);
-            expect(fakeRepository.removeCompletionCalled, false);
-          });
-
-          test('再試行するともう一度消しにいく', () async {
-            await viewModel.deleteAccount();
-            fakeUserRepository.shouldFailDeleteAccount = false;
-
-            viewState.dialogMessage!.primaryHandler!();
-            await pumpEventQueue();
-
-            expect(fakeUserRepository.deleteAccountCount, 2);
-            expect(fakeUserRepository.signOutCount, 1);
-          });
-
-          test('やめるとホーム画面へ戻る', () async {
-            await viewModel.deleteAccount();
-
-            viewState.dialogMessage!.secondaryHandler!();
-
-            expect(viewState.destination?.type, OnboardingDestination.home);
-          });
-
-          test('操作を塞いだままにしない', () async {
-            await viewModel.deleteAccount();
-
-            expect(viewState.isDeletingAccount, false);
-          });
-
-          test('再試行がまた失敗したらもう一度知らせる', () async {
-            await viewModel.deleteAccount();
-            final firstMessage = viewState.dialogMessage!;
-
-            firstMessage.primaryHandler!();
-            await pumpEventQueue();
-
-            expect(viewState.dialogMessage, isA<DeleteAccountErrorMessage>());
-            expect(viewState.dialogMessage!.id, isNot(firstMessage.id));
-          });
+          expect(() => viewModel.finishAccountDeletion(), throwsStateError);
         });
 
         // アカウントは消えている。後始末が転んでも、消えていないかのようには見せない
-        group('削除後の後始末に失敗した場合', () {
-          setUp(() => setUpState(mode: .executeAccountDeletion));
+        test('チュートリアルフラグを消せなくてもサインアウトする', () async {
+          setUpState(mode: .afterAccountDeletion);
+          fakeRepository.shouldThrow = true;
 
-          test('チュートリアルフラグを消せなくても削除は終わる', () async {
-            fakeRepository.shouldThrow = true;
+          await viewModel.finishAccountDeletion();
 
-            await viewModel.deleteAccount();
+          expect(fakeUserRepository.signOutCount, 1);
+          expect(viewState.dialogMessage, isNull);
+        });
 
-            expect(fakeUserRepository.signOutCount, 1);
-            expect(viewState.dialogMessage, isNull);
-            expect(viewState.isDeletingAccount, false);
-          });
+        test('サインアウトできなくてもエラーにはしない', () async {
+          setUpState(mode: .afterAccountDeletion);
+          fakeUserRepository.shouldThrow = true;
 
-          test('サインアウトできなくても削除は終わる', () async {
-            fakeUserRepository.shouldThrow = true;
+          await viewModel.finishAccountDeletion();
 
-            await viewModel.deleteAccount();
-
-            expect(fakeUserRepository.deleteAccountCount, 1);
-            expect(viewState.dialogMessage, isNull);
-            expect(viewState.isDeletingAccount, false);
-          });
+          expect(viewState.dialogMessage, isNull);
         });
       });
     });

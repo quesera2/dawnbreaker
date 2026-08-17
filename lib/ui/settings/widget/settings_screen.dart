@@ -4,6 +4,7 @@ import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_list_cell.dart';
+import 'package:dawnbreaker/ui/common/components/app_progress_overlay.dart';
 import 'package:dawnbreaker/ui/common/components/app_section_header.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/login/widgets/login_param.dart';
@@ -39,15 +40,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     listenMessages(settingsViewModelProvider);
     final viewState = ref.watch(settingsViewModelProvider);
 
-    // 削除自体はチュートリアル画面が行う。ここで消すと、まだ残っているこの画面の
-    // 購読が permission-denied になる（ログアウトと同じ形）
-    ref.listen(
-      settingsViewModelProvider.select((s) => s.deleteAccountConfirmed),
-      (prev, next) {
-        if (next == null || prev?.id == next.id) return;
-        context.go('/onboarding', extra: OnboardingMode.executeAccountDeletion);
-      },
-    );
+    // 消し終えたら、初めて使うときと同じチュートリアルの先頭へ戻す。
+    // 残りの後始末（サインアウト）は遷移先が行う
+    ref.listen(settingsViewModelProvider.select((s) => s.accountDeleted), (
+      prev,
+      next,
+    ) {
+      if (next == null || prev?.id == next.id) return;
+      context.go('/onboarding', extra: OnboardingMode.afterAccountDeletion);
+    });
 
     if (viewState.isLoading) {
       return const Scaffold();
@@ -59,28 +60,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         title: context.l10n.settingsTitle,
         onBack: () => context.pop(),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(20, 8, 20, padding.bottom + 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ..._notificationSection(context, viewState: viewState),
-            const SizedBox(height: 24),
-            ..._displaySection(
-              context,
-              displayMode: viewState.displayMode,
-              progressBarAnimationEnabled:
-                  viewState.progressBarAnimationEnabled,
-            ),
-            const SizedBox(height: 24),
-            ..._accountSection(context, isGuest: viewState.isGuest),
-            const SizedBox(height: 24),
-            ..._infoSection(context, viewState.version),
-            if (kDebugMode) ...[
+      body: AppProgressOverlay(
+        visible: viewState.isDeletingAccount,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(20, 8, 20, padding.bottom + 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ..._notificationSection(context, viewState: viewState),
               const SizedBox(height: 24),
-              ..._debugSection(context, _viewModel),
+              ..._displaySection(
+                context,
+                displayMode: viewState.displayMode,
+                progressBarAnimationEnabled:
+                    viewState.progressBarAnimationEnabled,
+              ),
+              const SizedBox(height: 24),
+              ..._accountSection(context, isGuest: viewState.isGuest),
+              const SizedBox(height: 24),
+              ..._infoSection(context, viewState.version),
+              if (kDebugMode) ...[
+                const SizedBox(height: 24),
+                ..._debugSection(context, _viewModel),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

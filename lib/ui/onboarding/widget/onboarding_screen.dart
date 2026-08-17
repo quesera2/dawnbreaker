@@ -5,7 +5,6 @@ import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/ui/common/after_transition_mixin.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
-import 'package:dawnbreaker/ui/common/components/app_progress_overlay.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_view_model.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
@@ -45,8 +44,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     _viewModel = ref.read(_viewState.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FlutterNativeSplash.remove();
-      if (widget.mode == .executeAccountDeletion) {
-        runAfterTransition(() => unawaited(_viewModel.deleteAccount()));
+      if (widget.mode == .afterAccountDeletion) {
+        runAfterTransition(() => unawaited(_viewModel.finishAccountDeletion()));
       }
     });
   }
@@ -83,9 +82,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     final colorScheme = context.appColorScheme;
     listenMessages(_viewState);
     final isCompleting = ref.watch(_viewState.select((s) => s.isLoading));
-    final isDeletingAccount = ref.watch(
-      _viewState.select((s) => s.isDeletingAccount),
-    );
 
     ref.listen(_viewState.select((s) => s.destination), (prev, next) {
       if (next == null || prev?.id == next.id) return;
@@ -95,8 +91,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
           context.go('/login');
         case .pop:
           context.pop();
-        case .home:
-          context.go('/home');
       }
     });
 
@@ -125,74 +119,70 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
       },
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: AppProgressOverlay(
-          visible: isDeletingAccount,
-          child: SafeArea(
-            child: Column(
-              children: [
-                switch (widget.mode) {
-                  .fromSettings => Visibility(
-                    visible: !_isLastPage,
-                    maintainSize: true,
-                    maintainAnimation: true,
-                    maintainState: true,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 4, 0, 0),
-                        child: AppIconButton(
-                          icon: Icons.close,
-                          onTap: () => context.pop(),
-                        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              switch (widget.mode) {
+                .fromSettings => Visibility(
+                  visible: !_isLastPage,
+                  maintainSize: true,
+                  maintainAnimation: true,
+                  maintainState: true,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 4, 0, 0),
+                      child: AppIconButton(
+                        icon: Icons.close,
+                        onTap: () => context.pop(),
                       ),
                     ),
                   ),
-                  .initial || .executeAccountDeletion => Visibility(
-                    visible: !_isLastPage,
-                    maintainSize: true,
-                    maintainAnimation: true,
-                    maintainState: true,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 0, 8, 4),
-                        child: AppIconButton(
-                          icon: Icons.skip_next,
-                          label: context.l10n.commonSkip,
-                          onTap: _viewModel.onClickSkip,
-                        ),
+                ),
+                .initial || .afterAccountDeletion => Visibility(
+                  visible: !_isLastPage,
+                  maintainSize: true,
+                  maintainAnimation: true,
+                  maintainState: true,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 8, 4),
+                      child: AppIconButton(
+                        icon: Icons.skip_next,
+                        label: context.l10n.commonSkip,
+                        onTap: _viewModel.onClickSkip,
                       ),
                     ),
                   ),
-                },
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    onPageChanged: (page) =>
-                        setState(() => _currentPage = page),
-                    children: _pageData.map((d) => d.page).toList(),
+                ),
+              },
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (page) => setState(() => _currentPage = page),
+                  children: _pageData.map((d) => d.page).toList(),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsetsGeometry.symmetric(vertical: 16),
+                child: SmoothPageIndicator(
+                  controller: _pageController,
+                  count: _pageData.length,
+                  effect: ExpandingDotsEffect(
+                    dotHeight: 10,
+                    dotWidth: 10,
+                    activeDotColor: colorScheme.primary,
+                    dotColor: colorScheme.borderStrong,
                   ),
+                  onDotClicked: (index) => _pageController.jumpToPage(index),
                 ),
-                Padding(
-                  padding: const EdgeInsetsGeometry.symmetric(vertical: 16),
-                  child: SmoothPageIndicator(
-                    controller: _pageController,
-                    count: _pageData.length,
-                    effect: ExpandingDotsEffect(
-                      dotHeight: 10,
-                      dotWidth: 10,
-                      activeDotColor: colorScheme.primary,
-                      dotColor: colorScheme.borderStrong,
-                    ),
-                    onDotClicked: (index) => _pageController.jumpToPage(index),
-                  ),
-                ),
-                _ButtonArea(
-                  buttons: _pageData[_currentPage].buttons,
-                  isCompleting: isCompleting,
-                ),
-              ],
-            ),
+              ),
+              _ButtonArea(
+                buttons: _pageData[_currentPage].buttons,
+                isCompleting: isCompleting,
+              ),
+            ],
           ),
         ),
       ),
