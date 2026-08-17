@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/repository/user/credential_source.dart';
 import 'package:dawnbreaker/data/repository/user/google_credential_source.dart';
@@ -94,6 +95,28 @@ class FirebaseUserRepository implements UserRepository {
 
   @override
   Future<void> signOut() => _auth.signOut();
+
+  /// 削除は Functions 側でしか行えないため、通信の失敗もここでは救えない。
+  /// 呼び出し元が再試行できるよう、リポジトリの例外に変換して投げ直す。
+  ///
+  /// `FirebaseFunctions` はモックがなく差し替えても何も確かめられないため、
+  /// `_auth` と違い注入しない。テストは `UserRepository` ごと Fake に差し替える
+  @override
+  Future<void> deleteAccount() async {
+    try {
+      await FirebaseFunctions.instance
+          .httpsCallable('deleteAccount')
+          .call<void>();
+    } on FirebaseFunctionsException catch (e) {
+      throw AccountDeletionException(
+        'deleteAccount failed: ${e.code} ${e.message}',
+      );
+    } catch (e) {
+      // ID トークンの取得失敗やプラグインの不在もここに来る。素通しすると
+      // 呼び出し元の型付き catch を抜けて、進捗表示が消えないまま画面が固まる
+      throw AccountDeletionException('deleteAccount failed: $e');
+    }
+  }
 
   @override
   Future<LoggedIn> signInWithLinkedCredential(AuthCredential credential) =>

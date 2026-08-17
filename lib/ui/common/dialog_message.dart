@@ -8,11 +8,16 @@ sealed class DialogMessage {
     required this.type,
     this.primaryHandler,
     this.secondaryHandler,
+    this.dismissible = true,
   }) : id = const Uuid().v4();
 
   final DialogType type;
   final VoidCallback? primaryHandler;
   final VoidCallback? secondaryHandler;
+
+  /// 枠外タップで閉じられるか。閉じるとハンドラが走らないため、
+  /// どちらかを必ず選ばせたいものは `false` にする
+  final bool dismissible;
   final String id;
 }
 
@@ -66,6 +71,19 @@ class SignInErrorMessage extends DialogMessage {
 class SwitchAccountConfirmMessage extends DialogMessage {
   SwitchAccountConfirmMessage({required super.primaryHandler})
     : super(type: DialogType.destruction);
+}
+
+/// アカウントとタスクがすべて消えることを、消す前に確かめる
+class DeleteAccountConfirmMessage extends DialogMessage {
+  DeleteAccountConfirmMessage({required super.primaryHandler})
+    : super(type: DialogType.destruction);
+}
+
+/// 削除に失敗したときのエラー。消えたかどうかを曖昧にしないよう、
+/// 枠外タップでは閉じさせず、再試行かキャンセルを選ばせる
+class DeleteAccountErrorMessage extends DialogMessage {
+  DeleteAccountErrorMessage({required super.primaryHandler})
+    : super(type: DialogType.error, dismissible: false);
 }
 
 class NotificationEnableErrorMessage extends DialogMessage {

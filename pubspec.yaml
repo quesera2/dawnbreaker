@@ -40,6 +40,7 @@ dependencies:
   firebase_analytics: ^12.0.0
   firebase_messaging: ^16.0.0
   google_sign_in: ^7.2.0
+  cloud_functions: ^6.3.6
 
 dev_dependencies:
   flutter_test:
@@ -54,7 +55,7 @@ dev_dependencies:
   freezed: ^3.2.5
   json_serializable: ^6.13.0
   build_runner: ^2.13.1
-  fake_cloud_firestore: ^4.1.1
+  fake_cloud_firestore: ^4.2.0
   firebase_auth_mocks: ^0.15.2
   mock_exceptions: ^0.8.2
 

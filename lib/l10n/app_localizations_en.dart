@@ -521,6 +521,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAccountDelete => 'Delete account';
 
   @override
+  String get settingsAccountDeleteConfirm =>
+      'This deletes your account and all of your tasks. It cannot be undone.';
+
+  @override
+  String get settingsErrorAccountDeleteFailed =>
+      'Failed to delete the account.';
+
+  @override
   String get settingsSectionInfo => 'Info';
 
   @override

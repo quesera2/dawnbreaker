@@ -1,4 +1,6 @@
+import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
+import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_ui_state.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_view_model.dart';
@@ -7,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_onboarding_repository.dart';
+import '../../../helpers/fake_user_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +17,7 @@ void main() {
   group('OnboardingViewModel', () {
     late ProviderContainer container;
     late FakeOnboardingRepository fakeRepository;
+    late FakeUserRepository fakeUserRepository;
     late OnboardingViewModel viewModel;
     late OnboardingUiState viewState;
 
@@ -30,14 +34,19 @@ void main() {
 
     setUp(() {
       fakeRepository = FakeOnboardingRepository();
+      fakeUserRepository = FakeUserRepository(const LoggedIn('user-1'));
       container = ProviderContainer(
         overrides: [
           onboardingRepositoryProvider.overrideWith((_) => fakeRepository),
+          userRepositoryProvider.overrideWith((_) => fakeUserRepository),
         ],
       );
     });
 
-    tearDown(() => container.dispose());
+    tearDown(() async {
+      container.dispose();
+      await fakeUserRepository.close();
+    });
 
     group('初期状態', () {
       setUp(setUpState);
@@ -134,6 +143,56 @@ void main() {
           setUpState();
           await viewModel.onClickSkip();
           expect(viewState.isLoading, false);
+        });
+      });
+    });
+    // サインアウトだけはこの画面が行う。設定画面を残したままサインアウトすると、
+    // まだ生きている購読が NoLogin で走って例外になるため（ログアウトと同じ形）
+    group('finishAccountDeletion', () {
+      group('正常系', () {
+        setUp(() => setUpState(mode: .afterAccountDeletion));
+
+        test('消えたアカウントのセッションを残さない', () async {
+          await viewModel.finishAccountDeletion();
+          expect(fakeUserRepository.signOutCount, 1);
+        });
+
+        test('開き直したときにチュートリアルから始まるようにする', () async {
+          await viewModel.finishAccountDeletion();
+          expect(fakeRepository.removeCompletionCalled, true);
+        });
+
+        test('チュートリアルを終えるとログイン画面へ進む', () async {
+          await viewModel.finishAccountDeletion();
+          await viewModel.onClickDone();
+          expect(viewState.destination?.type, OnboardingDestination.login);
+        });
+      });
+
+      group('異常系', () {
+        test('削除後に戻ってきた画面でなければ実行できない', () {
+          setUpState();
+          expect(() => viewModel.finishAccountDeletion(), throwsStateError);
+        });
+
+        // アカウントは消えている。後始末が転んでも、消えていないかのようには見せない
+        test('チュートリアルフラグを消せなくてもサインアウトする', () async {
+          setUpState(mode: .afterAccountDeletion);
+          fakeRepository.shouldThrow = true;
+
+          await viewModel.finishAccountDeletion();
+
+          expect(fakeUserRepository.signOutCount, 1);
+          expect(viewState.dialogMessage, isNull);
+        });
+
+        test('サインアウトできなくてもエラーにはしない', () async {
+          setUpState(mode: .afterAccountDeletion);
+          fakeUserRepository.shouldThrow = true;
+
+          await viewModel.finishAccountDeletion();
+
+          expect(viewState.dialogMessage, isNull);
         });
       });
     });

@@ -19,6 +19,12 @@ abstract interface class UserRepository {
   /// 匿名アカウントは credential がないため戻れなくなる
   Future<void> signOut();
 
+  /// アカウントと、そのユーザーのデータをすべて削除する。
+  ///
+  /// クライアントの `delete()` は `requires-recent-login` で失敗しうるため、
+  /// Cloud Functions 側の Admin SDK で消す
+  Future<void> deleteAccount();
+
   /// [SignInCredentialInUse] が持っていた credential でサインインし直す。
   ///
   /// 昇格をあきらめて別のアカウントへ乗り換える操作で、いまの匿名アカウントのデータは捨てる。

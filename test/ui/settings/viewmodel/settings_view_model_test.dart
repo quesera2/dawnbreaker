@@ -427,6 +427,108 @@ void main() {
         });
       });
 
+      group('deleteAccount', () {
+        setUp(() => setUpLoaded(user: const LoggedIn('user-1')));
+
+        /// 確認ダイアログの「削除」を押した状況を作る
+        Future<void> confirmDeletion() async {
+          viewModel.deleteAccount();
+          viewState.dialogMessage!.primaryHandler!();
+          await pumpEventQueue();
+        }
+
+        test('了承を得るまでは消さない', () {
+          viewModel.deleteAccount();
+
+          expect(viewState.dialogMessage, isA<DeleteAccountConfirmMessage>());
+          expect(fakeUserRepository.deleteAccountCount, 0);
+        });
+
+        test('了承したらアカウントを消す', () async {
+          await confirmDeletion();
+
+          expect(fakeUserRepository.deleteAccountCount, 1);
+        });
+
+        test('消したアカウント宛の通知が届かないよう、トークンを捨てる', () async {
+          await confirmDeletion();
+
+          expect(fakeNotificationService.deleteTokenCount, 1);
+        });
+
+        test('消し終えたらチュートリアルの先頭へ戻す', () async {
+          await confirmDeletion();
+
+          expect(viewState.accountDeleted, isNotNull);
+        });
+
+        // サインアウトすると、まだ生きているこの画面の購読が NoLogin で走る
+        test('この画面ではサインアウトしない', () async {
+          await confirmDeletion();
+
+          expect(fakeUserRepository.signOutCount, 0);
+        });
+
+        test('処理中は操作を塞ぐ', () async {
+          viewModel.deleteAccount();
+
+          viewState.dialogMessage!.primaryHandler!();
+          expect(viewState.isDeletingAccount, true);
+
+          await pumpEventQueue();
+          expect(viewState.isDeletingAccount, false);
+        });
+
+        test('トークンを捨てられなくても削除は続く', () async {
+          fakeNotificationService.deleteTokenShouldThrow = true;
+
+          await confirmDeletion();
+
+          expect(fakeUserRepository.deleteAccountCount, 1);
+          expect(viewState.accountDeleted, isNotNull);
+        });
+
+        group('削除に失敗した場合', () {
+          setUp(() => fakeUserRepository.shouldFailDeleteAccount = true);
+
+          test('再試行できるエラーを出す', () async {
+            await confirmDeletion();
+
+            expect(viewState.dialogMessage, isA<DeleteAccountErrorMessage>());
+            expect(viewState.dialogMessage!.primaryHandler, isNotNull);
+          });
+
+          test('画面はそのままにする', () async {
+            await confirmDeletion();
+
+            expect(viewState.accountDeleted, isNull);
+            expect(viewState.isDeletingAccount, false);
+          });
+
+          test('再試行するともう一度消しにいく', () async {
+            await confirmDeletion();
+            fakeUserRepository.shouldFailDeleteAccount = false;
+
+            viewState.dialogMessage!.primaryHandler!();
+            await pumpEventQueue();
+
+            expect(fakeUserRepository.deleteAccountCount, 2);
+            expect(viewState.accountDeleted, isNotNull);
+          });
+
+          test('再試行がまた失敗したらもう一度知らせる', () async {
+            await confirmDeletion();
+            final firstMessage = viewState.dialogMessage!;
+
+            firstMessage.primaryHandler!();
+            await pumpEventQueue();
+
+            expect(viewState.dialogMessage, isA<DeleteAccountErrorMessage>());
+            expect(viewState.dialogMessage!.id, isNot(firstMessage.id));
+          });
+        });
+      });
+
       group('プログレスバーアニメーションの外部変更', () {
         setUp(() => setUpLoaded());
 

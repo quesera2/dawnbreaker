@@ -13,7 +13,9 @@ import 'package:dawnbreaker/data/repository/settings/settings_repository.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
+import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
+import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/settings/viewmodel/dummy_tasks.dart';
@@ -160,9 +162,59 @@ class SettingsViewModel extends _$SettingsViewModel {
     await _settingsRepository.setProgressBarAnimationEnabled(value);
   }
 
-  // TODO: Phase10 で実装する。データとアカウントを消し、チュートリアルの最初へ戻す
+  /// 取り消せない操作なので、押しただけでは消さず確認を挟む
   void deleteAccount() {
-    logger.w('account deletion is not implemented yet');
+    state = state.copyWith(
+      dialogMessage: DeleteAccountConfirmMessage(
+        primaryHandler: () => unawaited(_deleteAccount()),
+      ),
+    );
+  }
+
+  /// アカウントとデータを消して、チュートリアルの先頭へ戻す。
+  /// 最初の画面に戻すことで、完全に消えた雰囲気を出す
+  Future<void> _deleteAccount() async {
+    if (state.isDeletingAccount) return;
+    state = state.copyWith(isDeletingAccount: true);
+
+    // 消したアカウント宛の通知がこの端末に届き続けないよう、先に捨てる。
+    // Firestore の fcmTokens は users/{uid} ごと消えるため触らない
+    await _deleteToken();
+    if (!ref.mounted) return;
+
+    try {
+      await ref.read(userRepositoryProvider).deleteAccount();
+    } on UserRepositoryException catch (e, s) {
+      logger.e('deleteAccount failed', error: e, stackTrace: s);
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        isDeletingAccount: false,
+        dialogMessage: DeleteAccountErrorMessage(
+          primaryHandler: () => unawaited(_deleteAccount()),
+        ),
+      );
+      return;
+    }
+    if (!ref.mounted) return;
+
+    // サインアウトとチュートリアルフラグの削除は遷移先が行う。ここでサインアウトすると、
+    // まだ生きているこの画面の購読が NoLogin で走って例外になる（ログアウトと同じ形）
+    state = state.copyWith(
+      isDeletingAccount: false,
+      accountDeleted: AccountDeletedEvent(),
+    );
+  }
+
+  /// この端末のトークンを捨てる。失敗しても削除は続ける
+  Future<void> _deleteToken() async {
+    try {
+      final notificationService = await ref.read(
+        fcmNotificationServiceProvider.future,
+      );
+      await notificationService.deleteToken();
+    } catch (e, s) {
+      logger.e('deleteToken failed', error: e, stackTrace: s);
+    }
   }
 
   // デバッグメニュー専用。TaskRepository は Firebase に触るため、ここでだけ読む

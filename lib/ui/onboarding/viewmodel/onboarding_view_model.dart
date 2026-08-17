@@ -2,6 +2,7 @@ import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
+import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_ui_state.dart';
 import 'package:dawnbreaker/ui/onboarding/widget/onboarding_mode.dart';
@@ -35,7 +36,7 @@ class OnboardingViewModel extends _$OnboardingViewModel {
     if (!ref.mounted) return;
     state = state.copyWith(
       destination: switch (mode) {
-        .initial => OnboardingDestinationEvent(.login),
+        .initial || .afterAccountDeletion => OnboardingDestinationEvent(.login),
         .fromSettings => OnboardingDestinationEvent(.pop),
       },
     );
@@ -60,5 +61,33 @@ class OnboardingViewModel extends _$OnboardingViewModel {
     }
     if (!ref.mounted) return;
     state = state.copyWith(destination: OnboardingDestinationEvent(.login));
+  }
+
+  /// アカウントを消したあとに戻ってきたときの後始末。
+  ///
+  /// サインアウトを設定画面が生きているうちに行うと、まだ残っている購読が
+  /// `NoLogin` で走って例外になるため、遷移してからこちらで行う（ログアウトと同じ形）
+  Future<void> finishAccountDeletion() async {
+    if (mode != .afterAccountDeletion) {
+      throw StateError(
+        'finishAccountDeletion is only available in afterAccountDeletion mode',
+      );
+    }
+
+    // 消したあとに開き直したら、初めて使うときと同じチュートリアルから始める。
+    // 消えたのはアカウントなので、フラグを消せなくても削除自体は済んでいる
+    try {
+      await _repository.removeCompletion();
+    } on OnboardingRepositoryException catch (e, s) {
+      logger.e('removeCompletion failed', error: e, stackTrace: s);
+    }
+    if (!ref.mounted) return;
+
+    // 消えたアカウントのセッションが残ったままだと、開き直したときにホームへ入ってしまう
+    try {
+      await ref.read(userRepositoryProvider).signOut();
+    } catch (e, s) {
+      logger.e('signOut after deletion failed', error: e, stackTrace: s);
+    }
   }
 }

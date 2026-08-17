@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
+import 'package:dawnbreaker/ui/common/after_transition_mixin.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
@@ -22,7 +25,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
-    with MessagesListenMixin {
+    with MessagesListenMixin, AfterTransitionMixin {
   late final PageController _pageController;
   late final OnboardingViewModelProvider _viewState;
   late final OnboardingViewModel _viewModel;
@@ -41,6 +44,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     _viewModel = ref.read(_viewState.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FlutterNativeSplash.remove();
+      if (widget.mode == .afterAccountDeletion) {
+        runAfterTransition(() => unawaited(_viewModel.finishAccountDeletion()));
+      }
     });
   }
 
@@ -133,7 +139,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                     ),
                   ),
                 ),
-                .initial => Visibility(
+                .initial || .afterAccountDeletion => Visibility(
                   visible: !_isLastPage,
                   maintainSize: true,
                   maintainAnimation: true,

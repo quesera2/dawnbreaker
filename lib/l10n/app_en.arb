@@ -253,6 +253,8 @@
   "settingsAccountLoginDescription": "Sign in to keep your tasks when you change devices.",
   "settingsAccountLogout": "Sign out",
   "settingsAccountDelete": "Delete account",
+  "settingsAccountDeleteConfirm": "This deletes your account and all of your tasks. It cannot be undone.",
+  "settingsErrorAccountDeleteFailed": "Failed to delete the account.",
   "settingsSectionInfo": "Info",
   "settingsVersion": "Version",
   "settingsTutorial": "Tutorial",

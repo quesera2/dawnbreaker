@@ -508,6 +508,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsAccountDelete => 'アカウントを削除';
 
   @override
+  String get settingsAccountDeleteConfirm =>
+      'アカウントとすべてのタスクを削除します。この操作は取り消せません。';
+
+  @override
+  String get settingsErrorAccountDeleteFailed => 'アカウントを削除できませんでした。';
+
+  @override
   String get settingsSectionInfo => '情報';
 
   @override

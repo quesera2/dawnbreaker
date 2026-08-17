@@ -135,7 +135,7 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
 
 主題はアカウントのライフサイクル。アカウント削除と、その取りこぼしを掃除する仕組みを入れる。
 
-- [ ] **PR1: アカウント削除**
+- [x] **PR1: アカウント削除**
     - functions に `deleteAccount` を `onCall` で追加する
         - `recursiveDelete(users/{uid})` → `admin.auth().deleteUser(uid)` の順で消す。
           逆順だとデータ削除に失敗したときユーザーがサインインできなくなり、
@@ -148,9 +148,21 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
       クライアントの既定と一致するため設定は要らない
         - `FirebaseFunctionsException` は `UserRepositoryException` のサブクラスに変換する
         - `cloud_functions` にモックがないため、テストは `UserRepository` の Fake で差し替える
-    - 確認ダイアログ（`destruction`）→ `deleteToken()` → callable → チュートリアル先頭へ遷移 →
-      `OnboardingRepository.removeCompletion()`。最初の画面に戻すことで、完全に消えた雰囲気を出す
+    - 設定画面が確認ダイアログ（`destruction`）→ `deleteToken()` → callable まで行い、
+      消し終えてからチュートリアル先頭へ遷移する。最初の画面に戻すことで、完全に消えた雰囲気を出す。
+      失敗したらその場で再試行を促す（消えたかどうかを曖昧にしないため、枠外タップでは閉じさせない）
+    - `signOut()` と `removeCompletion()` だけは遷移先のチュートリアル画面
+      （`OnboardingMode.afterAccountDeletion`）が行う。設定画面を残したままサインアウトすると、
+      まだ生きている購読が `NoLogin` で走って例外になるため（ログアウトと同じ形）
+    - 遷移が終わるまで送り出した画面は破棄されないため、後始末は入場アニメーションの完了を待つ。
+      ログイン画面のログアウトが持っていたこの待ちは `AfterTransitionMixin` に括り出して共有した
+    - 削除の実行を遷移先に寄せる形も試したが、消える前にチュートリアルへ移るため
+      操作として腑に落ちず、消してから戻す形に落ち着けた
+    - `signOut()` は計画になかったが要る。端末には消したユーザーのセッションが残るため、
+      これがないとアプリを開き直したときに `/home` に入って、空のホームが出てしまう
     - `fcmTokens` の `arrayRemove` は不要（`users/{uid}` ごと消えるため）。端末側の `deleteToken()` は要る
+    - `cloud_functions` を足すと `cloud_firestore` が 6.8.0 に上がり、
+      `fake_cloud_firestore` 4.1.1 がコンパイルできなくなるため 4.2.0 へ上げた
 - [ ] **PR2: 他端末で削除されたことの検知**
     - 削除されるとトークン更新が失敗して SDK がローカルでサインアウトするため、
       `authStateChanges()` → `currentUserProvider` が `NoLogin` → `taskRepositoryProvider` が

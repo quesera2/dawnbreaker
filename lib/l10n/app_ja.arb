@@ -253,6 +253,8 @@
   "settingsAccountLoginDescription": "サインインすると、機種変更してもタスクを引き継げます。",
   "settingsAccountLogout": "ログアウト",
   "settingsAccountDelete": "アカウントを削除",
+  "settingsAccountDeleteConfirm": "アカウントとすべてのタスクを削除します。この操作は取り消せません。",
+  "settingsErrorAccountDeleteFailed": "アカウントを削除できませんでした。",
   "settingsSectionInfo": "情報",
   "settingsVersion": "バージョン",
   "settingsTutorial": "チュートリアル",

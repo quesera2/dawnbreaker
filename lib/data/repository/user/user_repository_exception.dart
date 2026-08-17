@@ -10,3 +10,7 @@ sealed class UserRepositoryException implements Exception {
 class SignInException extends UserRepositoryException {
   const SignInException([super.message]);
 }
+
+class AccountDeletionException extends UserRepositoryException {
+  const AccountDeletionException([super.message]);
+}
