@@ -292,16 +292,10 @@ export const deleteAccount = onCall(async (request) => {
   }
 
   const db = getFirestore();
-  const userRef = db.collection("users").doc(uid);
   // サブコレクション（taskDefinitions / executions / notifications）は
   // ドキュメントを消しても残るため、recursiveDelete でまとめて消す
-  await db.recursiveDelete(userRef);
+  await db.recursiveDelete(db.collection("users").doc(uid));
   await getAuth().deleteUser(uid);
-
-  // 1 回目の削除が onExecutionWritten / onTaskDefinitionDeleted を発火させ、
-  // 走査が通り過ぎたあとに notifications を書き戻すことがある。取りこぼすと
-  // 誰のものでもない帳簿が collectionGroup クエリに残り続けるため、掃き直す
-  await db.recursiveDelete(userRef);
   logger.info("account deleted", {uid});
 });
 

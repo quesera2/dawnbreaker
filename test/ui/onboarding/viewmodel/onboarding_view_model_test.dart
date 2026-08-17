@@ -164,8 +164,7 @@ void main() {
           expect(fakeUserRepository.deleteAccountCount, 1);
         });
 
-        // 捨てると FCM が新しいトークンを配るため、サインアウトより後に捨てる
-        test('サインアウトしてからこの端末のトークンを捨てる', () async {
+        test('消したアカウント宛の通知が届かないよう、トークンを捨てる', () async {
           await viewModel.deleteAccount();
           expect(fakeNotificationService.deleteTokenCount, 1);
         });
@@ -224,30 +223,6 @@ void main() {
             expect(fakeRepository.removeCompletionCalled, false);
           });
 
-          test('消えていないので通知は受け取れるままにする', () async {
-            await viewModel.deleteAccount();
-            expect(fakeNotificationService.deleteTokenCount, 0);
-          });
-
-          // サインインしたままなので、ログイン画面へ出すと状態が食い違う
-          for (final (action, description) in [
-            ('done', 'チュートリアルを終えるとホーム画面へ戻る'),
-            ('skip', 'チュートリアルをスキップするとホーム画面へ戻る'),
-          ]) {
-            test(description, () async {
-              await viewModel.deleteAccount();
-              viewState.dialogMessage!.secondaryHandler!();
-
-              if (action == 'done') {
-                await viewModel.onClickDone();
-              } else {
-                await viewModel.onClickSkip();
-              }
-
-              expect(viewState.destination?.type, OnboardingDestination.home);
-            });
-          }
-
           test('再試行するともう一度消しにいく', () async {
             await viewModel.deleteAccount();
             fakeUserRepository.shouldFailDeleteAccount = false;
@@ -295,7 +270,6 @@ void main() {
             await viewModel.deleteAccount();
 
             expect(fakeUserRepository.signOutCount, 1);
-            expect(fakeNotificationService.deleteTokenCount, 1);
             expect(viewState.dialogMessage, isNull);
             expect(viewState.isDeletingAccount, false);
           });

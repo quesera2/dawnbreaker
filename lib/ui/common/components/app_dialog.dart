@@ -17,9 +17,12 @@ class AppDialog extends StatelessWidget {
   final String message;
   final List<Widget> actions;
 
+  /// 枠外タップでは閉じさせない。どのダイアログもボタンにハンドラが付いており、
+  /// 押さずに閉じられると何も起きないまま話が終わってしまう
   static Future<void> show(BuildContext context, DialogMessage message) {
     return showDialog<void>(
       context: context,
+      barrierDismissible: false,
       builder: (context) => create(context, message),
     );
   }
