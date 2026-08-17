@@ -1040,6 +1040,18 @@ abstract class AppLocalizations {
   /// **'アカウントを削除'**
   String get settingsAccountDelete;
 
+  /// No description provided for @settingsAccountDeleteConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウントとすべてのタスクを削除します。この操作は取り消せません。'**
+  String get settingsAccountDeleteConfirm;
+
+  /// No description provided for @settingsErrorAccountDeleteFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウントを削除できませんでした。'**
+  String get settingsErrorAccountDeleteFailed;
+
   /// No description provided for @settingsSectionInfo.
   ///
   /// In ja, this message translates to:

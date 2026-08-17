@@ -160,9 +160,16 @@ class SettingsViewModel extends _$SettingsViewModel {
     await _settingsRepository.setProgressBarAnimationEnabled(value);
   }
 
-  // TODO: Phase10 で実装する。データとアカウントを消し、チュートリアルの最初へ戻す
+  /// 取り消せない操作なので、押しただけでは消さず確認を挟む。
+  /// 削除そのものは、ログアウトと同じく遷移先の画面が行う
   void deleteAccount() {
-    logger.w('account deletion is not implemented yet');
+    state = state.copyWith(
+      dialogMessage: DeleteAccountConfirmMessage(
+        primaryHandler: () => state = state.copyWith(
+          deleteAccountConfirmed: DeleteAccountConfirmedEvent(),
+        ),
+      ),
+    );
   }
 
   // デバッグメニュー専用。TaskRepository は Firebase に触るため、ここでだけ読む

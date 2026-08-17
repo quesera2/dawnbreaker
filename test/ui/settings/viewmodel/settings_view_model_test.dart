@@ -427,6 +427,34 @@ void main() {
         });
       });
 
+      group('deleteAccount', () {
+        setUp(() => setUpLoaded(user: const LoggedIn('user-1')));
+
+        test('了承を得るまでは画面を離れない', () {
+          viewModel.deleteAccount();
+
+          expect(viewState.dialogMessage, isA<DeleteAccountConfirmMessage>());
+          expect(viewState.deleteAccountConfirmed, isNull);
+        });
+
+        // 削除そのものはチュートリアル画面が行う（ログアウトと同じ形）
+        test('了承したらチュートリアル画面へ送り出す', () {
+          viewModel.deleteAccount();
+          viewState.dialogMessage!.primaryHandler!();
+
+          expect(viewState.deleteAccountConfirmed, isNotNull);
+        });
+
+        test('この画面では消さない', () async {
+          viewModel.deleteAccount();
+          viewState.dialogMessage!.primaryHandler!();
+          await pumpEventQueue();
+
+          expect(fakeUserRepository.deleteAccountCount, 0);
+          expect(fakeUserRepository.signOutCount, 0);
+        });
+      });
+
       group('プログレスバーアニメーションの外部変更', () {
         setUp(() => setUpLoaded());
 

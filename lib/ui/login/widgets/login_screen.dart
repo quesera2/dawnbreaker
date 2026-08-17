@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/app/app_typography.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
+import 'package:dawnbreaker/ui/common/after_transition_mixin.dart';
+import 'package:dawnbreaker/ui/common/components/app_progress_overlay.dart';
 import 'package:dawnbreaker/ui/common/messages_mixin.dart';
 import 'package:dawnbreaker/ui/login/viewmodel/login_view_model.dart';
 import 'package:dawnbreaker/ui/login/widgets/login_param.dart';
@@ -39,10 +41,9 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen>
-    with MessagesListenMixin {
+    with MessagesListenMixin, AfterTransitionMixin {
   late final LoginViewModelProvider _viewState;
   late final LoginViewModel _viewModel;
-  Animation<double>? _transition;
 
   @override
   void initState() {
@@ -51,34 +52,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     _viewModel = ref.read(_viewState.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FlutterNativeSplash.remove();
-      if (widget.param.executeLogout) _signOutAfterTransition();
+      if (widget.param.executeLogout) {
+        runAfterTransition(() => unawaited(_viewModel.signOut()));
+      }
     });
-  }
-
-  @override
-  void dispose() {
-    _transition?.removeStatusListener(_onTransitionStatus);
-    super.dispose();
-  }
-
-  /// 遷移が終わってからサインアウトする。
-  ///
-  /// この画面が入場し切るまで、送り出した側（設定画面）は破棄されない。
-  /// 残った購読を抱えたまま NoLogin にすると permission-denied になる
-  void _signOutAfterTransition() {
-    final transition = ModalRoute.of(context)?.animation;
-    if (transition == null || transition.isCompleted) {
-      unawaited(_viewModel.signOut());
-      return;
-    }
-    _transition = transition..addStatusListener(_onTransitionStatus);
-  }
-
-  void _onTransitionStatus(AnimationStatus status) {
-    if (!status.isCompleted) return;
-    _transition?.removeStatusListener(_onTransitionStatus);
-    _transition = null;
-    unawaited(_viewModel.signOut());
   }
 
   @override
@@ -101,7 +78,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     });
 
     return Scaffold(
-      body: _ProgressOverlay(
+      body: AppProgressOverlay(
         visible: isSigningIn || isSigningOut,
         child: DecoratedBox(
           decoration: const BoxDecoration(
@@ -390,34 +367,6 @@ class _OrSeparator extends StatelessWidget {
           line,
         ],
       ),
-    );
-  }
-}
-
-/// 処理中であることを示し、その間の操作を塞ぐ。
-///
-/// サインインもログアウトも外部との往復があって数秒かかりうる。ボタンを無効に
-/// するだけだと、押せないのが処理中なのか不具合なのか分からない
-class _ProgressOverlay extends StatelessWidget {
-  const _ProgressOverlay({required this.visible, required this.child});
-
-  final bool visible;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        child,
-        if (visible)
-          ColoredBox(
-            color: context.appColorScheme.overlay,
-            // 裏のボタンに触れないよう、面ごと覆う
-            child: const SizedBox.expand(
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          ),
-      ],
     );
   }
 }

@@ -68,6 +68,20 @@ class SwitchAccountConfirmMessage extends DialogMessage {
     : super(type: DialogType.destruction);
 }
 
+/// アカウントとタスクがすべて消えることを、消す前に確かめる
+class DeleteAccountConfirmMessage extends DialogMessage {
+  DeleteAccountConfirmMessage({required super.primaryHandler})
+    : super(type: DialogType.destruction);
+}
+
+/// 削除に失敗したときのエラー。再試行するか、やめて元の画面へ戻るかを選ばせる
+class DeleteAccountErrorMessage extends DialogMessage {
+  DeleteAccountErrorMessage({
+    required super.primaryHandler,
+    required super.secondaryHandler,
+  }) : super(type: DialogType.error);
+}
+
 class NotificationEnableErrorMessage extends DialogMessage {
   NotificationEnableErrorMessage() : super(type: DialogType.error);
 }

@@ -116,6 +116,18 @@ LabelConfig _labels(BuildContext context, DialogMessage msg) => switch (msg) {
     primaryActionLabel: context.l10n.loginSwitchAccountConfirm,
     secondaryActionLabel: context.l10n.commonCancel,
   ),
+  DeleteAccountConfirmMessage() => (
+    title: context.l10n.commonConfirmTitle,
+    messageText: context.l10n.settingsAccountDeleteConfirm,
+    primaryActionLabel: context.l10n.commonDelete,
+    secondaryActionLabel: context.l10n.commonCancel,
+  ),
+  DeleteAccountErrorMessage() => (
+    title: context.l10n.commonErrorTitle,
+    messageText: context.l10n.settingsErrorAccountDeleteFailed,
+    primaryActionLabel: context.l10n.commonRetry,
+    secondaryActionLabel: context.l10n.commonCancel,
+  ),
   NotificationEnableErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.notificationIntroErrorEnableFailed,

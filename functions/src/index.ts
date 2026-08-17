@@ -4,9 +4,11 @@ import {
   onDocumentDeleted,
   onDocumentWritten,
 } from "firebase-functions/v2/firestore";
+import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {onSchedule} from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
 import {initializeApp} from "firebase-admin/app";
+import {getAuth} from "firebase-admin/auth";
 import {FieldValue, getFirestore, Timestamp} from "firebase-admin/firestore";
 import {getMessaging, Message} from "firebase-admin/messaging";
 import {
@@ -270,6 +272,32 @@ export const onTaskDefinitionDeleted = onDocumentDeleted(
     await userRef.collection("notifications").doc(taskId).delete();
   },
 );
+
+/**
+ * サインイン中のユーザー自身のデータとアカウントを削除する。
+ *
+ * uid は引数で受けず request.auth から取る。引数で受けると他人の uid を渡して
+ * 消せてしまうため。クライアントの user.delete() は requires-recent-login で
+ * 失敗しうるので、Admin SDK 側で消す。
+ *
+ * Firestore → Auth の順で消す。逆順だとデータ削除に失敗したときユーザーが
+ * サインインできなくなり、自力で再実行できないまま users/{uid} が誰にも
+ * 辿れないゴミとして残る。この順なら Auth が生きているので、もう一度削除を
+ * 実行すれば続きから消せる。
+ */
+export const deleteAccount = onCall(async (request) => {
+  const uid = request.auth?.uid;
+  if (uid == null) {
+    throw new HttpsError("unauthenticated", "sign-in is required");
+  }
+
+  const db = getFirestore();
+  // サブコレクション（taskDefinitions / executions / notifications）は
+  // ドキュメントを消しても残るため、recursiveDelete でまとめて消す
+  await db.recursiveDelete(db.collection("users").doc(uid));
+  await getAuth().deleteUser(uid);
+  logger.info("account deleted", {uid});
+});
 
 /**
  * 5分間隔で notifications の帳簿を検索し、送信対象になった通知を FCM で送る。

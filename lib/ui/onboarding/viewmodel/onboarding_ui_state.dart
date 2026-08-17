@@ -6,7 +6,8 @@ import 'package:uuid/uuid.dart';
 
 part 'onboarding_ui_state.freezed.dart';
 
-enum OnboardingDestination { login, pop }
+/// [home] はアカウント削除をやめたときの行き先。消していないので元の場所へ戻す
+enum OnboardingDestination { login, pop, home }
 
 class OnboardingDestinationEvent {
   OnboardingDestinationEvent(this.type) : id = const Uuid().v4();
@@ -23,6 +24,7 @@ abstract class OnboardingUiState
 
   const factory OnboardingUiState({
     @Default(false) bool isLoading,
+    @Default(false) bool isDeletingAccount,
     OnboardingDestinationEvent? destination,
     DialogMessage? dialogMessage,
     SnackBarMessage? snackBarMessage,

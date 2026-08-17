@@ -63,7 +63,7 @@ ButtonConfig _lastPageButtons(
   required VoidCallback onDone,
 }) => (
   primaryLabel: switch (mode) {
-    .initial => context.l10n.onboardingStart,
+    .initial || .executeAccountDeletion => context.l10n.onboardingStart,
     .fromSettings => context.l10n.commonClose,
   },
   primaryAction: onDone,

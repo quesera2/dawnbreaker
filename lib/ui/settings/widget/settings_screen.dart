@@ -39,6 +39,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     listenMessages(settingsViewModelProvider);
     final viewState = ref.watch(settingsViewModelProvider);
 
+    // 削除自体はチュートリアル画面が行う。ここで消すと、まだ残っているこの画面の
+    // 購読が permission-denied になる（ログアウトと同じ形）
+    ref.listen(
+      settingsViewModelProvider.select((s) => s.deleteAccountConfirmed),
+      (prev, next) {
+        if (next == null || prev?.id == next.id) return;
+        context.go('/onboarding', extra: OnboardingMode.executeAccountDeletion);
+      },
+    );
+
     if (viewState.isLoading) {
       return const Scaffold();
     }

@@ -25,10 +25,14 @@ class FakeUserRepository implements UserRepository {
   /// 昇格しようとした credential が既に別のアカウントで使われている状況を作る
   bool credentialAlreadyInUse = false;
 
+  /// アカウント削除の Function 呼び出しが失敗する状況を作る
+  bool shouldFailDeleteAccount = false;
+
   int signInAsGuestCount = 0;
   int signInWithGoogleCount = 0;
   int signInWithLinkedCredentialCount = 0;
   int signOutCount = 0;
+  int deleteAccountCount = 0;
 
   @override
   AppUser getUser() => _user;
@@ -55,6 +59,14 @@ class FakeUserRepository implements UserRepository {
     signOutCount++;
     if (shouldThrow) throw const SignInException('テストエラー');
     emit(const NoLogin());
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    deleteAccountCount++;
+    if (shouldFailDeleteAccount) {
+      throw const AccountDeletionException('テストエラー');
+    }
   }
 
   @override
