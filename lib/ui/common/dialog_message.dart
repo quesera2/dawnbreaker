@@ -8,11 +8,16 @@ sealed class DialogMessage {
     required this.type,
     this.primaryHandler,
     this.secondaryHandler,
+    this.dismissible = true,
   }) : id = const Uuid().v4();
 
   final DialogType type;
   final VoidCallback? primaryHandler;
   final VoidCallback? secondaryHandler;
+
+  /// 枠外タップで閉じられるか。閉じるとハンドラが走らないため、
+  /// どちらかを必ず選ばせたいものは `false` にする
+  final bool dismissible;
   final String id;
 }
 
@@ -74,12 +79,14 @@ class DeleteAccountConfirmMessage extends DialogMessage {
     : super(type: DialogType.destruction);
 }
 
-/// 削除に失敗したときのエラー。再試行するか、やめて元の画面へ戻るかを選ばせる
+/// 削除に失敗したときのエラー。再試行するか、やめて元の画面へ戻るかを選ばせる。
+///
+/// 閉じただけだと、削除を引き受けたチュートリアル画面に取り残される
 class DeleteAccountErrorMessage extends DialogMessage {
   DeleteAccountErrorMessage({
     required super.primaryHandler,
     required super.secondaryHandler,
-  }) : super(type: DialogType.error);
+  }) : super(type: DialogType.error, dismissible: false);
 }
 
 class NotificationEnableErrorMessage extends DialogMessage {
