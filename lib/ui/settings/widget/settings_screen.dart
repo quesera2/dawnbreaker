@@ -55,14 +55,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     }
 
     final padding = MediaQuery.paddingOf(context);
-    return Scaffold(
-      appBar: AppAppBar(
-        title: context.l10n.settingsTitle,
-        onBack: () => context.pop(),
-      ),
-      body: AppProgressOverlay(
-        visible: viewState.isDeletingAccount,
-        child: SingleChildScrollView(
+    // 削除中は戻るボタンも押させないよう、AppBar ごと覆う
+    return AppProgressOverlay(
+      visible: viewState.isDeletingAccount,
+      child: Scaffold(
+        appBar: AppAppBar(
+          title: context.l10n.settingsTitle,
+          onBack: () => context.pop(),
+        ),
+        body: SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(20, 8, 20, padding.bottom + 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
