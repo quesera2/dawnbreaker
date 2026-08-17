@@ -15,5 +15,6 @@ class FakeOnboardingRepository implements OnboardingRepository {
   @override
   Future<void> removeCompletion() async {
     removeCompletionCalled = true;
+    if (shouldThrow) throw const OnboardingSaveException('テストエラー');
   }
 }

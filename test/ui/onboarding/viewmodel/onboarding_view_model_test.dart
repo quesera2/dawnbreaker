@@ -164,7 +164,8 @@ void main() {
           expect(fakeUserRepository.deleteAccountCount, 1);
         });
 
-        test('消したアカウント宛の通知が届かないよう、トークンを捨てる', () async {
+        // 捨てると FCM が新しいトークンを配るため、サインアウトより後に捨てる
+        test('サインアウトしてからこの端末のトークンを捨てる', () async {
           await viewModel.deleteAccount();
           expect(fakeNotificationService.deleteTokenCount, 1);
         });
@@ -223,6 +224,30 @@ void main() {
             expect(fakeRepository.removeCompletionCalled, false);
           });
 
+          test('消えていないので通知は受け取れるままにする', () async {
+            await viewModel.deleteAccount();
+            expect(fakeNotificationService.deleteTokenCount, 0);
+          });
+
+          // サインインしたままなので、ログイン画面へ出すと状態が食い違う
+          for (final (action, description) in [
+            ('done', 'チュートリアルを終えるとホーム画面へ戻る'),
+            ('skip', 'チュートリアルをスキップするとホーム画面へ戻る'),
+          ]) {
+            test(description, () async {
+              await viewModel.deleteAccount();
+              viewState.dialogMessage!.secondaryHandler!();
+
+              if (action == 'done') {
+                await viewModel.onClickDone();
+              } else {
+                await viewModel.onClickSkip();
+              }
+
+              expect(viewState.destination?.type, OnboardingDestination.home);
+            });
+          }
+
           test('再試行するともう一度消しにいく', () async {
             await viewModel.deleteAccount();
             fakeUserRepository.shouldFailDeleteAccount = false;
@@ -240,6 +265,49 @@ void main() {
             viewState.dialogMessage!.secondaryHandler!();
 
             expect(viewState.destination?.type, OnboardingDestination.home);
+          });
+
+          test('操作を塞いだままにしない', () async {
+            await viewModel.deleteAccount();
+
+            expect(viewState.isDeletingAccount, false);
+          });
+
+          test('再試行がまた失敗したらもう一度知らせる', () async {
+            await viewModel.deleteAccount();
+            final firstMessage = viewState.dialogMessage!;
+
+            firstMessage.primaryHandler!();
+            await pumpEventQueue();
+
+            expect(viewState.dialogMessage, isA<DeleteAccountErrorMessage>());
+            expect(viewState.dialogMessage!.id, isNot(firstMessage.id));
+          });
+        });
+
+        // アカウントは消えている。後始末が転んでも、消えていないかのようには見せない
+        group('削除後の後始末に失敗した場合', () {
+          setUp(() => setUpState(mode: .executeAccountDeletion));
+
+          test('チュートリアルフラグを消せなくても削除は終わる', () async {
+            fakeRepository.shouldThrow = true;
+
+            await viewModel.deleteAccount();
+
+            expect(fakeUserRepository.signOutCount, 1);
+            expect(fakeNotificationService.deleteTokenCount, 1);
+            expect(viewState.dialogMessage, isNull);
+            expect(viewState.isDeletingAccount, false);
+          });
+
+          test('サインアウトできなくても削除は終わる', () async {
+            fakeUserRepository.shouldThrow = true;
+
+            await viewModel.deleteAccount();
+
+            expect(fakeUserRepository.deleteAccountCount, 1);
+            expect(viewState.dialogMessage, isNull);
+            expect(viewState.isDeletingAccount, false);
           });
         });
       });

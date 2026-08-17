@@ -10,6 +10,9 @@ mixin AfterTransitionMixin<T extends StatefulWidget> on State<T> {
   VoidCallback? _pendingAction;
 
   void runAfterTransition(VoidCallback action) {
+    // 待っている最中に呼ばれたら、古い待ちは捨てて新しい方だけを残す
+    _stopWaiting();
+
     final transition = ModalRoute.of(context)?.animation;
     if (transition == null || transition.isCompleted) {
       action();

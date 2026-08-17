@@ -111,6 +111,10 @@ class FirebaseUserRepository implements UserRepository {
       throw AccountDeletionException(
         'deleteAccount failed: ${e.code} ${e.message}',
       );
+    } catch (e) {
+      // ID トークンの取得失敗やプラグインの不在もここに来る。素通しすると
+      // 呼び出し元の型付き catch を抜けて、進捗表示が消えないまま画面が固まる
+      throw AccountDeletionException('deleteAccount failed: $e');
     }
   }
 
