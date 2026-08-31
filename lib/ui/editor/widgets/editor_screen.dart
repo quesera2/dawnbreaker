@@ -5,6 +5,7 @@ import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/components/app_app_bar.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_input.dart';
@@ -41,7 +42,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
   @override
   Widget build(BuildContext context) {
     final provider = editorViewModelProvider(taskId: widget.taskId);
-    listenMessages(provider);
+    listenMessages(
+      provider,
+      onDialogClosed: (message) {
+        // サインインが切れているとこの画面では何もできないため、ログイン画面へ送り出す
+        if (message is SessionExpiredMessage) context.go('/login');
+      },
+    );
 
     // 読み込んだ name を入力欄へ反映する。入力中は onChanged で state と一致するため何もしない
     ref.listen(provider.select((s) => s.name), (_, name) {

@@ -3,6 +3,7 @@ import 'package:animated_list_plus/transitions.dart';
 import 'package:dawnbreaker/app/app_colors.dart';
 import 'package:dawnbreaker/core/util/context_extension.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/components/app_filter_chip.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_input.dart';
@@ -38,7 +39,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    listenMessages(homeViewModelProvider);
+    listenMessages(
+      homeViewModelProvider,
+      onDialogClosed: (message) {
+        // サインインが切れているとこの画面では何もできないため、ログイン画面へ送り出す
+        if (message is SessionExpiredMessage) context.go('/login');
+      },
+    );
     ref.listen(homeViewModelProvider.select((s) => s.isLoading), (
       _,
       isLoading,

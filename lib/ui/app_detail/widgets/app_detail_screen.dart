@@ -12,6 +12,7 @@ import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_ui_state.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_view_model.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/app_detail_history_item.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/interval_bar_chart.dart';
+import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/components/app_badge.dart';
 import 'package:dawnbreaker/ui/common/components/app_button.dart';
 import 'package:dawnbreaker/ui/common/components/app_icon_button.dart';
@@ -38,7 +39,13 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
   @override
   Widget build(BuildContext context) {
     final provider = appDetailViewModelProvider(taskId: widget.taskId);
-    listenMessages(provider);
+    listenMessages(
+      provider,
+      onDialogClosed: (message) {
+        // サインインが切れているとこの画面では何もできないため、ログイン画面へ送り出す
+        if (message is SessionExpiredMessage) context.go('/login');
+      },
+    );
 
     ref.listen(provider.select((s) => s.shouldPop), (_, shouldPop) {
       if (shouldPop) context.pop();

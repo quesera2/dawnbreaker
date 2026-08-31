@@ -171,9 +171,9 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
     - ViewModel の `catch` で `TaskNotSignedInException` だけ `TaskRepositoryException` の
       手前に分け、`SessionExpiredMessage` を出す（8 箇所）。再試行しても直らないので
       OK だけのダイアログにし、枠外タップでは閉じさせない
-    - OK の後の `/login` への遷移は `MessagesListenMixin` が引き受ける。ViewModel には遷移の手段が
-      なく、画面ごとに遷移イベントを持たせると 3 画面に同じものが並ぶため、ダイアログを閉じた
-      ところで一箇所に寄せた
+    - OK の後の `/login` への遷移は画面が書く。ViewModel からは遷移できないため、
+      `MessagesListenMixin` に `onDialogClosed` を足してダイアログを閉じたことだけを知らせ、
+      どこへ送り出すかは画面が決める（home / editor / app_detail の 3 画面）
     - 検知はトークン更新の契機まで遅れるが、設計方針の「操作時のエラーとして検知する」と一致している
     - ログアウトでは「ホーム画面が残ったまま `NoLogin` にすると例外になる」ことを避けたが、
       ここではその例外が検知したい信号そのものになる

@@ -21,20 +21,14 @@ CancelCallback combineLatest2<T, S>(
     combiner(a, b);
   }
 
-  final sub1 = stream1.listen(
-    (v) {
-      v1 = v;
-      tryEmit();
-    },
-    onError: onError,
-  );
-  final sub2 = stream2.listen(
-    (v) {
-      v2 = v;
-      tryEmit();
-    },
-    onError: onError,
-  );
+  final sub1 = stream1.listen((v) {
+    v1 = v;
+    tryEmit();
+  }, onError: onError);
+  final sub2 = stream2.listen((v) {
+    v2 = v;
+    tryEmit();
+  }, onError: onError);
 
   return () async {
     await sub1.cancel();
