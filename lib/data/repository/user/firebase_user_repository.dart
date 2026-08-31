@@ -108,6 +108,9 @@ class FirebaseUserRepository implements UserRepository {
           .httpsCallable('deleteAccount')
           .call<void>();
     } on FirebaseFunctionsException catch (e) {
+      // 認証が付かないのは、この端末が既にサインアウトしているとき。
+      // 他端末で消された後なのでアカウントは残っておらず、消えた扱いで返す
+      if (e.code == 'unauthenticated') return;
       throw AccountDeletionException(
         'deleteAccount failed: ${e.code} ${e.message}',
       );

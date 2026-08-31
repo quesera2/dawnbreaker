@@ -8,7 +8,7 @@ import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {onSchedule} from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
 import {initializeApp} from "firebase-admin/app";
-import {getAuth} from "firebase-admin/auth";
+import {FirebaseAuthError, getAuth} from "firebase-admin/auth";
 import {FieldValue, getFirestore, Timestamp} from "firebase-admin/firestore";
 import {getMessaging, Message} from "firebase-admin/messaging";
 import {
@@ -300,8 +300,12 @@ export const deleteAccount = onCall(async (request) => {
     logger.info("account deleted", {uid});
   } catch (error) {
     // 他端末で先に消された場合。消えていることが目的なので成功として返す。
-    // ここで失敗にすると、消えているのに再試行しても直らない状態になる
-    if ((error as {code?: string}).code !== "auth/user-not-found") throw error;
+    // ここで失敗にすると、消えているのに再試行しても直らない状態になる。
+    // AuthErrorCode.USER_NOT_FOUND は "auth/" が付かないため直接は使えない
+    if (!(error instanceof FirebaseAuthError) ||
+      error.code !== "auth/user-not-found") {
+      throw error;
+    }
     logger.info("account was already deleted", {uid});
   }
 });

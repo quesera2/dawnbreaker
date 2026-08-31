@@ -144,7 +144,11 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
         - `deleteUser` の `auth/user-not-found` は握って成功として返す（PR2 で追加）。
           他端末で先に消されていると `recursiveDelete` は成功して `deleteUser` だけが失敗し、
           消えているのに再試行しても直らないダイアログが出続けるため。
-          `recursiveDelete` は元から冪等なので、これで削除全体が冪等になる
+          `recursiveDelete` は元から冪等なので、これで削除全体が冪等になる。
+          `AuthErrorCode.USER_NOT_FOUND` は `"auth/"` が付かない値なので比較には使えない
+        - トークンが失効していると callable に認証が付かず、この冪等化にすら到達せず
+          `unauthenticated` で返る。クライアント側の `deleteAccount()` はこれを
+          「もう消えている」とみなして成功として返す（PR2 で追加）
         - uid は引数で受けず `request.auth.uid` を使う。引数で受けると他人の uid を渡して消せてしまう
         - クライアントの `user.delete()` は `requires-recent-login` で失敗しうるため、Admin SDK 側で消す
     - クライアントは `cloud_functions` を追加し、`UserRepository.deleteAccount()` の中で
