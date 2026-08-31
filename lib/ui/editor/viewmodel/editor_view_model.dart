@@ -9,6 +9,7 @@ import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
+import 'package:dawnbreaker/ui/common/sign_in_required_event.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/editor/viewmodel/editor_ui_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -40,6 +41,13 @@ class EditorViewModel extends _$EditorViewModel {
         type: task.taskType,
         scheduleValue: task.scheduleValueOrDefault,
         scheduleUnit: task.scheduleUnitOrDefault,
+      );
+    } on TaskNotSignedInException catch (e, s) {
+      logger.e('_loadTask failed: not signed in', error: e, stackTrace: s);
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        isLoading: false,
+        dialogMessage: SessionExpiredMessage(secondaryHandler: _requireSignIn),
       );
     } on TaskRepositoryException catch (e, s) {
       logger.e('_loadTask failed', error: e, stackTrace: s);
@@ -77,6 +85,13 @@ class EditorViewModel extends _$EditorViewModel {
       } else {
         await _updateTask(id);
       }
+    } on TaskNotSignedInException catch (e, s) {
+      logger.e('save failed: not signed in', error: e, stackTrace: s);
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        isSaving: false,
+        dialogMessage: SessionExpiredMessage(secondaryHandler: _requireSignIn),
+      );
     } on TaskRepositoryException catch (e, s) {
       logger.e('save failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -142,4 +157,8 @@ class EditorViewModel extends _$EditorViewModel {
       scheduleUnit: original.scheduleUnitOrDefault,
     );
   }
+
+  /// サインインが切れているとこの画面では何もできないため、ログイン画面へ送り出す
+  void _requireSignIn() =>
+      state = state.copyWith(signInRequired: SignInRequiredEvent());
 }

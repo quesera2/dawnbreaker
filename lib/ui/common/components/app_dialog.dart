@@ -21,7 +21,11 @@ class AppDialog extends StatelessWidget {
     return showDialog<void>(
       context: context,
       barrierDismissible: message.dismissible,
-      builder: (context) => create(context, message),
+      // どちらかを必ず選ばせたいものは、枠外タップと同じくシステムバックでも閉じさせない
+      builder: (context) => PopScope(
+        canPop: message.dismissible,
+        child: create(context, message),
+      ),
     );
   }
 
@@ -140,6 +144,12 @@ LabelConfig _labels(BuildContext context, DialogMessage msg) => switch (msg) {
     messageText: context.l10n.settingsNotificationPermissionMessage,
     primaryActionLabel: context.l10n.commonOpenSettings,
     secondaryActionLabel: context.l10n.commonCancel,
+  ),
+  SessionExpiredMessage() => (
+    title: context.l10n.commonErrorTitle,
+    messageText: context.l10n.commonErrorSessionExpired,
+    primaryActionLabel: '',
+    secondaryActionLabel: context.l10n.commonOk,
   ),
   UnknownErrorMessage() => (
     title: context.l10n.commonErrorTitle,

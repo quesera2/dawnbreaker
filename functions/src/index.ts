@@ -8,7 +8,7 @@ import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {onSchedule} from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
 import {initializeApp} from "firebase-admin/app";
-import {getAuth} from "firebase-admin/auth";
+import {FirebaseAuthError, getAuth} from "firebase-admin/auth";
 import {FieldValue, getFirestore, Timestamp} from "firebase-admin/firestore";
 import {getMessaging, Message} from "firebase-admin/messaging";
 import {
@@ -295,8 +295,21 @@ export const deleteAccount = onCall(async (request) => {
   // サブコレクション（taskDefinitions / executions / notifications）は
   // ドキュメントを消しても残るため、recursiveDelete でまとめて消す
   await db.recursiveDelete(db.collection("users").doc(uid));
-  await getAuth().deleteUser(uid);
-  logger.info("account deleted", {uid});
+  try {
+    await getAuth().deleteUser(uid);
+    logger.info("account deleted", {uid});
+  } catch (error) {
+    if (error instanceof FirebaseAuthError) {
+      // 他端末で先に消された場合。消えていることが目的なので成功として返す。
+      if (error.code === "auth/user-not-found") {
+        logger.info("account was already deleted", {uid});
+      } else {
+        throw error;
+      }
+    } else {
+      throw error;
+    }
+  }
 });
 
 /**

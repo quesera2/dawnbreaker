@@ -5,6 +5,7 @@ import 'package:dawnbreaker/data/model/task_history_stats.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
+import 'package:dawnbreaker/ui/common/sign_in_required_event.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -27,6 +28,7 @@ abstract class AppDetailUiState with _$AppDetailUiState implements BaseUiState {
     @Default(false) bool shouldPop,
     DialogMessage? dialogMessage,
     SnackBarMessage? snackBarMessage,
+    SignInRequiredEvent? signInRequired,
   }) = _AppDetailUiState;
 
   // task/history をまとめて1回の copyWith で反映する

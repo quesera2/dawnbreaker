@@ -141,6 +141,14 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
           逆順だとデータ削除に失敗したときユーザーがサインインできなくなり、
           自力で再実行できないまま `users/{uid}` が誰にも辿れないゴミとして残る。
           この順なら Auth が生きているので、もう一度削除を実行すれば続きから消せる
+        - `deleteUser` の `auth/user-not-found` は握って成功として返す（PR2 で追加）。
+          他端末で先に消されていると `recursiveDelete` は成功して `deleteUser` だけが失敗し、
+          消えているのに再試行しても直らないダイアログが出続けるため。
+          `recursiveDelete` は元から冪等なので、これで削除全体が冪等になる。
+          `AuthErrorCode.USER_NOT_FOUND` は `"auth/"` が付かない値なので比較には使えない
+        - トークンが失効していると callable に認証が付かず、この冪等化にすら到達せず
+          `unauthenticated` で返る。クライアント側の `deleteAccount()` はこれを
+          「もう消えている」とみなして成功として返す（PR2 で追加）
         - uid は引数で受けず `request.auth.uid` を使う。引数で受けると他人の uid を渡して消せてしまう
         - クライアントの `user.delete()` は `requires-recent-login` で失敗しうるため、Admin SDK 側で消す
     - クライアントは `cloud_functions` を追加し、`UserRepository.deleteAccount()` の中で
@@ -163,16 +171,31 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
     - `fcmTokens` の `arrayRemove` は不要（`users/{uid}` ごと消えるため）。端末側の `deleteToken()` は要る
     - `cloud_functions` を足すと `cloud_firestore` が 6.8.0 に上がり、
       `fake_cloud_firestore` 4.1.1 がコンパイルできなくなるため 4.2.0 へ上げた
-- [ ] **PR2: 他端末で削除されたことの検知**
+- [x] **PR2: 他端末で削除されたことの検知**
     - 削除されるとトークン更新が失敗して SDK がローカルでサインアウトするため、
       `authStateChanges()` → `currentUserProvider` が `NoLogin` → `taskRepositoryProvider` が
-      NoLogin 版に切り替わり、既存の `TaskNotSignedInException` として観測できる。
+      `TaskNotSignedInException` を投げ、既存の例外として観測できる。
       `permission-denied` を見て判定する必要はない（ルール設定ミスと区別できないため、そうしない）
-    - ViewModel の `catch` で `TaskNotSignedInException` だけ手前に分け、
-      ログイン画面へ誘導する `DialogMessage` を出す（8 箇所）
+    - ViewModel の `catch` で `TaskNotSignedInException` だけ `TaskRepositoryException` の
+      手前に分け、`SessionExpiredMessage` を出す（8 箇所）。再試行しても直らないので
+      OK だけのダイアログにし、閉じるだけで済ませられないようにする。
+      `dismissible: false` は枠外タップしか塞がないため、`AppDialog.show` に `PopScope` を足して
+      システムバックも塞いだ（`DeleteAccountErrorMessage` も同じ意図なので一緒に効く）
+    - OK の後の `/login` への遷移は、AppDialog の既存の仕組みに乗せる。ViewModel が
+      `SessionExpiredMessage` の `secondaryHandler` に「ログインし直させる」アクションを渡し、
+      それが `signInRequired` を UiState に立て、画面が listen して遷移する
+      （アカウント削除の `AccountDeletedEvent` と同じ形）
+    - `_requireSignIn` は 3 つの ViewModel に同じものが並ぶが、mixin に括り出しても
+      `BaseUiState` からは `copyWith` を呼べず各 ViewModel に同じ行数が残るため、そのままにした
     - 検知はトークン更新の契機まで遅れるが、設計方針の「操作時のエラーとして検知する」と一致している
     - ログアウトでは「ホーム画面が残ったまま `NoLogin` にすると例外になる」ことを避けたが、
       ここではその例外が検知したい信号そのものになる
+    - なお `taskRepositoryProvider` は Provider の build で投げるため、画面を開いたまま
+      `NoLogin` になった場合はダイアログではなく ViewModel の再構築で例外が伝播する。
+      「未サインインで Repository に触る状態そのものを不正扱いにする」既存方針のまま握り潰さない
+    - `FakeTaskRepository` の `shouldThrow` を `thrownException` に一本化した。「投げるか」と
+      「何を投げるか」で 2 つ持つと `shouldThrow: false` でも投げる状態が書けてしまい、
+      既定の例外の型はどのテストも見ていなかったため。型を問わないテストは `testTaskFailure` を使う
 - [ ] **PR3: 放置アカウントを回収する定期実行 Function（削除の安全網）**
     - Auth に存在しない uid の Firestore データを削除する
       （`auth/user-not-found` が確定した場合に限り、かつ `lastActiveAt` から一定期間経過していること）

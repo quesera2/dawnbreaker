@@ -42,6 +42,7 @@
   "commonConfirmTitle": "確認",
   "commonErrorTitle": "エラー",
   "commonErrorUnknown": "予期しないエラーが発生しました",
+  "commonErrorSessionExpired": "アカウントが利用できなくなりました。ログインし直してください",
   "commonClose": "閉じる",
   "commonOpenSettings": "設定を開く",
   "commonUnitDay": "日",

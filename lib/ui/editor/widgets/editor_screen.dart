@@ -43,6 +43,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
     final provider = editorViewModelProvider(taskId: widget.taskId);
     listenMessages(provider);
 
+    ref.listen(provider.select((s) => s.signInRequired), (_, event) {
+      if (event != null) context.go('/login');
+    });
+
     // 読み込んだ name を入力欄へ反映する。入力中は onChanged で state と一致するため何もしない
     ref.listen(provider.select((s) => s.name), (_, name) {
       if (_nameController.text != name) _nameController.text = name;

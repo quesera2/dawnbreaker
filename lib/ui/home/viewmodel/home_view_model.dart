@@ -11,6 +11,7 @@ import 'package:dawnbreaker/data/repository/task/task_repository.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
+import 'package:dawnbreaker/ui/common/sign_in_required_event.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_ui_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -85,6 +86,18 @@ class HomeViewModel extends _$HomeViewModel {
               _taskRepository.deleteExecution(history.id, taskId: task.id),
         ),
       );
+    } on TaskNotSignedInException catch (e, s) {
+      // 他端末でアカウントを消されるとここに来る。再試行しても直らないので
+      // ログイン画面へ送り出す（TaskRepositoryException の手前で分ける）
+      logger.e(
+        'recordExecution failed: not signed in',
+        error: e,
+        stackTrace: s,
+      );
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        dialogMessage: SessionExpiredMessage(secondaryHandler: _requireSignIn),
+      );
     } on TaskRepositoryException catch (e, s) {
       logger.e('recordExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -95,4 +108,8 @@ class HomeViewModel extends _$HomeViewModel {
       );
     }
   }
+
+  /// サインインが切れているとこの画面では何もできないため、ログイン画面へ送り出す
+  void _requireSignIn() =>
+      state = state.copyWith(signInRequired: SignInRequiredEvent());
 }

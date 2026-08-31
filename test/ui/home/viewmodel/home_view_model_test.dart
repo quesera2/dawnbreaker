@@ -3,6 +3,7 @@ import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
+import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
@@ -278,7 +279,7 @@ void main() {
         });
 
         group('異常系', () {
-          setUp(() => fakeRepository.shouldThrow = true);
+          setUp(() => fakeRepository.thrownException = testTaskFailure);
 
           test('リポジトリがエラーを返すと dialogMessage がセットされる', () async {
             await viewModel.recordExecution(
@@ -289,13 +290,34 @@ void main() {
             expect(viewState.dialogMessage, isA<TaskSaveErrorMessage>());
           });
 
+          test('アカウントが失われていたときは再ログインを促す', () async {
+            fakeRepository.thrownException = const TaskNotSignedInException();
+            await viewModel.recordExecution(
+              _testTasks[0],
+              DateTime(2026, 4, 1),
+              null,
+            );
+            expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
+          });
+
+          test('了承するとログイン画面へ送り出される', () async {
+            fakeRepository.thrownException = const TaskNotSignedInException();
+            await viewModel.recordExecution(
+              _testTasks[0],
+              DateTime(2026, 4, 1),
+              null,
+            );
+            viewState.dialogMessage!.secondaryHandler!.call();
+            expect(viewState.signInRequired, isNotNull);
+          });
+
           test('ハンドラを呼び出すと再実行を試みる', () async {
             await viewModel.recordExecution(
               _testTasks[0],
               DateTime(2026, 4, 1),
               null,
             );
-            fakeRepository.shouldThrow = false;
+            fakeRepository.thrownException = null;
             final previousId = viewState.dialogMessage!.id;
             viewState.dialogMessage!.primaryHandler!.call();
             await pumpEventQueue();

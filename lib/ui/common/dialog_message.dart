@@ -15,7 +15,7 @@ sealed class DialogMessage {
   final VoidCallback? primaryHandler;
   final VoidCallback? secondaryHandler;
 
-  /// 枠外タップで閉じられるか。閉じるとハンドラが走らないため、
+  /// 枠外タップとシステムバックで閉じられるか。閉じるとハンドラが走らないため、
   /// どちらかを必ず選ばせたいものは `false` にする
   final bool dismissible;
   final String id;
@@ -93,6 +93,15 @@ class NotificationEnableErrorMessage extends DialogMessage {
 class NotificationPermissionDeniedMessage extends DialogMessage {
   NotificationPermissionDeniedMessage({required super.primaryHandler})
     : super(type: DialogType.info);
+}
+
+/// サインインが切れていたときのエラー。他端末でアカウントを消されると
+/// トークンの更新が失敗して SDK がローカルでサインアウトするため、
+/// タスクの読み書きが `TaskNotSignedInException` になる形で表に出る。
+/// 了承したらログイン画面へ送り出すので、閉じるだけで済ませられないようにする
+class SessionExpiredMessage extends DialogMessage {
+  SessionExpiredMessage({required super.secondaryHandler})
+    : super(type: DialogType.error, dismissible: false);
 }
 
 class UnknownErrorMessage extends DialogMessage {

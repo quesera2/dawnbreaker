@@ -40,6 +40,10 @@ class _AppDetailScreenState extends ConsumerState<AppDetailScreen>
     final provider = appDetailViewModelProvider(taskId: widget.taskId);
     listenMessages(provider);
 
+    ref.listen(provider.select((s) => s.signInRequired), (_, event) {
+      if (event != null) context.go('/login');
+    });
+
     ref.listen(provider.select((s) => s.shouldPop), (_, shouldPop) {
       if (shouldPop) context.pop();
     });
