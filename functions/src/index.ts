@@ -299,14 +299,16 @@ export const deleteAccount = onCall(async (request) => {
     await getAuth().deleteUser(uid);
     logger.info("account deleted", {uid});
   } catch (error) {
-    // 他端末で先に消された場合。消えていることが目的なので成功として返す。
-    // ここで失敗にすると、消えているのに再試行しても直らない状態になる。
-    // AuthErrorCode.USER_NOT_FOUND は "auth/" が付かないため直接は使えない
-    if (!(error instanceof FirebaseAuthError) ||
-      error.code !== "auth/user-not-found") {
+    if (error instanceof FirebaseAuthError) {
+      // 他端末で先に消された場合。消えていることが目的なので成功として返す。
+      if (error.code === "auth/user-not-found") {
+        logger.info("account was already deleted", {uid});
+      } else {
+        throw error;
+      }
+    } else {
       throw error;
     }
-    logger.info("account was already deleted", {uid});
   }
 });
 
