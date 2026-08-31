@@ -170,7 +170,9 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
       `permission-denied` を見て判定する必要はない（ルール設定ミスと区別できないため、そうしない）
     - ViewModel の `catch` で `TaskNotSignedInException` だけ `TaskRepositoryException` の
       手前に分け、`SessionExpiredMessage` を出す（8 箇所）。再試行しても直らないので
-      OK だけのダイアログにし、枠外タップでは閉じさせない
+      OK だけのダイアログにし、閉じるだけで済ませられないようにする。
+      `dismissible: false` は枠外タップしか塞がないため、`AppDialog.show` に `PopScope` を足して
+      システムバックも塞いだ（`DeleteAccountErrorMessage` も同じ意図なので一緒に効く）
     - OK の後の `/login` への遷移は、AppDialog の既存の仕組みに乗せる。ViewModel が
       `SessionExpiredMessage` の `secondaryHandler` に「ログインし直させる」アクションを渡し、
       それが `signInRequired` を UiState に立て、画面が listen して遷移する

@@ -21,7 +21,11 @@ class AppDialog extends StatelessWidget {
     return showDialog<void>(
       context: context,
       barrierDismissible: message.dismissible,
-      builder: (context) => create(context, message),
+      // どちらかを必ず選ばせたいものは、枠外タップと同じくシステムバックでも閉じさせない
+      builder: (context) => PopScope(
+        canPop: message.dismissible,
+        child: create(context, message),
+      ),
     );
   }
 
