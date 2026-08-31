@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'home_ui_state.dart';
@@ -9,6 +9,7 @@ part of 'home_ui_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -63,7 +64,7 @@ class _$HomeUiStateCopyWithImpl<$Res>
 /// Create a copy of HomeUiState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? dialogMessage = freezed,Object? snackBarMessage = freezed,Object? tasks = null,Object? searchQuery = null,Object? selectedFilter = null,Object? displayMode = null,Object? colorSettings = null,Object? progressBarAnimationEnabled = null,}) {
-  return _then(_self.copyWith(
+  return _then(HomeUiState(
 isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,dialogMessage: freezed == dialogMessage ? _self.dialogMessage : dialogMessage // ignore: cast_nullable_to_non_nullable
 as DialogMessage?,snackBarMessage: freezed == snackBarMessage ? _self.snackBarMessage : snackBarMessage // ignore: cast_nullable_to_non_nullable
@@ -214,7 +215,7 @@ return $default(_that.isLoading,_that.dialogMessage,_that.snackBarMessage,_that.
 
 
 class _HomeUiState extends HomeUiState {
-  const _HomeUiState({this.isLoading = false, this.dialogMessage, this.snackBarMessage, final  List<TaskItem> tasks = const [], this.searchQuery = '', this.selectedFilter = HomeFilter.all, this.displayMode = HomeDisplayMode.timeline, final  List<ColorSetting> colorSettings = const [], this.progressBarAnimationEnabled = true}): _tasks = tasks,_colorSettings = colorSettings,super._();
+  const _HomeUiState({this.isLoading = false, this.dialogMessage, this.snackBarMessage,  List<TaskItem> tasks = const [], this.searchQuery = '', this.selectedFilter = HomeFilter.all, this.displayMode = HomeDisplayMode.timeline,  List<ColorSetting> colorSettings = const [], this.progressBarAnimationEnabled = true}): _tasks = tasks,_colorSettings = colorSettings,super._();
   
 
 @override@JsonKey() final  bool isLoading;

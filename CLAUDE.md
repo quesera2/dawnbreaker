@@ -24,7 +24,7 @@
 モデルや ViewModel を変更したら必ず実行：
 
 ```bash
-fvm flutter pub run build_runner build --delete-conflicting-outputs
+fvm dart run build_runner build
 ```
 
 ## 変数・識別子の命名
