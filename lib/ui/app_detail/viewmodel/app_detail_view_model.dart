@@ -11,6 +11,7 @@ import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart'
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/ui/app_detail/viewmodel/app_detail_ui_state.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
+import 'package:dawnbreaker/ui/common/sign_in_required_event.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -72,7 +73,9 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         stackTrace: s,
       );
       if (!ref.mounted) return;
-      state = state.copyWith(dialogMessage: SessionExpiredMessage());
+      state = state.copyWith(
+        dialogMessage: SessionExpiredMessage(secondaryHandler: _requireSignIn),
+      );
     } on TaskRepositoryException catch (e, s) {
       logger.e('updateExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -118,7 +121,9 @@ class AppDetailViewModel extends _$AppDetailViewModel {
     } on TaskNotSignedInException catch (e, s) {
       logger.e('deleteTask failed: not signed in', error: e, stackTrace: s);
       if (!ref.mounted) return;
-      state = state.copyWith(dialogMessage: SessionExpiredMessage());
+      state = state.copyWith(
+        dialogMessage: SessionExpiredMessage(secondaryHandler: _requireSignIn),
+      );
     } on TaskRepositoryException catch (e, s) {
       logger.e('deleteTask failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -159,7 +164,9 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         stackTrace: s,
       );
       if (!ref.mounted) return;
-      state = state.copyWith(dialogMessage: SessionExpiredMessage());
+      state = state.copyWith(
+        dialogMessage: SessionExpiredMessage(secondaryHandler: _requireSignIn),
+      );
     } on TaskRepositoryException catch (e, s) {
       logger.e('recordExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -198,7 +205,9 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         stackTrace: s,
       );
       if (!ref.mounted) return;
-      state = state.copyWith(dialogMessage: SessionExpiredMessage());
+      state = state.copyWith(
+        dialogMessage: SessionExpiredMessage(secondaryHandler: _requireSignIn),
+      );
     } on TaskRepositoryException catch (e, s) {
       logger.e('deleteExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -238,7 +247,7 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       if (!ref.mounted) return;
       state = state.copyWith(
         isLoadingMoreHistory: false,
-        dialogMessage: SessionExpiredMessage(),
+        dialogMessage: SessionExpiredMessage(secondaryHandler: _requireSignIn),
       );
     } on TaskRepositoryException catch (e, s) {
       logger.e('fetchTaskHistory failed', error: e, stackTrace: s);
@@ -246,6 +255,10 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       state = state.copyWith(isLoadingMoreHistory: false);
     }
   }
+
+  /// サインインが切れているとこの画面では何もできないため、ログイン画面へ送り出す
+  void _requireSignIn() =>
+      state = state.copyWith(signInRequired: SignInRequiredEvent());
 
   // watchTaskById は「タスクが削除された（null）」の検知と、history との
   // combineLatest2 の2つの用途で2回 listen するため、複数購読できるようにしておく

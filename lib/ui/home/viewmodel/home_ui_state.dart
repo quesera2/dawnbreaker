@@ -3,6 +3,7 @@ import 'package:dawnbreaker/data/model/home_display_mode.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/ui/common/base_ui_state.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
+import 'package:dawnbreaker/ui/common/sign_in_required_event.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_task_count.dart';
 import 'package:dawnbreaker/ui/home/viewmodel/home_task_list.dart';
@@ -20,6 +21,7 @@ abstract class HomeUiState with _$HomeUiState implements BaseUiState {
     @Default(false) bool isLoading,
     DialogMessage? dialogMessage,
     SnackBarMessage? snackBarMessage,
+    SignInRequiredEvent? signInRequired,
     @Default([]) List<TaskItem> tasks,
     @Default('') String searchQuery,
     @Default(HomeFilter.all) HomeFilter selectedFilter,

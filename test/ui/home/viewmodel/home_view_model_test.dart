@@ -300,6 +300,17 @@ void main() {
             expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
           });
 
+          test('了承するとログイン画面へ送り出される', () async {
+            fakeRepository.thrownException = const TaskNotSignedInException();
+            await viewModel.recordExecution(
+              _testTasks[0],
+              DateTime(2026, 4, 1),
+              null,
+            );
+            viewState.dialogMessage!.secondaryHandler!.call();
+            expect(viewState.signInRequired, isNotNull);
+          });
+
           test('ハンドラを呼び出すと再実行を試みる', () async {
             await viewModel.recordExecution(
               _testTasks[0],

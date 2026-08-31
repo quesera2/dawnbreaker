@@ -240,6 +240,11 @@ void main() {
             expect(viewState.isSaving, false);
             expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
           });
+
+          test('了承するとログイン画面へ送り出される', () {
+            viewState.dialogMessage!.secondaryHandler!.call();
+            expect(viewState.signInRequired, isNotNull);
+          });
         });
 
         group('save', () {
