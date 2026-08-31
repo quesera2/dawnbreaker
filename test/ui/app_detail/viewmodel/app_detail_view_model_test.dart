@@ -49,16 +49,10 @@ void main() {
       );
     }
 
+    // 読み込みは成功させ、そのあとの操作だけ失敗させる
     Future<void> setUpLoadedWithThrow() async {
-      setUpContainer();
-      fakeRepository.shouldThrow = true;
-      await waitUntil(container, provider, (s) => !s.isLoading);
-      viewModel = container.read(provider.notifier);
-      container.listen(
-        provider,
-        (_, next) => viewState = next,
-        fireImmediately: true,
-      );
+      await setUpLoaded();
+      fakeRepository.thrownException = testTaskFailure;
     }
 
     tearDown(() {
@@ -312,7 +306,7 @@ void main() {
             final handler = viewState.dialogMessage?.primaryHandler;
             expect(handler, isNotNull);
 
-            fakeRepository.shouldThrow = false;
+            fakeRepository.thrownException = null;
             handler!();
             await pumpEventQueue();
 
@@ -453,7 +447,7 @@ void main() {
             final handler = viewState.dialogMessage?.primaryHandler;
             expect(handler, isNotNull);
 
-            fakeRepository.shouldThrow = false;
+            fakeRepository.thrownException = null;
             handler!();
             await pumpEventQueue();
 
@@ -552,7 +546,7 @@ void main() {
             final handler = viewState.dialogMessage?.primaryHandler;
             expect(handler, isNotNull);
 
-            fakeRepository.shouldThrow = false;
+            fakeRepository.thrownException = null;
             handler!();
             await pumpEventQueue();
 
@@ -673,7 +667,7 @@ void main() {
             final handler = viewState.dialogMessage?.primaryHandler;
             expect(handler, isNotNull);
 
-            fakeRepository.shouldThrow = false;
+            fakeRepository.thrownException = null;
             handler!();
             await pumpEventQueue();
 

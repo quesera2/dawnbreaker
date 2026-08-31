@@ -142,7 +142,9 @@ void main() {
       });
 
       test('save() でリポジトリがエラーを返すと errorMessage が設定される', () async {
-        final throwingRepo = FakeTaskRepository(shouldThrow: true);
+        final throwingRepo = FakeTaskRepository(
+          thrownException: testTaskFailure,
+        );
         final c = ProviderContainer(
           overrides: [taskRepositoryProvider.overrideWith((_) => throwingRepo)],
         );

@@ -279,7 +279,7 @@ void main() {
         });
 
         group('異常系', () {
-          setUp(() => fakeRepository.shouldThrow = true);
+          setUp(() => fakeRepository.thrownException = testTaskFailure);
 
           test('リポジトリがエラーを返すと dialogMessage がセットされる', () async {
             await viewModel.recordExecution(
@@ -317,7 +317,7 @@ void main() {
               DateTime(2026, 4, 1),
               null,
             );
-            fakeRepository.shouldThrow = false;
+            fakeRepository.thrownException = null;
             final previousId = viewState.dialogMessage!.id;
             viewState.dialogMessage!.primaryHandler!.call();
             await pumpEventQueue();

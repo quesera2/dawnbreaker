@@ -185,9 +185,9 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
     - なお `taskRepositoryProvider` は Provider の build で投げるため、画面を開いたまま
       `NoLogin` になった場合はダイアログではなく ViewModel の再構築で例外が伝播する。
       「未サインインで Repository に触る状態そのものを不正扱いにする」既存方針のまま握り潰さない
-    - `FakeTaskRepository` に `thrownException` を足し、メソッドごとの既定の例外の代わりに
-      任意の例外を投げられるようにした。`fetchTaskHistory` だけは画面の初回ロードでも通るため
-      `shouldThrow` では投げない（既存の異常系テストがロード前に失敗するため）
+    - `FakeTaskRepository` の `shouldThrow` を `thrownException` に一本化した。「投げるか」と
+      「何を投げるか」で 2 つ持つと `shouldThrow: false` でも投げる状態が書けてしまい、
+      既定の例外の型はどのテストも見ていなかったため。型を問わないテストは `testTaskFailure` を使う
 - [ ] **PR3: 放置アカウントを回収する定期実行 Function（削除の安全網）**
     - Auth に存在しない uid の Firestore データを削除する
       （`auth/user-not-found` が確定した場合に限り、かつ `lastActiveAt` から一定期間経過していること）

@@ -561,7 +561,7 @@ void main() {
 
         // 黙って消してしまうより、余分に確認するほうが害が小さい
         test('タスクの有無を確認できなければ確認する', () async {
-          fakeTaskRepository.shouldThrow = true;
+          fakeTaskRepository.thrownException = testTaskFailure;
 
           await viewModel.onClickSignInWithGoogle();
 
