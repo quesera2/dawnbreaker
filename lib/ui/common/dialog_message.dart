@@ -95,6 +95,14 @@ class NotificationPermissionDeniedMessage extends DialogMessage {
     : super(type: DialogType.info);
 }
 
+/// サインインが切れていたときのエラー。他端末でアカウントを消されると
+/// トークンの更新が失敗して SDK がローカルでサインアウトするため、
+/// タスクの読み書きが `TaskNotSignedInException` になる形で表に出る。
+/// 閉じたらログイン画面へ送り出すので、枠外タップでは閉じさせない
+class SessionExpiredMessage extends DialogMessage {
+  SessionExpiredMessage() : super(type: DialogType.error, dismissible: false);
+}
+
 class UnknownErrorMessage extends DialogMessage {
   UnknownErrorMessage() : super(type: DialogType.error);
 }

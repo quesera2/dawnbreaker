@@ -116,6 +116,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commonErrorUnknown => '予期しないエラーが発生しました';
 
   @override
+  String get commonErrorSessionExpired => 'アカウントが利用できなくなりました。ログインし直してください';
+
+  @override
   String get commonClose => '閉じる';
 
   @override

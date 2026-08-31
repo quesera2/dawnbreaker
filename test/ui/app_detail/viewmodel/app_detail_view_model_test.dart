@@ -293,6 +293,16 @@ void main() {
             expect(viewState.dialogMessage?.primaryHandler, isNotNull);
           });
 
+          test('アカウントが失われていたときは再ログインを促す', () async {
+            fakeRepository.thrownException = const TaskNotSignedInException();
+            await viewModel.updateExecution(
+              _taskOneHistory,
+              _taskOneHistoryEntries.first,
+              executedAt: DateTime(2026, 2, 1),
+            );
+            expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
+          });
+
           test('リトライハンドラを呼び出すと再度更新が試みられ成功する', () async {
             await viewModel.updateExecution(
               _taskOneHistory,
@@ -367,11 +377,7 @@ void main() {
               DateTime(2026, 4, 1),
               null,
             );
-            await waitUntil(
-              container,
-              provider,
-              (s) => s.history.length == 2,
-            );
+            await waitUntil(container, provider, (s) => s.history.length == 2);
             expect(viewState.history.map((h) => h.executedAt), [
               DateTime(2026, 1, 1),
               DateTime(2026, 4, 1),
@@ -415,6 +421,16 @@ void main() {
               null,
             );
             expect(viewState.dialogMessage?.primaryHandler, isNotNull);
+          });
+
+          test('アカウントが失われていたときは再ログインを促す', () async {
+            fakeRepository.thrownException = const TaskNotSignedInException();
+            await viewModel.recordExecution(
+              _taskOneHistory,
+              DateTime(2026, 4, 1),
+              null,
+            );
+            expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
           });
 
           test('リトライハンドラを呼び出すと再度記録が試みられ成功する', () async {
@@ -512,6 +528,12 @@ void main() {
           test('削除を再試行できる', () async {
             await viewModel.deleteTask();
             expect(viewState.dialogMessage?.primaryHandler, isNotNull);
+          });
+
+          test('アカウントが失われていたときは再ログインを促す', () async {
+            fakeRepository.thrownException = const TaskNotSignedInException();
+            await viewModel.deleteTask();
+            expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
           });
 
           test('リトライハンドラを呼び出すと再度削除が試みられ成功する', () async {
@@ -623,6 +645,15 @@ void main() {
             expect(viewState.dialogMessage?.primaryHandler, isNotNull);
           });
 
+          test('アカウントが失われていたときは再ログインを促す', () async {
+            fakeRepository.thrownException = const TaskNotSignedInException();
+            await viewModel.deleteExecution(
+              _taskOneHistory,
+              _taskOneHistoryEntries.first,
+            );
+            expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
+          });
+
           test('リトライハンドラを呼び出すと再度削除が試みられ成功する', () async {
             await viewModel.deleteExecution(
               _taskOneHistory,
@@ -639,6 +670,19 @@ void main() {
               viewState.snackBarMessage,
               isA<TaskExecutionDeleteSuccess>(),
             );
+          });
+        });
+      });
+
+      group('loadMoreHistory', () {
+        group('異常系', () {
+          setUp(() => setUpLoaded(taskId: _taskManyHistory.id));
+
+          test('アカウントが失われていたときは再ログインを促す', () async {
+            fakeRepository.thrownException = const TaskNotSignedInException();
+            await viewModel.loadMoreHistory();
+            expect(viewState.isLoadingMoreHistory, false);
+            expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
           });
         });
       });
@@ -687,8 +731,34 @@ final _taskMultiHistory = TaskItem.period(
   cachedScheduledAt: DateTime(2026, 3, 4).add(const Duration(days: 31)),
 );
 
-final _testTasks = [_taskNoHistory, _taskOneHistory, _taskMultiHistory];
+// 1ページ（20件）に収まらない件数。追加読み込みの経路を通すために用意する
+final _taskManyHistoryEntries = List.generate(
+  25,
+  (i) => TaskHistory(
+    id: 'h-many-$i',
+    executedAt: DateTime(2026, 1, 1).add(Duration(days: i)),
+    comment: null,
+  ),
+);
+
+final _taskManyHistory = TaskItem.period(
+  id: 'task-4',
+  name: 'タスク（履歴25件）',
+  furigana: 'たすく',
+  icon: '📝',
+  color: TaskColor.none,
+  lastExecutedAt: DateTime(2026, 1, 25),
+  cachedScheduledAt: null,
+);
+
+final _testTasks = [
+  _taskNoHistory,
+  _taskOneHistory,
+  _taskMultiHistory,
+  _taskManyHistory,
+];
 final _testHistory = {
   _taskOneHistory.id: _taskOneHistoryEntries,
   _taskMultiHistory.id: _taskMultiHistoryEntries,
+  _taskManyHistory.id: _taskManyHistoryEntries,
 };

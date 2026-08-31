@@ -85,6 +85,16 @@ class HomeViewModel extends _$HomeViewModel {
               _taskRepository.deleteExecution(history.id, taskId: task.id),
         ),
       );
+    } on TaskNotSignedInException catch (e, s) {
+      // 他端末でアカウントを消されるとここに来る。再試行しても直らないので
+      // ログイン画面へ送り出す（TaskRepositoryException の手前で分ける）
+      logger.e(
+        'recordExecution failed: not signed in',
+        error: e,
+        stackTrace: s,
+      );
+      if (!ref.mounted) return;
+      state = state.copyWith(dialogMessage: SessionExpiredMessage());
     } on TaskRepositoryException catch (e, s) {
       logger.e('recordExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;

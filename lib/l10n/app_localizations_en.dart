@@ -116,6 +116,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonErrorUnknown => 'An unexpected error occurred';
 
   @override
+  String get commonErrorSessionExpired =>
+      'Your account is no longer available. Please sign in again.';
+
+  @override
   String get commonClose => 'Close';
 
   @override

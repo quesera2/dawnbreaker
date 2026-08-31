@@ -23,14 +23,21 @@ class FakeTaskRepository implements TaskRepository {
        };
 
   bool shouldThrow;
+
+  /// `shouldThrow` の代わりに投げる例外。サインアウト後のようにメソッドごとの
+  /// 既定の例外と違うものを投げたいときに指定する（指定するだけで投げるようになる）
+  TaskRepositoryException? thrownException;
+
   final List<TaskItem> _tasks;
   final Map<String, List<TaskHistory>> _history;
   final _controller = StreamController<List<TaskItem>>.broadcast();
   int _nextId = 100;
 
+  bool get _failing => shouldThrow || thrownException != null;
+
   @override
   Future<bool> hasAnyTask() async {
-    if (shouldThrow) throw const TaskLoadException('テストエラー');
+    if (_failing) throw thrownException ?? const TaskLoadException('テストエラー');
     return _tasks.isNotEmpty;
   }
 
@@ -58,7 +65,7 @@ class FakeTaskRepository implements TaskRepository {
 
   @override
   Future<TaskItem> findTaskById(String taskId) async {
-    if (shouldThrow) throw const TaskLoadException('テストエラー');
+    if (_failing) throw thrownException ?? const TaskLoadException('テストエラー');
     final task = _tasks.where((t) => t.id == taskId).firstOrNull;
     if (task == null) throw TaskNotFoundException(taskId: taskId);
     return task;
@@ -70,6 +77,10 @@ class FakeTaskRepository implements TaskRepository {
     TaskHistoryCursor? cursor,
     int limit = 20,
   }) async {
+    // 画面の初回ロードでも通るメソッドなので、shouldThrow では投げない
+    // （投げると既存の異常系テストがロード前に失敗してしまう）
+    final exception = thrownException;
+    if (exception != null) throw exception;
     final descending = <TaskHistory>[...?_history[taskId]]
       ..sort((a, b) => b.executedAt.compareTo(a.executedAt));
     final startIndex = switch (cursor) {
@@ -95,7 +106,7 @@ class FakeTaskRepository implements TaskRepository {
     int? scheduleValue,
     ScheduleUnit? scheduleUnit,
   }) async {
-    if (shouldThrow) throw const TaskSaveException('テストエラー');
+    if (_failing) throw thrownException ?? const TaskSaveException('テストエラー');
     final id = _nextId++;
     final item = _buildTask(
       id: id.toString(),
@@ -124,7 +135,7 @@ class FakeTaskRepository implements TaskRepository {
     int? scheduleValue,
     ScheduleUnit? scheduleUnit,
   }) async {
-    if (shouldThrow) throw const TaskUpdateException('テストエラー');
+    if (_failing) throw thrownException ?? const TaskUpdateException('テストエラー');
     final index = _tasks.indexWhere((t) => t.id == taskId);
     if (index == -1) throw TaskNotFoundException(taskId: taskId);
     final ascendingHistory = _ascendingHistory(taskId);
@@ -156,7 +167,7 @@ class FakeTaskRepository implements TaskRepository {
     required DateTime executedAt,
     String? comment,
   }) async {
-    if (shouldThrow) throw const TaskSaveException('テストエラー');
+    if (_failing) throw thrownException ?? const TaskSaveException('テストエラー');
     lastRecordedComment = comment;
     final newTaskId = _nextId++;
     final history = TaskHistory(
@@ -177,7 +188,7 @@ class FakeTaskRepository implements TaskRepository {
     required DateTime executedAt,
     String? comment,
   }) async {
-    if (shouldThrow) throw const TaskUpdateException('テストエラー');
+    if (_failing) throw thrownException ?? const TaskUpdateException('テストエラー');
     final list = _history[taskId];
     if (list == null) return;
     final index = list.indexWhere((h) => h.id == executionId);
@@ -195,7 +206,7 @@ class FakeTaskRepository implements TaskRepository {
     String executionId, {
     required String taskId,
   }) async {
-    if (shouldThrow) throw const TaskDeleteException('テストエラー');
+    if (_failing) throw thrownException ?? const TaskDeleteException('テストエラー');
     _history[taskId]?.removeWhere((h) => h.id == executionId);
     _recalculateScheduleFromHistory(taskId);
     _notify();
@@ -203,7 +214,7 @@ class FakeTaskRepository implements TaskRepository {
 
   @override
   Future<List<TaskHistory>> deleteTask(String taskId) async {
-    if (shouldThrow) throw const TaskDeleteException('テストエラー');
+    if (_failing) throw thrownException ?? const TaskDeleteException('テストエラー');
     final history = _history.remove(taskId) ?? [];
     _tasks.removeWhere((t) => t.id == taskId);
     _notify();
@@ -212,7 +223,7 @@ class FakeTaskRepository implements TaskRepository {
 
   @override
   Future<void> deleteAllTasks() async {
-    if (shouldThrow) throw const TaskDeleteException('テストエラー');
+    if (_failing) throw thrownException ?? const TaskDeleteException('テストエラー');
     _tasks.clear();
     _notify();
   }
@@ -221,7 +232,7 @@ class FakeTaskRepository implements TaskRepository {
   Future<void> restoreTask(
     List<(TaskItem, List<TaskHistory>)> taskItems,
   ) async {
-    if (shouldThrow) throw const TaskSaveException('テストエラー');
+    if (_failing) throw thrownException ?? const TaskSaveException('テストエラー');
     for (final (taskItem, taskHistory) in taskItems) {
       _history[taskItem.id] = List.of(taskHistory);
       final ascendingHistory = _ascendingHistory(taskItem.id);

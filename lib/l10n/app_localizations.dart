@@ -308,6 +308,12 @@ abstract class AppLocalizations {
   /// **'予期しないエラーが発生しました'**
   String get commonErrorUnknown;
 
+  /// No description provided for @commonErrorSessionExpired.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウントが利用できなくなりました。ログインし直してください'**
+  String get commonErrorSessionExpired;
+
   /// No description provided for @commonClose.
   ///
   /// In ja, this message translates to:

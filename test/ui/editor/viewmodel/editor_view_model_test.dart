@@ -2,6 +2,7 @@ import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
+import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
@@ -211,6 +212,33 @@ void main() {
             await pumpEventQueue();
             expect(viewState.dialogMessage, isA<TaskLoadErrorMessage>());
             expect(viewState.dialogMessage!.id, isNot(firstId));
+          });
+        });
+
+        group('サインアウトしていた場合', () {
+          setUp(() async {
+            setUpContainer();
+            fakeRepository.thrownException = const TaskNotSignedInException();
+            final p = editorViewModelProvider(taskId: 'task-1');
+            await waitUntil(container, p, (s) => !s.isLoading);
+            viewModel = container.read(p.notifier);
+            container.listen(
+              p,
+              (_, next) => viewState = next,
+              fireImmediately: true,
+            );
+          });
+
+          test('読み込み時に再ログインを促す通知がセットされる', () {
+            expect(viewState.isLoading, false);
+            expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
+          });
+
+          test('保存時に再ログインを促す通知がセットされる', () async {
+            viewModel.updateName('散髪');
+            await viewModel.save();
+            expect(viewState.isSaving, false);
+            expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
           });
         });
 

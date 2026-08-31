@@ -141,6 +141,12 @@ LabelConfig _labels(BuildContext context, DialogMessage msg) => switch (msg) {
     primaryActionLabel: context.l10n.commonOpenSettings,
     secondaryActionLabel: context.l10n.commonCancel,
   ),
+  SessionExpiredMessage() => (
+    title: context.l10n.commonErrorTitle,
+    messageText: context.l10n.commonErrorSessionExpired,
+    primaryActionLabel: '',
+    secondaryActionLabel: context.l10n.commonOk,
+  ),
   UnknownErrorMessage() => (
     title: context.l10n.commonErrorTitle,
     messageText: context.l10n.commonErrorUnknown,

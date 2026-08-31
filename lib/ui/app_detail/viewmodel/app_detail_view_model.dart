@@ -65,6 +65,14 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         items: patched,
         hasMore: state.hasMoreHistory,
       ));
+    } on TaskNotSignedInException catch (e, s) {
+      logger.e(
+        'updateExecution failed: not signed in',
+        error: e,
+        stackTrace: s,
+      );
+      if (!ref.mounted) return;
+      state = state.copyWith(dialogMessage: SessionExpiredMessage());
     } on TaskRepositoryException catch (e, s) {
       logger.e('updateExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -107,6 +115,10 @@ class AppDetailViewModel extends _$AppDetailViewModel {
           handler: () => _repository.restoreTask([(task, deletedHistory)]),
         ),
       );
+    } on TaskNotSignedInException catch (e, s) {
+      logger.e('deleteTask failed: not signed in', error: e, stackTrace: s);
+      if (!ref.mounted) return;
+      state = state.copyWith(dialogMessage: SessionExpiredMessage());
     } on TaskRepositoryException catch (e, s) {
       logger.e('deleteTask failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -140,6 +152,14 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         items: updated,
         hasMore: state.hasMoreHistory,
       ));
+    } on TaskNotSignedInException catch (e, s) {
+      logger.e(
+        'recordExecution failed: not signed in',
+        error: e,
+        stackTrace: s,
+      );
+      if (!ref.mounted) return;
+      state = state.copyWith(dialogMessage: SessionExpiredMessage());
     } on TaskRepositoryException catch (e, s) {
       logger.e('recordExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -171,6 +191,14 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         items: updated,
         hasMore: state.hasMoreHistory,
       ));
+    } on TaskNotSignedInException catch (e, s) {
+      logger.e(
+        'deleteExecution failed: not signed in',
+        error: e,
+        stackTrace: s,
+      );
+      if (!ref.mounted) return;
+      state = state.copyWith(dialogMessage: SessionExpiredMessage());
     } on TaskRepositoryException catch (e, s) {
       logger.e('deleteExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -201,6 +229,17 @@ class AppDetailViewModel extends _$AppDetailViewModel {
       final merged = [...page.items.reversed, ...state.history];
       state = state.copyWith(isLoadingMoreHistory: false);
       _historyUpdatesController.add((items: merged, hasMore: page.hasMore));
+    } on TaskNotSignedInException catch (e, s) {
+      logger.e(
+        'fetchTaskHistory failed: not signed in',
+        error: e,
+        stackTrace: s,
+      );
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        isLoadingMoreHistory: false,
+        dialogMessage: SessionExpiredMessage(),
+      );
     } on TaskRepositoryException catch (e, s) {
       logger.e('fetchTaskHistory failed', error: e, stackTrace: s);
       if (!ref.mounted) return;

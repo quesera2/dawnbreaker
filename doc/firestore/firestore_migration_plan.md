@@ -163,16 +163,26 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
     - `fcmTokens` の `arrayRemove` は不要（`users/{uid}` ごと消えるため）。端末側の `deleteToken()` は要る
     - `cloud_functions` を足すと `cloud_firestore` が 6.8.0 に上がり、
       `fake_cloud_firestore` 4.1.1 がコンパイルできなくなるため 4.2.0 へ上げた
-- [ ] **PR2: 他端末で削除されたことの検知**
+- [x] **PR2: 他端末で削除されたことの検知**
     - 削除されるとトークン更新が失敗して SDK がローカルでサインアウトするため、
       `authStateChanges()` → `currentUserProvider` が `NoLogin` → `taskRepositoryProvider` が
-      NoLogin 版に切り替わり、既存の `TaskNotSignedInException` として観測できる。
+      `TaskNotSignedInException` を投げ、既存の例外として観測できる。
       `permission-denied` を見て判定する必要はない（ルール設定ミスと区別できないため、そうしない）
-    - ViewModel の `catch` で `TaskNotSignedInException` だけ手前に分け、
-      ログイン画面へ誘導する `DialogMessage` を出す（8 箇所）
+    - ViewModel の `catch` で `TaskNotSignedInException` だけ `TaskRepositoryException` の
+      手前に分け、`SessionExpiredMessage` を出す（8 箇所）。再試行しても直らないので
+      OK だけのダイアログにし、枠外タップでは閉じさせない
+    - OK の後の `/login` への遷移は `MessagesListenMixin` が引き受ける。ViewModel には遷移の手段が
+      なく、画面ごとに遷移イベントを持たせると 3 画面に同じものが並ぶため、ダイアログを閉じた
+      ところで一箇所に寄せた
     - 検知はトークン更新の契機まで遅れるが、設計方針の「操作時のエラーとして検知する」と一致している
     - ログアウトでは「ホーム画面が残ったまま `NoLogin` にすると例外になる」ことを避けたが、
       ここではその例外が検知したい信号そのものになる
+    - なお `taskRepositoryProvider` は Provider の build で投げるため、画面を開いたまま
+      `NoLogin` になった場合はダイアログではなく ViewModel の再構築で例外が伝播する。
+      「未サインインで Repository に触る状態そのものを不正扱いにする」既存方針のまま握り潰さない
+    - `FakeTaskRepository` に `thrownException` を足し、メソッドごとの既定の例外の代わりに
+      任意の例外を投げられるようにした。`fetchTaskHistory` だけは画面の初回ロードでも通るため
+      `shouldThrow` では投げない（既存の異常系テストがロード前に失敗するため）
 - [ ] **PR3: 放置アカウントを回収する定期実行 Function（削除の安全網）**
     - Auth に存在しない uid の Firestore データを削除する
       （`auth/user-not-found` が確定した場合に限り、かつ `lastActiveAt` から一定期間経過していること）

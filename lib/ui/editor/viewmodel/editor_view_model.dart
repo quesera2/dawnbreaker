@@ -41,6 +41,13 @@ class EditorViewModel extends _$EditorViewModel {
         scheduleValue: task.scheduleValueOrDefault,
         scheduleUnit: task.scheduleUnitOrDefault,
       );
+    } on TaskNotSignedInException catch (e, s) {
+      logger.e('_loadTask failed: not signed in', error: e, stackTrace: s);
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        isLoading: false,
+        dialogMessage: SessionExpiredMessage(),
+      );
     } on TaskRepositoryException catch (e, s) {
       logger.e('_loadTask failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -77,6 +84,13 @@ class EditorViewModel extends _$EditorViewModel {
       } else {
         await _updateTask(id);
       }
+    } on TaskNotSignedInException catch (e, s) {
+      logger.e('save failed: not signed in', error: e, stackTrace: s);
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        isSaving: false,
+        dialogMessage: SessionExpiredMessage(),
+      );
     } on TaskRepositoryException catch (e, s) {
       logger.e('save failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
