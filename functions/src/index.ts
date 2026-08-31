@@ -295,8 +295,15 @@ export const deleteAccount = onCall(async (request) => {
   // サブコレクション（taskDefinitions / executions / notifications）は
   // ドキュメントを消しても残るため、recursiveDelete でまとめて消す
   await db.recursiveDelete(db.collection("users").doc(uid));
-  await getAuth().deleteUser(uid);
-  logger.info("account deleted", {uid});
+  try {
+    await getAuth().deleteUser(uid);
+    logger.info("account deleted", {uid});
+  } catch (error) {
+    // 他端末で先に消された場合。消えていることが目的なので成功として返す。
+    // ここで失敗にすると、消えているのに再試行しても直らない状態になる
+    if ((error as {code?: string}).code !== "auth/user-not-found") throw error;
+    logger.info("account was already deleted", {uid});
+  }
 });
 
 /**

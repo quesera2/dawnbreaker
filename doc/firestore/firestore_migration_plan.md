@@ -141,6 +141,10 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
           逆順だとデータ削除に失敗したときユーザーがサインインできなくなり、
           自力で再実行できないまま `users/{uid}` が誰にも辿れないゴミとして残る。
           この順なら Auth が生きているので、もう一度削除を実行すれば続きから消せる
+        - `deleteUser` の `auth/user-not-found` は握って成功として返す（PR2 で追加）。
+          他端末で先に消されていると `recursiveDelete` は成功して `deleteUser` だけが失敗し、
+          消えているのに再試行しても直らないダイアログが出続けるため。
+          `recursiveDelete` は元から冪等なので、これで削除全体が冪等になる
         - uid は引数で受けず `request.auth.uid` を使う。引数で受けると他人の uid を渡して消せてしまう
         - クライアントの `user.delete()` は `requires-recent-login` で失敗しうるため、Admin SDK 側で消す
     - クライアントは `cloud_functions` を追加し、`UserRepository.deleteAccount()` の中で
