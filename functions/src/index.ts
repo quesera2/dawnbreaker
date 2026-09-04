@@ -52,11 +52,8 @@ const cleanupBatchLimit = 200;
 // Auth に一度に存在を問い合わせる uid の数。getUsers() の受け取れる上限が 100 件
 const getUsersChunkSize = 100;
 
-// 一度に取得するユーザードキュメントの数。getAll() 側に上限はないので、
-// 一度に抱える量が増えすぎない程度に区切っている
-const getAllChunkSize = 300;
-
-// Auth から一度に受け取るユーザーの数。listUsers() が1ページで返せる上限が 1000 件
+// Auth から一度に受け取るユーザーの数。listUsers() が1ページで返せる上限が 1000 件。
+// users ドキュメントもこのページ単位でまとめて読む
 const listUsersPageSize = 1000;
 
 // Auth に無い uid の Firestore データを消すまでの猶予日数。
@@ -427,9 +424,8 @@ export const cleanupInactiveAnonymousAccounts = onSchedule(
       inactiveAnonymousAccountRetentionDays.value(),
     );
 
-    const anonymousIds = await listAnonymousUserIds();
-    const targetIds = await filterInactiveUserIds(
-      anonymousIds, threshold, cleanupBatchLimit,
+    const targetIds = await listInactiveAnonymousUserIds(
+      threshold, cleanupBatchLimit,
     );
 
     let deletedCount = 0;
@@ -447,7 +443,6 @@ export const cleanupInactiveAnonymousAccounts = onSchedule(
       }
     }
     logger.info("inactive anonymous accounts cleaned up", {
-      anonymous: anonymousIds.length,
       targets: targetIds.length,
       deleted: deletedCount,
     });
@@ -455,53 +450,40 @@ export const cleanupInactiveAnonymousAccounts = onSchedule(
 );
 
 /**
- * Auth の全ユーザーから匿名ユーザーの uid を集める
- * @return {Promise<string[]>} 匿名ユーザーの uid の一覧
- */
-async function listAnonymousUserIds(): Promise<string[]> {
-  const userIds: string[] = [];
-  let pageToken: string | undefined;
-  do {
-    const result = await getAuth().listUsers(listUsersPageSize, pageToken);
-    for (const user of result.users) {
-      if (isAnonymous(user)) userIds.push(user.uid);
-    }
-    pageToken = result.pageToken;
-  } while (pageToken != null);
-  return userIds;
-}
-
-/**
- * 渡した uid のうち、最終アクティブ日時がしきい値より古いものを上限まで返す。
- * users/{uid} は初期化していないため存在しないことがあり、その場合も対象に含める。
- * 上限で打ち切るのは、その回で消さない分まで Firestore を読まないため
- * @param {string[]} userIds 判定する uid の一覧
+ * 匿名のまま使われていないユーザーの uid を、上限に達するまで集める。
+ *
+ * Auth にはクエリが無いため、listUsers() で受け取ってからコード側で匿名に絞る。
+ * users/{uid} は初期化していないため存在しないことがあるが、getAll() は
+ * 存在しないドキュメントもスナップショットとして返すので、そのまま放置と判定できる。
+ *
+ * Auth の 1 ページを受け取るたびにそのページ分を読む。全ページ分の uid を溜めてから
+ * 読むと、上限に達したあとも Auth のページングが最後まで回ってしまうため
  * @param {Temporal.ZonedDateTime} threshold 放置とみなすしきい値
  * @param {number} limit 集める件数の上限
- * @return {Promise<string[]>} 放置とみなせる uid の一覧
+ * @return {Promise<string[]>} 放置とみなせる匿名ユーザーの uid の一覧
  */
-async function filterInactiveUserIds(
-  userIds: string[],
+async function listInactiveAnonymousUserIds(
   threshold: Temporal.ZonedDateTime,
   limit: number,
 ): Promise<string[]> {
   const db = getFirestore();
   const inactiveIds: string[] = [];
-  for (
-    let i = 0;
-    i < userIds.length && inactiveIds.length < limit;
-    i += getAllChunkSize
-  ) {
-    const refs = userIds
-      .slice(i, i + getAllChunkSize)
-      .map((userId) => db.collection("users").doc(userId));
-    const snapshots = await db.getAll(...refs, {fieldMask: ["lastActiveAt"]});
-    for (const snapshot of snapshots) {
-      if (isInactive(lastActiveAtOf(snapshot), threshold)) {
-        inactiveIds.push(snapshot.id);
+  let pageToken: string | undefined;
+  do {
+    const result = await getAuth().listUsers(listUsersPageSize, pageToken);
+    const refs = result.users
+      .filter((user) => isAnonymous(user))
+      .map((user) => db.collection("users").doc(user.uid));
+    if (refs.length > 0) {
+      const snapshots = await db.getAll(...refs, {fieldMask: ["lastActiveAt"]});
+      for (const snapshot of snapshots) {
+        if (isInactive(lastActiveAtOf(snapshot), threshold)) {
+          inactiveIds.push(snapshot.id);
+        }
       }
     }
-  }
+    pageToken = result.pageToken;
+  } while (pageToken != null && inactiveIds.length < limit);
   return inactiveIds.slice(0, limit);
 }
 
