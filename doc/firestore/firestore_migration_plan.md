@@ -196,10 +196,11 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
     - `FakeTaskRepository` の `shouldThrow` を `thrownException` に一本化した。「投げるか」と
       「何を投げるか」で 2 つ持つと `shouldThrow: false` でも投げる状態が書けてしまい、
       既定の例外の型はどのテストも見ていなかったため。型を問わないテストは `testTaskFailure` を使う
-- [ ] **PR3: 放置アカウントを回収する定期実行 Function（削除の安全網）**
-    - Auth に存在しない uid の Firestore データを削除する
-      （`auth/user-not-found` が確定した場合に限り、かつ `lastActiveAt` から一定期間経過していること）
-    - 匿名かつ `lastActiveAt` から長期間更新のないアカウントを Auth ごと削除する
+- [x] **PR3: 放置アカウントを回収する定期実行 Function（削除の安全網）**
+    - `cleanupOrphanedUserData` が Auth に存在しない uid の Firestore データを削除する
+      （`getUsers()` の `notFound` に入った場合に限り、かつ `lastActiveAt` から一定期間経過していること）
+    - `cleanupInactiveAnonymousAccounts` が匿名かつ `lastActiveAt` から長期間更新のない
+      アカウントを Auth ごと削除する。削除は `deleteAccount` と同じく Firestore → Auth の順
     - しきい値は用途が違うので別々に持ち、`defineInt` と `.env.<プロジェクトID>` で環境ごとに変える。
       prod プロジェクトを作る際は `.env` を足すだけでよい形にする
 
@@ -209,6 +210,28 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
       | 匿名かつ長期間未使用のアカウント | 3日 | 180日 |
 
       dev で日数を分けるのは、片方だけ発火する状態を作って経路を切り分けられるようにするため
+    - `defineInt` の既定値は prod 想定の値にした。`.env` を置き忘れたプロジェクトへ
+      デプロイしたとき、短い猶予のまま消しにいかないようにするため
+    - `.env.<プロジェクトID>` はルートの `.gitignore` の `*.env.*` で除外されるが、
+      しきい値の日数しか持たず環境ごとの値をコミットしておきたいので、
+      `functions/.gitignore` の否定パターンで戻した
+    - 匿名アカウントの列挙は Auth の全走査（`listUsers`）にした。Firestore の `users` を
+      起点にすると、ゲストを作った直後に使われなくなって `users/{uid}` すら無いアカウント
+      （まさに回収したい形）を拾えないため
+    - `lastActiveAt` が無いものは放置として削除する。ゲスト作成と同時に書いており
+      （`_completeSignIn`）、Firestore の書き込みはオフラインでもローカルキューに載るため、
+      値が無いのは異常ケースにあたる。判定できないものを永久に残すほうが害が大きい
+        - 副作用として、ゲスト作成直後にスケジュール実行がかち合うと書き込みが届く前の
+          ユーザーを消す。ただしその時点でタスクは 0 件で、失うのはアカウントだけ。
+          次回起動時は PR2 の `SessionExpiredMessage` の経路で再ログインに誘導される
+        - `where('lastActiveAt', '<', ...)` では絞れない。フィールドの無いドキュメントは
+          インデックスに載らずクエリに現れないため。`select()` で転送量だけ落として全件を読む
+    - 1 回の実行で削除する件数に上限を置いた。`recursiveDelete` と `deleteUser` は重く、
+      `maxInstances` が 1 なのでタイムアウトすると実行全体が落ちる。超過分は次回に回る
+    - `deleteAccount` が持っていた `auth/user-not-found` の握りつぶしは `deleteAuthUser` に
+      括り出して共有した。削除したかどうかを bool で返し、ログの出し分けは呼び出し元に残した
+    - しきい値の判定は `src/cleanup.ts` の純粋関数に切り出した。`index.ts` の Function 本体には
+      既存テストが無く、テストは `src/` の純粋関数に対して書くのが既存の形のため
 
 ## Apple Developer Program に登録したらやること
 
