@@ -359,28 +359,45 @@ export const cleanupOrphanedUserData = onSchedule(
     const candidateIds = snapshot.docs
       .filter((doc) => isInactive(lastActiveAtOf(doc), threshold))
       .map((doc) => doc.id);
-    const orphanedIds = await filterMissingInAuth(candidateIds);
+    const targetIds = await filterMissingInAuth(
+      candidateIds, cleanupBatchLimit,
+    );
 
-    const targetIds = orphanedIds.slice(0, cleanupBatchLimit);
+    let deletedCount = 0;
     for (const userId of targetIds) {
-      await db.recursiveDelete(db.collection("users").doc(userId));
+      try {
+        await db.recursiveDelete(db.collection("users").doc(userId));
+        deletedCount += 1;
+      } catch (error) {
+        // 1 件の失敗で残りを巻き添えにしない。消し損ねた分は次回の実行で拾う
+        logger.error("failed to delete orphaned user data", {userId, error});
+      }
     }
     logger.info("orphaned user data cleaned up", {
       candidates: candidateIds.length,
-      orphaned: orphanedIds.length,
-      deleted: targetIds.length,
+      targets: targetIds.length,
+      deleted: deletedCount,
     });
   },
 );
 
 /**
- * 渡した uid のうち Auth に存在しないものを返す
+ * 渡した uid のうち Auth に存在しないものを、上限に達するまで返す。
+ * 上限で打ち切るのは、その回で消さない分まで Auth に問い合わせないため
  * @param {string[]} userIds 照会する uid の一覧
+ * @param {number} limit 集める件数の上限
  * @return {Promise<string[]>} Auth に存在しなかった uid の一覧
  */
-async function filterMissingInAuth(userIds: string[]): Promise<string[]> {
+async function filterMissingInAuth(
+  userIds: string[],
+  limit: number,
+): Promise<string[]> {
   const missingIds: string[] = [];
-  for (let i = 0; i < userIds.length; i += getUsersChunkSize) {
+  for (
+    let i = 0;
+    i < userIds.length && missingIds.length < limit;
+    i += getUsersChunkSize
+  ) {
     const chunk = userIds.slice(i, i + getUsersChunkSize);
     const result = await getAuth().getUsers(chunk.map((uid) => ({uid})));
     for (const identifier of result.notFound) {
@@ -388,7 +405,7 @@ async function filterMissingInAuth(userIds: string[]): Promise<string[]> {
       if ("uid" in identifier) missingIds.push(identifier.uid);
     }
   }
-  return missingIds;
+  return missingIds.slice(0, limit);
 }
 
 /**
@@ -410,17 +427,28 @@ export const cleanupInactiveAnonymousAccounts = onSchedule(
     );
 
     const anonymousIds = await listAnonymousUserIds();
-    const inactiveIds = await filterInactiveUserIds(anonymousIds, threshold);
+    const targetIds = await filterInactiveUserIds(
+      anonymousIds, threshold, cleanupBatchLimit,
+    );
 
-    const targetIds = inactiveIds.slice(0, cleanupBatchLimit);
+    let deletedCount = 0;
     for (const userId of targetIds) {
-      await db.recursiveDelete(db.collection("users").doc(userId));
-      await deleteAuthUser(userId);
+      try {
+        await db.recursiveDelete(db.collection("users").doc(userId));
+        await deleteAuthUser(userId);
+        deletedCount += 1;
+      } catch (error) {
+        // 1 件の失敗で残りを巻き添えにしない。Firestore だけ消えた中途半端な状態も
+        // 次回は「匿名かつ users ドキュメントが無い」として同じ対象に戻る
+        logger.error("failed to delete inactive anonymous account", {
+          userId, error,
+        });
+      }
     }
     logger.info("inactive anonymous accounts cleaned up", {
       anonymous: anonymousIds.length,
-      inactive: inactiveIds.length,
-      deleted: targetIds.length,
+      targets: targetIds.length,
+      deleted: deletedCount,
     });
   },
 );
@@ -443,19 +471,26 @@ async function listAnonymousUserIds(): Promise<string[]> {
 }
 
 /**
- * 渡した uid のうち、最終アクティブ日時がしきい値より古いものを返す。
- * users/{uid} は初期化していないため存在しないことがあり、その場合も対象に含める
+ * 渡した uid のうち、最終アクティブ日時がしきい値より古いものを上限まで返す。
+ * users/{uid} は初期化していないため存在しないことがあり、その場合も対象に含める。
+ * 上限で打ち切るのは、その回で消さない分まで Firestore を読まないため
  * @param {string[]} userIds 判定する uid の一覧
  * @param {Temporal.ZonedDateTime} threshold 放置とみなすしきい値
+ * @param {number} limit 集める件数の上限
  * @return {Promise<string[]>} 放置とみなせる uid の一覧
  */
 async function filterInactiveUserIds(
   userIds: string[],
   threshold: Temporal.ZonedDateTime,
+  limit: number,
 ): Promise<string[]> {
   const db = getFirestore();
   const inactiveIds: string[] = [];
-  for (let i = 0; i < userIds.length; i += getAllChunkSize) {
+  for (
+    let i = 0;
+    i < userIds.length && inactiveIds.length < limit;
+    i += getAllChunkSize
+  ) {
     const refs = userIds
       .slice(i, i + getAllChunkSize)
       .map((userId) => db.collection("users").doc(userId));
@@ -466,7 +501,7 @@ async function filterInactiveUserIds(
       }
     }
   }
-  return inactiveIds;
+  return inactiveIds.slice(0, limit);
 }
 
 /**
