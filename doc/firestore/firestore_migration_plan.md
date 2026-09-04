@@ -242,6 +242,35 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
           リンク済みで古いもの、の 7 通りで期待どおりの結果になることと、
           `recursiveDelete` がサブコレクションまで消すことを確認した
 
+## 次の課題: lastActiveAt を廃止できないか
+
+Phase10 PR3 のレビューで、`lastActiveAt` が無いドキュメントには猶予日数
+（`INACTIVE_ANONYMOUS_ACCOUNT_RETENTION_DAYS`）が一切効かず、次の実行で消えることが分かった。
+`isInactive` が `null` を常に放置と判定するため。欠落時のフォールバックを足す案を検討したが、
+そもそも `lastActiveAt` 自体が要らないのではないか、というところに行き着いた。
+
+- 匿名回収（Auth 起点）は `UserRecord.metadata.lastRefreshTime`（「最後にアクティブだった＝
+  ID トークンを更新した時刻」）で置き換えられる。`users/{uid}` が無いユーザーも拾え、
+  Auth SDK が自動で更新するためこちらの書き込みに依存せず、`getAll` の一段がまるごと消える
+- 孤児データ回収（Firestore 起点）は Auth にいないので metadata を使えないが、
+  `DocumentSnapshot.updateTime` が全ドキュメントに付いてくる。`lastActiveAt` はその
+  `users/{uid}` 自身への書き込みなので、`updateTime` は常にそれ以上で欠落もしない
+
+置き換えられれば `lastActiveAt` フィールド、`UserSettingsRepository.updateLastActiveAt()`、
+`AppStartup` と `LoginViewModel` の呼び出し、そのテストが消える。
+アプリ起動のたびに走っていた Firestore への書き込みも 1 回減る。
+
+- [ ] 実機でゲストを 1 つ作り、`lastRefreshTime` が実際に埋まるかを確認する
+    - Identity Platform の `last_refresh_at` 由来のフィールドで、`importUsers()` からの設定は
+      Firebase Authentication バックエンドでは未サポートという但し書きがある。
+      読み取りが標準の Firebase Auth で確実に埋まるかはドキュメントから断言できない
+- [ ] 埋まるなら `lastActiveAt` を廃止する（クライアント・スキーマ・Functions の 3 層に跨る）
+    - 指標の意味が「最後にアプリを開いた時刻」から「`users/{uid}` に最後に何か書かれた時刻」に
+      変わる。書き込み契機は通知設定の変更と FCM トークン更新だけになるが、
+      孤児データの判定は「放置されてどれだけ経ったか」を見るだけなので支障はない
+- [ ] 埋まらないなら現状維持のうえ、`lastActiveAt` 欠落時に
+      `metadata.lastRefreshTime ?? creationTime` へフォールバックする対応だけ入れる
+
 ## Apple Developer Program に登録したらやること
 
 Sign in with Apple も APNs も capability の有効化に有料の Apple Developer Program が要り、
