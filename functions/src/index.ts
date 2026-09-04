@@ -45,6 +45,11 @@ const sendEachChunkSize = 500;
 const cleanupSchedule = "0 3 * * *";
 const cleanupTimeZone = "Asia/Tokyo";
 
+// 回収に許す実行時間。既定の 60 秒では users の全件読みと最大 200 件の
+// recursiveDelete を直列に回しきれず、集計ログを残す前に落ちる。
+// 540 秒はスケジュール実行（イベント駆動）に指定できる上限
+const cleanupTimeoutSeconds = 540;
+
 // 1回の実行で削除するユーザーの数。recursiveDelete と deleteUser は重く、
 // maxInstances が 1 なのでタイムアウトすると実行全体が落ちる。超過分は次回に回る
 const cleanupBatchLimit = 200;
@@ -345,7 +350,11 @@ export const deleteAccount = onCall(async (request) => {
  * select() で転送量だけ落として全件を読む
  */
 export const cleanupOrphanedUserData = onSchedule(
-  {schedule: cleanupSchedule, timeZone: cleanupTimeZone},
+  {
+    schedule: cleanupSchedule,
+    timeZone: cleanupTimeZone,
+    timeoutSeconds: cleanupTimeoutSeconds,
+  },
   async () => {
     const db = getFirestore();
     const threshold = thresholdFrom(
@@ -416,7 +425,11 @@ async function filterMissingInAuth(
  * 失敗したとき、誰にも辿れない users/{uid} が残る
  */
 export const cleanupInactiveAnonymousAccounts = onSchedule(
-  {schedule: cleanupSchedule, timeZone: cleanupTimeZone},
+  {
+    schedule: cleanupSchedule,
+    timeZone: cleanupTimeZone,
+    timeoutSeconds: cleanupTimeoutSeconds,
+  },
   async () => {
     const db = getFirestore();
     const threshold = thresholdFrom(
