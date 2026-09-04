@@ -196,10 +196,11 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
     - `FakeTaskRepository` の `shouldThrow` を `thrownException` に一本化した。「投げるか」と
       「何を投げるか」で 2 つ持つと `shouldThrow: false` でも投げる状態が書けてしまい、
       既定の例外の型はどのテストも見ていなかったため。型を問わないテストは `testTaskFailure` を使う
-- [ ] **PR3: 放置アカウントを回収する定期実行 Function（削除の安全網）**
-    - Auth に存在しない uid の Firestore データを削除する
-      （`auth/user-not-found` が確定した場合に限り、かつ `lastActiveAt` から一定期間経過していること）
-    - 匿名かつ `lastActiveAt` から長期間更新のないアカウントを Auth ごと削除する
+- [x] **PR3: 放置アカウントを回収する定期実行 Function（削除の安全網）**
+    - `cleanupOrphanedUserData` が Auth に存在しない uid の Firestore データを削除する
+      （`getUsers()` の `notFound` に入った場合に限り、かつ `lastActiveAt` から一定期間経過していること）
+    - `cleanupInactiveAnonymousAccounts` が匿名かつ `lastActiveAt` から長期間更新のない
+      アカウントを Auth ごと削除する。削除は `deleteAccount` と同じく Firestore → Auth の順
     - しきい値は用途が違うので別々に持ち、`defineInt` と `.env.<プロジェクトID>` で環境ごとに変える。
       prod プロジェクトを作る際は `.env` を足すだけでよい形にする
 
@@ -209,6 +210,66 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
       | 匿名かつ長期間未使用のアカウント | 3日 | 180日 |
 
       dev で日数を分けるのは、片方だけ発火する状態を作って経路を切り分けられるようにするため
+    - `defineInt` の既定値は prod 想定の値にした。`.env` を置き忘れたプロジェクトへ
+      デプロイしたとき、短い猶予のまま消しにいかないようにするため
+    - `.env.<プロジェクトID>` はルートの `.gitignore` の `*.env.*` で除外されるが、
+      しきい値の日数しか持たず環境ごとの値をコミットしておきたいので、
+      `functions/.gitignore` の否定パターンで戻した
+    - 匿名アカウントの列挙は Auth の全走査（`listUsers`）にした。Firestore の `users` を
+      起点にすると、ゲストを作った直後に使われなくなって `users/{uid}` すら無いアカウント
+      （まさに回収したい形）を拾えないため
+    - `lastActiveAt` が無いものは放置として削除する。ゲスト作成と同時に書いており
+      （`_completeSignIn`）、Firestore の書き込みはオフラインでもローカルキューに載るため、
+      値が無いのは異常ケースにあたる。判定できないものを永久に残すほうが害が大きい
+        - 副作用として、ゲスト作成直後にスケジュール実行がかち合うと書き込みが届く前の
+          ユーザーを消す。ただしその時点でタスクは 0 件で、失うのはアカウントだけ。
+          次回起動時は PR2 の `SessionExpiredMessage` の経路で再ログインに誘導される
+        - `where('lastActiveAt', '<', ...)` では絞れない。フィールドの無いドキュメントは
+          インデックスに載らずクエリに現れないため。`select()` で転送量だけ落として全件を読む
+    - 1 回の実行で削除する件数に上限を置いた。`recursiveDelete` と `deleteUser` は重く、
+      `maxInstances` が 1 なのでタイムアウトすると実行全体が落ちる。超過分は次回に回る
+    - `deleteAccount` が持っていた `auth/user-not-found` の握りつぶしは `deleteAuthUser` に
+      括り出して共有した。削除したかどうかを bool で返し、ログの出し分けは呼び出し元に残した
+    - しきい値の判定は `src/cleanup.ts` の純粋関数に切り出した。`index.ts` の Function 本体には
+      既存テストが無く、テストは `src/` の純粋関数に対して書くのが既存の形のため
+    - エミュレータで動作を確認した。`firebase.json` に `emulators` の設定がないため、
+      auth / pubsub を足した設定ファイルを一時的に作って `--config` で渡した
+        - `onSchedule` の Function はエミュレータでは pubsub のトピックに publish しても
+          `Unsupported trigger signature: http` で発火しない（firebase-tools の制限。
+          `sendScheduledNotifications` も同じ）。ビルド済みの `lib/index.js` を読み込んで
+          `cleanupOrphanedUserData.run({...})` を直接呼ぶ形で確認した
+        - Auth に無い uid（古い・`lastActiveAt` 無し・新しい）、匿名（古い・`users` 無し・新しい）、
+          リンク済みで古いもの、の 7 通りで期待どおりの結果になることと、
+          `recursiveDelete` がサブコレクションまで消すことを確認した
+
+## 次の課題: lastActiveAt を廃止できないか
+
+Phase10 PR3 のレビューで、`lastActiveAt` が無いドキュメントには猶予日数
+（`INACTIVE_ANONYMOUS_ACCOUNT_RETENTION_DAYS`）が一切効かず、次の実行で消えることが分かった。
+`isInactive` が `null` を常に放置と判定するため。欠落時のフォールバックを足す案を検討したが、
+そもそも `lastActiveAt` 自体が要らないのではないか、というところに行き着いた。
+
+- 匿名回収（Auth 起点）は `UserRecord.metadata.lastRefreshTime`（「最後にアクティブだった＝
+  ID トークンを更新した時刻」）で置き換えられる。`users/{uid}` が無いユーザーも拾え、
+  Auth SDK が自動で更新するためこちらの書き込みに依存せず、`getAll` の一段がまるごと消える
+- 孤児データ回収（Firestore 起点）は Auth にいないので metadata を使えないが、
+  `DocumentSnapshot.updateTime` が全ドキュメントに付いてくる。`lastActiveAt` はその
+  `users/{uid}` 自身への書き込みなので、`updateTime` は常にそれ以上で欠落もしない
+
+置き換えられれば `lastActiveAt` フィールド、`UserSettingsRepository.updateLastActiveAt()`、
+`AppStartup` と `LoginViewModel` の呼び出し、そのテストが消える。
+アプリ起動のたびに走っていた Firestore への書き込みも 1 回減る。
+
+- [ ] 実機でゲストを 1 つ作り、`lastRefreshTime` が実際に埋まるかを確認する
+    - Identity Platform の `last_refresh_at` 由来のフィールドで、`importUsers()` からの設定は
+      Firebase Authentication バックエンドでは未サポートという但し書きがある。
+      読み取りが標準の Firebase Auth で確実に埋まるかはドキュメントから断言できない
+- [ ] 埋まるなら `lastActiveAt` を廃止する（クライアント・スキーマ・Functions の 3 層に跨る）
+    - 指標の意味が「最後にアプリを開いた時刻」から「`users/{uid}` に最後に何か書かれた時刻」に
+      変わる。書き込み契機は通知設定の変更と FCM トークン更新だけになるが、
+      孤児データの判定は「放置されてどれだけ経ったか」を見るだけなので支障はない
+- [ ] 埋まらないなら現状維持のうえ、`lastActiveAt` 欠落時に
+      `metadata.lastRefreshTime ?? creationTime` へフォールバックする対応だけ入れる
 
 ## Apple Developer Program に登録したらやること
 
