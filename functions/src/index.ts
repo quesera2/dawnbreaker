@@ -6,6 +6,7 @@ import {
 } from "firebase-functions/v2/firestore";
 import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {onSchedule} from "firebase-functions/v2/scheduler";
+import {defineInt} from "firebase-functions/params";
 import * as logger from "firebase-functions/logger";
 import {initializeApp} from "firebase-admin/app";
 import {FirebaseAuthError, getAuth} from "firebase-admin/auth";
@@ -25,6 +26,7 @@ import {
   parseNotificationSetting,
   shouldSendNotification,
 } from "./notify";
+import {isAnonymous, isInactive, thresholdFrom} from "./cleanup";
 
 setGlobalOptions({maxInstances: 1});
 
@@ -38,6 +40,35 @@ const notificationBody = "予定日になりました";
 
 // sendEach() の1回の呼び出しで送信できるメッセージ数の上限
 const sendEachChunkSize = 500;
+
+// 放置アカウントの回収を走らせるスケジュール（日次 3:00）
+const cleanupSchedule = "0 3 * * *";
+const cleanupTimeZone = "Asia/Tokyo";
+
+// 1回の実行で削除する件数の上限。recursiveDelete と deleteUser は重く、
+// maxInstances が 1 なのでタイムアウトすると実行全体が落ちる。超過分は次回に回る
+const cleanupBatchLimit = 200;
+
+// getUsers() が1回に受け取れる識別子の上限
+const getUsersChunkSize = 100;
+
+// getAll() に1回で渡すドキュメント参照の数
+const getAllChunkSize = 300;
+
+// listUsers() が1ページで返せる件数の上限
+const listUsersPageSize = 1000;
+
+// Auth に無い uid の Firestore データを消すまでの猶予日数。
+// 既定値は prod 想定の値にしておく。.env を置き忘れたプロジェクトへデプロイしたときに、
+// 短い猶予のまま消しにいかないようにするため
+const orphanedUserDataRetentionDays = defineInt(
+  "ORPHANED_USER_DATA_RETENTION_DAYS", {default: 7},
+);
+
+// 匿名かつ使われていないアカウントを消すまでの猶予日数
+const inactiveAnonymousAccountRetentionDays = defineInt(
+  "INACTIVE_ANONYMOUS_ACCOUNT_RETENTION_DAYS", {default: 180},
+);
 
 /**
  * 実行履歴 (executions) の作成・更新・削除をトリガーに、
@@ -295,22 +326,183 @@ export const deleteAccount = onCall(async (request) => {
   // サブコレクション（taskDefinitions / executions / notifications）は
   // ドキュメントを消しても残るため、recursiveDelete でまとめて消す
   await db.recursiveDelete(db.collection("users").doc(uid));
-  try {
-    await getAuth().deleteUser(uid);
+  if (await deleteAuthUser(uid)) {
     logger.info("account deleted", {uid});
-  } catch (error) {
-    if (error instanceof FirebaseAuthError) {
-      // 他端末で先に消された場合。消えていることが目的なので成功として返す。
-      if (error.code === "auth/user-not-found") {
-        logger.info("account was already deleted", {uid});
-      } else {
-        throw error;
-      }
-    } else {
-      throw error;
-    }
+  } else {
+    // 他端末で先に消された場合。消えていることが目的なので成功として返す
+    logger.info("account was already deleted", {uid});
   }
 });
+
+/**
+ * Auth に存在しない uid の Firestore データを回収する。
+ *
+ * アカウント削除は Firestore → Auth の順で消すため、Auth だけが残った状態は
+ * もう一度削除を実行すれば片付く。逆に Auth 側が先に消える経路（他端末からの削除、
+ * コンソールからの手動削除）では users/{uid} が誰にも辿れないゴミとして残り、
+ * 誰も消せない。それをここで拾う。
+ *
+ * lastActiveAt が無いドキュメントも対象に含めるため、where では絞れない
+ * （フィールドの無いドキュメントはインデックスに載らずクエリに現れない）。
+ * select() で転送量だけ落として全件を読む
+ */
+export const cleanupOrphanedUserData = onSchedule(
+  {schedule: cleanupSchedule, timeZone: cleanupTimeZone},
+  async () => {
+    const db = getFirestore();
+    const threshold = thresholdFrom(
+      Temporal.Now.zonedDateTimeISO("UTC"),
+      orphanedUserDataRetentionDays.value(),
+    );
+
+    const snapshot = await db.collection("users").select("lastActiveAt").get();
+    const candidateIds = snapshot.docs
+      .filter((doc) => isInactive(lastActiveAtOf(doc), threshold))
+      .map((doc) => doc.id);
+    const orphanedIds = await filterMissingInAuth(candidateIds);
+
+    const targetIds = orphanedIds.slice(0, cleanupBatchLimit);
+    for (const userId of targetIds) {
+      await db.recursiveDelete(db.collection("users").doc(userId));
+    }
+    logger.info("orphaned user data cleaned up", {
+      candidates: candidateIds.length,
+      orphaned: orphanedIds.length,
+      deleted: targetIds.length,
+    });
+  },
+);
+
+/**
+ * 渡した uid のうち Auth に存在しないものを返す
+ * @param {string[]} userIds 照会する uid の一覧
+ * @return {Promise<string[]>} Auth に存在しなかった uid の一覧
+ */
+async function filterMissingInAuth(userIds: string[]): Promise<string[]> {
+  const missingIds: string[] = [];
+  for (let i = 0; i < userIds.length; i += getUsersChunkSize) {
+    const chunk = userIds.slice(i, i + getUsersChunkSize);
+    const result = await getAuth().getUsers(chunk.map((uid) => ({uid})));
+    for (const identifier of result.notFound) {
+      // uid でしか問い合わせていないので、返るのも uid の識別子だけ
+      if ("uid" in identifier) missingIds.push(identifier.uid);
+    }
+  }
+  return missingIds;
+}
+
+/**
+ * 匿名のまま使われていないアカウントを Auth ごと回収する。
+ *
+ * Auth を全走査する。Firestore の users を起点にすると、ゲストを作った直後に
+ * 使われなくなって users/{uid} すら無いアカウント（まさに回収したい形）を拾えない。
+ *
+ * 削除の順序は deleteAccount と同じく Firestore → Auth。逆順だとデータ削除に
+ * 失敗したとき、誰にも辿れない users/{uid} が残る
+ */
+export const cleanupInactiveAnonymousAccounts = onSchedule(
+  {schedule: cleanupSchedule, timeZone: cleanupTimeZone},
+  async () => {
+    const db = getFirestore();
+    const threshold = thresholdFrom(
+      Temporal.Now.zonedDateTimeISO("UTC"),
+      inactiveAnonymousAccountRetentionDays.value(),
+    );
+
+    const anonymousIds = await listAnonymousUserIds();
+    const inactiveIds = await filterInactiveUserIds(anonymousIds, threshold);
+
+    const targetIds = inactiveIds.slice(0, cleanupBatchLimit);
+    for (const userId of targetIds) {
+      await db.recursiveDelete(db.collection("users").doc(userId));
+      await deleteAuthUser(userId);
+    }
+    logger.info("inactive anonymous accounts cleaned up", {
+      anonymous: anonymousIds.length,
+      inactive: inactiveIds.length,
+      deleted: targetIds.length,
+    });
+  },
+);
+
+/**
+ * Auth の全ユーザーから匿名ユーザーの uid を集める
+ * @return {Promise<string[]>} 匿名ユーザーの uid の一覧
+ */
+async function listAnonymousUserIds(): Promise<string[]> {
+  const userIds: string[] = [];
+  let pageToken: string | undefined;
+  do {
+    const result = await getAuth().listUsers(listUsersPageSize, pageToken);
+    for (const user of result.users) {
+      if (isAnonymous(user)) userIds.push(user.uid);
+    }
+    pageToken = result.pageToken;
+  } while (pageToken != null);
+  return userIds;
+}
+
+/**
+ * 渡した uid のうち、最終アクティブ日時がしきい値より古いものを返す。
+ * users/{uid} は初期化していないため存在しないことがあり、その場合も対象に含める
+ * @param {string[]} userIds 判定する uid の一覧
+ * @param {Temporal.ZonedDateTime} threshold 放置とみなすしきい値
+ * @return {Promise<string[]>} 放置とみなせる uid の一覧
+ */
+async function filterInactiveUserIds(
+  userIds: string[],
+  threshold: Temporal.ZonedDateTime,
+): Promise<string[]> {
+  const db = getFirestore();
+  const inactiveIds: string[] = [];
+  for (let i = 0; i < userIds.length; i += getAllChunkSize) {
+    const refs = userIds
+      .slice(i, i + getAllChunkSize)
+      .map((userId) => db.collection("users").doc(userId));
+    const snapshots = await db.getAll(...refs, {fieldMask: ["lastActiveAt"]});
+    for (const snapshot of snapshots) {
+      if (isInactive(lastActiveAtOf(snapshot), threshold)) {
+        inactiveIds.push(snapshot.id);
+      }
+    }
+  }
+  return inactiveIds;
+}
+
+/**
+ * Auth のユーザーを削除する。既に存在しない場合は消えていることが目的なので握る
+ * @param {string} userId 削除するユーザーの uid
+ * @return {Promise<boolean>} 実際に削除したなら true、既に無かったなら false
+ */
+async function deleteAuthUser(userId: string): Promise<boolean> {
+  try {
+    await getAuth().deleteUser(userId);
+    return true;
+  } catch (error) {
+    if (
+      error instanceof FirebaseAuthError &&
+      error.code === "auth/user-not-found"
+    ) {
+      return false;
+    }
+    throw error;
+  }
+}
+
+/**
+ * users ドキュメントの最終アクティブ日時を読む。
+ * users/{uid} は初期化していないため、フィールドが無いことがある
+ * @param {FirebaseFirestore.DocumentSnapshot} snapshot 対象のドキュメント
+ * @return {Temporal.ZonedDateTime | null} 最終アクティブ日時、無ければ null
+ */
+function lastActiveAtOf(
+  snapshot: FirebaseFirestore.DocumentSnapshot,
+): Temporal.ZonedDateTime | null {
+  const lastActiveAt = snapshot.get("lastActiveAt");
+  return lastActiveAt instanceof Timestamp ?
+    toZonedDateTime(lastActiveAt) :
+    null;
+}
 
 /**
  * 5分間隔で notifications の帳簿を検索し、送信対象になった通知を FCM で送る。

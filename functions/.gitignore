@@ -11,3 +11,7 @@ node_modules/
 
 # VisualStudioCode configuration
 .vscode/
+# 放置アカウント回収のしきい値。ルートの *.env.* で除外されるが、
+# 秘密情報を含まず、プロジェクトごとの値をコミットしておきたいので戻す
+!.env.dawn-breaker
+!.env.dawn-breaker-dev
