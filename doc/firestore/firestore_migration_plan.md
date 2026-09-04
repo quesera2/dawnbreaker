@@ -232,6 +232,15 @@ Apple サインインは有料の Apple Developer Program が要るためドロ�
       括り出して共有した。削除したかどうかを bool で返し、ログの出し分けは呼び出し元に残した
     - しきい値の判定は `src/cleanup.ts` の純粋関数に切り出した。`index.ts` の Function 本体には
       既存テストが無く、テストは `src/` の純粋関数に対して書くのが既存の形のため
+    - エミュレータで動作を確認した。`firebase.json` に `emulators` の設定がないため、
+      auth / pubsub を足した設定ファイルを一時的に作って `--config` で渡した
+        - `onSchedule` の Function はエミュレータでは pubsub のトピックに publish しても
+          `Unsupported trigger signature: http` で発火しない（firebase-tools の制限。
+          `sendScheduledNotifications` も同じ）。ビルド済みの `lib/index.js` を読み込んで
+          `cleanupOrphanedUserData.run({...})` を直接呼ぶ形で確認した
+        - Auth に無い uid（古い・`lastActiveAt` 無し・新しい）、匿名（古い・`users` 無し・新しい）、
+          リンク済みで古いもの、の 7 通りで期待どおりの結果になることと、
+          `recursiveDelete` がサブコレクションまで消すことを確認した
 
 ## Apple Developer Program に登録したらやること
 
