@@ -45,17 +45,18 @@ const sendEachChunkSize = 500;
 const cleanupSchedule = "0 3 * * *";
 const cleanupTimeZone = "Asia/Tokyo";
 
-// 1回の実行で削除する件数の上限。recursiveDelete と deleteUser は重く、
+// 1回の実行で削除するユーザーの数。recursiveDelete と deleteUser は重く、
 // maxInstances が 1 なのでタイムアウトすると実行全体が落ちる。超過分は次回に回る
 const cleanupBatchLimit = 200;
 
-// getUsers() が1回に受け取れる識別子の上限
+// Auth に一度に存在を問い合わせる uid の数。getUsers() の受け取れる上限が 100 件
 const getUsersChunkSize = 100;
 
-// getAll() に1回で渡すドキュメント参照の数
+// 一度に取得するユーザードキュメントの数。getAll() 側に上限はないので、
+// 一度に抱える量が増えすぎない程度に区切っている
 const getAllChunkSize = 300;
 
-// listUsers() が1ページで返せる件数の上限
+// Auth から一度に受け取るユーザーの数。listUsers() が1ページで返せる上限が 1000 件
 const listUsersPageSize = 1000;
 
 // Auth に無い uid の Firestore データを消すまでの猶予日数。
