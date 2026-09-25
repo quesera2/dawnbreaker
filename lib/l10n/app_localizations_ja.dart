@@ -371,9 +371,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get loginWithGoogle => 'Googleでサインイン';
 
   @override
-  String get loginWithApple => 'Appleでサインイン';
-
-  @override
   String get loginOr => 'または';
 
   @override

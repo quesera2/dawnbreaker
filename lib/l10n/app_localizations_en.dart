@@ -379,9 +379,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginWithGoogle => 'Sign in with Google';
 
   @override
-  String get loginWithApple => 'Sign in with Apple';
-
-  @override
   String get loginOr => 'or';
 
   @override
