@@ -159,5 +159,5 @@ Sign in with Apple も APNs も capability の有効化に有料の Apple Develo
 ### Sign in with Apple
 
 - [ ] Sign in with Apple の capability を有効化し、credential の取得元を足す
-- [ ] ログイン画面に Apple ボタンを戻す
+- [ ] ログイン画面に Apple ボタンを足す。マーク画像・文言・`SocialProvider.apple` は削除済みのため作り直す
 - [ ] アカウント削除に Apple トークンの revoke（クライアント）を足す
