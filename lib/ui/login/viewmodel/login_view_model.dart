@@ -156,8 +156,6 @@ class LoginViewModel extends _$LoginViewModel {
 
   /// サインインしたあとの始末。行き先はモードで決まる
   Future<void> _completeSignIn() async {
-    _updateLastActiveAt();
-
     final LoginDestination destination;
     if (param.showGuest) {
       destination = await _resolveDestination();
@@ -209,21 +207,6 @@ class LoginViewModel extends _$LoginViewModel {
     } catch (e, s) {
       logger.e('unregisterToken failed', error: e, stackTrace: s);
     }
-  }
-
-  /// 放置アカウントの回収で使う最終アクティブ日時を進める。
-  ///
-  /// 画面遷移とは無関係なので待たない。Firestore への書き込みはオフラインだと
-  /// 完了しないため、待つとサインインが終わらなくなる
-  void _updateLastActiveAt() {
-    unawaited(
-      ref
-          .read(userSettingsRepositoryProvider.future)
-          .then((userSettings) => userSettings.updateLastActiveAt())
-          .onError((e, s) {
-            logger.e('updateLastActiveAt failed', error: e, stackTrace: s);
-          }),
-    );
   }
 
   /// 通知が OFF のときだけ誘導画面を挟む。OS の許可が既にあるなら通知を受け取る意思が

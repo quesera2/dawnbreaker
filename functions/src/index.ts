@@ -26,7 +26,12 @@ import {
   parseNotificationSetting,
   shouldSendNotification,
 } from "./notify";
-import {isAnonymous, isInactive, thresholdFrom} from "./cleanup";
+import {
+  isAnonymous,
+  isInactive,
+  lastActiveAtOf,
+  thresholdFrom,
+} from "./cleanup";
 
 setGlobalOptions({maxInstances: 1});
 
@@ -57,16 +62,8 @@ const cleanupBatchLimit = 200;
 // Auth に一度に存在を問い合わせる uid の数。getUsers() の受け取れる上限が 100 件
 const getUsersChunkSize = 100;
 
-// Auth から一度に受け取るユーザーの数。listUsers() が1ページで返せる上限が 1000 件。
-// users ドキュメントもこのページ単位でまとめて読む
+// Auth から一度に受け取るユーザーの数。listUsers() が1ページで返せる上限が 1000 件
 const listUsersPageSize = 1000;
-
-// Auth に無い uid の Firestore データを消すまでの猶予日数。
-// 既定値は prod 想定の値にしておく。.env を置き忘れたプロジェクトへデプロイしたときに、
-// 短い猶予のまま消しにいかないようにするため
-const orphanedUserDataRetentionDays = defineInt(
-  "ORPHANED_USER_DATA_RETENTION_DAYS", {default: 7},
-);
 
 // 匿名かつ使われていないアカウントを消すまでの猶予日数
 const inactiveAnonymousAccountRetentionDays = defineInt(
@@ -198,7 +195,7 @@ async function recalcScheduleCache(
  * そのユーザーの全タスクの notifyAt を再計算する。
  * nextScheduledAt は変わらないが通知時刻の算出結果が変わるため、
  * recalcScheduleCache の経路では拾えない。
- * fcmTokens / lastActiveAt など notifyAt に影響しないフィールドの更新でも
+ * fcmTokens など notifyAt に影響しないフィールドの更新でも
  * 発火するため、通知に関わる変更がなければ何もせず抜ける。
  */
 export const onUserWritten = onDocumentWritten(
@@ -345,9 +342,11 @@ export const deleteAccount = onCall(async (request) => {
  * コンソールからの手動削除）では users/{uid} が誰にも辿れないゴミとして残り、
  * 誰も消せない。それをここで拾う。
  *
- * lastActiveAt が無いドキュメントも対象に含めるため、where では絞れない
- * （フィールドの無いドキュメントはインデックスに載らずクエリに現れない）。
- * select() で転送量だけ落として全件を読む
+ * Auth にいない時点で持ち主は戻らないので、猶予を置かずに消す。
+ *
+ * users/{uid} は初期化していないため、サブコレクションだけがあって親の
+ * ドキュメントが無いことがある。get() ではそれが現れないので、親の無い
+ * ドキュメントも返す listDocuments() で列挙する
  */
 export const cleanupOrphanedUserData = onSchedule(
   {
@@ -357,15 +356,8 @@ export const cleanupOrphanedUserData = onSchedule(
   },
   async () => {
     const db = getFirestore();
-    const threshold = thresholdFrom(
-      Temporal.Now.zonedDateTimeISO("UTC"),
-      orphanedUserDataRetentionDays.value(),
-    );
-
-    const snapshot = await db.collection("users").select("lastActiveAt").get();
-    const candidateIds = snapshot.docs
-      .filter((doc) => isInactive(lastActiveAtOf(doc), threshold))
-      .map((doc) => doc.id);
+    const refs = await db.collection("users").listDocuments();
+    const candidateIds = refs.map((ref) => ref.id);
     const targetIds = await filterMissingInAuth(
       candidateIds, cleanupBatchLimit,
     );
@@ -449,7 +441,7 @@ export const cleanupInactiveAnonymousAccounts = onSchedule(
         deletedCount += 1;
       } catch (error) {
         // 1 件の失敗で残りを巻き添えにしない。Firestore だけ消えた中途半端な状態も
-        // 次回は「匿名かつ users ドキュメントが無い」として同じ対象に戻る
+        // 判定は Auth だけで決まるので、次回も同じ対象に戻る
         logger.error("failed to delete inactive anonymous account", {
           userId, error,
         });
@@ -465,12 +457,10 @@ export const cleanupInactiveAnonymousAccounts = onSchedule(
 /**
  * 匿名のまま使われていないユーザーの uid を、上限に達するまで集める。
  *
- * Auth にはクエリが無いため、listUsers() で受け取ってからコード側で匿名に絞る。
- * users/{uid} は初期化していないため存在しないことがあるが、getAll() は
- * 存在しないドキュメントもスナップショットとして返すので、そのまま放置と判定できる。
+ * Auth にはクエリが無いため、listUsers() で受け取ってからコード側で絞る。
+ * 最終アクティブ日時も Auth のメタデータから求めるので、Firestore は読まない。
  *
- * Auth の 1 ページを受け取るたびにそのページ分を読む。全ページ分の uid を溜めてから
- * 読むと、上限に達したあとも Auth のページングが最後まで回ってしまうため
+ * 上限に達したらその時点でページングを打ち切る
  * @param {Temporal.ZonedDateTime} threshold 放置とみなすしきい値
  * @param {number} limit 集める件数の上限
  * @return {Promise<string[]>} 放置とみなせる匿名ユーザーの uid の一覧
@@ -479,20 +469,16 @@ async function listInactiveAnonymousUserIds(
   threshold: Temporal.ZonedDateTime,
   limit: number,
 ): Promise<string[]> {
-  const db = getFirestore();
   const inactiveIds: string[] = [];
   let pageToken: string | undefined;
   do {
     const result = await getAuth().listUsers(listUsersPageSize, pageToken);
-    const refs = result.users
-      .filter((user) => isAnonymous(user))
-      .map((user) => db.collection("users").doc(user.uid));
-    if (refs.length > 0) {
-      const snapshots = await db.getAll(...refs, {fieldMask: ["lastActiveAt"]});
-      for (const snapshot of snapshots) {
-        if (isInactive(lastActiveAtOf(snapshot), threshold)) {
-          inactiveIds.push(snapshot.id);
-        }
+    for (const user of result.users) {
+      if (
+        isAnonymous(user) &&
+        isInactive(lastActiveAtOf(user.metadata), threshold)
+      ) {
+        inactiveIds.push(user.uid);
       }
     }
     pageToken = result.pageToken;
@@ -518,21 +504,6 @@ async function deleteAuthUser(userId: string): Promise<boolean> {
     }
     throw error;
   }
-}
-
-/**
- * users ドキュメントの最終アクティブ日時を読む。
- * users/{uid} は初期化していないため、フィールドが無いことがある
- * @param {FirebaseFirestore.DocumentSnapshot} snapshot 対象のドキュメント
- * @return {Temporal.ZonedDateTime | null} 最終アクティブ日時、無ければ null
- */
-function lastActiveAtOf(
-  snapshot: FirebaseFirestore.DocumentSnapshot,
-): Temporal.ZonedDateTime | null {
-  const lastActiveAt = snapshot.get("lastActiveAt");
-  return lastActiveAt instanceof Timestamp ?
-    toZonedDateTime(lastActiveAt) :
-    null;
 }
 
 /**

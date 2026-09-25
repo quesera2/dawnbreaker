@@ -87,17 +87,6 @@ class FirestoreUserSettingsRepository implements UserSettingsRepository {
     }
   }
 
-  @override
-  Future<void> updateLastActiveAt() async {
-    try {
-      await _userRef().set({
-        'lastActiveAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    } catch (e) {
-      throw UserSettingsSaveException(e.toString());
-    }
-  }
-
   /// `users/{uid}` は初期化していないため、ドキュメントごと無いことがある。
   /// その場合は初期値（通知 OFF）として扱う
   NotificationSetting _toNotificationSetting(

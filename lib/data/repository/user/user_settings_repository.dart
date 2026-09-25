@@ -21,9 +21,4 @@ abstract interface class UserSettingsRepository {
   ///
   /// 失敗時は [UserSettingsSaveException] を投げる。
   Future<void> setNotificationEnabled(bool enabled);
-
-  /// 放置アカウントの回収で使う最終アクティブ日時を更新する。
-  ///
-  /// 失敗時は [UserSettingsSaveException] を投げる。
-  Future<void> updateLastActiveAt();
 }
