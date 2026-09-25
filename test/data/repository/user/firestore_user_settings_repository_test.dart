@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_settings_repository.dart';
@@ -137,24 +136,6 @@ void main() {
       });
       await repository.setNotificationEnabled(true);
       expect((await fetchUser())?['fcmTokens'], ['token-a']);
-    });
-  });
-
-  group('updateLastActiveAt', () {
-    test('最終アクティブ日時が記録される', () async {
-      await repository.updateLastActiveAt();
-      expect((await fetchUser())?['lastActiveAt'], isA<Timestamp>());
-    });
-
-    test('ユーザーの他のフィールドを消さない', () async {
-      await repository.setNotificationSetting(
-        const NotificationSetting(enabled: true),
-      );
-      await repository.updateLastActiveAt();
-
-      final user = await fetchUser();
-      expect(user?['timezone'], timezone);
-      expect((user?['notificationSetting'] as Map)['enabled'], true);
     });
   });
 }

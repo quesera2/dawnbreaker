@@ -5,7 +5,7 @@
 ```
 users/
   {userId}/
-    fields...（notificationSetting, fcmTokens, timezone, lastActiveAt）
+    fields...（notificationSetting, fcmTokens, timezone）
     taskDefinitions/
       {taskDefinitionId}/
         fields...
@@ -25,7 +25,7 @@ users/
 
 ### users
 
-プッシュ通知の送信に必要な設定・宛先と、放置アカウント回収のための最終アクティブ日時を持つ。
+プッシュ通知の送信に必要な設定・宛先を持つ。
 ドキュメント ID は Firebase Auth の uid。匿名ユーザー・リンク済みユーザーのいずれも同じ構造。
 
 #### notificationSetting
@@ -62,18 +62,15 @@ IANA タイムゾーン ID（`Asia/Tokyo` など）。`notificationSetting` の 
 そのため、タイムゾーンをまたいで移動したユーザーの通知は、通知時刻を再設定するまで
 移動前の壁時計時刻で送られる（仕様）。
 
-#### lastActiveAt
+#### 放置アカウントの回収
 
-最終アクティブ日時（timestamp）。放置された匿名アカウントを定期実行の Function が回収する際の判定に使う。
-`isAnonymous` ではなくこのフィールドを基準にする。
+`users` には最終アクティブ日時を持たない。定期実行の Function は次のように判定する。
 
-クライアントはアプリ起動時とサインイン成功時に `serverTimestamp()` で書く。ゲスト作成と同時に
-書いており、Firestore の書き込みはオフラインでもローカルキューに載るため、このフィールドが
-無いのは異常ケースにあたる。そのため回収する Function は、フィールドが無いドキュメントも
-放置とみなして削除対象に含める。判定できないものを永久に残すほうが害が大きいため。
-
-この扱いにより `where('lastActiveAt', '<', ...)` では候補を絞れない（フィールドの無い
-ドキュメントはインデックスに載らずクエリに現れない）。回収の Function は `users` を全件読む。
+- 匿名のまま使われていないアカウント: Auth の `metadata.lastRefreshTime`（ID トークンを最後に
+  更新した時刻）で判定し、Auth ごと消す。`users/{uid}` が無いアカウントも拾うため Auth を起点にする
+- Auth に存在しない uid のデータ: 持ち主は戻らないので猶予を置かずに消す。
+  `users/{uid}` は通知設定か FCM トークンを書くまで作られず、サブコレクションだけがあって
+  親のドキュメントが無いことがある。`get()` にはそれが現れないため `listDocuments()` で列挙する
 
 ### taskDefinitions
 

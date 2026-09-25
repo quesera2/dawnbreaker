@@ -260,16 +260,18 @@ Phase10 PR3 のレビューで、`lastActiveAt` が無いドキュメントに�
 `AppStartup` と `LoginViewModel` の呼び出し、そのテストが消える。
 アプリ起動のたびに走っていた Firestore への書き込みも 1 回減る。
 
-- [ ] 実機でゲストを 1 つ作り、`lastRefreshTime` が実際に埋まるかを確認する
-    - Identity Platform の `last_refresh_at` 由来のフィールドで、`importUsers()` からの設定は
-      Firebase Authentication バックエンドでは未サポートという但し書きがある。
-      読み取りが標準の Firebase Auth で確実に埋まるかはドキュメントから断言できない
-- [ ] 埋まるなら `lastActiveAt` を廃止する（クライアント・スキーマ・Functions の 3 層に跨る）
-    - 指標の意味が「最後にアプリを開いた時刻」から「`users/{uid}` に最後に何か書かれた時刻」に
-      変わる。書き込み契機は通知設定の変更と FCM トークン更新だけになるが、
-      孤児データの判定は「放置されてどれだけ経ったか」を見るだけなので支障はない
-- [ ] 埋まらないなら現状維持のうえ、`lastActiveAt` 欠落時に
-      `metadata.lastRefreshTime ?? creationTime` へフォールバックする対応だけ入れる
+- [x] 実機でゲストを 1 つ作り、`lastRefreshTime` が実際に埋まるかを確認する
+    - dev でゲストと Google 連携済みのどちらも、作成直後から `lastRefreshAt` が埋まっていた
+- [x] `lastActiveAt` を廃止する
+    - 匿名回収は `metadata.lastRefreshTime ?? creationTime` で判定する。`getAll` の一段が消えた
+    - 孤児データ回収は `updateTime` で置き換えず、猶予ごとやめた。`lastActiveAt` は
+      `users/{uid}` を必ず作る役目も兼ねていたため、廃止すると通知を許可しなかった
+      ユーザーは親ドキュメントが無いままサブコレクションだけを持つ。`get()` ではそれが拾えないので
+      `listDocuments()` で列挙する形に変えた。親が無ければ `updateTime` も無く猶予を測れない
+    - 孤児データの回収はタイミングで取り残されたデータを片付ける安全網で、Auth から消えた uid は
+      戻らないため即座に消してよい。猶予（放置と判断するまでの期間）が要るのは匿名回収だけなので、
+      `ORPHANED_USER_DATA_RETENTION_DAYS` は削除した
+    - 連携済みユーザーの放置は引き続き回収しない
 
 ## Apple Developer Program に登録したらやること
 

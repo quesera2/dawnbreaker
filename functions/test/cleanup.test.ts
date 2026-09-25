@@ -1,4 +1,9 @@
-import {isAnonymous, isInactive, thresholdFrom} from "../src/cleanup";
+import {
+  isAnonymous,
+  isInactive,
+  lastActiveAtOf,
+  thresholdFrom,
+} from "../src/cleanup";
 import {zdt} from "./helper/temporal";
 
 describe("thresholdFrom", () => {
@@ -27,10 +32,24 @@ describe("isInactive", () => {
   test("最終アクティブ日時がしきい値より新しいとき false を返す", () => {
     expect(isInactive(zdt("2025-01-07T03:00:01Z"), threshold)).toBe(false);
   });
+});
 
-  test("最終アクティブ日時が無いとき true を返す", () => {
-    expect(isInactive(null, threshold)).toBe(true);
+describe("lastActiveAtOf", () => {
+  test("トークンを更新した時刻を返す", () => {
+    expect(lastActiveAtOf({
+      lastRefreshTime: "Wed, 08 Jan 2025 03:00:00 GMT",
+      creationTime: "Wed, 01 Jan 2025 03:00:00 GMT",
+    })).toEqual(zdt("2025-01-08T03:00:00Z"));
   });
+
+  for (const lastRefreshTime of [null, undefined]) {
+    test(`トークンの更新時刻が ${lastRefreshTime} のとき作成日時を返す`, () => {
+      expect(lastActiveAtOf({
+        lastRefreshTime,
+        creationTime: "Wed, 01 Jan 2025 03:00:00 GMT",
+      })).toEqual(zdt("2025-01-01T03:00:00Z"));
+    });
+  }
 });
 
 describe("isAnonymous", () => {

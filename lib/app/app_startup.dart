@@ -7,7 +7,6 @@ import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart
 import 'package:dawnbreaker/core/notification/notification_permission_observer.dart';
 import 'package:dawnbreaker/data/preferences/shared_preferences_provider.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
-import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -78,15 +77,10 @@ class AppStartup {
 
     switch (container.read(currentUserProvider)) {
       case SignedInUser():
-        // サインイン済みの場合は FCM トークンと最終アクティブ日時を連携
+        // サインイン済みの場合は FCM トークンを連携
         unawaited(
           _registerNotificationToken(container).onError((e, s) {
             logger.e('registerToken failed', error: e, stackTrace: s);
-          }),
-        );
-        unawaited(
-          _updateLastActiveAt(container).onError((e, s) {
-            logger.e('updateLastActiveAt failed', error: e, stackTrace: s);
           }),
         );
       case NoLogin():
@@ -100,12 +94,5 @@ class AppStartup {
   ) async {
     final service = await container.read(fcmNotificationServiceProvider.future);
     await service.registerToken();
-  }
-
-  static Future<void> _updateLastActiveAt(ProviderContainer container) async {
-    final userSettings = await container.read(
-      userSettingsRepositoryProvider.future,
-    );
-    await userSettings.updateLastActiveAt();
   }
 }

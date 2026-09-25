@@ -15,11 +15,9 @@ void main() {
 
   late ProviderContainer container;
   late FakeNotificationService fakeNotificationService;
-  late FakeUserSettingsRepository fakeUserSettingsRepository;
 
   void setUpContainer({AppUser user = const Guest('user-1')}) {
     fakeNotificationService = FakeNotificationService();
-    fakeUserSettingsRepository = FakeUserSettingsRepository();
     final userRepository = FakeUserRepository(user);
     container = ProviderContainer(
       overrides: [
@@ -28,7 +26,7 @@ void main() {
           (_) => fakeNotificationService,
         ),
         userSettingsRepositoryProvider.overrideWith(
-          (_) => fakeUserSettingsRepository,
+          (_) => FakeUserSettingsRepository(),
         ),
       ],
     );
@@ -57,37 +55,6 @@ void main() {
             await startDeferredWork();
             expect(fakeNotificationService.registerTokenCount, 1);
           });
-
-          test('最終アクティブ日時を更新する', () async {
-            await startDeferredWork();
-            expect(fakeUserSettingsRepository.updateLastActiveAtCount, 1);
-          });
-        });
-      }
-
-      // 2 つに依存関係はないので、直列に繋いで片方の完了を待つ形にしてはいけない
-      for (final (description, breakRegisterToken) in [
-        (
-          '通知先の登録がオフラインで完了しない場合',
-          (FakeNotificationService service) {
-            service.registerTokenNeverCompletes = true;
-          },
-        ),
-        (
-          '通知先の登録が失敗した場合',
-          (FakeNotificationService service) {
-            service.registerTokenShouldThrow = true;
-          },
-        ),
-      ]) {
-        group(description, () {
-          setUp(setUpContainer);
-
-          test('最終アクティブ日時は更新される', () async {
-            breakRegisterToken(fakeNotificationService);
-            await startDeferredWork();
-            expect(fakeUserSettingsRepository.updateLastActiveAtCount, 1);
-          });
         });
       }
     });
@@ -98,11 +65,6 @@ void main() {
       test('通知先を登録しない', () async {
         await startDeferredWork();
         expect(fakeNotificationService.registerTokenCount, 0);
-      });
-
-      test('最終アクティブ日時を更新しない', () async {
-        await startDeferredWork();
-        expect(fakeUserSettingsRepository.updateLastActiveAtCount, 0);
       });
     });
   });

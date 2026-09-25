@@ -200,13 +200,6 @@ void main() {
           expect(viewState.isSigningIn, false);
         });
 
-        test('最終アクティブ日時が更新される', () async {
-          await viewModel.onClickStartAsGuest();
-          await Future<void>.delayed(Duration.zero);
-
-          expect(fakeUserSettingsRepository.updateLastActiveAtCount, 1);
-        });
-
         // 放置アカウントの回収に使うだけの値なので、ここで止めない
         test('最終アクティブ日時を更新できなくてもホームへ進む', () async {
           fakeUserSettingsRepository.saveShouldThrow = true;
@@ -290,13 +283,6 @@ void main() {
           await viewModel.onClickSignInWithGoogle();
 
           expect(viewState.isSigningIn, false);
-        });
-
-        test('最終アクティブ日時が更新される', () async {
-          await viewModel.onClickSignInWithGoogle();
-          await Future<void>.delayed(Duration.zero);
-
-          expect(fakeUserSettingsRepository.updateLastActiveAtCount, 1);
         });
       });
 
@@ -443,13 +429,6 @@ void main() {
           await viewModel.onClickSignInWithGoogle();
 
           expect(fakeNotificationService.registerTokenCount, 1);
-        });
-
-        test('最終アクティブ日時が更新される', () async {
-          await viewModel.onClickSignInWithGoogle();
-          await Future<void>.delayed(Duration.zero);
-
-          expect(fakeUserSettingsRepository.updateLastActiveAtCount, 1);
         });
 
         test('ボタンが操作可能な状態に戻る', () async {
