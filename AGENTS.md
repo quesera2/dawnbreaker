@@ -62,7 +62,7 @@ Dart 3.7 以降の構文を積極的に使う：
 - `!`（null assertion）で潰さない。`Null check operator used on a null value` としか残らず原因が読めないため、
   何が起きたかを書いた例外を投げる
 - ユーザーに見せる文言は例外のメッセージではなく ARB から取る。ViewModel での `ErrorMessage` への変換と
-  画面での表示は `.claude/rules/ui.md`「エラーハンドリング」を参照
+  画面での表示は `lib/ui/AGENTS.md`「エラーハンドリング」を参照
 
 ## クラスのメンバー順序
 
@@ -95,6 +95,22 @@ lib/
 - ViewModel は `@riverpod` アノテーションで生成
 - UI State は `@freezed` で定義、`copyWith` で更新、`BaseUiState` を implements すること
 - 画面のルートは `XXXPage` ではなく `XXXScreen`
+
+## ディレクトリごとのルール
+
+特定のディレクトリを触るときだけ必要なルールは、そのディレクトリの `AGENTS.md` に書いている。
+
+- `lib/ui/AGENTS.md` — UI 実装、スナックバー、エラー表示
+- `lib/l10n/AGENTS.md` — ローカライズ（ARB）
+- `test/AGENTS.md` — テスト方針
+
+## エージェントスキル
+
+外部のスキルは `npx skills` で `.agents/skills/` に取り込んでコミットしている（Claude Code 向けには `.claude/skills/` にシンボリックリンクが張られる）。
+取り込み元とハッシュは `skills-lock.json` に記録される。
+
+- 追加: `npx skills add <owner/repo> --skill <name> -y`
+- 更新: `npx skills update -p -y`
 
 ## PR 作成
 

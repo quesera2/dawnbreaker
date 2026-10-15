@@ -1,25 +1,9 @@
----
-paths:
-  - "lib/ui/**/*.dart"
-  - "lib/l10n/**/*.arb"
----
+# lib/ui
 
 ## UI 実装
 
-画面・ウィジェットを作成・変更する際は必ず `material-3-skill` をロードしてから実装すること。
+画面・ウィジェットを作成・変更する際は必ず `material-3` スキル（`.agents/skills/material-3/`）をロードしてから実装すること。
 コンポーネントやトークンの仕様は `DESIGN.md` を参照すること。
-
-## ローカライズ
-
-- Flutter 標準の `flutter gen-l10n` を使用（`l10n.yaml` で設定済み）
-- ARB ファイル: `lib/l10n/app_ja.arb`（テンプレート）、`lib/l10n/app_en.arb`
-- 生成ファイル（`lib/l10n/app_localizations*.dart`）はソースとしてコミット済み
-- アクセスは `context.l10n.xxx`（`lib/core/util/context_extension.dart` の extension 経由）
-- ARB キーの命名規則: **プレフィクスを必ずつける**
-  - 画面固有の文言: `画面名Xxx`（例: `homeNoTasksYet`）
-  - Repository エラー文言: `リポジトリ名ErrorXxx`（例: `taskErrorLoadFailed`）
-  - 複数画面で使う汎用文言: `commonXxx`（例: `commonToday`、`commonOk`、`commonCancel`）
-    - 「今日」「OK」「キャンセル」「再試行」「取り消し」などの汎用語もこのルールで命名する
 
 ## スナックバー通知
 
@@ -31,7 +15,7 @@ paths:
 
 ## エラーハンドリング
 
-Repository 側の例外の定義の仕方は CLAUDE.md「エラー処理」を参照。ここでは受け取った側の扱いを決める。
+Repository 側の例外の定義の仕方はルートの AGENTS.md「エラー処理」を参照。ここでは受け取った側の扱いを決める。
 
 - ViewModel は例外を `ErrorMessage` サブクラスに変換して UiState にセット（文字列不可）
   - 例外のメッセージは英語でログにしか出さないため、画面に出す文言は必ず ARB から取る
@@ -41,3 +25,7 @@ Repository 側の例外の定義の仕方は CLAUDE.md「エラー処理」を�
 - エラーダイアログは `ErrorDialogMixin` を `with` して `build()` 内で `listenError(provider)` を呼ぶ
   - `handler` あり → 「キャンセル」「再試行」ボタン
   - `handler` なし → 「OK」ボタンのみ
+
+## 文言
+
+画面の文言は ARB から取る。ARB の扱いは `lib/l10n/AGENTS.md` を参照。
