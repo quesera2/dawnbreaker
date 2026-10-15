@@ -40,12 +40,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     listenMessages(homeViewModelProvider);
 
-    ref.listen(homeViewModelProvider.select((s) => s.signInRequired), (
-      _,
-      event,
-    ) {
-      if (event != null) context.go('/login');
-    });
     ref.listen(homeViewModelProvider.select((s) => s.isLoading), (
       _,
       isLoading,

@@ -287,16 +287,6 @@ void main() {
             expect(viewState.dialogMessage?.primaryHandler, isNotNull);
           });
 
-          test('アカウントが失われていたときは再ログインを促す', () async {
-            fakeRepository.thrownException = const TaskNotSignedInException();
-            await viewModel.updateExecution(
-              _taskOneHistory,
-              _taskOneHistoryEntries.first,
-              executedAt: DateTime(2026, 2, 1),
-            );
-            expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
-          });
-
           test('リトライハンドラを呼び出すと再度更新が試みられ成功する', () async {
             await viewModel.updateExecution(
               _taskOneHistory,
@@ -417,27 +407,6 @@ void main() {
             expect(viewState.dialogMessage?.primaryHandler, isNotNull);
           });
 
-          test('アカウントが失われていたときは再ログインを促す', () async {
-            fakeRepository.thrownException = const TaskNotSignedInException();
-            await viewModel.recordExecution(
-              _taskOneHistory,
-              DateTime(2026, 4, 1),
-              null,
-            );
-            expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
-          });
-
-          test('了承するとログイン画面へ送り出される', () async {
-            fakeRepository.thrownException = const TaskNotSignedInException();
-            await viewModel.recordExecution(
-              _taskOneHistory,
-              DateTime(2026, 4, 1),
-              null,
-            );
-            viewState.dialogMessage!.secondaryHandler!.call();
-            expect(viewState.signInRequired, isNotNull);
-          });
-
           test('リトライハンドラを呼び出すと再度記録が試みられ成功する', () async {
             await viewModel.recordExecution(
               _taskOneHistory,
@@ -533,12 +502,6 @@ void main() {
           test('削除を再試行できる', () async {
             await viewModel.deleteTask();
             expect(viewState.dialogMessage?.primaryHandler, isNotNull);
-          });
-
-          test('アカウントが失われていたときは再ログインを促す', () async {
-            fakeRepository.thrownException = const TaskNotSignedInException();
-            await viewModel.deleteTask();
-            expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
           });
 
           test('リトライハンドラを呼び出すと再度削除が試みられ成功する', () async {
@@ -650,15 +613,6 @@ void main() {
             expect(viewState.dialogMessage?.primaryHandler, isNotNull);
           });
 
-          test('アカウントが失われていたときは再ログインを促す', () async {
-            fakeRepository.thrownException = const TaskNotSignedInException();
-            await viewModel.deleteExecution(
-              _taskOneHistory,
-              _taskOneHistoryEntries.first,
-            );
-            expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
-          });
-
           test('リトライハンドラを呼び出すと再度削除が試みられ成功する', () async {
             await viewModel.deleteExecution(
               _taskOneHistory,
@@ -675,19 +629,6 @@ void main() {
               viewState.snackBarMessage,
               isA<TaskExecutionDeleteSuccess>(),
             );
-          });
-        });
-      });
-
-      group('loadMoreHistory', () {
-        group('異常系', () {
-          setUp(() => setUpLoaded(taskId: _taskManyHistory.id));
-
-          test('アカウントが失われていたときは再ログインを促す', () async {
-            fakeRepository.thrownException = const TaskNotSignedInException();
-            await viewModel.loadMoreHistory();
-            expect(viewState.isLoadingMoreHistory, false);
-            expect(viewState.dialogMessage, isA<SessionExpiredMessage>());
           });
         });
       });
