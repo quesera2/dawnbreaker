@@ -5,6 +5,7 @@ import 'package:dawnbreaker/data/preferences/preferences_manager.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/ui/app_detail/widgets/app_detail_screen.dart';
 import 'package:dawnbreaker/ui/color_label/widgets/color_label_screen.dart';
+import 'package:dawnbreaker/ui/common/signed_in_shell.dart';
 import 'package:dawnbreaker/ui/editor/widgets/editor_screen.dart';
 import 'package:dawnbreaker/ui/home/widgets/home_screen.dart';
 import 'package:dawnbreaker/ui/login/widgets/login_param.dart';
@@ -37,45 +38,54 @@ GoRouter appRouter(Ref ref) {
   final router = GoRouter(
     initialLocation: initialLocation,
     routes: [
-      GoRoute(
-        path: '/home',
-        builder: (_, _) => const HomeScreen(),
-        routes: [
-          GoRoute(path: 'new_task', builder: (_, _) => const EditorScreen()),
-        ],
-      ),
-      GoRoute(
-        path: '/app-detail/:taskId',
-        builder: (_, state) =>
-            AppDetailScreen(taskId: state.pathParameters['taskId']!),
+      // サインインしていないと開けない画面。NoLogin になったら配下ごと外す
+      ShellRoute(
+        builder: (_, _, child) => SignedInShell(child: child),
         routes: [
           GoRoute(
-            path: 'edit',
+            path: '/home',
+            builder: (_, _) => const HomeScreen(),
+            routes: [
+              GoRoute(
+                path: 'new_task',
+                builder: (_, _) => const EditorScreen(),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/app-detail/:taskId',
             builder: (_, state) =>
-                EditorScreen(taskId: state.pathParameters['taskId']!),
-          ),
-        ],
-      ),
-      GoRoute(
-        path: '/settings',
-        builder: (_, _) => const SettingsScreen(),
-        routes: [
-          GoRoute(
-            path: 'licenses',
-            builder: (context, _) => Theme(
-              data: Theme.of(
-                context,
-              ).copyWith(cardColor: context.appColorScheme.bg),
-              child: const LicensePage(),
-            ),
+                AppDetailScreen(taskId: state.pathParameters['taskId']!),
+            routes: [
+              GoRoute(
+                path: 'edit',
+                builder: (_, state) =>
+                    EditorScreen(taskId: state.pathParameters['taskId']!),
+              ),
+            ],
           ),
           GoRoute(
-            path: 'color-labels',
-            builder: (_, _) => const ColorLabelScreen(),
-          ),
-          GoRoute(
-            path: 'display',
-            builder: (_, _) => const DisplaySettingsScreen(),
+            path: '/settings',
+            builder: (_, _) => const SettingsScreen(),
+            routes: [
+              GoRoute(
+                path: 'licenses',
+                builder: (context, _) => Theme(
+                  data: Theme.of(
+                    context,
+                  ).copyWith(cardColor: context.appColorScheme.bg),
+                  child: const LicensePage(),
+                ),
+              ),
+              GoRoute(
+                path: 'color-labels',
+                builder: (_, _) => const ColorLabelScreen(),
+              ),
+              GoRoute(
+                path: 'display',
+                builder: (_, _) => const DisplaySettingsScreen(),
+              ),
+            ],
           ),
         ],
       ),
