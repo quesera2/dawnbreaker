@@ -199,7 +199,6 @@
   "onboardingStart": "サインインへ進む",
   "loginTagline": "サインインすると、どの端末でも\n同じタスクを続きから使えます。",
   "loginWithGoogle": "Googleでサインイン",
-  "loginWithApple": "Appleでサインイン",
   "loginOr": "または",
   "loginStartAsGuest": "ゲストではじめる",
   "loginTermsAgreement": "サインインすることで、{terms} および {privacy} に同意したものとみなされます。",
