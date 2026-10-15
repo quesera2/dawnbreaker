@@ -104,6 +104,14 @@ lib/
 - `lib/l10n/AGENTS.md` — ローカライズ（ARB）
 - `test/AGENTS.md` — テスト方針
 
+## エージェントスキル
+
+外部のスキルは `npx skills` で `.agents/skills/` に取り込んでコミットしている（Claude Code 向けには `.claude/skills/` にシンボリックリンクが張られる）。
+取り込み元とハッシュは `skills-lock.json` に記録される。
+
+- 追加: `npx skills add <owner/repo> --skill <name> -y`
+- 更新: `npx skills update -p -y`
+
 ## PR 作成
 
 - シンプルな内容にとどめる
