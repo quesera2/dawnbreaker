@@ -32,7 +32,6 @@ ios/Runner/GoogleService-Info-Prod.plist
 
 # claude code（チームで共有する設定だけコミットする）
 .claude/*
-!.claude/rules/
 !.claude/skills/
 !.claude/agents/
 !.claude/settings.json
