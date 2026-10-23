@@ -175,6 +175,6 @@ extension on AuthorizationStatus {
   /// `provisional` は静かな通知が届く状態なので、送信先として登録してよい。
   bool get isAuthorized => switch (this) {
     .authorized || .provisional => true,
-    .denied || .notDetermined => false,
+    .denied || .deniedPermanently || .notDetermined => false,
   };
 }
