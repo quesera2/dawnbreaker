@@ -18,10 +18,7 @@ void main() {
     );
     notifiedUsers = [];
     container.listen(currentUserProvider, (_, next) => notifiedUsers.add(next));
-    addTearDown(() async {
-      container.dispose();
-      await repository.close();
-    });
+    addTearDown(container.dispose);
   }
 
   group('起動直後', () {
@@ -36,37 +33,36 @@ void main() {
     });
   });
 
-  group('起動後にユーザーが変わったとき', () {
-    test('新しいユーザーが伝わる', () async {
+  group('端末のセッションが替わったとき', () {
+    // 外から切られたセッションで下流の画面が作り直されて壊れないよう、自分からは追わない
+    test('読み直すまでは伝わらない', () async {
+      setUpContainer(const LoggedIn('user-1'));
+
+      repository.changeUser(const NoLogin());
+      await pumpEventQueue();
+
+      expect(container.read(currentUserProvider), const LoggedIn('user-1'));
+      expect(notifiedUsers, isEmpty);
+    });
+
+    test('読み直すと新しいユーザーが伝わる', () async {
       setUpContainer(const NoLogin());
 
-      repository.emit(const Guest('user-1'));
-      await Future<void>.delayed(Duration.zero);
+      repository.changeUser(const Guest('user-1'));
+      container.invalidate(currentUserProvider);
+      await pumpEventQueue();
 
       expect(container.read(currentUserProvider), const Guest('user-1'));
       expect(notifiedUsers, [const Guest('user-1')]);
     });
 
-    test('ログアウトが伝わる', () async {
-      setUpContainer(const LoggedIn('user-1'));
+    test('読み直しても同じユーザーなら作り直しは起きない', () async {
+      setUpContainer(const Guest('user-1'));
 
-      repository.emit(const NoLogin());
-      await Future<void>.delayed(Duration.zero);
+      container.invalidate(currentUserProvider);
+      await pumpEventQueue();
 
-      expect(container.read(currentUserProvider), const NoLogin());
-      expect(notifiedUsers, [const NoLogin()]);
+      expect(notifiedUsers, isEmpty);
     });
-  });
-
-  // authStateChanges() は購読した直後に現在のユーザーを 1 度流すため、
-  // 起動時は同じユーザーが 2 度届く。ここが通知として下流に漏れると、
-  // 値が変わっていないのに起動のたびにリポジトリと ViewModel が作り直される
-  test('同じユーザーが 2 度届いても作り直しは起きない', () async {
-    setUpContainer(const Guest('user-1'));
-
-    repository.emit(const Guest('user-1'));
-    await Future<void>.delayed(Duration.zero);
-
-    expect(notifiedUsers, isEmpty);
   });
 }

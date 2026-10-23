@@ -6,6 +6,7 @@ import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
+import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -44,7 +45,7 @@ void main() {
 
     /// ゲストとして使っている人がアカウントを結び付けにくる状況を作る
     void setUpPromotion() {
-      fakeUserRepository.emit(const Guest('guest-1'));
+      fakeUserRepository.changeUser(const Guest('guest-1'));
       setUpState(const LoginParam(showGuest: false));
     }
 
@@ -77,10 +78,7 @@ void main() {
       );
     });
 
-    tearDown(() async {
-      container.dispose();
-      await fakeUserRepository.close();
-    });
+    tearDown(() => container.dispose());
 
     group('初期状態', () {
       setUp(setUpState);
@@ -136,6 +134,14 @@ void main() {
           await viewModel.onClickStartAsGuest();
 
           expect(fakeUserRepository.signInAsGuestCount, 1);
+        });
+
+        test('アプリが使うユーザーがゲストに替わる', () async {
+          expect(container.read(currentUserProvider), const NoLogin());
+
+          await viewModel.onClickStartAsGuest();
+
+          expect(container.read(currentUserProvider), isA<Guest>());
         });
 
         test('前のセッションが切れていても、新しいセッションの切れ目を知らせられる', () async {
@@ -359,7 +365,7 @@ void main() {
     // 設定画面から executeLogout で来たとき、遷移が終わってから画面が呼ぶ
     group('ログアウトする', () {
       setUp(() {
-        fakeUserRepository.emit(const LoggedIn('user-1'));
+        fakeUserRepository.changeUser(const LoggedIn('user-1'));
         setUpState(const LoginParam(executeLogout: true));
       });
 
@@ -372,6 +378,14 @@ void main() {
         await viewModel.signOut();
 
         expect(fakeUserRepository.signOutCount, 1);
+      });
+
+      test('アプリが使うユーザーが未サインインに替わる', () async {
+        expect(container.read(currentUserProvider), const LoggedIn('user-1'));
+
+        await viewModel.signOut();
+
+        expect(container.read(currentUserProvider), const NoLogin());
       });
 
       // Firestore の fcmTokens は消さない。無効なトークンは送信側が掃除する

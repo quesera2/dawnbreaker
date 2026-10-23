@@ -47,7 +47,6 @@ void main() {
         }),
       ],
     );
-    addTearDown(userRepository.close);
   }
 
   /// レジュームを通知し、`unawaited` された同期処理が終わるまで待つ

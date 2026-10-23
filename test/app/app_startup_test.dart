@@ -32,10 +32,7 @@ void main() {
         ),
       ],
     );
-    addTearDown(() async {
-      container.dispose();
-      await userRepository.close();
-    });
+    addTearDown(container.dispose);
   }
 
   /// 起動処理を投げ、`unawaited` された処理が進むところまで待つ

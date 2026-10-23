@@ -40,9 +40,6 @@ class FirebaseUserRepository implements UserRepository {
   AppUser getUser() => _toAppUser(_auth.currentUser);
 
   @override
-  Stream<AppUser> watchUser() => _auth.authStateChanges().map(_toAppUser);
-
-  @override
   bool hasSession() => _auth.currentUser != null;
 
   /// `reload()` はサーバーからユーザー情報を取り直すため、消されたアカウントはここで失敗する

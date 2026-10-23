@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/repository/user/session_status.dart';
 import 'package:dawnbreaker/data/repository/user/sign_in_result.dart';
@@ -14,7 +12,6 @@ class FakeUserRepository implements UserRepository {
   static const linkedAccountUser = LoggedIn('linked-account-user');
 
   final AppUser initialUser;
-  final _controller = StreamController<AppUser>.broadcast();
   AppUser _user;
 
   /// サインインが通信に失敗する状況を作る
@@ -45,13 +42,6 @@ class FakeUserRepository implements UserRepository {
   @override
   AppUser getUser() => _user;
 
-  /// 本物の `authStateChanges()` は購読した時点のユーザーを 1 度流してから変化を流す
-  @override
-  Stream<AppUser> watchUser() async* {
-    yield _user;
-    yield* _controller.stream;
-  }
-
   @override
   bool hasSession() => _user is SignedInUser && !sessionLost;
 
@@ -67,8 +57,7 @@ class FakeUserRepository implements UserRepository {
     signInAsGuestCount++;
     if (shouldThrow) throw const SignInException('テストエラー');
     const user = Guest('signed-in-guest');
-    // 本物は authStateChanges() 経由でサインイン後のユーザーを流す
-    emit(user);
+    changeUser(user);
     return user;
   }
 
@@ -76,7 +65,7 @@ class FakeUserRepository implements UserRepository {
   Future<void> signOut() async {
     signOutCount++;
     if (shouldThrow) throw const SignInException('テストエラー');
-    emit(const NoLogin());
+    changeUser(const NoLogin());
   }
 
   @override
@@ -103,8 +92,7 @@ class FakeUserRepository implements UserRepository {
       SignedInUser(:final id) => LoggedIn(id),
       NoLogin() => const LoggedIn('signed-in-google-user'),
     };
-    // 本物は authStateChanges() 経由でサインイン後のユーザーを流す
-    emit(user);
+    changeUser(user);
     return SignInSucceeded(user);
   }
 
@@ -112,15 +100,11 @@ class FakeUserRepository implements UserRepository {
   Future<LoggedIn> signInWithLinkedCredential(AuthCredential credential) async {
     signInWithLinkedCredentialCount++;
     if (shouldThrow) throw const SignInException('テストエラー');
-    emit(linkedAccountUser);
+    changeUser(linkedAccountUser);
     return linkedAccountUser;
   }
 
-  /// `authStateChanges()` からユーザーが流れてくる状況を作る
-  void emit(AppUser user) {
-    _user = user;
-    _controller.add(user);
-  }
-
-  Future<void> close() => _controller.close();
+  /// 端末のセッションのユーザーを替える。`currentUserProvider` には、
+  /// 本物と同じく読み直すまで伝わらない
+  void changeUser(AppUser user) => _user = user;
 }

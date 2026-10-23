@@ -21,10 +21,7 @@ void main() {
         );
       });
 
-      tearDown(() async {
-        container.dispose();
-        await userRepository.close();
-      });
+      tearDown(() => container.dispose());
 
       // 消費側は build で read / watch するため、この2つが本番で通る経路になる。
       // どちらも ProviderException に包まれて届き、元の例外は exception に入る

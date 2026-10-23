@@ -83,6 +83,8 @@ class LoginViewModel extends _$LoginViewModel {
       logger.e('signOut failed', error: e, stackTrace: s);
     }
     if (!ref.mounted) return;
+    // currentUserProvider は Firebase Auth の変化を購読しないため、切り替えたここで読み直す
+    ref.invalidate(currentUserProvider);
 
     state = state.copyWith(
       isSigningOut: false,
@@ -157,6 +159,9 @@ class LoginViewModel extends _$LoginViewModel {
 
   /// サインインしたあとの始末。行き先はモードで決まる
   Future<void> _completeSignIn() async {
+    // currentUserProvider は Firebase Auth の変化を購読しないため、切り替えたここで読み直す。
+    // ゲスト作成・Google でのサインインと昇格・別アカウントへの乗り換えはすべてここを通る
+    ref.invalidate(currentUserProvider);
     // 新しいセッションが切れたら、また知らせられるようにする
     ref.read(sessionExpiryProvider.notifier).reset();
 
@@ -188,10 +193,8 @@ class LoginViewModel extends _$LoginViewModel {
   /// 通知の送信先をサインイン後のユーザーに付け替える。
   Future<void> _registerToken() async {
     try {
-      // 送信先を持つリポジトリは currentUserProvider から uid を受け取る。その更新は
-      // authStateChanges() 経由で一拍遅れるため、読み直してから登録する。
-      // 読み直しは同期で、サインイン済みのユーザーがそのまま返る
-      ref.invalidate(currentUserProvider);
+      // 送信先を持つリポジトリは currentUserProvider から uid を受け取る。
+      // _completeSignIn が読み直したあとに呼ばれる
       final notificationService = await ref.read(
         fcmNotificationServiceProvider.future,
       );

@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/core/auth/session_guard.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
@@ -12,19 +11,19 @@ part 'firestore_user_settings_repository.g.dart';
 
 @Riverpod(keepAlive: true)
 Future<UserSettingsRepository> userSettingsRepository(Ref ref) async {
-  final user = ref.watch(currentUserProvider);
+  final userId = ref.watch(currentUserIdProvider);
   final timeZone = await FlutterTimezone.getLocalTimezone();
-  return switch (user) {
-    NoLogin() => throw const UserSettingsNotSignedInException(
+  if (userId == null) {
+    throw const UserSettingsNotSignedInException(
       'a signed-out user has no notification setting',
-    ),
-    SignedInUser(:final id) => FirestoreUserSettingsRepository(
-      userId: id,
-      firestore: FirebaseFirestore.instance,
-      timezone: timeZone.identifier,
-      sessionGuard: ref.watch(sessionGuardProvider),
-    ),
-  };
+    );
+  }
+  return FirestoreUserSettingsRepository(
+    userId: userId,
+    firestore: FirebaseFirestore.instance,
+    timezone: timeZone.identifier,
+    sessionGuard: ref.watch(sessionGuardProvider),
+  );
 }
 
 @Riverpod(keepAlive: true)
