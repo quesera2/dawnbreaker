@@ -1,4 +1,5 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
+import 'package:dawnbreaker/core/auth/session_expiry.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
@@ -135,6 +136,14 @@ void main() {
           await viewModel.onClickStartAsGuest();
 
           expect(fakeUserRepository.signInAsGuestCount, 1);
+        });
+
+        test('前のセッションが切れていても、新しいセッションの切れ目を知らせられる', () async {
+          container.read(sessionExpiryProvider.notifier).notifyExpired();
+
+          await viewModel.onClickStartAsGuest();
+
+          expect(container.read(sessionExpiryProvider), isNull);
         });
 
         // Android 12 以下は OS に通知の許可を求める仕組みがなく常に許可済みになるため、

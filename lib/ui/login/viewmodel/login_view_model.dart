@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dawnbreaker/core/auth/session_expiry.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_service.dart';
@@ -156,6 +157,9 @@ class LoginViewModel extends _$LoginViewModel {
 
   /// サインインしたあとの始末。行き先はモードで決まる
   Future<void> _completeSignIn() async {
+    // 新しいセッションが切れたら、また知らせられるようにする
+    ref.read(sessionExpiryProvider.notifier).reset();
+
     final LoginDestination destination;
     if (param.showGuest) {
       destination = await _resolveDestination();

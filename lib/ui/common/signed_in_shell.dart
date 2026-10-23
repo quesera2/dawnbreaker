@@ -1,18 +1,14 @@
-import 'dart:async';
-
 import 'package:dawnbreaker/core/auth/app_user.dart';
+import 'package:dawnbreaker/core/auth/session_expiry.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
-import 'package:dawnbreaker/ui/common/components/app_dialog.dart';
-import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 /// サインインしていないと開けない画面をまとめる Widget。
 ///
 /// 他端末でアカウントを消されると、トークン更新の失敗で SDK がローカルでサインアウトし、
 /// `currentUserProvider` が `NoLogin` になる
-/// このときセッション切れのダイアログを表示するためのシェル
+/// このとき配下を外して、セッション切れを知らせるためのシェル
 class SignedInShell extends ConsumerWidget {
   const SignedInShell({super.key, required this.child});
 
@@ -25,13 +21,8 @@ class SignedInShell extends ConsumerWidget {
       if (user is! NoLogin) return;
       // ユーザーが自分で選んだログアウトとアカウント削除の場合も何もしない
       if (!(ModalRoute.of(context)?.isActive ?? false)) return;
-      // セッション切れのダイアログを表示する
-      unawaited(
-        AppDialog.show(
-          context,
-          SessionExpiredMessage(secondaryHandler: () => context.go('/login')),
-        ),
-      );
+      // セッション切れのダイアログはアプリのルートが出す
+      ref.read(sessionExpiryProvider.notifier).notifyExpired();
     });
 
     return switch (ref.watch(currentUserProvider)) {
