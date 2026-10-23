@@ -1,5 +1,6 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
+import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_ui_state.dart';
@@ -43,10 +44,7 @@ void main() {
       );
     });
 
-    tearDown(() async {
-      container.dispose();
-      await fakeUserRepository.close();
-    });
+    tearDown(() => container.dispose());
 
     group('初期状態', () {
       setUp(setUpState);
@@ -155,6 +153,14 @@ void main() {
         test('消えたアカウントのセッションを残さない', () async {
           await viewModel.finishAccountDeletion();
           expect(fakeUserRepository.signOutCount, 1);
+        });
+
+        test('アプリが使うユーザーが未サインインに替わる', () async {
+          expect(container.read(currentUserProvider), const LoggedIn('user-1'));
+
+          await viewModel.finishAccountDeletion();
+
+          expect(container.read(currentUserProvider), const NoLogin());
         });
 
         test('開き直したときにチュートリアルから始まるようにする', () async {

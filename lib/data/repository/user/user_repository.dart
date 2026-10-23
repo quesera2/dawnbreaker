@@ -7,9 +7,6 @@ abstract interface class UserRepository {
   /// 永続化されたセッションを読むだけ。副作用なし・通信なし
   AppUser getUser();
 
-  /// 以降の変化を購読する
-  Stream<AppUser> watchUser();
-
   /// この端末にセッションが残っているか。通信しない。
   ///
   /// アカウントが消されても、SDK がトークンの更新に失敗するまでは残って見える

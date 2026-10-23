@@ -1,9 +1,8 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// `currentUserProvider` は初期値を `getUser()` から、その直後に同じ値を
-/// `watchUser()` から受け取る。等価でないと起動のたびに下流が 1 度無駄に
-/// 再構築されるため、値等価が保たれていることを固める
+/// `currentUserProvider` は読み直しても同じユーザーのことがある。等価でないと
+/// 下流が無駄に再構築されるため、値等価が保たれていることを固める
 void main() {
   group('AppUser の値等価', () {
     test('同じ uid の Guest どうしは等しい', () {

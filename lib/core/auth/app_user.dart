@@ -2,11 +2,17 @@
 ///
 /// 値等価を実装しているのは、Riverpod が `state` への代入時に `previous != next` で
 /// 通知の要否を判定するため（`ProviderElement.defaultUpdateShouldNotify`）。
-/// `currentUserProvider` は初期値を `getUser()` から受け取り、その直後に同じ値を
-/// `watchUser()` からもう一度受け取る。等価でないとこの 2 度目が変更として下流に伝わり、
-/// 値が変わっていないのに起動のたびにリポジトリと ViewModel が作り直される
+/// `currentUserProvider` はユーザーを切り替えたコードが読み直すが、読み直しても
+/// 同じユーザーのことがある。等価でないとそれが変更として下流に伝わり、
+/// 値が変わっていないのにリポジトリと ViewModel が作り直される
 sealed class AppUser {
   const AppUser();
+
+  /// サインイン中なら uid、未サインインなら null
+  String? get signedInId => switch (this) {
+    SignedInUser(:final id) => id,
+    NoLogin() => null,
+  };
 }
 
 /// 未サインイン、またはサインアウト後

@@ -7,6 +7,7 @@ import 'package:dawnbreaker/data/model/notification_setting.dart'
     show NotificationSetting, NotifyDay;
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
+import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
@@ -107,10 +108,7 @@ void main() {
     );
   }
 
-  tearDown(() async {
-    container.dispose();
-    await fakeUserRepository.close();
-  });
+  tearDown(() => container.dispose());
 
   group('SettingsViewModel', () {
     // 昇格の入り口はゲストにだけ出す（リンク済みには別の操作を出す）
@@ -129,7 +127,9 @@ void main() {
       test('昇格したら出さなくなる', () async {
         await setUpLoaded(user: const Guest('guest-1'));
 
-        fakeUserRepository.emit(const LoggedIn('guest-1'));
+        // 昇格したログイン画面が読み直す
+        fakeUserRepository.changeUser(const LoggedIn('guest-1'));
+        container.invalidate(currentUserProvider);
         await pumpEventQueue();
 
         expect(viewState.isGuest, false);

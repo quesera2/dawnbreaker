@@ -65,41 +65,6 @@ void main() {
     });
   });
 
-  // 購読より前のユーザーも流れてくるため、変化そのものが届くことだけを見る
-  // （本物の authStateChanges() も購読時に現在のユーザーを 1 度流す）
-  group('起動後のユーザーの変化', () {
-    test('ゲストになったことが流れてくる', () async {
-      final auth = MockFirebaseAuth(
-        mockUser: MockUser(isAnonymous: true, uid: 'guest-1'),
-      );
-      final repository = createRepository(auth);
-      final emitted = expectLater(
-        repository.watchUser(),
-        emitsThrough(const Guest('guest-1')),
-      );
-
-      await repository.signInAsGuest();
-
-      await emitted;
-    });
-
-    test('サインアウトしたことが流れてくる', () async {
-      final auth = MockFirebaseAuth(
-        signedIn: true,
-        mockUser: MockUser(isAnonymous: true, uid: 'guest-1'),
-      );
-      final repository = createRepository(auth);
-      final emitted = expectLater(
-        repository.watchUser(),
-        emitsThrough(const NoLogin()),
-      );
-
-      await auth.signOut();
-
-      await emitted;
-    });
-  });
-
   group('セッションの確認', () {
     group('端末にセッションが残っている場合', () {
       late MockUser user;

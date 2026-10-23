@@ -24,10 +24,7 @@ void main() {
     container = ProviderContainer(
       overrides: [userRepositoryProvider.overrideWithValue(fakeUserRepository)],
     );
-    addTearDown(() async {
-      container.dispose();
-      await fakeUserRepository.close();
-    });
+    addTearDown(container.dispose);
   }
 
   SessionObserver observer() =>

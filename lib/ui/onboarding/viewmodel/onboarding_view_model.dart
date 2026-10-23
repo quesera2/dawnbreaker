@@ -2,6 +2,7 @@ import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/onboarding/onboarding_repository_impl.dart';
+import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/onboarding/viewmodel/onboarding_ui_state.dart';
@@ -89,5 +90,8 @@ class OnboardingViewModel extends _$OnboardingViewModel {
     } catch (e, s) {
       logger.e('signOut after deletion failed', error: e, stackTrace: s);
     }
+    if (!ref.mounted) return;
+    // currentUserProvider は Firebase Auth の変化を購読しないため、切り替えたここで読み直す
+    ref.invalidate(currentUserProvider);
   }
 }
