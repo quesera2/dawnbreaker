@@ -95,9 +95,8 @@ class NotificationPermissionDeniedMessage extends DialogMessage {
     : super(type: DialogType.info);
 }
 
-/// サインインが切れていたときのエラー。他端末でアカウントを消されると
-/// トークンの更新が失敗して SDK がローカルでサインアウトするため、
-/// サインイン必須の画面をまとめた `SignedInShell` が出す。
+/// サインインが切れていたときのエラー。アカウントが他端末や定期削除で消されたことを、
+/// 見つけたところが `SessionExpiry` へ知らせ、アプリのルートが出す。
 /// 了承したらログイン画面へ送り出すので、閉じるだけで済ませられないようにする
 class SessionExpiredMessage extends DialogMessage {
   SessionExpiredMessage({required super.secondaryHandler})
