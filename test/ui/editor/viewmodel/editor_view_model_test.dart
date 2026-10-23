@@ -2,6 +2,7 @@ import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/model/task_type.dart';
+import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
@@ -160,6 +161,29 @@ void main() {
         expect(localState!.isSaved, false);
         expect(localState!.isSaving, false);
         expect(localState!.dialogMessage, isNotNull);
+      });
+
+      // セッション切れのダイアログはアプリのルートが出すため、重ねて出さない
+      test('セッションが切れていたら、保存中の表示を止めるだけでエラーを出さない', () async {
+        final throwingRepo = FakeTaskRepository(
+          thrownException: const TaskSessionExpiredException(),
+        );
+        final c = ProviderContainer(
+          overrides: [taskRepositoryProvider.overrideWith((_) => throwingRepo)],
+        );
+        final p = editorViewModelProvider();
+        EditorUiState? localState;
+        addTearDown(() {
+          c.dispose();
+          throwingRepo.dispose();
+        });
+        final n = c.read(p.notifier);
+        c.listen(p, (_, next) => localState = next, fireImmediately: true);
+        n.updateName('散髪');
+        await n.save();
+        expect(localState!.isSaved, false);
+        expect(localState!.isSaving, false);
+        expect(localState!.dialogMessage, isNull);
       });
     });
 

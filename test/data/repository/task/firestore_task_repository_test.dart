@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dawnbreaker/core/auth/session_guard.dart';
+import 'package:dawnbreaker/core/util/furigana_translate.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_history.dart';
@@ -15,8 +17,18 @@ import '../../../helpers/fake_furigana_translate.dart';
 void main() {
   late FakeFirebaseFirestore firestore;
   late TaskRepository repository;
+  // テストごとにセッションを切れる状態にし、知らせた回数を数える
+  late bool hasSession;
+  late int expiredNotifiedCount;
+
+  SessionGuard createSessionGuard() => SessionGuard(
+    hasSession: () => hasSession,
+    notifyExpired: () => expiredNotifiedCount++,
+  );
 
   setUp(() {
+    hasSession = true;
+    expiredNotifiedCount = 0;
     firestore = FakeFirebaseFirestore();
     repository = FirestoreTaskRepositoryImpl(
       userId: 'test-user',
@@ -27,6 +39,7 @@ void main() {
         '散髪(更新)': 'さんぱつこうしん',
       }),
       firestore: firestore,
+      sessionGuard: createSessionGuard(),
     );
   });
 
@@ -753,4 +766,110 @@ void main() {
   // fetchTaskHistory は cursor 継続時に FieldPath.documentId を使っており、
   // fake_cloud_firestore がこれを正しく解決できないため自動テストできない。
   // 境界の正しさ（取りこぼし・重複がないこと）は手動で確認すること。
+
+  group('セッションが切れている場合', () {
+    late String taskId;
+
+    setUp(() async {
+      taskId = await repository.addTask(
+        taskType: TaskType.period,
+        name: '散髪',
+        icon: '📝',
+        color: TaskColor.none,
+      );
+      hasSession = false;
+    });
+
+    for (final (description, write) in <(String, Future<void> Function())>[
+      (
+        'タスクを追加',
+        () => repository.addTask(
+          taskType: TaskType.period,
+          name: '散髪',
+          icon: '📝',
+          color: TaskColor.none,
+        ),
+      ),
+      (
+        'タスクを更新',
+        () => repository.updateTask(
+          taskId: taskId,
+          taskType: TaskType.period,
+          name: '散髪(更新)',
+          icon: '📝',
+          color: TaskColor.none,
+        ),
+      ),
+      (
+        '実行を記録',
+        () => repository.recordExecution(taskId, executedAt: DateTime(2026)),
+      ),
+      (
+        '実行を更新',
+        () => repository.updateExecution(
+          'execution-1',
+          taskId: taskId,
+          executedAt: DateTime(2026),
+        ),
+      ),
+      (
+        '実行を削除',
+        () => repository.deleteExecution('execution-1', taskId: taskId),
+      ),
+      ('タスクを削除', () => repository.deleteTask(taskId)),
+      ('タスクをすべて削除', () => repository.deleteAllTasks()),
+      ('タスクを復元', () => repository.restoreTask([])),
+    ]) {
+      test('$descriptionしようとするとセッション切れになり、それを知らせる', () async {
+        await expectLater(write(), throwsA(isA<TaskSessionExpiredException>()));
+        expect(expiredNotifiedCount, 1);
+      });
+    }
+
+    test('書き込まない', () async {
+      await expectLater(
+        repository.deleteTask(taskId),
+        throwsA(isA<TaskSessionExpiredException>()),
+      );
+      hasSession = true;
+      expect(await repository.allTaskItems().first, hasLength(1));
+    });
+  });
+
+  group('書き込みの途中でセッションが切れた場合', () {
+    setUp(() {
+      repository = FirestoreTaskRepositoryImpl(
+        userId: 'test-user',
+        furiganaTranslate: _ExpiringFuriganaTranslate(() => hasSession = false),
+        firestore: firestore,
+        sessionGuard: createSessionGuard(),
+      );
+    });
+
+    test('失敗はセッション切れになり、それを知らせる', () async {
+      await expectLater(
+        repository.addTask(
+          taskType: TaskType.period,
+          name: '散髪',
+          icon: '📝',
+          color: TaskColor.none,
+        ),
+        throwsA(isA<TaskSessionExpiredException>()),
+      );
+      expect(expiredNotifiedCount, 1);
+    });
+  });
+}
+
+/// ふりがなの取得中にセッションが切れ、そのまま書き込みが失敗する状況を作る
+class _ExpiringFuriganaTranslate implements FuriganaTranslate {
+  _ExpiringFuriganaTranslate(this._expireSession);
+
+  final void Function() _expireSession;
+
+  @override
+  Future<String> translate(String text) {
+    _expireSession();
+    return Future.error(Exception('permission-denied'));
+  }
 }

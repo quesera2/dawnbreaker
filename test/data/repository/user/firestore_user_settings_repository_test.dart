@@ -1,6 +1,8 @@
+import 'package:dawnbreaker/core/auth/session_guard.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/user/firestore_user_settings_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_settings_repository.dart';
+import 'package:dawnbreaker/data/repository/user/user_settings_repository_exception.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -10,13 +12,21 @@ void main() {
 
   late FakeFirebaseFirestore firestore;
   late UserSettingsRepository repository;
+  late bool hasSession;
+  late int expiredNotifiedCount;
 
   setUp(() {
+    hasSession = true;
+    expiredNotifiedCount = 0;
     firestore = FakeFirebaseFirestore();
     repository = FirestoreUserSettingsRepository(
       userId: userId,
       timezone: timezone,
       firestore: firestore,
+      sessionGuard: SessionGuard(
+        hasSession: () => hasSession,
+        notifyExpired: () => expiredNotifiedCount++,
+      ),
     );
   });
 
@@ -137,5 +147,26 @@ void main() {
       await repository.setNotificationEnabled(true);
       expect((await fetchUser())?['fcmTokens'], ['token-a']);
     });
+  });
+
+  group('セッションが切れている場合', () {
+    setUp(() => hasSession = false);
+
+    for (final (description, write) in <(String, Future<void> Function())>[
+      (
+        '通知設定を保存',
+        () => repository.setNotificationSetting(const NotificationSetting()),
+      ),
+      ('通知の有効・無効を保存', () => repository.setNotificationEnabled(true)),
+    ]) {
+      test('$descriptionしようとするとセッション切れになり、それを知らせる', () async {
+        await expectLater(
+          write(),
+          throwsA(isA<UserSettingsSessionExpiredException>()),
+        );
+        expect(expiredNotifiedCount, 1);
+        expect(await fetchUser(), isNull);
+      });
+    }
   });
 }

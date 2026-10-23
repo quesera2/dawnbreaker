@@ -77,6 +77,11 @@ class EditorViewModel extends _$EditorViewModel {
       } else {
         await _updateTask(id);
       }
+    } on TaskSessionExpiredException catch (e, s) {
+      // ダイアログは SessionExpiry が出すため、ここでは出さない
+      logger.e('save failed: session expired', error: e, stackTrace: s);
+      if (!ref.mounted) return;
+      state = state.copyWith(isSaving: false);
     } on TaskRepositoryException catch (e, s) {
       logger.e('save failed', error: e, stackTrace: s);
       if (!ref.mounted) return;

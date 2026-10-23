@@ -32,6 +32,13 @@ class TaskInvalidArgumentException extends TaskRepositoryException {
   const TaskInvalidArgumentException([super.message]);
 }
 
+/// サインインしていないのにリポジトリを使おうとした。プログラムの誤り
 class TaskNotSignedInException extends TaskRepositoryException {
   const TaskNotSignedInException([super.message]);
+}
+
+/// 書き込もうとしたらセッションが切れていた。ダイアログは `SessionExpiry` が出すため、
+/// 受け取った側は自前のエラーを出さない
+class TaskSessionExpiredException extends TaskRepositoryException {
+  const TaskSessionExpiredException([super.message]);
 }

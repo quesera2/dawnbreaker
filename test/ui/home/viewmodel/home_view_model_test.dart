@@ -3,6 +3,7 @@ import 'package:dawnbreaker/data/model/schedule_unit.dart';
 import 'package:dawnbreaker/data/model/task_color.dart';
 import 'package:dawnbreaker/data/model/task_item.dart';
 import 'package:dawnbreaker/data/repository/settings/settings_repository_impl.dart';
+import 'package:dawnbreaker/data/repository/task/task_repository_exception.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository_provider.dart';
 import 'package:dawnbreaker/ui/common/dialog_message.dart';
 import 'package:dawnbreaker/ui/common/snack_bar_message.dart';
@@ -303,6 +304,17 @@ void main() {
               null,
             );
             expect(viewState.dialogMessage, isA<TaskSaveErrorMessage>());
+          });
+
+          test('セッションが切れていたらエラーを出さない', () async {
+            fakeRepository.thrownException =
+                const TaskSessionExpiredException();
+            await viewModel.recordExecution(
+              _testTasks[0],
+              DateTime(2026, 4, 1),
+              null,
+            );
+            expect(viewState.dialogMessage, isNull);
           });
 
           test('ハンドラを呼び出すと再実行を試みる', () async {

@@ -65,6 +65,13 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         items: patched,
         hasMore: state.hasMoreHistory,
       ));
+    } on TaskSessionExpiredException catch (e, s) {
+      // ダイアログは SessionExpiry が出すため、ここでは出さない
+      logger.e(
+        'updateExecution failed: session expired',
+        error: e,
+        stackTrace: s,
+      );
     } on TaskRepositoryException catch (e, s) {
       logger.e('updateExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -107,6 +114,9 @@ class AppDetailViewModel extends _$AppDetailViewModel {
           handler: () => _repository.restoreTask([(task, deletedHistory)]),
         ),
       );
+    } on TaskSessionExpiredException catch (e, s) {
+      // ダイアログは SessionExpiry が出すため、ここでは出さない
+      logger.e('deleteTask failed: session expired', error: e, stackTrace: s);
     } on TaskRepositoryException catch (e, s) {
       logger.e('deleteTask failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -140,6 +150,13 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         items: updated,
         hasMore: state.hasMoreHistory,
       ));
+    } on TaskSessionExpiredException catch (e, s) {
+      // ダイアログは SessionExpiry が出すため、ここでは出さない
+      logger.e(
+        'recordExecution failed: session expired',
+        error: e,
+        stackTrace: s,
+      );
     } on TaskRepositoryException catch (e, s) {
       logger.e('recordExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
@@ -171,6 +188,13 @@ class AppDetailViewModel extends _$AppDetailViewModel {
         items: updated,
         hasMore: state.hasMoreHistory,
       ));
+    } on TaskSessionExpiredException catch (e, s) {
+      // ダイアログは SessionExpiry が出すため、ここでは出さない
+      logger.e(
+        'deleteExecution failed: session expired',
+        error: e,
+        stackTrace: s,
+      );
     } on TaskRepositoryException catch (e, s) {
       logger.e('deleteExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;

@@ -87,6 +87,13 @@ class HomeViewModel extends _$HomeViewModel {
               _taskRepository.deleteExecution(history.id, taskId: task.id),
         ),
       );
+    } on TaskSessionExpiredException catch (e, s) {
+      // ダイアログは SessionExpiry が出すため、ここでは出さない
+      logger.e(
+        'recordExecution failed: session expired',
+        error: e,
+        stackTrace: s,
+      );
     } on TaskRepositoryException catch (e, s) {
       logger.e('recordExecution failed', error: e, stackTrace: s);
       if (!ref.mounted) return;
