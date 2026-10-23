@@ -145,6 +145,22 @@ void main() {
     group('ロード後', () {
       setUp(() => setUpLoaded());
 
+      group('購読が失敗した場合', () {
+        setUp(() async {
+          fakeRepository.emitWatchError();
+          await Future<void>.delayed(Duration.zero);
+        });
+
+        test('表示中のタスクがそのまま残る', () {
+          expect(viewState.tasks, _testTasks);
+        });
+
+        test('エラーをユーザーに知らせない', () {
+          expect(viewState.dialogMessage, isNull);
+          expect(viewState.snackBarMessage, isNull);
+        });
+      });
+
       test('タスクが読み込まれる', () {
         expect(viewState.isLoading, false);
         expect(viewState.tasks, _testTasks);

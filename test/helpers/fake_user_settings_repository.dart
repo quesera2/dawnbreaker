@@ -30,6 +30,10 @@ class FakeUserSettingsRepository implements UserSettingsRepository {
   Stream<NotificationSetting> watchNotificationSetting() =>
       watchWithCurrent(notificationSetting, _controller.stream);
 
+  /// 購読中のストリームに失敗を流す。サインアウト後の permission-denied などにあたる
+  void emitWatchError() =>
+      _controller.addError(const UserSettingsLoadException('テストエラー'));
+
   @override
   Future<NotificationSetting> fetchNotificationSetting() async {
     fetchNotificationSettingCount++;

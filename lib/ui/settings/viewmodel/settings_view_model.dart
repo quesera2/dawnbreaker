@@ -61,6 +61,9 @@ class SettingsViewModel extends _$SettingsViewModel {
           version: info.version,
         );
       },
+      // 読み取りの失敗はユーザーに見せない。画面は最後に受け取った値のまま残す
+      onError: (e, s) =>
+          logger.e('watch settings failed', error: e, stackTrace: s),
     );
     ref.onDispose(() => unawaited(disposable()));
   }

@@ -35,19 +35,27 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
 
   @override
   Stream<List<TaskItem>> allTaskItems() {
-    return _taskDefinitionsRef().snapshots().map((snapshot) {
-      final items = snapshot.docs.map(_buildTaskItemFromCache).toList();
-      return items
-        ..sort((a, b) => compareNullableDateAsc(a.scheduledAt, b.scheduledAt));
-    });
+    return _taskDefinitionsRef()
+        .snapshots()
+        .map((snapshot) {
+          final items = snapshot.docs.map(_buildTaskItemFromCache).toList();
+          return items..sort(
+            (a, b) => compareNullableDateAsc(a.scheduledAt, b.scheduledAt),
+          );
+        })
+        .handleError((Object e) => throw TaskLoadException(e.toString()));
   }
 
   @override
   Stream<TaskItem?> watchTaskById(String taskId) {
-    return _taskDefinitionsRef().doc(taskId).snapshots().map((snapshot) {
-      if (!snapshot.exists) return null;
-      return _buildTaskItemFromCache(snapshot);
-    });
+    return _taskDefinitionsRef()
+        .doc(taskId)
+        .snapshots()
+        .map((snapshot) {
+          if (!snapshot.exists) return null;
+          return _buildTaskItemFromCache(snapshot);
+        })
+        .handleError((Object e) => throw TaskLoadException(e.toString()));
   }
 
   @override
