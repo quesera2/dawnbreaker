@@ -163,6 +163,22 @@ void main() {
         test('通知が有効である', () {
           expect(viewState.notificationSetting.enabled, true);
         });
+
+        group('購読が失敗した場合', () {
+          setUp(() async {
+            fakeUserSettingsRepository.emitWatchError();
+            await Future<void>.delayed(Duration.zero);
+          });
+
+          test('表示中の通知設定がそのまま残る', () {
+            expect(viewState.notificationSetting.enabled, true);
+          });
+
+          test('エラーをユーザーに知らせない', () {
+            expect(viewState.dialogMessage, isNull);
+            expect(viewState.snackBarMessage, isNull);
+          });
+        });
       });
 
       group('通知が無効な場合', () {

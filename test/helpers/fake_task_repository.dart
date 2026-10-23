@@ -273,6 +273,11 @@ class FakeTaskRepository implements TaskRepository {
     unawaited(_controller.close());
   }
 
+  /// 購読中のストリームに失敗を流す。サインアウト後の permission-denied などにあたる
+  void emitWatchError([Object error = testTaskFailure]) {
+    if (!_controller.isClosed) _controller.addError(error);
+  }
+
   void _notify() {
     if (!_controller.isClosed) _controller.add(List.of(_tasks));
   }
