@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dawnbreaker/core/auth/app_user.dart';
+import 'package:dawnbreaker/data/repository/user/session_status.dart';
 import 'package:dawnbreaker/data/repository/user/sign_in_result.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
@@ -28,6 +29,13 @@ class FakeUserRepository implements UserRepository {
   /// アカウント削除の Function 呼び出しが失敗する状況を作る
   bool shouldFailDeleteAccount = false;
 
+  /// SDK がトークンの更新に失敗して、端末のセッションを捨てた状況を作る
+  bool sessionLost = false;
+
+  /// 端末にセッションが残っているときに、サーバーへの問い合わせが返す状態
+  SessionStatus serverSessionStatus = .valid;
+
+  int verifySessionCount = 0;
   int signInAsGuestCount = 0;
   int signInWithGoogleCount = 0;
   int signInWithLinkedCredentialCount = 0;
@@ -42,6 +50,16 @@ class FakeUserRepository implements UserRepository {
   Stream<AppUser> watchUser() async* {
     yield _user;
     yield* _controller.stream;
+  }
+
+  @override
+  bool hasSession() => _user is SignedInUser && !sessionLost;
+
+  @override
+  Future<SessionStatus> verifySession() async {
+    verifySessionCount++;
+    if (!hasSession()) return .expired;
+    return serverSessionStatus;
   }
 
   @override

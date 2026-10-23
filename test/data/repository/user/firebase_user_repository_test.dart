@@ -1,6 +1,7 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/repository/user/credential_source.dart';
 import 'package:dawnbreaker/data/repository/user/firebase_user_repository.dart';
+import 'package:dawnbreaker/data/repository/user/session_status.dart';
 import 'package:dawnbreaker/data/repository/user/sign_in_result.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -96,6 +97,71 @@ void main() {
       await auth.signOut();
 
       await emitted;
+    });
+  });
+
+  group('セッションの確認', () {
+    group('端末にセッションが残っている場合', () {
+      late MockUser user;
+      late FirebaseUserRepository repository;
+      // mock_exceptions は登録を値の等しさで引き、テストをまたいで残る。
+      // 前のテストで登録した例外が効かないよう、テストごとに別のユーザーにする
+      var userCount = 0;
+
+      setUp(() {
+        user = MockUser(isAnonymous: true, uid: 'guest-${userCount++}');
+        repository = createRepository(
+          MockFirebaseAuth(signedIn: true, mockUser: user),
+        );
+      });
+
+      test('通信せずにセッションがあるとわかる', () {
+        expect(repository.hasSession(), true);
+      });
+
+      test('サーバーでも生きていれば有効になる', () async {
+        expect(await repository.verifySession(), SessionStatus.valid);
+      });
+
+      for (final code in [
+        'user-not-found',
+        'user-disabled',
+        'user-token-expired',
+        'invalid-user-token',
+      ]) {
+        test('サーバーで使えなくなっていれば切れている（$code）', () async {
+          whenCalling(
+            Invocation.method(#reload, null),
+          ).on(user).thenThrow(FirebaseAuthException(code: code));
+          expect(await repository.verifySession(), SessionStatus.expired);
+        });
+      }
+
+      for (final error in [
+        FirebaseAuthException(code: 'network-request-failed'),
+        Exception('plugin failure'),
+      ]) {
+        test('問い合わせに失敗したら確かめられない（$error）', () async {
+          whenCalling(
+            Invocation.method(#reload, null),
+          ).on(user).thenThrow(error);
+          expect(await repository.verifySession(), SessionStatus.unknown);
+        });
+      }
+    });
+
+    group('端末にセッションがない場合', () {
+      late FirebaseUserRepository repository;
+
+      setUp(() => repository = createRepository(MockFirebaseAuth()));
+
+      test('セッションがないとわかる', () {
+        expect(repository.hasSession(), false);
+      });
+
+      test('問い合わせるまでもなく切れている', () async {
+        expect(await repository.verifySession(), SessionStatus.expired);
+      });
     });
   });
 

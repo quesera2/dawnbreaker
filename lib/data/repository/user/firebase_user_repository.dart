@@ -2,6 +2,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:dawnbreaker/core/auth/app_user.dart';
 import 'package:dawnbreaker/data/repository/user/credential_source.dart';
 import 'package:dawnbreaker/data/repository/user/google_credential_source.dart';
+import 'package:dawnbreaker/data/repository/user/session_status.dart';
 import 'package:dawnbreaker/data/repository/user/sign_in_result.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository.dart';
 import 'package:dawnbreaker/data/repository/user/user_repository_exception.dart';
@@ -22,6 +23,14 @@ class FirebaseUserRepository implements UserRepository {
     required this._googleCredentialSource,
   });
 
+  /// `reload()` がこれらで失敗したら、サインインし直さない限りセッションは戻らない
+  static const _expiredCodes = {
+    'user-not-found',
+    'user-disabled',
+    'user-token-expired',
+    'invalid-user-token',
+  };
+
   final FirebaseAuth _auth;
   final CredentialSource _googleCredentialSource;
 
@@ -32,6 +41,25 @@ class FirebaseUserRepository implements UserRepository {
 
   @override
   Stream<AppUser> watchUser() => _auth.authStateChanges().map(_toAppUser);
+
+  @override
+  bool hasSession() => _auth.currentUser != null;
+
+  /// `reload()` はサーバーからユーザー情報を取り直すため、消されたアカウントはここで失敗する
+  @override
+  Future<SessionStatus> verifySession() async {
+    final user = _auth.currentUser;
+    if (user == null) return .expired;
+    try {
+      await user.reload();
+      return .valid;
+    } on FirebaseAuthException catch (e) {
+      return _expiredCodes.contains(e.code) ? .expired : .unknown;
+    } catch (_) {
+      // プラグインの失敗などもセッション切れとは言い切れない
+      return .unknown;
+    }
+  }
 
   @override
   Future<Guest> signInAsGuest() async {
