@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dawnbreaker/app/flavor.dart';
 import 'package:dawnbreaker/core/auth/app_user.dart';
+import 'package:dawnbreaker/core/auth/session_observer.dart';
 import 'package:dawnbreaker/core/logger/app_logger.dart';
 import 'package:dawnbreaker/core/notification/fcm_notification_service_impl.dart';
 import 'package:dawnbreaker/core/notification/notification_permission_observer.dart';
@@ -74,6 +75,7 @@ class AppStartup {
   @visibleForTesting
   static void startDeferredWork(ProviderContainer container) {
     container.read(notificationPermissionObserverProvider);
+    container.read(sessionObserverProvider.notifier).verifyOnStartup();
 
     switch (container.read(currentUserProvider)) {
       case SignedInUser():

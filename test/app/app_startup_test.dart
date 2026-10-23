@@ -16,9 +16,11 @@ void main() {
   late ProviderContainer container;
   late FakeNotificationService fakeNotificationService;
 
+  late FakeUserRepository userRepository;
+
   void setUpContainer({AppUser user = const Guest('user-1')}) {
     fakeNotificationService = FakeNotificationService();
-    final userRepository = FakeUserRepository(user);
+    userRepository = FakeUserRepository(user);
     container = ProviderContainer(
       overrides: [
         userRepositoryProvider.overrideWithValue(userRepository),
@@ -54,6 +56,11 @@ void main() {
           test('通知先を登録する', () async {
             await startDeferredWork();
             expect(fakeNotificationService.registerTokenCount, 1);
+          });
+
+          test('セッションがサーバーでも生きているか確かめる', () async {
+            await startDeferredWork();
+            expect(userRepository.verifySessionCount, 1);
           });
         });
       }
