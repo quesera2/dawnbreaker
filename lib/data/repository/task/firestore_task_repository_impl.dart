@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dawnbreaker/core/auth/session_guard.dart';
 import 'package:dawnbreaker/core/util/date_util.dart';
 import 'package:dawnbreaker/core/util/furigana_translate.dart';
 import 'package:dawnbreaker/data/model/schedule_unit.dart';
@@ -21,11 +22,13 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     required this.userId,
     required this._furiganaTranslate,
     required this._firestore,
+    required this._sessionGuard,
   });
 
   final String userId;
   final FuriganaTranslate _furiganaTranslate;
   final FirebaseFirestore _firestore;
+  final SessionGuard _sessionGuard;
 
   CollectionReference<Map<String, dynamic>> _taskDefinitionsRef() =>
       _firestore.collection('users').doc(userId).collection('taskDefinitions');
@@ -114,6 +117,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     int? scheduleValue,
     ScheduleUnit? scheduleUnit,
   }) async {
+    _ensureSession();
     if (taskType == TaskType.scheduled &&
         (scheduleValue == null || scheduleUnit == null)) {
       throw const TaskInvalidArgumentException(
@@ -140,7 +144,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
-      throw TaskSaveException(e.toString());
+      throw _sessionExpiredOr(TaskSaveException(e.toString()));
     }
   }
 
@@ -154,6 +158,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     int? scheduleValue,
     ScheduleUnit? scheduleUnit,
   }) async {
+    _ensureSession();
     if (taskType == TaskType.scheduled &&
         (scheduleValue == null || scheduleUnit == null)) {
       throw const TaskInvalidArgumentException(
@@ -178,7 +183,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
-      throw TaskUpdateException(e.toString());
+      throw _sessionExpiredOr(TaskUpdateException(e.toString()));
     }
   }
 
@@ -188,6 +193,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     required DateTime executedAt,
     String? comment,
   }) async {
+    _ensureSession();
     try {
       final id = _uuid.v4();
       final newHistory = TaskHistory(
@@ -202,7 +208,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
-      throw TaskSaveException(e.toString());
+      throw _sessionExpiredOr(TaskSaveException(e.toString()));
     }
   }
 
@@ -213,6 +219,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     required DateTime executedAt,
     String? comment,
   }) async {
+    _ensureSession();
     try {
       await _executionsRef(taskId).doc(executionId).update({
         'executedAt': Timestamp.fromDate(executedAt),
@@ -221,7 +228,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
-      throw TaskUpdateException(e.toString());
+      throw _sessionExpiredOr(TaskUpdateException(e.toString()));
     }
   }
 
@@ -230,17 +237,19 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
     String executionId, {
     required String taskId,
   }) async {
+    _ensureSession();
     try {
       await _executionsRef(taskId).doc(executionId).delete();
     } on TaskRepositoryException {
       rethrow;
     } catch (e) {
-      throw TaskDeleteException(e.toString());
+      throw _sessionExpiredOr(TaskDeleteException(e.toString()));
     }
   }
 
   @override
   Future<List<TaskHistory>> deleteTask(String taskId) async {
+    _ensureSession();
     try {
       final executionsSnap = await _executionsRef(taskId).get();
       final deletedHistory = executionsSnap.docs
@@ -251,12 +260,13 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
       await _taskDefinitionsRef().doc(taskId).delete();
       return deletedHistory;
     } catch (e) {
-      throw TaskDeleteException(e.toString());
+      throw _sessionExpiredOr(TaskDeleteException(e.toString()));
     }
   }
 
   @override
   Future<void> deleteAllTasks() async {
+    _ensureSession();
     try {
       final taskDefinitions = await _taskDefinitionsRef().get();
       final references = taskDefinitions.docs.map((d) => d.reference).toList();
@@ -269,7 +279,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
         await batch.commit();
       }
     } catch (e) {
-      throw TaskDeleteException(e.toString());
+      throw _sessionExpiredOr(TaskDeleteException(e.toString()));
     }
   }
 
@@ -277,6 +287,7 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
   Future<void> restoreTask(
     List<(TaskItem, List<TaskHistory>)> taskItems,
   ) async {
+    _ensureSession();
     final writes = taskItems
         .expand((e) => _convertWriteData(e.$1, e.$2))
         .toList();
@@ -289,9 +300,25 @@ class FirestoreTaskRepositoryImpl implements TaskRepository {
         await batch.commit();
       }
     } catch (e) {
-      throw TaskSaveException(e.toString());
+      throw _sessionExpiredOr(TaskSaveException(e.toString()));
     }
   }
+
+  /// 書く前にセッションを確かめる。セッションのない書き込みはサーバーの応答が来ず、
+  /// オフラインのときと同じく完了を待ち続けることになるため、通信の前に弾く
+  void _ensureSession() {
+    if (!_sessionGuard.checkExpired()) return;
+    throw const TaskSessionExpiredException(
+      'cannot write tasks: the session has expired',
+    );
+  }
+
+  /// 書き込みの失敗が、途中でセッションが切れたことによるものならその例外に置き換える
+  TaskRepositoryException _sessionExpiredOr(
+    TaskRepositoryException exception,
+  ) => _sessionGuard.checkExpired()
+      ? TaskSessionExpiredException(exception.message)
+      : exception;
 
   WriteData _convertWriteData(
     TaskItem taskItem,

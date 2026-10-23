@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dawnbreaker/core/auth/app_user.dart';
+import 'package:dawnbreaker/core/auth/session_guard.dart';
 import 'package:dawnbreaker/core/util/furigana_translate.dart';
 import 'package:dawnbreaker/data/repository/task/firestore_task_repository_impl.dart';
 import 'package:dawnbreaker/data/repository/task/task_repository.dart';
@@ -20,6 +21,7 @@ TaskRepository taskRepository(Ref ref) {
       userId: id,
       furiganaTranslate: ref.watch(furiganaTranslateProvider),
       firestore: FirebaseFirestore.instance,
+      sessionGuard: ref.watch(sessionGuardProvider),
     ),
   };
 }

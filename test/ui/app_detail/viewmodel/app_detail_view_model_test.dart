@@ -398,6 +398,17 @@ void main() {
             expect(viewState.dialogMessage, isA<TaskSaveErrorMessage>());
           });
 
+          test('セッションが切れていたらエラーを出さない', () async {
+            fakeRepository.thrownException =
+                const TaskSessionExpiredException();
+            await viewModel.recordExecution(
+              _taskOneHistory,
+              DateTime(2026, 4, 1),
+              null,
+            );
+            expect(viewState.dialogMessage, isNull);
+          });
+
           test('失敗時に再試行できる', () async {
             await viewModel.recordExecution(
               _taskOneHistory,

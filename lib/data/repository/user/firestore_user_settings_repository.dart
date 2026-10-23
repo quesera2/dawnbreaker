@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dawnbreaker/core/auth/app_user.dart';
+import 'package:dawnbreaker/core/auth/session_guard.dart';
 import 'package:dawnbreaker/data/model/notification_setting.dart';
 import 'package:dawnbreaker/data/repository/user/current_user_provider.dart';
 import 'package:dawnbreaker/data/repository/user/user_settings_repository.dart';
@@ -21,6 +22,7 @@ Future<UserSettingsRepository> userSettingsRepository(Ref ref) async {
       userId: id,
       firestore: FirebaseFirestore.instance,
       timezone: timeZone.identifier,
+      sessionGuard: ref.watch(sessionGuardProvider),
     ),
   };
 }
@@ -36,6 +38,7 @@ class FirestoreUserSettingsRepository implements UserSettingsRepository {
     required this.userId,
     required this.timezone,
     required this._firestore,
+    required this._sessionGuard,
   });
 
   final String userId;
@@ -45,6 +48,7 @@ class FirestoreUserSettingsRepository implements UserSettingsRepository {
   final String timezone;
 
   final FirebaseFirestore _firestore;
+  final SessionGuard _sessionGuard;
 
   @override
   Stream<NotificationSetting> watchNotificationSetting() => _userRef()
@@ -63,13 +67,14 @@ class FirestoreUserSettingsRepository implements UserSettingsRepository {
 
   @override
   Future<void> setNotificationSetting(NotificationSetting setting) async {
+    _ensureSession();
     try {
       await _userRef().set({
         'notificationSetting': setting.toJson(),
         'timezone': timezone,
       }, SetOptions(merge: true));
     } catch (e) {
-      throw UserSettingsSaveException(e.toString());
+      throw _sessionExpiredOr(UserSettingsSaveException(e.toString()));
     }
   }
 
@@ -77,15 +82,31 @@ class FirestoreUserSettingsRepository implements UserSettingsRepository {
   /// 送れば時刻・日はサーバーにある値が残る
   @override
   Future<void> setNotificationEnabled(bool enabled) async {
+    _ensureSession();
     try {
       await _userRef().set({
         'notificationSetting': {'enabled': enabled},
         'timezone': timezone,
       }, SetOptions(merge: true));
     } catch (e) {
-      throw UserSettingsSaveException(e.toString());
+      throw _sessionExpiredOr(UserSettingsSaveException(e.toString()));
     }
   }
+
+  /// 書く前にセッションを確かめる。セッションのない書き込みは完了を待ち続けるため、通信の前に弾く
+  void _ensureSession() {
+    if (!_sessionGuard.checkExpired()) return;
+    throw const UserSettingsSessionExpiredException(
+      'cannot write user settings: the session has expired',
+    );
+  }
+
+  /// 書き込みの失敗が、途中でセッションが切れたことによるものならその例外に置き換える
+  UserSettingsRepositoryException _sessionExpiredOr(
+    UserSettingsRepositoryException exception,
+  ) => _sessionGuard.checkExpired()
+      ? UserSettingsSessionExpiredException(exception.message)
+      : exception;
 
   /// `users/{uid}` は初期化していないため、ドキュメントごと無いことがある。
   /// その場合は初期値（通知 OFF）として扱う
