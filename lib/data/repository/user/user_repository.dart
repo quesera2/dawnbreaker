@@ -1,4 +1,5 @@
 import 'package:dawnbreaker/core/auth/app_user.dart';
+import 'package:dawnbreaker/data/repository/user/session_status.dart';
 import 'package:dawnbreaker/data/repository/user/sign_in_result.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -8,6 +9,16 @@ abstract interface class UserRepository {
 
   /// 以降の変化を購読する
   Stream<AppUser> watchUser();
+
+  /// この端末にセッションが残っているか。通信しない。
+  ///
+  /// アカウントが消されても、SDK がトークンの更新に失敗するまでは残って見える
+  bool hasSession();
+
+  /// サーバーに問い合わせてセッションが生きているか確かめる。
+  ///
+  /// 端末にセッションがなければ問い合わせずに [SessionStatus.expired] を返す
+  Future<SessionStatus> verifySession();
 
   /// 「ゲストではじめる」を押したときにだけ呼ぶ
   Future<Guest> signInAsGuest();
